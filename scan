@@ -213,7 +213,7 @@ while True:
                         full_name = '{}Z - {}'.format(config['args']['date'], full_name)
                     if len(config['args']['tags']) > 0:
                         full_name = '{} - {}'.format(full_name, ','.join(config['args']['tags']))
-                    destination = '/home/sbrunner/dsl/paperless/consume/{}.pdf'.format(
+                    destination = '/destination/{}.pdf'.format(
                         full_name
                     )
                     config['full_name'] = full_name
