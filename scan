@@ -79,9 +79,8 @@ def transform(config):
     os.makedirs(root_folder + '/scantailor')
     os.makedirs(root_folder + '/preview')
     for img in config['images']:
-        os.path.join(root_folder, img)
-        name = os.path.splitext(img)[0]
-        img = os.path.join(root_folder, img)
+        shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, os.path.basename(img)))
+        img = os.path.join(root_folder, os.path.basename(img))
 #        call(mogrify + ['-level-colors', '#202020,#d0d0d0', img])
         # force-cleanup
         if config['args']['force_cleanup']:
@@ -176,7 +175,8 @@ def finalise(config):
             call(convert + [img, root_folder + '/{}.pdf'.format(name)])
             pdf.append(root_folder + '/{}.pdf'.format(name))
 
-    full_name = config['name']
+    full_name = config['full_name']
+    destination = config['destination']
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
 
@@ -214,7 +214,8 @@ while True:
                     destination = '/home/sbrunner/dsl/paperless/consume/{}.pdf'.format(
                         full_name
                     )
-                    config['name'] = full_name
+                    config['full_name'] = full_name
+                    config['destination'] = destination
 
                     config['waiting'] = True
 
