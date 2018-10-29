@@ -74,8 +74,9 @@ def old_crop(img, marging_horizontal=25, maring_vertical=25):
     if h <= o_h and w <= o_w:
         call(convert + [img, '-crop', '{}x{}+{}+{}'.format(w + 2 * marging_horizontal, h + 2 * maring_vertical, x, y), '+repage', img])
 
+
 def transform(config):
-    images = set()
+    images = list()
     os.makedirs(root_folder + '/scantailor')
     os.makedirs(root_folder + '/preview')
     for img in config['images']:
@@ -154,6 +155,7 @@ def transform(config):
         img2 = root_folder + '/preview/{}.png'.format(name)
         subprocess.call(convert + [img, img2])
         images.add(img2)
+    return images
 
 def finalise(config):
     images = sorted(images)
@@ -202,7 +204,7 @@ while True:
                         ok = False
 
                 if ok:
-                    transform(config)
+                    config['images'] = transform(config)
 
                     full_name = ' '.join(config['args']['title'])
                     if config['args']['correspondent'] is not None:
