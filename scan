@@ -98,19 +98,19 @@ while True:
                     img = os.path.join(root_folder, img)
             #        call(mogrify + ['-level-colors', '#202020,#d0d0d0', img])
                     # force-cleanup
-                    if args.force_cleanup:
+                    if config['args']['force_cleanup']:
                         call(mogrify + ['-level', '15%,1,85%', img])
                     else:
                         call(mogrify + ['-level', '10%,1,90%', img])
                     # crop
-            #        if args.no_crop or args.old_crop:
+            #        if config['args']['no_crop'] or config['args']['old_crop']:
             #            call(['scantailor-cli', '--layout=1', '--dpi=300', '--output-dpi=300', '--color-mode=color_grayscale', img, root_folder + '/scantailor'])
             #            img = root_folder + '/scantailor/{}.tif'.format(name)
                     # Margin in mm
                     marging_horizontal=10
                     maring_vertical=5
-                    if not args.no_crop:
-                        if not args.new_crop:
+                    if not config['args']['no_crop']:
+                        if not config['args']['new_crop']:
                             call([
                                 'scantailor-cli', '--dpi=300', '--content-detection=normal',
                                 '--content-box=0x0:1000x1000',
@@ -146,7 +146,7 @@ while True:
                     # dither
                     #call(mogrify + ['+dither', img])
                     # auto-rotate
-            #        if not args.adf:
+            #        if not config['args']['adf']:
                     try:
                         orientation = 0
                         orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
@@ -178,7 +178,7 @@ while True:
                     exit(1)
 
                 pdf = []
-                if args.append_credit_card:
+                if config['args']['append_credit_card']:
                     images2 = []
                     for img in images:
                         if os.path.exists(img):
@@ -194,13 +194,13 @@ while True:
                         call(convert + [img, root_folder + '/{}.pdf'.format(name)])
                         pdf.append(root_folder + '/{}.pdf'.format(name))
 
-                full_name = ' '.join(args.title)
-                if args.correspondent is not None:
-                    full_name = '{} - {}'.format(args.correspondent, full_name)
-                if args.date is not None:
-                    full_name = '{}Z - {}'.format(args.date, full_name)
-                if len(args.tags) > 0:
-                    full_name = '{} - {}'.format(full_name, ','.join(args.tags))
+                full_name = ' '.join(config['args']['title'])
+                if config['args']['correspondent'] is not None:
+                    full_name = '{} - {}'.format(config['args']['correspondent'], full_name)
+                if config['args']['date'] is not None:
+                    full_name = '{}Z - {}'.format(config['args']['date'], full_name)
+                if len(config['args']['tags']) > 0:
+                    full_name = '{} - {}'.format(full_name, ','.join(config['args']['tags']))
                 destination = '/home/sbrunner/dsl/paperless/consume/{}.pdf'.format(
                     full_name
                 )
