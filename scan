@@ -74,6 +74,115 @@ def old_crop(img, marging_horizontal=25, maring_vertical=25):
     if h <= o_h and w <= o_w:
         call(convert + [img, '-crop', '{}x{}+{}+{}'.format(w + 2 * marging_horizontal, h + 2 * maring_vertical, x, y), '+repage', img])
 
+def transform(config):
+    images = set()
+    os.makedirs(root_folder + '/scantailor')
+    os.makedirs(root_folder + '/preview')
+    for img in config['images']:
+        os.path.join(root_folder, img)
+        name = os.path.splitext(img)[0]
+        img = os.path.join(root_folder, img)
+#        call(mogrify + ['-level-colors', '#202020,#d0d0d0', img])
+        # force-cleanup
+        if config['args']['force_cleanup']:
+            call(mogrify + ['-level', '15%,1,85%', img])
+        else:
+            call(mogrify + ['-level', '10%,1,90%', img])
+        # crop
+#        if config['args']['no_crop'] or config['args']['old_crop']:
+#            call(['scantailor-cli', '--layout=1', '--dpi=300', '--output-dpi=300', '--color-mode=color_grayscale', img, root_folder + '/scantailor'])
+#            img = root_folder + '/scantailor/{}.tif'.format(name)
+        # Margin in mm
+        marging_horizontal=10
+        maring_vertical=5
+        if not config['args']['no_crop']:
+            if not config['args']['new_crop']:
+                call([
+                    'scantailor-cli', '--dpi=300', '--content-detection=normal',
+                    '--content-box=0x0:1000x1000',
+                    '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
+                    '--margins-left=0', '--margins-right=0', '--margins-top=0', '--margins-bottom=0',
+                    img, root_folder + '/scantailor'])
+                old_crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
+                """
+                call(
+                    "gm mogrify {img} -crop `gm convert {img} -crop \\`gm convert {img} -format '%[fx:w-50]x%[fx:h-50]' "
+                    "info:\\`+25+25 +repage -virtual-pixel edge -noise 7 -blur 0x4 -level 20%,100%,4 -fuzz 15% "
+                    "-trim -format '%[fx:w+50]x%[fx:h+50]+%[fx:page.x]+%[fx:page.y]' info:` +repage {img}".format(img=img),
+                    shell=True,
+                )"""
+            else:
+                call([
+                    'scantailor-cli', '--layout=1.5', '--dpi=300', '--content-detection=cautious',
+                    '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
+                    '--margins-left={}'.format(marging_horizontal), '--margins-right={}'.format(marging_horizontal),
+                    '--margins-top={}'.format(maring_vertical), '--margins-bottom={}'.format(maring_vertical),
+                    img, root_folder + '/scantailor'])
+                call(['gm', 'convert', root_folder + '/scantailor/{}.tif'.format(name), root_folder + '/scantailor/{}.png'.format(name)])
+                img = root_folder + '/scantailor/{}.png'.format(name)
+        """
+        try:
+            subprocess.check_call(['identify', '-verbose', img])
+        except subprocess.CalledProcessError:
+            print("Ignore empty image: {}".format(img))
+            continue"""
+
+        # sharpen
+        call(mogrify + ['-sharpen', '0x2', img], ['identify', '-verbose', img])
+        # dither
+        #call(mogrify + ['+dither', img])
+        # auto-rotate
+#        if not config['args']['adf']:
+        try:
+            orientation = 0
+            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
+    #            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
+            orientation = [e for e in orientation.splitlines() if 'Orientation in degrees' in e]
+            orientation = '-' + orientation[0].split()[3]
+
+            call(mogrify + ['-rotate', orientation, img])
+        except subprocess.CalledProcessError as e:
+            print(e)
+
+        # is empty ?
+        w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).split(b' ')]
+        if output(
+#            convert + [img, '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x4', '-level', '20%,1,80%', '-fuzz', '15%', '-trim', '-format', '%wx%h', 'info:-']) == b'1x1':
+            convert + [img, '-noise', '7', '-blur', '0x3', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'])[0:4] == b'1x1+':
+            print("Ignore image with no content: {}".format(img))
+            continue
+
+        img2 = root_folder + '/preview/{}.png'.format(name)
+        subprocess.call(convert + [img, img2])
+        images.add(img2)
+
+def finalise(config):
+    images = sorted(images)
+
+    pdf = []
+    if config['args']['append_credit_card']:
+        images2 = []
+        for img in images:
+            if os.path.exists(img):
+                    images2.append(img)
+            # - append (credit cards)  -  convert clp.png clp.png -background color? -append page.png
+
+        call(['convert'] + images2 + ['-background', '#ffffff', '-append', root_folder + '/final.png'])
+        images = [root_folder + '/final.png']
+
+    for img in images:
+        if os.path.exists(img):
+            name = os.path.splitext(os.path.basename(img))[0]
+            call(convert + [img, root_folder + '/{}.pdf'.format(name)])
+            pdf.append(root_folder + '/{}.pdf'.format(name))
+
+    full_name = config['name']
+    call(['pdftk'] + pdf + ['output', destination, 'compress'])
+    call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
+
+    shutil.rmtree(root_folder)
+
+
 while True:
     for config_file_name in glob.glob('/source/*/config.yaml'):
         root_folder = os.path.dirname(config_file_name)
@@ -83,138 +192,43 @@ while True:
         args = parser.parse_args(config['args'])
 
         try:
-            ok = True
-            for img in config['images']:
-                if not os.exists(os.path.join(root_folder, img)):
-                    ok = False
-
-            if ok:
-                images = set()
-                os.makedirs(root_folder + '/scantailor')
-                os.makedirs(root_folder + '/preview')
+            if config.get('waiting', False):
+                if not os.exist(os.path.join(root_folder, 'waiting')):
+                    finalise(config)
+            else:
+                ok = True
                 for img in config['images']:
-                    os.path.join(root_folder, img)
-                    name = os.path.splitext(img)[0]
-                    img = os.path.join(root_folder, img)
-            #        call(mogrify + ['-level-colors', '#202020,#d0d0d0', img])
-                    # force-cleanup
-                    if config['args']['force_cleanup']:
-                        call(mogrify + ['-level', '15%,1,85%', img])
-                    else:
-                        call(mogrify + ['-level', '10%,1,90%', img])
-                    # crop
-            #        if config['args']['no_crop'] or config['args']['old_crop']:
-            #            call(['scantailor-cli', '--layout=1', '--dpi=300', '--output-dpi=300', '--color-mode=color_grayscale', img, root_folder + '/scantailor'])
-            #            img = root_folder + '/scantailor/{}.tif'.format(name)
-                    # Margin in mm
-                    marging_horizontal=10
-                    maring_vertical=5
-                    if not config['args']['no_crop']:
-                        if not config['args']['new_crop']:
-                            call([
-                                'scantailor-cli', '--dpi=300', '--content-detection=normal',
-                                '--content-box=0x0:1000x1000',
-                                '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
-                                '--margins-left=0', '--margins-right=0', '--margins-top=0', '--margins-bottom=0',
-                                img, root_folder + '/scantailor'])
-                            old_crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
-                            """
-                            call(
-                                "gm mogrify {img} -crop `gm convert {img} -crop \\`gm convert {img} -format '%[fx:w-50]x%[fx:h-50]' "
-                                "info:\\`+25+25 +repage -virtual-pixel edge -noise 7 -blur 0x4 -level 20%,100%,4 -fuzz 15% "
-                                "-trim -format '%[fx:w+50]x%[fx:h+50]+%[fx:page.x]+%[fx:page.y]' info:` +repage {img}".format(img=img),
-                                shell=True,
-                            )"""
-                        else:
-                            call([
-                                'scantailor-cli', '--layout=1.5', '--dpi=300', '--content-detection=cautious',
-                                '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
-                                '--margins-left={}'.format(marging_horizontal), '--margins-right={}'.format(marging_horizontal),
-                                '--margins-top={}'.format(maring_vertical), '--margins-bottom={}'.format(maring_vertical),
-                                img, root_folder + '/scantailor'])
-                            call(['gm', 'convert', root_folder + '/scantailor/{}.tif'.format(name), root_folder + '/scantailor/{}.png'.format(name)])
-                            img = root_folder + '/scantailor/{}.png'.format(name)
-                    """
-                    try:
-                        subprocess.check_call(['identify', '-verbose', img])
-                    except subprocess.CalledProcessError:
-                        print("Ignore empty image: {}".format(img))
-                        continue"""
+                    if not os.exists(os.path.join(root_folder, img)):
+                        ok = False
 
-                    # sharpen
-                    call(mogrify + ['-sharpen', '0x2', img], ['identify', '-verbose', img])
-                    # dither
-                    #call(mogrify + ['+dither', img])
-                    # auto-rotate
-            #        if not config['args']['adf']:
-                    try:
-                        orientation = 0
-                        orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
-                #            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
-                        orientation = [e for e in orientation.splitlines() if 'Orientation in degrees' in e]
-                        orientation = '-' + orientation[0].split()[3]
+                if ok:
+                    transform(config)
 
-                        call(mogrify + ['-rotate', orientation, img])
-                    except subprocess.CalledProcessError as e:
-                        print(e)
+                    full_name = ' '.join(config['args']['title'])
+                    if config['args']['correspondent'] is not None:
+                        full_name = '{} - {}'.format(config['args']['correspondent'], full_name)
+                    if config['args']['date'] is not None:
+                        full_name = '{}Z - {}'.format(config['args']['date'], full_name)
+                    if len(config['args']['tags']) > 0:
+                        full_name = '{} - {}'.format(full_name, ','.join(config['args']['tags']))
+                    destination = '/home/sbrunner/dsl/paperless/consume/{}.pdf'.format(
+                        full_name
+                    )
+                    config['name'] = full_name
 
-                    # is empty ?
-                    w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).split(b' ')]
-                    if output(
-            #            convert + [img, '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x4', '-level', '20%,1,80%', '-fuzz', '15%', '-trim', '-format', '%wx%h', 'info:-']) == b'1x1':
-                        convert + [img, '-noise', '7', '-blur', '0x3', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'])[0:4] == b'1x1+':
-                        print("Ignore image with no content: {}".format(img))
-                        continue
+                    config['waiting'] = True
 
-                    img2 = root_folder + '/preview/{}.png'.format(name)
-                    subprocess.call(convert + [img, img2])
-                    images.add(img2)
+                    with open(config_file_name, 'w') as config_file:
+                        config_file.write(yaml.dump(config))
 
-                images = sorted(images)
+                    with open( os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
+                        pass
 
-                call(['gnome-open', root_folder + '/preview'])
-                text = input('You can check the images in ' + root_folder + '/preview/image-*, continue (Y/n)')
-                if text in ('no', 'n'):
-                    exit(1)
-
-                pdf = []
-                if config['args']['append_credit_card']:
-                    images2 = []
-                    for img in images:
-                        if os.path.exists(img):
-                                images2.append(img)
-                        # - append (credit cards)  -  convert clp.png clp.png -background color? -append page.png
-
-                    call(['convert'] + images2 + ['-background', '#ffffff', '-append', root_folder + '/final.png'])
-                    images = [root_folder + '/final.png']
-
-                for img in images:
-                    if os.path.exists(img):
-                        name = os.path.splitext(os.path.basename(img))[0]
-                        call(convert + [img, root_folder + '/{}.pdf'.format(name)])
-                        pdf.append(root_folder + '/{}.pdf'.format(name))
-
-                full_name = ' '.join(config['args']['title'])
-                if config['args']['correspondent'] is not None:
-                    full_name = '{} - {}'.format(config['args']['correspondent'], full_name)
-                if config['args']['date'] is not None:
-                    full_name = '{}Z - {}'.format(config['args']['date'], full_name)
-                if len(config['args']['tags']) > 0:
-                    full_name = '{} - {}'.format(full_name, ','.join(config['args']['tags']))
-                destination = '/home/sbrunner/dsl/paperless/consume/{}.pdf'.format(
-                    full_name
-                )
-
-                call(['pdftk'] + pdf + ['output', destination, 'compress'])
-                call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
-                print(full_name)
-
-                shutil.rmtree(root_folder)
         except subprocess.CalledProcessError as e:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 errorfile.write(yaml.dump({'subproceesserror': e}))
         except Error as e:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 errorfile.write(yaml.dump({'error': e}))
-                
+
         time.sleep(10)
