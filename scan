@@ -1,66 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # TODO
-# - Do blure only one times
+# - Do blur only one times
 # - other layouts
 # - fix content detection for romande energie
 # - add http://www.graphicsmagick.org/GraphicsMagick.html#details-sharpen
 
-import subprocess
-import os
-import shutil
 import datetime
+import glob
+import os
 import random
 import re
-import glob
+import shutil
+import subprocess
 import time
+import yaml
 
 
 mogrify = ['gm', 'mogrify']
 convert = ['gm', 'convert']
 
-"""def call(cmd, cmd2=None, **kwargs):
-    print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    success = False
-    while not success:
-        try:
-            subprocess.check_call(cmd, **kwargs)
-            success = True
-        except subprocess.CalledProcessError:
-            if cmd2 is not None:
-                subprocess.call(cmd2)
-            pass
-
-def output(cmd, cmd2=None, **kwargs):
-    print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    success = False
-    while not success:
-        try:
-            subprocess.check_output(cmd, **kwargs)
-            success = True
-        except subprocess.CalledProcessError:
-            if cmd2 is not None:
-                subprocess.call(cmd2)
-            pass
-"""
-
 
 def call(cmd, cmd2=None, **kwargs):
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    try:
-        subprocess.check_call(cmd, **kwargs)
-    except subprocess.CalledProcessError as e:
-        print(e)
-        exit(1)
+    subprocess.check_call(cmd, **kwargs)
 
 
 def output(cmd, cmd2=None, **kwargs):
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    try:
-        return subprocess.check_output(cmd, **kwargs)
-    except subprocess.CalledProcessError as e:
-        print(e)
-        exit(1)
+    return subprocess.check_output(cmd, **kwargs)
 
 
 def old_crop(img, marging_horizontal=25, maring_vertical=25):
@@ -76,13 +44,15 @@ def old_crop(img, marging_horizontal=25, maring_vertical=25):
         call(convert + [img, '-crop', '{}x{}+{}+{}'.format(w + 2 * marging_horizontal, h + 2 * maring_vertical, x, y), '+repage', img])
 
 
-def transform(config):
+def transform(config, root_folder):
     images = list()
-    os.makedirs(root_folder + '/scantailor')
-    os.makedirs(root_folder + '/preview')
+    if not os.path.exists(os.path.join(root_folder, 'process')):
+        os.makedirs(os.path.join(root_folder, 'process'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor')):
+        os.makedirs(os.path.join(root_folder, 'scantailor'))
     for img in config['images']:
-        shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, os.path.basename(img)))
-        img = os.path.join(root_folder, os.path.basename(img))
+        shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
+        img = os.path.join(root_folder, 'process', os.path.basename(img))
 #        call(mogrify + ['-level-colors', '#202020,#d0d0d0', img])
         # force-cleanup
         if config['args']['force_cleanup']:
@@ -91,8 +61,8 @@ def transform(config):
             call(mogrify + ['-level', '10%,1,90%', img])
         # crop
 #        if config['args']['no_crop'] or config['args']['old_crop']:
-#            call(['scantailor-cli', '--layout=1', '--dpi=300', '--output-dpi=300', '--color-mode=color_grayscale', img, root_folder + '/scantailor'])
-#            img = root_folder + '/scantailor/{}.tif'.format(name)
+#            call(['scantailor-cli', '--layout=1', '--dpi=300', '--output-dpi=300', '--color-mode=color_grayscale', img, os.path.join(root_folder, 'scantailor')])
+#            img = os.path.join(root_folder, 'scantailor', '{}.tif'.format(name))
         # Margin in mm
         marging_horizontal=10
         maring_vertical=5
@@ -103,7 +73,7 @@ def transform(config):
                     '--content-box=0x0:1000x1000',
                     '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
                     '--margins-left=0', '--margins-right=0', '--margins-top=0', '--margins-bottom=0',
-                    img, root_folder + '/scantailor'])
+                    img, os.path.join(root_folder, 'scantailor')])
                 old_crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
                 """
                 call(
@@ -118,9 +88,9 @@ def transform(config):
                     '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
                     '--margins-left={}'.format(marging_horizontal), '--margins-right={}'.format(marging_horizontal),
                     '--margins-top={}'.format(maring_vertical), '--margins-bottom={}'.format(maring_vertical),
-                    img, root_folder + '/scantailor'])
-                call(['gm', 'convert', root_folder + '/scantailor/{}.tif'.format(name), root_folder + '/scantailor/{}.png'.format(name)])
-                img = root_folder + '/scantailor/{}.png'.format(name)
+                    img, os.path.join(root_folder, 'scantailor')])
+                call(['gm', 'convert', os.path.join(root_folder, 'scantailor', '{}.tif'.format(name)), os.path.join(root_folder, 'scantailor', '{}.png'.format(name))])
+                img = os.path.join(root_folder, 'scantailor', '{}.png'.format(name))
         """
         try:
             subprocess.check_call(['identify', '-verbose', img])
@@ -151,12 +121,23 @@ def transform(config):
             print("Ignore image with no content: {}".format(img))
             continue
 
-        img2 = root_folder + '/preview/{}.png'.format(name)
+        img2 = os.path.join(root_folder, os.path.basename(img))
         subprocess.call(convert + [img, img2])
-        images.add(img2)
+        images.append(img2)
+
+    if config['args']['append_credit_card']:
+        images2 = []
+        for img in images:
+            if os.path.exists(img):
+                    images2.append(img)
+            # - append (credit cards)  -  convert clp.png clp.png -background color? -append page.png
+
+        call(['convert'] + images2 + ['-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')])
+        images = [os.path.join(root_folder, 'final.png')]
+
     return images
 
-def finalise(config):
+def finalise(config, root_folder):
 
     full_name = config['full_name']
     destination = config['destination']
@@ -167,50 +148,41 @@ def finalise(config):
     images = config['images']
 
     pdf = []
-    # TODO: move to transform
-    if config['args']['append_credit_card']:
-        images2 = []
-        for img in images:
-            if os.path.exists(img):
-                    images2.append(img)
-            # - append (credit cards)  -  convert clp.png clp.png -background color? -append page.png
-
-        call(['convert'] + images2 + ['-background', '#ffffff', '-append', root_folder + '/final.png'])
-        images = [root_folder + '/final.png']
-
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
-            call(convert + [img, root_folder + '/{}.pdf'.format(name)])
-            pdf.append(root_folder + '/{}.pdf'.format(name))
+            call(convert + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
+            pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
 
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
 
     shutil.rmtree(root_folder)
 
-
 while True:
     for config_file_name in glob.glob('/source/*/config.yaml'):
-        print(config_file_name)
         root_folder = os.path.dirname(config_file_name)
 
         with open(config_file_name) as config_file:
             config = yaml.load(config_file.read())
-        args = parser.parse_args(config['args'])
 
         try:
             if config.get('waiting', False):
-                if not os.exist(os.path.join(root_folder, 'waiting')):
-                    finalise(config)
+                if not os.path.exists(os.path.join(root_folder, 'waiting')):
+                    print("finalise: {}".format(os.path.basename(root_folder)))
+                    finalise(config, root_folder)
+                else:
+                    print("==== Still waiting: {} ====".format(os.path.basename(root_folder)))
+
             else:
                 ok = True
                 for img in config['images']:
-                    if not os.exists(os.path.join(root_folder, img)):
+                    if not os.path.exists(os.path.join(root_folder, img)):
                         ok = False
 
                 if ok:
-                    config['images'] = transform(config)
+                    print("transform: {}".format(os.path.basename(root_folder)))
+                    config['images'] = transform(config, root_folder)
 
                     full_name = ' '.join(config['args']['title'])
                     if config['args']['correspondent'] is not None:
@@ -233,11 +205,19 @@ while True:
                     with open(os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
                         pass
 
-        except subprocess.CalledProcessError as e:
-            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                errorfile.write(yaml.dump({'subproceesserror': e}))
-        except Error as e:
-            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                errorfile.write(yaml.dump({'error': e}))
+                    print("======")
+                    print(os.path.basename(root_folder))
+                    print("======")
 
-    time.sleep(10)
+        except subprocess.CalledProcessError as e:
+            print(e)
+            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                error_file.write(yaml.dump({'subproceesserror': e}))
+#            raise e
+        except Exception as e:
+            print(e)
+            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                error_file.write(yaml.dump({'error': e}))
+#            raise e
+
+    time.sleep(30)
