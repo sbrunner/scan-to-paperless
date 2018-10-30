@@ -69,7 +69,7 @@ def old_crop(img, marging_horizontal=25, maring_vertical=25):
     o_w, o_h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).strip().split(b' ')]
     w, h, x, y = [int(e) for e in re.split(b'[x+]', output(convert + [
         img, '-crop', '{}x{}+{}+{}'.format(o_w - 2 * marging_horizontal, o_h - 2 * maring_vertical, marging_horizontal, maring_vertical),
-        '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x3', '-fuzz', '25%', '-format', '%@', 'info:-'
+        '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x5', '-fuzz', '25%', '-format', '%@', 'info:-'
     ]).strip())]
     if h <= o_h and w <= o_w:
         call(convert + [img, '-crop', '{}x{}+{}+{}'.format(w + 2 * marging_horizontal, h + 2 * maring_vertical, x, y), '+repage', img])
@@ -107,7 +107,7 @@ def transform(config):
                 """
                 call(
                     "gm mogrify {img} -crop `gm convert {img} -crop \\`gm convert {img} -format '%[fx:w-50]x%[fx:h-50]' "
-                    "info:\\`+25+25 +repage -virtual-pixel edge -noise 7 -blur 0x4 -level 20%,100%,4 -fuzz 15% "
+                    "info:\\`+25+25 +repage -virtual-pixel edge -noise 7 -blur 0x5 -level 20%,100%,4 -fuzz 15% "
                     "-trim -format '%[fx:w+50]x%[fx:h+50]+%[fx:page.x]+%[fx:page.y]' info:` +repage {img}".format(img=img),
                     shell=True,
                 )"""
@@ -132,7 +132,6 @@ def transform(config):
         # dither
         #call(mogrify + ['+dither', img])
         # auto-rotate
-#        if not config['args']['adf']:
         try:
             orientation = 0
             orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
@@ -147,8 +146,7 @@ def transform(config):
         # is empty ?
         w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).split(b' ')]
         if output(
-#            convert + [img, '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x4', '-level', '20%,1,80%', '-fuzz', '15%', '-trim', '-format', '%wx%h', 'info:-']) == b'1x1':
-            convert + [img, '-noise', '7', '-blur', '0x3', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'])[0:4] == b'1x1+':
+            convert + [img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'])[0:4] == b'1x1+':
             print("Ignore image with no content: {}".format(img))
             continue
 
