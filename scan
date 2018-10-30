@@ -158,9 +158,17 @@ def transform(config):
     return images
 
 def finalise(config):
-    images = sorted(images)
+
+    full_name = config['full_name']
+    destination = config['destination']
+
+    if os.path.exists(destination):
+        return
+
+    images = config['images']
 
     pdf = []
+    # TODO: move to transform
     if config['args']['append_credit_card']:
         images2 = []
         for img in images:
@@ -177,8 +185,6 @@ def finalise(config):
             call(convert + [img, root_folder + '/{}.pdf'.format(name)])
             pdf.append(root_folder + '/{}.pdf'.format(name))
 
-    full_name = config['full_name']
-    destination = config['destination']
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
 
@@ -224,7 +230,7 @@ while True:
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
 
-                    with open( os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
+                    with open(os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
                         pass
 
         except subprocess.CalledProcessError as e:
