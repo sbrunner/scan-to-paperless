@@ -1,4 +1,4 @@
-#!/home/sbrunner/.py/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # TODO
 # - Do blure only one times
@@ -13,6 +13,7 @@ import datetime
 import random
 import re
 import glob
+import time
 
 
 mogrify = ['gm', 'mogrify']
@@ -191,6 +192,7 @@ def finalise(config):
 
 while True:
     for config_file_name in glob.glob('/source/*/config.yaml'):
+        print(config_file_name)
         root_folder = os.path.dirname(config_file_name)
 
         with open(config_file_name) as config_file:
@@ -238,4 +240,4 @@ while True:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 errorfile.write(yaml.dump({'error': e}))
 
-        time.sleep(10)
+    time.sleep(10)
