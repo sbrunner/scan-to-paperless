@@ -50,6 +50,10 @@ def transform(config, root_folder):
         os.makedirs(os.path.join(root_folder, 'process'))
     if not os.path.exists(os.path.join(root_folder, 'scantailor')):
         os.makedirs(os.path.join(root_folder, 'scantailor'))
+    if not os.path.exists(os.path.join(root_folder, 'unpaper')):
+        os.makedirs(os.path.join(root_folder, 'unpaper'))
+    if not os.path.exists(os.path.join(root_folder, 'deskew')):
+        os.makedirs(os.path.join(root_folder, 'deskew'))
     for img in config['images']:
         shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
         img = os.path.join(root_folder, 'process', os.path.basename(img))
@@ -68,12 +72,6 @@ def transform(config, root_folder):
         maring_vertical=5
         if not config['args']['no_crop']:
             if not config['args']['new_crop']:
-                call([
-                    'scantailor-cli', '--dpi=300', '--content-detection=normal',
-                    '--content-box=0x0:1000x1000',
-                    '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
-                    '--margins-left=0', '--margins-right=0', '--margins-top=0', '--margins-bottom=0',
-                    img, os.path.join(root_folder, 'scantailor')])
                 old_crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
                 """
                 call(
@@ -121,6 +119,19 @@ def transform(config, root_folder):
             print("Ignore image with no content: {}".format(img))
             continue
 
+        call([
+            'scantailor-cli', '--dpi=300', '--content-detection=normal',
+            '--content-box=0x0:1000x1000',
+            '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
+            '--margins-left=0', '--margins-right=0', '--margins-top=0', '--margins-bottom=0',
+            img, os.path.join(root_folder, 'scantailor')
+        ])
+        call([
+            'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
+        ])
+        call([
+            '/opt/deskew/Bin/deskew', '-o', os.path.join(root_folder, 'deskew', os.path.basename(img)), img
+        ])
         img2 = os.path.join(root_folder, os.path.basename(img))
         subprocess.call(convert + [img, img2])
         images.append(img2)
