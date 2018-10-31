@@ -163,6 +163,7 @@ def finalise(config, root_folder):
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
             call(convert + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
+            # TODO: call('tesseract -l fra+eng {in} stdout pdf > {out}) ...
             pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
 
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
