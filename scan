@@ -31,7 +31,7 @@ def output(cmd, cmd2=None, **kwargs):
     return subprocess.check_output(cmd, **kwargs)
 
 
-def old_crop(img, marging_horizontal=25, maring_vertical=25):
+def crop(img, marging_horizontal=25, maring_vertical=25):
     """
     Margin in px
     """
@@ -48,63 +48,43 @@ def transform(config, root_folder):
     images = list()
     if not os.path.exists(os.path.join(root_folder, 'process')):
         os.makedirs(os.path.join(root_folder, 'process'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor')):
-        os.makedirs(os.path.join(root_folder, 'scantailor'))
-    if not os.path.exists(os.path.join(root_folder, 'unpaper')):
-        os.makedirs(os.path.join(root_folder, 'unpaper'))
-    if not os.path.exists(os.path.join(root_folder, 'deskew')):
-        os.makedirs(os.path.join(root_folder, 'deskew'))
+#    if not os.path.exists(os.path.join(root_folder, 'scantailor')):
+#        os.makedirs(os.path.join(root_folder, 'scantailor'))
+#    if not os.path.exists(os.path.join(root_folder, 'scantailor1200')):
+#        os.makedirs(os.path.join(root_folder, 'scantailor1200'))
+#    if not os.path.exists(os.path.join(root_folder, 'unpaper')):
+#        os.makedirs(os.path.join(root_folder, 'unpaper'))
+#    if not os.path.exists(os.path.join(root_folder, 'deskew')):
+#        os.makedirs(os.path.join(root_folder, 'deskew'))
     for img in config['images']:
         shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
         img = os.path.join(root_folder, 'process', os.path.basename(img))
-#        call(mogrify + ['-level-colors', '#202020,#d0d0d0', img])
         # force-cleanup
         if config['args']['force_cleanup']:
             call(mogrify + ['-level', '15%,1,85%', img])
         else:
             call(mogrify + ['-level', '10%,1,90%', img])
-        # crop
-#        if config['args']['no_crop'] or config['args']['old_crop']:
-#            call(['scantailor-cli', '--layout=1', '--dpi=300', '--output-dpi=300', '--color-mode=color_grayscale', img, os.path.join(root_folder, 'scantailor')])
-#            img = os.path.join(root_folder, 'scantailor', '{}.tif'.format(name))
+
+        marging_horizontal=100
+        maring_vertical=100
+        crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
+
+        call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img, img])
+
         # Margin in mm
         marging_horizontal=10
         maring_vertical=5
-        if not config['args']['no_crop']:
-            if not config['args']['new_crop']:
-                old_crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
-                """
-                call(
-                    "gm mogrify {img} -crop `gm convert {img} -crop \\`gm convert {img} -format '%[fx:w-50]x%[fx:h-50]' "
-                    "info:\\`+25+25 +repage -virtual-pixel edge -noise 7 -blur 0x5 -level 20%,100%,4 -fuzz 15% "
-                    "-trim -format '%[fx:w+50]x%[fx:h+50]+%[fx:page.x]+%[fx:page.y]' info:` +repage {img}".format(img=img),
-                    shell=True,
-                )"""
-            else:
-                call([
-                    'scantailor-cli', '--layout=1.5', '--dpi=300', '--content-detection=cautious',
-                    '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
-                    '--margins-left={}'.format(marging_horizontal), '--margins-right={}'.format(marging_horizontal),
-                    '--margins-top={}'.format(maring_vertical), '--margins-bottom={}'.format(maring_vertical),
-                    img, os.path.join(root_folder, 'scantailor')])
-                call(['gm', 'convert', os.path.join(root_folder, 'scantailor', '{}.tif'.format(name)), os.path.join(root_folder, 'scantailor', '{}.png'.format(name))])
-                img = os.path.join(root_folder, 'scantailor', '{}.png'.format(name))
-        """
-        try:
-            subprocess.check_call(['identify', '-verbose', img])
-        except subprocess.CalledProcessError:
-            print("Ignore empty image: {}".format(img))
-            continue"""
+        crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
 
         # sharpen
-        call(mogrify + ['-sharpen', '0x2', img], ['identify', '-verbose', img])
+        call(mogrify + ['-sharpen', '0x2', img])
         # dither
         #call(mogrify + ['+dither', img])
         # auto-rotate
         try:
             orientation = 0
             orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
-    #            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
+#            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
             orientation = [e for e in orientation.splitlines() if 'Orientation in degrees' in e]
             orientation = '-' + orientation[0].split()[3]
 
@@ -119,19 +99,21 @@ def transform(config, root_folder):
             print("Ignore image with no content: {}".format(img))
             continue
 
-        call([
-            'scantailor-cli', '--dpi=300', '--content-detection=normal',
-            '--content-box=0x0:1000x1000',
-            '--output-dpi=300', '--color-mode=color_grayscale', '--white-margins=true',
-            '--margins-left=0', '--margins-right=0', '--margins-top=0', '--margins-bottom=0',
-            img, os.path.join(root_folder, 'scantailor')
-        ])
-        call([
-            'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
-        ])
-        call([
-            '/opt/deskew/Bin/deskew', '-o', os.path.join(root_folder, 'deskew', os.path.basename(img)), img
-        ])
+ #       call([
+ #           'scantailor-cli', '--dpi=300', '--content-detection=normal',
+ #           '--output-dpi=300', '--color-mode=color_grayscale',
+ #           img, os.path.join(root_folder, 'scantailor')
+ #       ])
+ #       call([
+ #           'scantailor-cli', '--dpi=300', '--output-dpi=1200',
+ #           img, os.path.join(root_folder, 'scantailor1200')
+ #       ])
+ #       call([
+ #           'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
+ #       ])
+ #       call([
+ #           '/opt/Deskew/Bin/deskew', '-o', os.path.join(root_folder, 'deskew', os.path.basename(img)), img
+ #       ])
         img2 = os.path.join(root_folder, os.path.basename(img))
         subprocess.call(convert + [img, img2])
         images.append(img2)
@@ -156,7 +138,7 @@ def finalise(config, root_folder):
     if os.path.exists(destination):
         return
 
-    images = config['images']
+    images = config['transformed_images']
 
     pdf = []
     for img in images:
@@ -173,6 +155,9 @@ def finalise(config, root_folder):
 
 while True:
     for config_file_name in glob.glob('/source/*/config.yaml'):
+        if not os.path.exists(config_file_name):
+            continue
+
         root_folder = os.path.dirname(config_file_name)
 
         with open(config_file_name) as config_file:
@@ -194,20 +179,7 @@ while True:
 
                 if ok:
                     print("transform: {}".format(os.path.basename(root_folder)))
-                    config['images'] = transform(config, root_folder)
-
-                    full_name = ' '.join(config['args']['title'])
-                    if config['args']['correspondent'] is not None:
-                        full_name = '{} - {}'.format(config['args']['correspondent'], full_name)
-                    if config['args']['date'] is not None:
-                        full_name = '{}Z - {}'.format(config['args']['date'], full_name)
-                    if len(config['args']['tags']) > 0:
-                        full_name = '{} - {}'.format(full_name, ','.join(config['args']['tags']))
-                    destination = '/destination/{}.pdf'.format(
-                        full_name
-                    )
-                    config['full_name'] = full_name
-                    config['destination'] = destination
+                    config['transformed_images'] = transform(config, root_folder)
 
                     config['waiting'] = True
 
@@ -225,11 +197,11 @@ while True:
             print(e)
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.dump({'subproceesserror': e}))
-#            raise e
         except Exception as e:
             print(e)
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.dump({'error': e}))
-#            raise e
+
+        call(['chmod', '-R', 'go+rw', root_folder])
 
     time.sleep(30)
