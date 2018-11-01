@@ -83,8 +83,8 @@ def transform(config, root_folder):
         # auto-rotate
         try:
             orientation = 0
-            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
-#            orientation = subprocess.check_output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
+            orientation = output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
+#            orientation = output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
             orientation = [e for e in orientation.splitlines() if 'Orientation in degrees' in e]
             orientation = '-' + orientation[0].split()[3]
 
@@ -115,7 +115,7 @@ def transform(config, root_folder):
  #           '/opt/Deskew/Bin/deskew', '-o', os.path.join(root_folder, 'deskew', os.path.basename(img)), img
  #       ])
         img2 = os.path.join(root_folder, os.path.basename(img))
-        subprocess.call(convert + [img, img2])
+        call(convert + [img, img2])
         images.append(img2)
 
     if config['args']['append_credit_card']:
@@ -144,14 +144,18 @@ def finalise(config, root_folder):
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
+            #call('tesseract -l fra+eng {} stdout pdf > {}'.format(
+            #    img, os.path.join(root_folder, '{}.pdf'.format(name))
+            #), shell=True)
             call(convert + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
-            # TODO: call('tesseract -l fra+eng {in} stdout pdf > {out}) ...
             pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
 
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
 
     shutil.rmtree(root_folder)
+
+    call(['chmod', '-R', 'go+rw', '/destination'])
 
 while True:
     for config_file_name in glob.glob('/source/*/config.yaml'):
@@ -202,6 +206,12 @@ while True:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.dump({'error': e}))
 
-        call(['chmod', '-R', 'go+rw', root_folder])
+        try:
+            if os.path.exists(root_folder):
+                call(['chmod', '-R', 'go+rw', root_folder])
+        except subprocess.CalledProcessError as e:
+            print(e)
+            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                error_file.write(yaml.dump({'subproceesserror': e}))
 
     time.sleep(30)
