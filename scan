@@ -157,6 +157,7 @@ def finalise(config, root_folder):
 
     call(['chmod', '-R', 'go+rw', '/destination'])
 
+print('Welcome to scaned images document to paperless.')
 while True:
     for config_file_name in glob.glob('/source/*/config.yaml'):
         if not os.path.exists(config_file_name):
