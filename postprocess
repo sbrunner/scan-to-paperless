@@ -125,7 +125,7 @@ def transform(config, root_folder):
                     images2.append(img)
             # - append (credit cards)  -  convert clp.png clp.png -background color? -append page.png
 
-        call(['convert'] + images2 + ['-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')])
+        call(convert + images2 + ['-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')])
         images = [os.path.join(root_folder, 'final.png')]
 
     return images
