@@ -159,10 +159,12 @@ def finalise(config, root_folder):
 
 print('Welcome to scaned images document to paperless.')
 while True:
+    print("Scan")
     for config_file_name in glob.glob('/source/*/config.yaml'):
         if not os.path.exists(config_file_name):
             continue
 
+        print(config_file_name)
         root_folder = os.path.dirname(config_file_name)
 
         with open(config_file_name) as config_file:
@@ -215,4 +217,5 @@ while True:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.dump({'subproceesserror': e}))
 
+    print("Sleep")
     time.sleep(30)
