@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import glob
+import re
+import yaml
+
+for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
+    print()
+    print(re.sub(r'.', '-', folder))
+    print(folder)
+    print(re.sub(r'.', '-', folder))
+
+    if not os.path.exists(os.path.join(folder, 'config.yaml')):
+        print("No config")
+    else:
+        with open(os.path.join(folder, 'config.yaml')) as config_file:
+            config = yaml.load(config_file.read())
+
+        if config.get('waiting', False):
+            if os.path.exists(os.path.join(folder, 'waiting')):
+                print('To be validated')
+            else:
+                print('Waiting to be imported')
+        else:
+            print('Not ready')
+
