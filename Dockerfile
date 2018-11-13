@@ -13,9 +13,9 @@ RUN \
   chmod +x /opt/Deskew/Bin/deskew &&\
   rm /tmp/deskew-125.zip
 
-CMD ["/opt/scan"]
+CMD ["/opt/postprocess"]
 
 VOLUME /source \
     /destination
 
-COPY scan /opt/
+COPY postprocess /opt/
