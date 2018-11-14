@@ -175,9 +175,10 @@ try:
         full_name
     )
     
-    images = sorted(images)
+    regex = re.compile(r'^source\/image\-([0-9]+)\.png$')
+    images = sorted(images, key=lambda e: int(r.match(e).group(1)))
     config = {
-        'images': sorted(images),
+        'images': images,
         'full_name': full_name,
         'destination': destination,
         'args': dict(args._get_kwargs()),
