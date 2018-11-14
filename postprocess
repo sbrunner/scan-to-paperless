@@ -167,6 +167,10 @@ while True:
         print(config_file_name)
         root_folder = os.path.dirname(config_file_name)
 
+        if os.path.exists(os.path.join(root_folder, 'error.yaml')):
+            print("On error")
+            continue
+
         with open(config_file_name) as config_file:
             config = yaml.load(config_file.read())
 
@@ -179,8 +183,6 @@ while True:
                     print("==== Still waiting: {} ====".format(os.path.basename(root_folder)))
 
             else:
-                if os.path.exists(os.path.join(root_folder, 'error.yaml')):
-                    continue
                 ok = True
                 for img in config['images']:
                     if not os.path.exists(os.path.join(root_folder, img)):
