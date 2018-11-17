@@ -179,6 +179,7 @@ while True:
         if not os.path.exists(config_file_name):
             continue
 
+        print(re.sub(r'.', '-', config_file_name))
         print(config_file_name)
         root_folder = os.path.dirname(config_file_name)
 
@@ -192,10 +193,10 @@ while True:
         try:
             if config.get('waiting', False):
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
-                    print("finalise: {}".format(os.path.basename(root_folder)))
+                    print("Finalise")
                     finalise(config, root_folder)
                 else:
-                    print("==== Still waiting: {} ====".format(os.path.basename(root_folder)))
+                    print("Still waiting")
 
             else:
                 ok = True
@@ -204,7 +205,7 @@ while True:
                         ok = False
 
                 if ok:
-                    print("transform: {}".format(os.path.basename(root_folder)))
+                    print("Transform")
                     config['transformed_images'] = transform(config, root_folder)
 
                     config['waiting'] = True
@@ -214,10 +215,6 @@ while True:
 
                     with open(os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
                         pass
-
-                    print("======")
-                    print(os.path.basename(root_folder))
-                    print("======")
 
         except subprocess.CalledProcessError as e:
             print(e)
