@@ -67,6 +67,8 @@ def transform(config, root_folder):
 
         marging_horizontal=100
         maring_vertical=100
+        os.makedirs(os.path.join(root_folder, 'pre-crop'))
+        shutil.copyfile(img, os.path.join(root_folder, 'pre-crop', os.path.basename(img)))
         crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
 
         call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img, img])
