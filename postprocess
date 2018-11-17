@@ -168,7 +168,7 @@ def finalise(config, root_folder):
 
     shutil.rmtree(root_folder)
 
-    call(['chmod', '-R', 'go+rw', '/destination'])
+#    call(['chmod', '-R', 'go+rw', '/destination'])
 
 print('Welcome to scaned images document to paperless.')
 while True:
@@ -228,13 +228,13 @@ while True:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.dump({'error': e}))
 
-        try:
-            if os.path.exists(root_folder):
-                call(['chmod', '-R', 'go+rw', root_folder])
-        except subprocess.CalledProcessError as e:
-            print(e)
-            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                error_file.write(yaml.dump({'subproceesserror': e}))
+#        try:
+#            if os.path.exists(root_folder):
+#                call(['chmod', '-R', 'go+rw', root_folder])
+#        except subprocess.CalledProcessError as e:
+#            print(e)
+#            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+#                error_file.write(yaml.dump({'subproceesserror': e}))
 
     print("Sleep")
     time.sleep(30)
