@@ -46,7 +46,8 @@ def crop(img, marging_horizontal=25, maring_vertical=25):
 
 def save(root_folder, img, folder):
     if on.environ.get("PROGRESS") == "TRUE":
-        os.makedirs(os.path.join(root_folder, folder))
+        if not os.path.exists(os.path.join(root_folder, folder)):
+            os.makedirs(os.path.join(root_folder, folder))
         shutil.copyfile(img, os.path.join(root_folder, folder, os.path.basename(img)))
 
 
