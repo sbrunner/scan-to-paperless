@@ -7,10 +7,8 @@ import re
 import yaml
 
 for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
-    print()
     print(re.sub(r'.', '-', folder))
     print(folder)
-    print(re.sub(r'.', '-', folder))
 
     if not os.path.exists(os.path.join(folder, 'config.yaml')):
         print("No config")
@@ -31,6 +29,7 @@ for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
                         print("Subprocess error")
                         e = error['subproceesserror']
                         print(e)
+                        print(e.output.decode())
                         if e.stderr:
                             print(e.stderr)
                     elif 'error' in error:
