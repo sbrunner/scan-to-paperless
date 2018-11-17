@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import time
+import traceback
 import yaml
 
 
@@ -221,11 +222,15 @@ while True:
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.dump({
                     'subproceesserror': e,
+                    'traceback': traceback.format_exc().split('\n'),
                 }))
         except Exception as e:
             print(e)
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                error_file.write(yaml.dump({'error': e}))
+                error_file.write(yaml.dump({
+                    'error': e,
+                    'traceback': traceback.format_exc().split('\n'),
+                }))
 
 #        try:
 #            if os.path.exists(root_folder):
