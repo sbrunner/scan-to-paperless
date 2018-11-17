@@ -16,27 +16,27 @@ for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
         with open(os.path.join(folder, 'config.yaml')) as config_file:
             config = yaml.load(config_file.read())
 
-        if config.get('waiting', False):
-            if os.path.exists(os.path.join(folder, 'waiting')):
-                print('To be validated')
-            else:
-                print('Waiting to be imported')
+        if os.path.exists(os.path.join(folder, 'error.yaml')):
+            with open(os.path.join(folder, 'error.yaml')) as error_file:
+                error = yaml.load(error_file.read())
+                if 'subproceesserror' in error:
+                    print("Subprocess error")
+                    e = error['subproceesserror']
+                    print(e)
+                    print(e.output.decode())
+                    if e.stderr:
+                        print(e.stderr)
+                elif 'error' in error:
+                    print(error['error'])
+                else:
+                    print('Unknown error')
+                    print(error)
         else:
-            if os.path.exists(os.path.join(folder, 'error.yaml')):
-                with open(os.path.join(folder, 'error.yaml')) as error_file:
-                    error = yaml.load(error_file.read())
-                    if 'subproceesserror' in error:
-                        print("Subprocess error")
-                        e = error['subproceesserror']
-                        print(e)
-                        print(e.output.decode())
-                        if e.stderr:
-                            print(e.stderr)
-                    elif 'error' in error:
-                        print(error['error'])
-                    else:
-                        print('Unknown error')
-                        print(error)
+            if config.get('waiting', False):
+                if os.path.exists(os.path.join(folder, 'waiting')):
+                    print('To be validated')
+                else:
+                    print('Waiting to be imported')
             else:
                 print('Not ready')
 
