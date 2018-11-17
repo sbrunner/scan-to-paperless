@@ -71,25 +71,25 @@ def transform(config, root_folder):
             call(mogrify + ['-level', '15%,1,85%', img])
         else:
             call(mogrify + ['-level', '10%,1,90%', img])
-        save(root_folder, img, '1-cleanup'):
+        save(root_folder, img, '1-cleanup')
 
         marging_horizontal=100
         maring_vertical=100
         crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
-        save(root_folder, img, '2-precrop'):
+        save(root_folder, img, '2-precrop')
 
         call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img, img])
-        save(root_folder, img, '3-deskew'):
+        save(root_folder, img, '3-deskew')
 
         # Margin in mm
         marging_horizontal=10
         maring_vertical=5
         crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
-        save(root_folder, img, '4-crop'):
+        save(root_folder, img, '4-crop')
 
         # sharpen
         call(mogrify + ['-sharpen', '0x2', img])
-        save(root_folder, img, '5-sharpen'):
+        save(root_folder, img, '5-sharpen')
         # dither
         #call(mogrify + ['+dither', img])
         # auto-rotate
@@ -101,7 +101,7 @@ def transform(config, root_folder):
             orientation = '-' + orientation[0].split()[3]
 
             call(mogrify + ['-rotate', orientation, img])
-            save(root_folder, img, '6-autorotate'):
+            save(root_folder, img, '6-autorotate')
         except subprocess.CalledProcessError as e:
             print(e)
 
