@@ -31,17 +31,19 @@ def output(cmd, cmd2=None, **kwargs):
     return subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)
 
 
-def crop(img, marging_horizontal=25, maring_vertical=25):
+def crop(img, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15):
     """
     Margin in px
     """
     o_w, o_h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).strip().split(b' ')]
     w, h, x, y = [int(e) for e in re.split(b'[x+]', output(convert + [
-        img, '-crop', '{}x{}+{}+{}'.format(o_w - 2 * marging_horizontal, o_h - 2 * maring_vertical, marging_horizontal, maring_vertical),
-        '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x5', '-fuzz', '25%', '-format', '%@', 'info:-'
+        img, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
+        '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', blur, '-fuzz', '25%', '-format', '%@', 'info:-'
     ]).strip())]
     if h <= o_h and w <= o_w:
-        call(convert + [img, '-crop', '{}x{}+{}+{}'.format(w + 2 * marging_horizontal, h + 2 * maring_vertical, x, y), '+repage', img])
+        call(convert + [img, '-background', '#ffffff', '-crop', '{}x{}+{}+{}'.format(
+            w + 2 * marging_horizontal, h + 2 * maring_vertical, x - marging_horizontal + rm_left, y - maring_vertical + rm_top
+        ), '+repage', img])
 
 
 def save(root_folder, img, folder):
@@ -83,7 +85,7 @@ def transform(config, root_folder):
 
         # Margin in mm
         marging_horizontal=10
-        maring_vertical=5
+        maring_vertical=7
         crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
         save(root_folder, img, '4-crop')
 
