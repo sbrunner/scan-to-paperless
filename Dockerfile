@@ -18,4 +18,6 @@ CMD ["/opt/postprocess"]
 VOLUME /source \
     /destination
 
+ENV PYTHONIOENCODING=UTF-8
+
 COPY postprocess /opt/
