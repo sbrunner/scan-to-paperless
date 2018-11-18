@@ -43,14 +43,14 @@ def output(cmd, cmd2=None, **kwargs):
     return subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)
 
 
-def crop(img, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15):
+def crop(img, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15, noise='7', blur='0x3', fuzz='25%'):
     """
     Margin in px
     """
     o_w, o_h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).strip().split(b' ')]
     w, h, x, y = [int(e) for e in re.split(b'[x+]', output(convert + [
         img, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
-        '+repage', '-virtual-pixel', 'edge', '-noise', '7', '-blur', '0x5', '-fuzz', '25%', '-format', '%@', 'info:-'
+        '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz', fuzz, '-format', '%@', 'info:-'
     ]).strip())]
     if h <= o_h and w <= o_w:
         call(convert + [img, '-background', '#ffffff', '-crop', '{}x{}+{}+{}'.format(
