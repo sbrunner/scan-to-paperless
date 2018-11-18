@@ -192,7 +192,7 @@ def finalise(config, root_folder):
 
 #    call(['chmod', '-R', 'go+rw', '/destination'])
 
-containder_id = output(['uname', '-n'])
+containder_id = output(['uname', '-n']).decode()
 
 print('Welcome to scaned images document to paperless.')
 print('Containder ID: ' + containder_id)
