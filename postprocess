@@ -22,6 +22,17 @@ mogrify = ['gm', 'mogrify']
 convert = ['gm', 'convert']
 
 
+def add_intermediate_error(config, config_file_name, error, tb):
+    if 'intermediate_error' not in config:
+        config['intermediate_error'] = []
+    config['intermediate_error'].append({
+        'error': e,
+        'traceback': tb,
+    })
+    with open(config_file_name, 'w') as config_file:
+        config_file.write(yaml.dump(config))
+
+
 def call(cmd, cmd2=None, **kwargs):
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
     subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)
@@ -81,8 +92,14 @@ def transform(config, root_folder):
         crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
         save(root_folder, img, '2-precrop')
 
-        call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img, img])
-        save(root_folder, img, '3-deskew')
+        try:
+            call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img, img])
+            save(root_folder, img, '3-deskew')
+        except subprocess.CalledProcessError as e:
+            print(e)
+            add_intermediate_error(
+                config, config_file_name, e, traceback.format_exc().split('\n')
+            )
 
         # Margin in mm
         marging_horizontal=10
@@ -106,7 +123,9 @@ def transform(config, root_folder):
             call(mogrify + ['-rotate', orientation, img])
             save(root_folder, img, '6-autorotate')
         except subprocess.CalledProcessError as e:
-            print(e)
+            add_intermediate_error(
+                config, config_file_name, e, traceback.format_exc().split('\n')
+            )
 
         # is empty ?
         w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).split(b' ')]
@@ -217,13 +236,6 @@ while True:
                     with open(os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
                         pass
 
-        except subprocess.CalledProcessError as e:
-            print(e)
-            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                error_file.write(yaml.dump({
-                    'subproceesserror': e,
-                    'traceback': traceback.format_exc().split('\n'),
-                }))
         except Exception as e:
             print(e)
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:

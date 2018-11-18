@@ -4,6 +4,7 @@
 import os
 import glob
 import re
+import subprocess
 import yaml
 
 for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
@@ -19,15 +20,14 @@ for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
         if os.path.exists(os.path.join(folder, 'error.yaml')):
             with open(os.path.join(folder, 'error.yaml')) as error_file:
                 error = yaml.load(error_file.read())
-                if 'subproceesserror' in error:
-                    print("Subprocess error")
-                    e = error['subproceesserror']
-                    print(e)
-                    print(e.output.decode())
-                    if e.stderr:
-                        print(e.stderr)
-                elif 'error' in error:
+                if 'error' in error:
                     print(error['error'])
+                    if isinstance(error, subprocess.CalledProcessError):
+                        print(e.output.decode())
+                        if e.stderr:
+                            print(e.stderr)
+                    if 'traceback' in error:
+                        print('\n'.join(error['traceback']))
                 else:
                     print('Unknown error')
                     print(error)
