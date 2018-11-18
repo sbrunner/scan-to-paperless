@@ -8,7 +8,6 @@
 
 import datetime
 import glob
-import hashlib
 import os
 import random
 import re
@@ -193,11 +192,10 @@ def finalise(config, root_folder):
 
 #    call(['chmod', '-R', 'go+rw', '/destination'])
 
-with open('/opt/postprocess') as file_:
-    hash_ = hashlib.sha256(file_.read()).hexdigest()
+mtime = time.ctime(os.path.getmtime('/opt/postprocess'))
 
 print('Welcome to scaned images document to paperless.')
-print('Hash: ' + hash_)
+print('Script time: ' + mtime)
 while True:
     print("Scan")
     for config_file_name in glob.glob('/source/*/config.yaml'):
@@ -211,7 +209,7 @@ while True:
         with open(config_file_name) as config_file:
             config = yaml.load(config_file.read())
 
-        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('hash') == hash_:
+        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
             print("On error")
             continue
 
@@ -220,7 +218,7 @@ while True:
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
                     print("Finalise")
 
-                    config['hash'] = hash_
+                    config['mtime'] = mtime
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
 
@@ -237,7 +235,7 @@ while True:
                 if ok:
                     print("Transform")
 
-                    config['hash'] = hash_
+                    config['mtime'] = mtime
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
 
