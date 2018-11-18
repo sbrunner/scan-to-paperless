@@ -217,6 +217,11 @@ while True:
             if config.get('waiting', False) and config.get('containder_id') == containder_id:
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
                     print("Finalise")
+
+                    config['containder_id'] = containder_id
+                    with open(config_file_name, 'w') as config_file:
+                        config_file.write(yaml.dump(config))
+
                     finalise(config, root_folder)
                 else:
                     print("Still waiting")
@@ -229,10 +234,14 @@ while True:
 
                 if ok:
                     print("Transform")
+
+                    config['containder_id'] = containder_id
+                    with open(config_file_name, 'w') as config_file:
+                        config_file.write(yaml.dump(config))
+
                     config['transformed_images'] = transform(config, root_folder)
 
                     config['waiting'] = True
-                    config['containder_id'] = containder_id
 
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
