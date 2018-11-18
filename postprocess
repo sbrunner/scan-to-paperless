@@ -195,6 +195,7 @@ def finalise(config, root_folder):
 containder_id = output(['uname', '-n'])
 
 print('Welcome to scaned images document to paperless.')
+print('Containder ID: ' + containder_id)
 while True:
     print("Scan")
     for config_file_name in glob.glob('/source/*/config.yaml'):
@@ -211,7 +212,6 @@ while True:
         if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('containder_id') == containder_id:
             print("On error")
             continue
-
 
         try:
             if config.get('waiting', False) and config.get('containder_id') == containder_id:
