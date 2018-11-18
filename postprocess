@@ -26,7 +26,7 @@ def add_intermediate_error(config, config_file_name, error, tb):
     if 'intermediate_error' not in config:
         config['intermediate_error'] = []
     config['intermediate_error'].append({
-        'error': e,
+        'error': error,
         'traceback': tb,
     })
     with open(config_file_name, 'w') as config_file:
