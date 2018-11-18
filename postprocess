@@ -192,6 +192,8 @@ def finalise(config, root_folder):
 
 #    call(['chmod', '-R', 'go+rw', '/destination'])
 
+containder_id = output(['uname', '-n'])
+
 print('Welcome to scaned images document to paperless.')
 while True:
     print("Scan")
@@ -206,13 +208,13 @@ while True:
         with open(config_file_name) as config_file:
             config = yaml.load(config_file.read())
 
-        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('containder_id') == output(['uname', '-n']):
+        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('containder_id') == containder_id:
             print("On error")
             continue
 
 
         try:
-            if config.get('waiting', False) and config.get('containder_id') == output(['uname', '-n']):
+            if config.get('waiting', False) and config.get('containder_id') == containder_id:
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
                     print("Finalise")
                     finalise(config, root_folder)
@@ -230,7 +232,7 @@ while True:
                     config['transformed_images'] = transform(config, root_folder)
 
                     config['waiting'] = True
-                    config['containder_id'] = output(['uname', '-n'])
+                    config['containder_id'] = containder_id
 
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
