@@ -8,6 +8,7 @@
 
 import datetime
 import glob
+import hashlib
 import os
 import random
 import re
@@ -192,10 +193,11 @@ def finalise(config, root_folder):
 
 #    call(['chmod', '-R', 'go+rw', '/destination'])
 
-containder_id = output(['uname', '-n']).decode()
+with open('/opt/postprocess') as file_:
+    hash_ = hashlib.sha256(file_.read()).hexdigest()
 
 print('Welcome to scaned images document to paperless.')
-print('Containder ID: ' + containder_id)
+print('Hash: ' + hash_)
 while True:
     print("Scan")
     for config_file_name in glob.glob('/source/*/config.yaml'):
@@ -209,7 +211,7 @@ while True:
         with open(config_file_name) as config_file:
             config = yaml.load(config_file.read())
 
-        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('containder_id') == containder_id:
+        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('hash') == hash_:
             print("On error")
             continue
 
@@ -218,7 +220,7 @@ while True:
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
                     print("Finalise")
 
-                    config['containder_id'] = containder_id
+                    config['hash'] = hash_
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
 
@@ -235,7 +237,7 @@ while True:
                 if ok:
                     print("Transform")
 
-                    config['containder_id'] = containder_id
+                    config['hash'] = hash_
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
 
