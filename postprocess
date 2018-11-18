@@ -214,7 +214,7 @@ while True:
             continue
 
         try:
-            if config.get('waiting', False) and config.get('containder_id') == containder_id:
+            if config.get('waiting', False):
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
                     print("Finalise")
 
