@@ -211,7 +211,7 @@ while True:
             config = yaml.load(config_file.read())
 
         try:
-            if config.get('waiting', False):
+            if config.get('waiting', False) and config.get('containder_id') == output(['uname', '-n']):
                 if not os.path.exists(os.path.join(root_folder, 'waiting')):
                     print("Finalise")
                     finalise(config, root_folder)
@@ -229,6 +229,7 @@ while True:
                     config['transformed_images'] = transform(config, root_folder)
 
                     config['waiting'] = True
+                    config['containder_id'] = output(['uname', '-n'])
 
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
