@@ -13,10 +13,14 @@ import random
 import re
 import shutil
 import subprocess
+import sys
 import time
 import traceback
 import yaml
 
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 mogrify = ['gm', 'mogrify']
 convert = ['gm', 'convert']
