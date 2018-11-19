@@ -93,7 +93,8 @@ def transform(config, root_folder):
         save(root_folder, img, '2-precrop')
 
         try:
-            call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img, img])
+            call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img + '.d.png', img])
+            shutil.move(img + '.d.png', img)
             save(root_folder, img, '3-deskew')
         except subprocess.CalledProcessError as e:
             print(e)
