@@ -154,16 +154,6 @@ def transform(config, root_folder):
         call(convert + [img, img2])
         images.append(img2)
 
-    if config['args']['append_credit_card']:
-        images2 = []
-        for img in images:
-            if os.path.exists(img):
-                    images2.append(img)
-            # - append (credit cards)  -  convert clp.png clp.png -background color? -append page.png
-
-        call(convert + images2 + ['-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')])
-        images = [os.path.join(root_folder, 'final.png')]
-
     return images
 
 def finalise(config, root_folder):
@@ -175,6 +165,15 @@ def finalise(config, root_folder):
         return
 
     images = config['transformed_images']
+
+    if config['args']['append_credit_card']:
+        images2 = []
+        for img in images:
+            if os.path.exists(img):
+                    images2.append(img)
+
+        call(convert + images2 + ['-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')])
+        images = [os.path.join(root_folder, 'final.png')]
 
     pdf = []
     for img in images:
@@ -215,8 +214,16 @@ while True:
             continue
 
         try:
-            if config.get('waiting', False):
-                if not os.path.exists(os.path.join(root_folder, 'waiting')):
+            allready_proceed = True
+            if 'transformed_images' not in config:
+                allready_proceed = False
+            else:
+                for img in config['transformed_images']:
+                    if not os.path.exists(img):
+                        allready_proceed = False
+
+            if allready_proceed:
+                if not os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
                     print("Finalise")
 
                     config['mtime'] = mtime
@@ -242,12 +249,10 @@ while True:
 
                     config['transformed_images'] = transform(config, root_folder)
 
-                    config['waiting'] = True
-
                     with open(config_file_name, 'w') as config_file:
                         config_file.write(yaml.dump(config))
 
-                    with open(os.path.join(root_folder, 'waiting'), 'w') as waiting_file:
+                    with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w') as waiting_file:
                         pass
 
         except Exception as e:
