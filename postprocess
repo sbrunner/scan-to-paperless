@@ -66,6 +66,8 @@ def save(root_folder, img, folder):
 
 
 def transform(config, root_folder):
+    del config['intermediate_error']
+
     images = list()
     if not os.path.exists(os.path.join(root_folder, 'process')):
         os.makedirs(os.path.join(root_folder, 'process'))
@@ -212,6 +214,9 @@ while True:
         if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
             print("On error")
             continue
+
+        if os.path.exists(os.path.join(root_folder, 'error.yaml')):
+            os.apth.remove(os.path.join(root_folder, 'error.yaml'))
 
         try:
             allready_proceed = True
