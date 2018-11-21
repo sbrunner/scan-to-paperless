@@ -1,0 +1,63 @@
+{
+   "cap_add" : [],
+   "cap_drop" : [],
+   "cmd" : "/opt/process",
+   "cpu_priority" : 50,
+   "devices" : null,
+   "enable_publish_all_ports" : false,
+   "enable_restart_policy" : true,
+   "enabled" : false,
+   "env_variables" : [
+      {
+         "key" : "LC_ALL",
+         "value" : "en_US.UTF-8"
+      },
+      {
+         "key" : "LANG",
+         "value" : "en_US.UTF-8"
+      },
+      {
+         "key" : "PATH",
+         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "PROGRESS",
+         "value" : "TRUE"
+      }
+   ],
+   "exporting" : false,
+   "id" : "1abeedc05dfd75245e2833d519ad741405883bfb0f1c312479a9ac2e564cfc57",
+   "image" : "sbrunner/scan-to-paperless:latest",
+   "is_ddsm" : false,
+   "is_package" : false,
+   "links" : [],
+   "memory_limit" : 0,
+   "name" : "sbrunner-scan-to-paperless",
+   "network" : [
+      {
+         "driver" : "bridge",
+         "name" : "bridge"
+      }
+   ],
+   "network_mode" : "bridge",
+   "port_bindings" : [],
+   "privileged" : false,
+   "shortcut" : {
+      "enable_shortcut" : false
+   },
+   "ulimits" : null,
+   "use_host_network" : false,
+   "volume_bindings" : [
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/consume",
+         "mount_point" : "/destination",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/scan",
+         "mount_point" : "/source",
+         "type" : "rw"
+      }
+   ],
+   "volumes_from" : null
+}

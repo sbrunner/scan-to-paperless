@@ -1,0 +1,65 @@
+{
+   "cap_add" : [],
+   "cap_drop" : [],
+   "cmd" : "document_exporter /export",
+   "cpu_priority" : 50,
+   "devices" : null,
+   "enable_publish_all_ports" : false,
+   "enable_restart_policy" : false,
+   "enabled" : false,
+   "entrypoint_default" : "/sbin/docker-entrypoint.sh",
+   "env_variables" : [
+      {
+         "key" : "PATH",
+         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "PAPERLESS_EXPORT_DIR",
+         "value" : "/export"
+      },
+      {
+         "key" : "PAPERLESS_CONSUMPTION_DIR",
+         "value" : "/consume"
+      }
+   ],
+   "exporting" : false,
+   "id" : "1c5c85084b46f708f87ef1170711403db1b057e4733c79181b364b97b1de5452",
+   "image" : "danielquinn/paperless:latest",
+   "is_ddsm" : false,
+   "is_package" : false,
+   "links" : [],
+   "memory_limit" : 0,
+   "name" : "danielquinn-paperless-backup",
+   "network" : [
+      {
+         "driver" : "bridge",
+         "name" : "bridge"
+      }
+   ],
+   "network_mode" : "bridge",
+   "port_bindings" : [],
+   "privileged" : false,
+   "shortcut" : {
+      "enable_shortcut" : false
+   },
+   "ulimits" : null,
+   "use_host_network" : false,
+   "volume_bindings" : [
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/export",
+         "mount_point" : "/export",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/media",
+         "mount_point" : "/usr/src/paperless/media",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/data",
+         "mount_point" : "/usr/src/paperless/data",
+         "type" : "rw"
+      }
+   ],
+   "volumes_from" : null
+}

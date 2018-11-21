@@ -1,0 +1,89 @@
+{
+   "cap_add" : [],
+   "cap_drop" : [],
+   "cmd" : "document_consumer",
+   "cpu_priority" : 50,
+   "devices" : null,
+   "enable_publish_all_ports" : false,
+   "enable_restart_policy" : true,
+   "enabled" : true,
+   "entrypoint_default" : "/sbin/docker-entrypoint.sh",
+   "env_variables" : [
+      {
+         "key" : "PATH",
+         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "PAPERLESS_EXPORT_DIR",
+         "value" : "/export"
+      },
+      {
+         "key" : "PAPERLESS_CONSUMPTION_DIR",
+         "value" : "/consume"
+      },
+      {
+         "key" : "PAPERLESS_CONVERT_MEMORY_LIMIT",
+         "value" : "32000000"
+      },
+      {
+         "key" : "USERMAP_UID",
+         "value" : "114670"
+      },
+      {
+         "key" : "USERMAP_GID",
+         "value" : "104555"
+      },
+      {
+         "key" : "PAPERLESS_OCR_LANGUAGES",
+         "value" : "fra"
+      },
+      {
+         "key" : "PAPERLESS_OCR_THREADS",
+         "value" : "4"
+      },
+      {
+         "key" : "PAPERLESS_FORGIVING_OCR",
+         "value" : "true"
+      }
+   ],
+   "exporting" : false,
+   "id" : "c545301bc550785ac8a6b800fb7a491b1dc6e893a5fb273776cac9eeaf740343",
+   "image" : "danielquinn/paperless:latest",
+   "is_ddsm" : false,
+   "is_package" : false,
+   "links" : [],
+   "memory_limit" : 0,
+   "name" : "danielquinn-paperless-consumer",
+   "network" : [
+      {
+         "driver" : "bridge",
+         "name" : "bridge"
+      }
+   ],
+   "network_mode" : "bridge",
+   "port_bindings" : [],
+   "privileged" : false,
+   "shortcut" : {
+      "enable_shortcut" : false
+   },
+   "ulimits" : null,
+   "use_host_network" : false,
+   "volume_bindings" : [
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/consume",
+         "mount_point" : "/consume",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/media",
+         "mount_point" : "/usr/src/paperless/media",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/data",
+         "mount_point" : "/usr/src/paperless/data",
+         "type" : "rw"
+      }
+   ],
+   "volumes_from" : null
+}

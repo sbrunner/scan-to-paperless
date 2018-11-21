@@ -1,0 +1,86 @@
+{
+   "cap_add" : [],
+   "cap_drop" : [],
+   "cmd" : "runserver --insecure --noreload 0.0.0.0:8000",
+   "cpu_priority" : 50,
+   "devices" : null,
+   "enable_publish_all_ports" : false,
+   "enable_restart_policy" : true,
+   "enabled" : false,
+   "entrypoint_default" : "/sbin/docker-entrypoint.sh",
+   "env_variables" : [
+      {
+         "key" : "PATH",
+         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "PAPERLESS_EXPORT_DIR",
+         "value" : "/export"
+      },
+      {
+         "key" : "PAPERLESS_CONSUMPTION_DIR",
+         "value" : "/consume"
+      },
+      {
+         "key" : "USERMAP_UID",
+         "value" : "114670"
+      },
+      {
+         "key" : "USERMAP_GID",
+         "value" : "104555"
+      },
+      {
+         "key" : "PAPERLESS_DISABLE_LOGIN",
+         "value" : "true"
+      },
+      {
+         "key" : "PAPERLESS_LIST_PER_PAGE",
+         "value" : "100"
+      },
+      {
+         "key" : "PAPERLESS_INLINE_DOC",
+         "value" : "true"
+      }
+   ],
+   "exporting" : false,
+   "id" : "af4faf487b324c3209ee8fce6e427944ba32fd3c3b8fc50e5400be45b850f24d",
+   "image" : "danielquinn/paperless:latest",
+   "is_ddsm" : false,
+   "is_package" : false,
+   "links" : [],
+   "memory_limit" : 0,
+   "name" : "danielquinn-paperless-webserver",
+   "network" : [
+      {
+         "driver" : "bridge",
+         "name" : "bridge"
+      }
+   ],
+   "network_mode" : "bridge",
+   "port_bindings" : [
+      {
+         "container_port" : 8000,
+         "host_port" : 8000,
+         "type" : "tcp"
+      }
+   ],
+   "privileged" : false,
+   "shortcut" : {
+      "enable_shortcut" : false
+   },
+   "ulimits" : null,
+   "use_host_network" : false,
+   "volume_bindings" : [
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/media",
+         "mount_point" : "/usr/src/paperless/media",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/data",
+         "mount_point" : "/usr/src/paperless/data",
+         "type" : "rw"
+      }
+   ],
+   "volumes_from" : null
+}
