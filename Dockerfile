@@ -13,11 +13,11 @@ RUN \
   chmod +x /opt/Deskew/Bin/deskew &&\
   rm /tmp/deskew-125.zip
 
-CMD ["/opt/postprocess"]
+CMD ["/opt/process"]
 
 VOLUME /source \
     /destination
 
 ENV LANG=C.UTF-8
 
-COPY postprocess /opt/
+COPY process /opt/
