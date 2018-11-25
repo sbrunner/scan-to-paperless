@@ -83,11 +83,9 @@ def transform(config, root_folder):
         shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
         img = os.path.join(root_folder, 'process', os.path.basename(img))
         # force-cleanup
-        if config['args']['force_cleanup']:
+        if config['args']['level']:
             call(mogrify + ['-level', '15%,1,85%', img])
-        else:
-            call(mogrify + ['-level', '10%,1,90%', img])
-        save(root_folder, img, '1-cleanup')
+            save(root_folder, img, '1-cleanup')
 
         marging_horizontal=100
         maring_vertical=100

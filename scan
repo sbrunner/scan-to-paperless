@@ -40,20 +40,10 @@ add_argument(
     help="Don't use ADF"
 )
 add_argument(
-    '--no-force-cleanup',
-    dest='force_cleanup',
+    '--no-level',
+    dest='level',
     action='store_false',
-    help="Don't use ADF"
-)
-add_argument(
-    '--new-crop',
-    action='store_true',
-    help="Use the old image magic crop"
-)
-add_argument(
-    '--no-crop',
-    action='store_true',
-    help="Use the old image magic crop"
+    help="Don't use level correction"
 )
 add_argument(
     '--correspondent',
