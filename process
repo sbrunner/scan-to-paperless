@@ -30,7 +30,7 @@ def add_intermediate_error(config, config_file_name, error, tb):
         'traceback': tb,
     })
     with open(config_file_name, 'w') as config_file:
-        config_file.write(yaml.dump(config))
+        config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
 
 def call(cmd, cmd2=None, **kwargs):
@@ -207,7 +207,7 @@ while True:
         root_folder = os.path.dirname(config_file_name)
 
         with open(config_file_name) as config_file:
-            config = yaml.load(config_file.read())
+            config = yaml.safe_load(config_file.read())
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
             print("On error")
@@ -231,7 +231,7 @@ while True:
 
                     config['mtime'] = mtime
                     with open(config_file_name, 'w') as config_file:
-                        config_file.write(yaml.dump(config))
+                        config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
                     finalise(config, root_folder)
                 else:
@@ -248,12 +248,12 @@ while True:
 
                     config['mtime'] = mtime
                     with open(config_file_name, 'w') as config_file:
-                        config_file.write(yaml.dump(config))
+                        config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
                     config['transformed_images'] = transform(config, root_folder)
 
                     with open(config_file_name, 'w') as config_file:
-                        config_file.write(yaml.dump(config))
+                        config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
                     with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w') as waiting_file:
                         pass
@@ -261,18 +261,10 @@ while True:
         except Exception as e:
             print(e)
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                error_file.write(yaml.dump({
+                error_file.write(yaml.safe_dump({
                     'error': e,
                     'traceback': traceback.format_exc().split('\n'),
-                }))
-
-#        try:
-#            if os.path.exists(root_folder):
-#                call(['chmod', '-R', 'go+rw', root_folder])
-#        except subprocess.CalledProcessError as e:
-#            print(e)
-#            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-#                error_file.write(yaml.dump({'subproceesserror': e}))
+                }, default_flow_style=False))
 
     print("Sleep")
     time.sleep(30)

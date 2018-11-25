@@ -1,4 +1,4 @@
-#!/home/sbrunner/.py/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # TODO
 # - Do blure only one times
@@ -18,11 +18,35 @@ import re
 import yaml
 import subprocess
 
-root_folder = '/home/sbrunner/dsl/paperless/scan/{}/source'.format(random.randint(0, 999999))
-os.makedirs(root_folder)
 
-connection = sqlite3.connect('/home/sbrunner/dsl/paperless/data/db.sqlite3')
-cursor = connection.cursor()
+CONFIG_FILENAME = "scan-to-paperless.yaml"
+
+if 'APPDATA' in os.environ:
+    CONFIG_PATH = os.path.join(os.environ['APPDATA'], CONFIG_FILENAME)
+elif 'XDG_CONFIG_HOME' in os.environ:
+    CONFIG_PATH = os.path.join(os.environ['XDG_CONFIG_HOME'], CONFIG_FILENAME)
+else:
+    CONFIG_PATH = os.path.join(os.environ['HOME'], '.config', CONFIG_FILENAME)
+
+config = {}
+if os.path.exists(CONFIG_PATH):
+    with open(CONFIG_PATH, encoding='utf-8') as f:
+        config = yaml.safe_load(f.read())
+
+
+connection = None
+cursor = None
+if 'paperless_db' not in config:
+    print('''The PaperLess db path isn\'t set, use:
+scan --set-settings paperless_db <the_path>.''')
+else:
+    connection = sqlite3.connect(config['paperless_db'])
+    cursor = connection.cursor()
+
+
+def execute(sql):
+    return cursor.execute(sql) if cursor is not None else []
+
 
 auto_complete_parser = argparse.ArgumentParser()
 parser = argparse.ArgumentParser()
@@ -47,12 +71,12 @@ add_argument(
 )
 add_argument(
     '--correspondent',
-    choices=[t[0] for t in cursor.execute('select name from documents_correspondent')],
+    choices=[t[0] for t in execute('select name from documents_correspondent')],
     help='The correspondent'
 )
 add_argument(
     'title',
-    nargs='+',
+    nargs='*',
     choices=['No title'],
     help='The document title'
 )
@@ -66,7 +90,7 @@ add_argument(
     action='append',
     dest="tags",
     default=[],
-    choices=[t[0] for t in cursor.execute('select name from documents_tag')],
+    choices=[t[0] for t in execute('select name from documents_tag')],
     help='The document tags'
 )
 add_argument(
@@ -74,16 +98,44 @@ add_argument(
     action='store_true',
     help='Number of pages in double sided mode'
 )
-
 add_argument(
     '--append-credit-card',
     action='store_true',
     help='Append vertically the credit card'
 )
+add_argument(
+    '--set-config',
+    nargs=2,
+    action='append',
+    default=[],
+    help='Set a configuration option'
+)
 
-connection.close()
+if connection is not None:
+    connection.close()
 argcomplete.autocomplete(auto_complete_parser)
 args = parser.parse_args()
+
+
+dirty = False
+for conf in args.set_config:
+    config[conf[0]] = conf[1]
+    dirty = True
+if dirty:
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+        f.write(yaml.safe_dump(config, default_flow_style=False))
+
+if len(args.title) == 0:
+    exit(0)
+
+if 'scan_folder' not in config:
+    print('''The scan folder isn\'t set, use:
+scan --set-settings scan_folder <a_folder>
+This should be shared with the process container in '\source'.''')
+    exit(1)
+
+root_folder = os.path.join(config['scan_folder'], str(random.randint(0, 999999)), 'source')
+os.makedirs(root_folder)
 
 mogrify = ['gm', 'mogrify']
 convert = ['gm', 'convert']
@@ -174,7 +226,7 @@ try:
         'args': dict(args._get_kwargs()),
     }
     with open(os.path.join(os.path.dirname(root_folder), 'config.yaml'), 'w') as config_file:
-        config_file.write(yaml.dump(config))
+        config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
 except subprocess.CalledProcessError as e:
     print(e)
