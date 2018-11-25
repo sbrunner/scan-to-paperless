@@ -2,7 +2,7 @@ version: '3'
 
 services:
   consumer:
-    image: sbrunner/scan-postprocess
+    image: sbrunner/scan-to-paperless
 #    user: ${USER}
     volumes:
       - ~/dsl/paperless/consume-test:/destination

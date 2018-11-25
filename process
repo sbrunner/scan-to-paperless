@@ -192,7 +192,7 @@ def finalise(config, root_folder):
 
 #    call(['chmod', '-R', 'go+rw', '/destination'])
 
-mtime = time.ctime(os.path.getmtime('/opt/postprocess'))
+mtime = time.ctime(os.path.getmtime('/opt/process'))
 
 print('Welcome to scaned images document to paperless.')
 print('Script time: ' + mtime)
