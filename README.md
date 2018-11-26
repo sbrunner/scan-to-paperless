@@ -17,6 +17,23 @@
 
 5. The process will continue his job and import the document in paperless.
 
+## Nice feature
+
+### Double sized scanning
+
+1. Pour your sheets on the Automatic Document Feeder.
+
+2. Run `scan` with the option `--double-sided`.
+
+3. Press enter to start scanning the first side of all sheets.
+
+4. Put again all your sheets on the Automatic Document Feeder without turning them.
+
+The scan utils will rotate and reorder all the sheets to get a good document.
+
+### Credit card scanning
+
+The options `--append-credit-card` will append all the sheets vertically to have the booth face of the credit card on the same page.
 
 ## Install (with clone)
 
