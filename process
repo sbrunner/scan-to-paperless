@@ -215,7 +215,7 @@ while True:
             continue
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')):
-            os.path.remove(os.path.join(root_folder, 'error.yaml'))
+            os.remove(os.path.join(root_folder, 'error.yaml'))
 
         try:
             allready_proceed = True
