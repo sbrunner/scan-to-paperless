@@ -32,7 +32,4 @@ setup(
             'scan-process-status = scan_to_paperless.scan_process_status:main',
         ],
     },
-    scripts=[
-        'scan-complete',
-    ],
 )
