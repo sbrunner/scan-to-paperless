@@ -35,19 +35,15 @@ The scan utils will rotate and reorder all the sheets to get a good document.
 
 The options `--append-credit-card` will append all the sheets vertically to have the booth face of the credit card on the same page.
 
-## Install (with clone)
+## Install
 
-* Clone the repository.
-* Create a simlink to from the `scan`, `scan-complete` and `scan-process-status` to a repository of the `PATH` or add the Git repository to the `PATH`.
-* Add `. scan-complete` in your `.bashrc` to have the autocompletion.
+Install in a venv in the home directory:
 
-## Install (direct)
-
-* Get the files [scan](https://raw.githubusercontent.com/sbrunner/scan-to-paperless/master/scan),
-  [scan-complete](https://raw.githubusercontent.com/sbrunner/scan-to-paperless/master/scan-complete),
-  [scan-process-status](https://raw.githubusercontent.com/sbrunner/scan-to-paperless/master/scan-process-status)
-  and put them in a folder that is in your PATH.
-* Add `. scan-complete` in your `.bashrc` to have the autocompletion.
+$ cd
+$ python3 -m venv venv
+$ ~/venv/bin/pip install scan-to-paperless
+$ sudo activate-global-python-argcomplete
+$ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
 
 ## NAS
 
