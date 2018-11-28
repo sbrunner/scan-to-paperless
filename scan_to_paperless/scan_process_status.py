@@ -24,10 +24,10 @@ def main():
                     error = yaml.load(error_file.read())
                     if 'error' in error:
                         print(error['error'])
-                        if isinstance(error, subprocess.CalledProcessError):
-                            print(error.output.decode())
-                            if error.stderr:
-                                print(error.stderr)
+                        if isinstance(error['error'], subprocess.CalledProcessError):
+                            print(error['error'].output.decode())
+                            if error['error'].stderr:
+                                print(error['error'].stderr)
                         if 'traceback' in error:
                             print('\n'.join(error['traceback']))
                     else:
