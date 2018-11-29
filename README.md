@@ -39,11 +39,13 @@ The options `--append-credit-card` will append all the sheets vertically to have
 
 Install in a venv in the home directory:
 
+```
 $ cd
 $ python3 -m venv venv
 $ ~/venv/bin/pip install scan-to-paperless
 $ sudo activate-global-python-argcomplete
 $ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
+```
 
 ## NAS
 
