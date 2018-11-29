@@ -209,9 +209,15 @@ while True:
 
         with open(config_file_name) as config_file:
             config = yaml.safe_load(config_file.read())
+        if config is None:
+            print('Empty config')
+            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                error_file.write(yaml.safe_dump({
+                    'error': 'Empty config',
+                }, default_flow_style=False))
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
-            print("On error")
+            print('On error')
             continue
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')):
