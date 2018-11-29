@@ -215,6 +215,7 @@ while True:
                 error_file.write(yaml.safe_dump({
                     'error': 'Empty config',
                 }, default_flow_style=False))
+            continue
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
             print('On error')
