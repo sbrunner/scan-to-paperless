@@ -261,11 +261,19 @@ while True:
 
         except Exception as e:
             print(e)
-            with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                error_file.write(yaml.safe_dump({
-                    'error': e,
-                    'traceback': traceback.format_exc().split('\n'),
-                }, default_flow_style=False))
+            try:
+                with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                    error_file.write(yaml.dump({
+                        'error': e,
+                        'traceback': traceback.format_exc().split('\n'),
+                    }, default_flow_style=False))
+            except Exception as ex:
+                print(ex)
+                with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                    error_file.write(yaml.safe_dump({
+                        'error': str(e),
+                        'traceback': traceback.format_exc().split('\n'),
+                    }, default_flow_style=False))
 
     print("Sleep")
     time.sleep(30)

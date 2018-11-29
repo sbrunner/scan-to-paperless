@@ -17,12 +17,12 @@ def main():
             print("No config")
         else:
             with open(os.path.join(folder, 'config.yaml')) as config_file:
-                config = yaml.load(config_file.read())
+                config = yaml.safe_load(config_file.read())
 
             if os.path.exists(os.path.join(folder, 'error.yaml')):
                 with open(os.path.join(folder, 'error.yaml')) as error_file:
                     error = yaml.load(error_file.read())
-                    if 'error' in error:
+                    if error is not None and 'error' in error:
                         print(error['error'])
                         if isinstance(error['error'], subprocess.CalledProcessError):
                             print(error['error'].output.decode())
