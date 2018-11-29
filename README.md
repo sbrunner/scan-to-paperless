@@ -49,5 +49,5 @@ $ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
 
 ## NAS
 
-The Docker support is required, pPersonally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
+The Docker support is required, Personally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
 and you can get the *.syno.json files to configure your Docker services.
