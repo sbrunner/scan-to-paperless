@@ -39,7 +39,7 @@
       },
       {
          "key" : "PAPERLESS_OCR_THREADS",
-         "value" : "4"
+         "value" : "1"
       },
       {
          "key" : "PAPERLESS_FORGIVING_OCR",

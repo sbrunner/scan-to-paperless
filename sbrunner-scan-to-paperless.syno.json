@@ -6,19 +6,15 @@
    "devices" : null,
    "enable_publish_all_ports" : false,
    "enable_restart_policy" : true,
-   "enabled" : false,
+   "enabled" : true,
    "env_variables" : [
-      {
-         "key" : "LC_ALL",
-         "value" : "en_US.UTF-8"
-      },
-      {
-         "key" : "LANG",
-         "value" : "en_US.UTF-8"
-      },
       {
          "key" : "PATH",
          "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "LANG",
+         "value" : "C.UTF-8"
       },
       {
          "key" : "PROGRESS",
