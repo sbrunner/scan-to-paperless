@@ -162,6 +162,7 @@ def finalise(config, root_folder):
     full_name = config['full_name']
     destination = config['destination']
 
+    print(destination)
     if os.path.exists(destination):
         return
 
@@ -239,6 +240,10 @@ while True:
 
                     config['mtime'] = mtime
                     with open(config_file_name, 'w') as config_file:
+                        import sys
+                        print(config_file.encoding)
+                        print(sys.stdout.encoding)
+                        print(sys.getfilesystemencoding())
                         config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
                     finalise(config, root_folder)
