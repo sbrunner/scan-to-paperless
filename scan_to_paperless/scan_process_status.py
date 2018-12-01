@@ -34,8 +34,16 @@ def main():
                         print('Unknown error')
                         print(error)
             else:
-                if config.get('waiting', False):
-                    if os.path.exists(os.path.join(folder, 'waiting')):
+                allready_proceed = True
+                if 'transformed_images' not in config:
+                    allready_proceed = False
+                else:
+                    for img in config['transformed_images']:
+                        img = os.path.join(folder, os.path.basename(img))
+                        if not os.path.exists(img):
+                            allready_proceed = False
+                if allready_proceed:
+                    if os.path.exists(os.path.join(folder, 'REMOVE_TO_CONTINUE')):
                         print('To be validated')
                     else:
                         print('Waiting to be imported')
