@@ -149,6 +149,20 @@ def main():
     This should be shared with the process container in '\source'.''')
         exit(1)
 
+    full_name = ' '.join(args.title)
+    if args.correspondent is not None:
+        full_name = '{} - {}'.format(args.correspondent, full_name)
+    if args.date is not None:
+        full_name = '{}Z - {}'.format(args.date, full_name)
+    if len(args.tags) > 0:
+        full_name = '{} - {}'.format(full_name, ','.join(args.tags))
+    destination = '/destination/{}.pdf'.format(
+        full_name
+    )
+    if '/' in full_name:
+        print("The name can't contans some '/' (from correspondent, tags or title).")
+        exit(1)
+
     root_folder = os.path.join(config['scan_folder'], str(random.randint(0, 999999)), 'source')
     os.makedirs(root_folder)
 
@@ -176,17 +190,6 @@ def main():
             if not img.startswith('image-'):
                 continue
             images.append(os.path.join('source', img))
-
-        full_name = ' '.join(args.title)
-        if args.correspondent is not None:
-            full_name = '{} - {}'.format(args.correspondent, full_name)
-        if args.date is not None:
-            full_name = '{}Z - {}'.format(args.date, full_name)
-        if len(args.tags) > 0:
-            full_name = '{} - {}'.format(full_name, ','.join(args.tags))
-        destination = '/destination/{}.pdf'.format(
-            full_name
-        )
 
         regex = re.compile(r'^source\/image\-([0-9]+)\.png$')
         images = sorted(images, key=lambda e: int(regex.match(e).group(1)))
