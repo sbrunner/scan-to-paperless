@@ -214,7 +214,7 @@ while True:
                 }, default_flow_style=False))
             continue
 
-        if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
+        if os.path.exists(os.path.join(root_folder, 'error.yaml')):
             continue
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')):
@@ -235,11 +235,6 @@ while True:
                     print(config_file_name)
                     print("Finalise")
 
-                    config['mtime'] = mtime
-                    with open(config_file_name, 'w') as config_file:
-                        import sys
-                        config_file.write(yaml.safe_dump(config, default_flow_style=False))
-
                     finalise(config, root_folder)
 
             else:
@@ -252,10 +247,6 @@ while True:
                     print(re.sub(r'.', '-', config_file_name))
                     print(config_file_name)
                     print("Transform")
-
-                    config['mtime'] = mtime
-                    with open(config_file_name, 'w') as config_file:
-                        config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
                     config['transformed_images'] = transform(config, root_folder)
 
