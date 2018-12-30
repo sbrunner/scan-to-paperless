@@ -249,9 +249,9 @@ while True:
                     print("Transform")
 
                     config['transformed_images'] = transform(config, root_folder)
-
-                    with open(config_file_name, 'w') as config_file:
+                    with open(config_file_name + '_', 'w') as config_file:
                         config_file.write(yaml.safe_dump(config, default_flow_style=False))
+                    os.rename(config_file_name + '_', config_file_name)
 
                     with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w') as waiting_file:
                         pass
