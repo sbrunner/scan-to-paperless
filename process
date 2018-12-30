@@ -199,19 +199,15 @@ mtime = time.ctime(os.path.getmtime('/opt/process'))
 print('Welcome to scaned images document to paperless.')
 print('Script time: ' + mtime)
 while True:
-    print("Scan")
     for config_file_name in glob.glob('/source/*/config.yaml'):
         if not os.path.exists(config_file_name):
             continue
 
-        print(re.sub(r'.', '-', config_file_name))
-        print(config_file_name)
         root_folder = os.path.dirname(config_file_name)
 
         with open(config_file_name) as config_file:
             config = yaml.safe_load(config_file.read())
         if config is None:
-            print('Empty config')
             with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
                 error_file.write(yaml.safe_dump({
                     'error': 'Empty config',
@@ -219,7 +215,6 @@ while True:
             continue
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')) and config.get('mtime') == mtime:
-            print('On error')
             continue
 
         if os.path.exists(os.path.join(root_folder, 'error.yaml')):
@@ -236,19 +231,16 @@ while True:
 
             if allready_proceed:
                 if not os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
+                    print(re.sub(r'.', '-', config_file_name))
+                    print(config_file_name)
                     print("Finalise")
 
                     config['mtime'] = mtime
                     with open(config_file_name, 'w') as config_file:
                         import sys
-                        print(config_file.encoding)
-                        print(sys.stdout.encoding)
-                        print(sys.getfilesystemencoding())
                         config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
                     finalise(config, root_folder)
-                else:
-                    print("Still waiting")
 
             else:
                 ok = True
@@ -257,6 +249,8 @@ while True:
                         ok = False
 
                 if ok:
+                    print(re.sub(r'.', '-', config_file_name))
+                    print(config_file_name)
                     print("Transform")
 
                     config['mtime'] = mtime
@@ -287,5 +281,4 @@ while True:
                         'traceback': traceback.format_exc().split('\n'),
                     }, default_flow_style=False))
 
-    print("Sleep")
     time.sleep(30)
