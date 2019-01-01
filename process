@@ -25,10 +25,21 @@ convert = ['gm', 'convert']
 def add_intermediate_error(config, config_file_name, error, tb):
     if 'intermediate_error' not in config:
         config['intermediate_error'] = []
-    config['intermediate_error'].append({
-        'error': error,
-        'traceback': tb,
-    })
+
+    try:
+        yaml.dump({
+            'error': error,
+        }, default_flow_style=False)
+        config['intermediate_error'].append({
+            'error': error,
+            'traceback': tb,
+        })
+    except Exception as ex:
+        print(ex)
+        config['intermediate_error'].append({
+            'error': str(error),
+            'traceback': tb,
+        })
     with open(config_file_name, 'w') as config_file:
         config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
