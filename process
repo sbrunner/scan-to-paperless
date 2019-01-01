@@ -6,10 +6,8 @@
 # - fix content detection for romande energie
 # - add http://www.graphicsmagick.org/GraphicsMagick.html#details-sharpen
 
-import datetime
 import glob
 import os
-import random
 import re
 import shutil
 import subprocess
@@ -99,9 +97,9 @@ def transform(config, root_folder):
             call(mogrify + ['-level', '15%,1,85%', img])
             save(root_folder, img, '1-cleanup')
 
-        marging_horizontal=100
-        maring_vertical=100
-        crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
+        marging_horizontal = 100
+        maring_vertical = 100
+        crop(img, round(marging_horizontal / 10 / 2.51 * 300), round(maring_vertical / 10 / 2.51 * 300))
         save(root_folder, img, '2-precrop')
 
         try:
@@ -115,9 +113,9 @@ def transform(config, root_folder):
             )
 
         # Margin in mm
-        marging_horizontal=10
-        maring_vertical=7
-        crop(img, round(marging_horizontal/10/2.51*300), round(maring_vertical/10/2.51*300))
+        marging_horizontal = 10
+        maring_vertical = 7
+        crop(img, round(marging_horizontal / 10 / 2.51 * 300), round(maring_vertical / 10 / 2.51 * 300))
         save(root_folder, img, '4-crop')
 
         # sharpen
@@ -143,7 +141,8 @@ def transform(config, root_folder):
         # is empty ?
         w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).split(b' ')]
         if output(
-            convert + [img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'])[0:4] == b'1x1+':
+            convert + [img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-']
+        )[0:4] == b'1x1+':
             print("Ignore image with no content: {}".format(img))
             continue
 
@@ -167,6 +166,7 @@ def transform(config, root_folder):
         images.append(img2)
 
     return images
+
 
 def finalise(config, root_folder):
 
@@ -204,6 +204,7 @@ def finalise(config, root_folder):
     shutil.rmtree(root_folder)
 
 #    call(['chmod', '-R', 'go+rw', '/destination'])
+
 
 mtime = time.ctime(os.path.getmtime('/opt/process'))
 
