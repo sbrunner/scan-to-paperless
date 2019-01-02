@@ -170,7 +170,12 @@ def main():
 
     try:
         scanimage = [
-            'scanimage', '--device=hpaio:/usb/HP_LaserJet_MFP_M129-M134?serial=VNC8K00063', '--format=png', '--mode=color', '--resolution=300', '--batch={}/image-%d.png'.format(root_folder),
+            'scanimage',
+            '--device=hpaio:/usb/HP_LaserJet_MFP_M129-M134?serial=VNC8K00063',
+            '--format=png',
+            '--mode=color',
+            '--resolution=300',
+            '--batch={}/image-%d.png'.format(root_folder),
             '--source=ADF' if args.adf else '--batch-prompt'
         ]
 
@@ -178,7 +183,11 @@ def main():
             call(scanimage + ['--batch-start=1', '--batch-increment=2'])
             odd = os.listdir(root_folder)
             input('Put your document in the automatic document feeder for the other side, and press enter.')
-            call(scanimage + ['--batch-start={}'.format(len(odd) * 2), '--batch-increment=-2', '--batch-count={}'.format(len(odd))])
+            call(scanimage + [
+                '--batch-start={}'.format(len(odd) * 2),
+                '--batch-increment=-2',
+                '--batch-count={}'.format(len(odd))
+            ])
             for img in os.listdir(root_folder):
                 if img not in odd:
                     call(mogrify + ['-rotate', '180', os.path.join(root_folder, img)])
