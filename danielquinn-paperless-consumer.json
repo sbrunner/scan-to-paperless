@@ -1,14 +1,17 @@
 {
    "cap_add" : [],
    "cap_drop" : [],
-   "cmd" : "runserver --insecure --noreload 0.0.0.0:8000",
-   "cpu_priority" : 50,
+   "cmd" : "document_consumer",
+   "cpu_priority" : 10,
    "devices" : null,
    "enable_publish_all_ports" : false,
    "enable_restart_policy" : true,
-   "enabled" : false,
-   "entrypoint_default" : "/sbin/docker-entrypoint.sh",
+   "enabled" : true,
    "env_variables" : [
+      {
+         "key" : "PAPERLESS_DBHOST",
+         "value" : "postgres"
+      },
       {
          "key" : "PATH",
          "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -22,6 +25,10 @@
          "value" : "/consume"
       },
       {
+         "key" : "PAPERLESS_CONVERT_MEMORY_LIMIT",
+         "value" : "32000000"
+      },
+      {
          "key" : "USERMAP_UID",
          "value" : "114670"
       },
@@ -30,26 +37,26 @@
          "value" : "104555"
       },
       {
-         "key" : "PAPERLESS_DISABLE_LOGIN",
-         "value" : "true"
+         "key" : "PAPERLESS_OCR_LANGUAGES",
+         "value" : "fra"
       },
       {
-         "key" : "PAPERLESS_LIST_PER_PAGE",
-         "value" : "100"
+         "key" : "PAPERLESS_OCR_THREADS",
+         "value" : "1"
       },
       {
-         "key" : "PAPERLESS_INLINE_DOC",
+         "key" : "PAPERLESS_FORGIVING_OCR",
          "value" : "true"
       }
    ],
    "exporting" : false,
-   "id" : "af4faf487b324c3209ee8fce6e427944ba32fd3c3b8fc50e5400be45b850f24d",
+   "id" : "e77fcdb40f980461986de00e8d2fa87c3fe1945068f9275c407b0e3e38289121",
    "image" : "danielquinn/paperless:latest",
    "is_ddsm" : false,
    "is_package" : false,
    "links" : [],
-   "memory_limit" : 0,
-   "name" : "danielquinn-paperless-webserver",
+   "memory_limit" : 4294967296,
+   "name" : "danielquinn-paperless-consumer",
    "network" : [
       {
          "driver" : "bridge",
@@ -57,13 +64,7 @@
       }
    ],
    "network_mode" : "bridge",
-   "port_bindings" : [
-      {
-         "container_port" : 8000,
-         "host_port" : 8000,
-         "type" : "tcp"
-      }
-   ],
+   "port_bindings" : [],
    "privileged" : false,
    "shortcut" : {
       "enable_shortcut" : false
@@ -72,13 +73,23 @@
    "use_host_network" : false,
    "volume_bindings" : [
       {
-         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/media",
-         "mount_point" : "/usr/src/paperless/media",
+         "host_volume_file" : "/paperless/dumpdata",
+         "mount_point" : "/dumpdata",
          "type" : "rw"
       },
       {
-         "host_volume_file" : "/data/sync/Documents Stéphane Laetitia/paperless/data",
-         "mount_point" : "/usr/src/paperless/data",
+         "host_volume_file" : "/paperless/export",
+         "mount_point" : "/export",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/paperless/consume",
+         "mount_point" : "/consume",
+         "type" : "rw"
+      },
+      {
+         "host_volume_file" : "/paperless/media",
+         "mount_point" : "/usr/src/paperless/media",
          "type" : "rw"
       }
    ],
