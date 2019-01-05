@@ -9,7 +9,7 @@ import yaml
 
 
 def main():
-    for folder in glob.glob('/home/sbrunner/dsl/paperless/scan/*/'):
+    for folder in glob.glob(os.path.expanduser('~/Paperless/scan/*/')):
         print(re.sub(r'.', '-', folder))
         print(folder)
 
