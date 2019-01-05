@@ -24,23 +24,24 @@ def add_intermediate_error(config, config_file_name, error, tb):
     if 'intermediate_error' not in config:
         config['intermediate_error'] = []
 
+    old_intermediate_error = []
+    old_intermediate_error.extend(config['intermediate_error'])
     try:
-        yaml.dump({
-            'error': error,
-            'traceback': tb,
-        }, default_flow_style=False)
         config['intermediate_error'].append({
             'error': error,
             'traceback': tb,
         })
+        with open(config_file_name + '_', 'w') as config_file:
+            config_file.write(yaml.safe_dump(config, default_flow_style=False))
     except Exception as ex:
         print(ex)
+        config['intermediate_error'] = old_intermediate_error
         config['intermediate_error'].append({
             'error': str(error),
             'traceback': tb,
         })
-    with open(config_file_name + '_', 'w') as config_file:
-        config_file.write(yaml.safe_dump(config, default_flow_style=False))
+        with open(config_file_name + '_', 'w') as config_file:
+            config_file.write(yaml.safe_dump(config, default_flow_style=False))
     os.rename(config_file_name + '_', config_file_name)
 
 
