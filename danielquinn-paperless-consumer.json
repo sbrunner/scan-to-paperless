@@ -9,8 +9,12 @@
    "enabled" : true,
    "env_variables" : [
       {
-         "key" : "PAPERLESS_DBHOST",
-         "value" : "postgres"
+         "key" : "PAPERLESS_DBPASS",
+         "value" : "1234"
+      },
+      {
+         "key" : "PAPERLESS_DBUSER",
+         "value" : "paperless"
       },
       {
          "key" : "PATH",
@@ -23,6 +27,10 @@
       {
          "key" : "PAPERLESS_CONSUMPTION_DIR",
          "value" : "/consume"
+      },
+      {
+         "key" : "PAPERLESS_DBHOST",
+         "value" : "postgres"
       },
       {
          "key" : "PAPERLESS_CONVERT_MEMORY_LIMIT",
@@ -50,11 +58,16 @@
       }
    ],
    "exporting" : false,
-   "id" : "e77fcdb40f980461986de00e8d2fa87c3fe1945068f9275c407b0e3e38289121",
+   "id" : "fdd0dfb612203d042e5bd14357db5f2b160cb67791b1a944d62404b0def79a4a",
    "image" : "danielquinn/paperless:latest",
    "is_ddsm" : false,
    "is_package" : false,
-   "links" : [],
+   "links" : [
+      {
+         "alias" : "postgres",
+         "link_container" : "postgres"
+      }
+   ],
    "memory_limit" : 4294967296,
    "name" : "danielquinn-paperless-consumer",
    "network" : [

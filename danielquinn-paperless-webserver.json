@@ -9,8 +9,8 @@
    "enabled" : false,
    "env_variables" : [
       {
-         "key" : "PAPERLESS_DBHOST",
-         "value" : "postgres"
+         "key" : "PAPERLESS_DBPASS",
+         "value" : "1234"
       },
       {
          "key" : "PATH",
@@ -23,6 +23,14 @@
       {
          "key" : "PAPERLESS_CONSUMPTION_DIR",
          "value" : "/consume"
+      },
+      {
+         "key" : "PAPERLESS_DBUSER",
+         "value" : "paperless"
+      },
+      {
+         "key" : "PAPERLESS_DBHOST",
+         "value" : "postgres"
       },
       {
          "key" : "USERMAP_UID",
@@ -46,11 +54,16 @@
       }
    ],
    "exporting" : false,
-   "id" : "30691049e29a312ab184291d03ddea034c4824517c82a126d1e43205f554fa25",
+   "id" : "ccde410e5bcda754d3842288ac732c3322df0bd3a1bd3420e7ea0bc7f1a2f16b",
    "image" : "danielquinn/paperless:latest",
    "is_ddsm" : false,
    "is_package" : false,
-   "links" : [],
+   "links" : [
+      {
+         "alias" : "postgres",
+         "link_container" : "postgres"
+      }
+   ],
    "memory_limit" : 0,
    "name" : "danielquinn-paperless-webserver",
    "network" : [
