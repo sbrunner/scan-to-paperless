@@ -9,12 +9,8 @@
    "enabled" : true,
    "env_variables" : [
       {
-         "key" : "PAPERLESS_DBPASS",
-         "value" : "1234"
-      },
-      {
-         "key" : "PAPERLESS_DBUSER",
-         "value" : "paperless"
+         "key" : "OMP_THREAD_LIMIT",
+         "value" : "1"
       },
       {
          "key" : "PATH",
@@ -27,6 +23,14 @@
       {
          "key" : "PAPERLESS_CONSUMPTION_DIR",
          "value" : "/consume"
+      },
+      {
+         "key" : "PAPERLESS_DBPASS",
+         "value" : "1234"
+      },
+      {
+         "key" : "PAPERLESS_DBUSER",
+         "value" : "paperless"
       },
       {
          "key" : "PAPERLESS_DBHOST",
