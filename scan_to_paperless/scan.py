@@ -1,30 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # TODO
-# - Do blure only one times
+# - Do blur only one times
 # - other layouts
 # - fix content detection for romande energie
 # - add http://www.graphicsmagick.org/GraphicsMagick.html#details-sharpen
 
-import argcomplete
+
 import argparse
-import sqlite3
-import subprocess
-import os
 import datetime
+import json
+import os
 import random
 import re
+import sqlite3
+import subprocess
+import time
+
+import argcomplete
+from argcomplete.completers import ChoicesCompleter
 import yaml
 
 
 CONFIG_FILENAME = "scan-to-paperless.yaml"
+CACHE_FILENAME = "scan-to-paperless-cache.json"
 
 if 'APPDATA' in os.environ:
     CONFIG_PATH = os.path.join(os.environ['APPDATA'], CONFIG_FILENAME)
+    CACHE_PATH = os.path.join(os.environ['APPDATA'], CACHE_FILENAME)
 elif 'XDG_CONFIG_HOME' in os.environ:
     CONFIG_PATH = os.path.join(os.environ['XDG_CONFIG_HOME'], CONFIG_FILENAME)
+    CACHE_PATH = os.path.join(os.environ['XDG_CONFIG_HOME'], CACHE_FILENAME)
 else:
     CONFIG_PATH = os.path.join(os.environ['HOME'], '.config', CONFIG_FILENAME)
+    CACHE_PATH = os.path.join(os.environ['HOME'], '.config', CACHE_FILENAME)
 
 
 def call(cmd, cmd2=None, **kwargs):
@@ -52,26 +61,58 @@ def main():
         with open(CONFIG_PATH, encoding='utf-8') as f:
             config = yaml.safe_load(f.read())
 
-    connection = None
-    cursor = None
-    if 'paperless_db' not in config:
-        print('''The PaperLess db path isn\'t set, use:
-    scan --set-settings paperless_db <the_path>.''')
-    else:
-        connection = sqlite3.connect(config['paperless_db'])
-        cursor = connection.cursor()
+    cache = {
+        'correspondents': [],
+        'tags': [],
+        'time': 0
+    }
+    update_cache = True
+    if os.path.exists(CACHE_PATH):
+        with open(CACHE_PATH, encoding='utf-8') as f:
+            cache = json.loads(f.read())
+            if cache['time'] > time.monotonic() - 3600:
+                update_cache = False
 
-    def execute(sql):
-        return cursor.execute(sql) if cursor is not None else []
+    if update_cache:
 
-    auto_complete_parser = argparse.ArgumentParser()
+        if 'paperless_db' in config:
+            connection = sqlite3.connect(config['paperless_db'])
+            cursor = connection.cursor()
+
+            cache = {
+                'correspondents': [t[0] for t in cursor.execute('select name from documents_correspondent')],
+                'tags': [t[0] for t in cursor.execute('select name from documents_tag')],
+                'time': time.monotonic()
+            }
+
+            connection.close()
+
+        elif 'paperless_dump' in config:
+            cache['time'] = time.monotonic()
+            with open(config['paperless_dump']) as dumpdata:
+                dump = json.loads(dumpdata.read())
+                {"model": "contenttypes.contenttype", "pk": 1, "fields": {"app_label": "auth", "model": "permission"}}
+
+            for element in dump:
+                if element['model'] == 'documents.correspondent':
+                    cache['correspondents'].append(element['fields']['name'])
+                elif element['model'] == 'documents.tag':
+                    cache['tags'].append(element['fields']['name'])
+
+        else:
+            print('''The PaperLess source path isn\'t set, use:
+                scan --set-settings paperless_db <the_path>, or
+                scan --set-settings paperless_dump <the_path>.''')
+
+        with open(CACHE_PATH, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(cache))
+
     parser = argparse.ArgumentParser()
 
-    def add_argument(name, **kwargs):
-        auto_complete_parser.add_argument(name, **kwargs)
-        if 'choices' in kwargs:
-            del kwargs['choices']
-        parser.add_argument(name, **kwargs)
+    def add_argument(name, choices=None, **kwargs):
+        arg = parser.add_argument(name, **kwargs)
+        if choices is not None:
+            arg.completer = ChoicesCompleter(choices)
 
     add_argument(
         '--no-adf',
@@ -87,7 +128,7 @@ def main():
     )
     add_argument(
         '--correspondent',
-        choices=[t[0] for t in execute('select name from documents_correspondent')],
+        choices=cache['correspondents'],
         help='The correspondent'
     )
     add_argument(
@@ -106,7 +147,7 @@ def main():
         action='append',
         dest="tags",
         default=[],
-        choices=[t[0] for t in execute('select name from documents_tag')],
+        choices=cache['tags'],
         help='The document tags'
     )
     add_argument(
@@ -127,9 +168,7 @@ def main():
         help='Set a configuration option'
     )
 
-    if connection is not None:
-        connection.close()
-    argcomplete.autocomplete(auto_complete_parser)
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     dirty = False
