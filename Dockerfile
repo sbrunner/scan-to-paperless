@@ -1,9 +1,14 @@
-FROM ubuntu:cosmic
+FROM ubuntu:bionic
 
 RUN \
   . /etc/os-release && \
   apt-get update && \
-  apt-get install --assume-yes --no-install-recommends python3-yaml graphicsmagick scantailor pdftk-java tesseract-ocr tesseract-ocr-fra libimage-exiftool-perl unpaper unzip curl && \
+  apt-get install --assume-yes --no-install-recommends python3-yaml graphicsmagick pdftk-java \
+      tesseract-ocr tesseract-ocr-fra libimage-exiftool-perl unpaper unzip curl \
+      software-properties-common && \
+  add-apt-repository ppa:alex-p/scantailor && \
+  apt-get update && \
+  apt-get install --assume-yes --no-install-recommends scantailor scantailor-advance scantailor-universal && \
   apt-get clean && \
   rm --recursive --force /var/lib/apt/lists/*
 

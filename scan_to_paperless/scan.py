@@ -91,7 +91,14 @@ def main():
             cache['time'] = time.monotonic()
             with open(config['paperless_dump']) as dumpdata:
                 dump = json.loads(dumpdata.read())
-                {"model": "contenttypes.contenttype", "pk": 1, "fields": {"app_label": "auth", "model": "permission"}}
+                {
+                    "model": "contenttypes.contenttype",
+                    "pk": 1,
+                    "fields": {
+                        "app_label": "auth",
+                        "model": "permission"
+                    }
+                }
 
             for element in dump:
                 if element['model'] == 'documents.correspondent':
@@ -193,8 +200,7 @@ def main():
         full_name = '{} - {}'.format(args.correspondent, full_name)
     if args.date is not None:
         full_name = '{}Z - {}'.format(args.date, full_name)
-    if len(args.tags) > 0:
-        full_name = '{} - {}'.format(full_name, ','.join(args.tags))
+    full_name = '{} - {}'.format(full_name, ','.join(args.tags))
     destination = '/destination/{}.pdf'.format(
         full_name
     )

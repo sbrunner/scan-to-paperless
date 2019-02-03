@@ -84,14 +84,18 @@ def transform(config, root_folder):
     images = list()
     if not os.path.exists(os.path.join(root_folder, 'process')):
         os.makedirs(os.path.join(root_folder, 'process'))
-#    if not os.path.exists(os.path.join(root_folder, 'scantailor')):
-#        os.makedirs(os.path.join(root_folder, 'scantailor'))
-#    if not os.path.exists(os.path.join(root_folder, 'scantailor1200')):
-#        os.makedirs(os.path.join(root_folder, 'scantailor1200'))
-#    if not os.path.exists(os.path.join(root_folder, 'unpaper')):
-#        os.makedirs(os.path.join(root_folder, 'unpaper'))
-#    if not os.path.exists(os.path.join(root_folder, 'deskew')):
-#        os.makedirs(os.path.join(root_folder, 'deskew'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor')):
+        os.makedirs(os.path.join(root_folder, 'scantailor'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor-1200')):
+        os.makedirs(os.path.join(root_folder, 'scantailor-1200'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor-advance')):
+        os.makedirs(os.path.join(root_folder, 'scantailor-advance'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor-advance-1200')):
+        os.makedirs(os.path.join(root_folder, 'scantailor-advance-1200'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor-universal')):
+        os.makedirs(os.path.join(root_folder, 'scantailor-universal'))
+    if not os.path.exists(os.path.join(root_folder, 'scantailor-universal-1200')):
+        os.makedirs(os.path.join(root_folder, 'scantailor-universal-1200'))
     for img in config['images']:
         shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
         img = os.path.join(root_folder, 'process', os.path.basename(img))
@@ -149,21 +153,36 @@ def transform(config, root_folder):
             print("Ignore image with no content: {}".format(img))
             continue
 
- #       call([
- #           'scantailor-cli', '--dpi=300', '--content-detection=normal',
- #           '--output-dpi=300', '--color-mode=color_grayscale',
- #           img, os.path.join(root_folder, 'scantailor')
- #       ])
- #       call([
- #           'scantailor-cli', '--dpi=300', '--output-dpi=1200',
- #           img, os.path.join(root_folder, 'scantailor1200')
- #       ])
- #       call([
- #           'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
- #       ])
- #       call([
- #           '/opt/Deskew/Bin/deskew', '-o', os.path.join(root_folder, 'deskew', os.path.basename(img)), img
- #       ])
+        call([
+            'scantailor-cli', '--dpi=300', '--content-detection=normal',
+            '--output-dpi=300', '--color-mode=color_grayscale',
+            img, os.path.join(root_folder, 'scantailor')
+        ])
+        call([
+            'scantailor-cli', '--dpi=300', '--output-dpi=1200',
+            img, os.path.join(root_folder, 'scantailor-1200')
+        ])
+        call([
+            'scantailor-advance-cli', '--dpi=300', '--content-detection=normal',
+            '--output-dpi=300', '--color-mode=color_grayscale',
+            img, os.path.join(root_folder, 'scantailor-advance')
+        ])
+        call([
+            'scantailor-advance-cli', '--dpi=300', '--output-dpi=1200',
+            img, os.path.join(root_folder, 'scantailor-advance-1200')
+        ])
+        call([
+            'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
+            '--output-dpi=300', '--color-mode=color_grayscale',
+            img, os.path.join(root_folder, 'scantailor-universal')
+        ])
+        call([
+            'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
+            img, os.path.join(root_folder, 'scantailor-universal-1200')
+        ])
+        call([
+            'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
+        ])
         img2 = os.path.join(root_folder, os.path.basename(img))
         call(convert + [img, img2])
         images.append(img2)
@@ -195,9 +214,9 @@ def finalise(config, root_folder):
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
-            #call('tesseract -l fra+eng {} stdout pdf > {}'.format(
-            #    img, os.path.join(root_folder, '{}.pdf'.format(name))
-            #), shell=True)
+            call('tesseract -l fra+eng {} stdout pdf > {}'.format(
+                img, os.path.join(root_folder, '{}-tesseract.pdf'.format(name))
+            ), shell=True)
             call(convert + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
             pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
 
