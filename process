@@ -82,20 +82,18 @@ def transform(config, root_folder):
         del config['intermediate_error']
 
     images = list()
-    if not os.path.exists(os.path.join(root_folder, 'process')):
-        os.makedirs(os.path.join(root_folder, 'process'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor')):
-        os.makedirs(os.path.join(root_folder, 'scantailor'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor-1200')):
-        os.makedirs(os.path.join(root_folder, 'scantailor-1200'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor-advance')):
-        os.makedirs(os.path.join(root_folder, 'scantailor-advance'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor-advance-1200')):
-        os.makedirs(os.path.join(root_folder, 'scantailor-advance-1200'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor-universal')):
-        os.makedirs(os.path.join(root_folder, 'scantailor-universal'))
-    if not os.path.exists(os.path.join(root_folder, 'scantailor-universal-1200')):
-        os.makedirs(os.path.join(root_folder, 'scantailor-universal-1200'))
+    for path in (
+        'process',
+        'scantailor',
+        'scantailor-1200',
+        'scantailor-advanced',
+        'scantailor-advanced-1200',
+        'scantailor-universal',
+        'scantailor-universal-1200',
+        'teseract',
+    ):
+        if not os.path.exists(os.path.join(root_folder, path)):
+            os.makedirs(os.path.join(root_folder, path))
     for img in config['images']:
         shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
         img = os.path.join(root_folder, 'process', os.path.basename(img))
@@ -163,26 +161,29 @@ def transform(config, root_folder):
             img, os.path.join(root_folder, 'scantailor-1200')
         ])
         call([
-            'scantailor-advance-cli', '--dpi=300', '--content-detection=normal',
+            'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
             '--output-dpi=300', '--color-mode=color_grayscale',
-            img, os.path.join(root_folder, 'scantailor-advance')
+            img, os.path.join(root_folder, 'scantailor-advanced')
         ])
         call([
-            'scantailor-advance-cli', '--dpi=300', '--output-dpi=1200',
-            img, os.path.join(root_folder, 'scantailor-advance-1200')
+            'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
+            img, os.path.join(root_folder, 'scantailor-advanced-1200')
         ])
-        call([
-            'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
-            '--output-dpi=300', '--color-mode=color_grayscale',
-            img, os.path.join(root_folder, 'scantailor-universal')
-        ])
-        call([
-            'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
-            img, os.path.join(root_folder, 'scantailor-universal-1200')
-        ])
+#        call([
+#            'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
+#            '--output-dpi=300', '--color-mode=color_grayscale',
+#            img, os.path.join(root_folder, 'scantailor-universal')
+#        ])
+#        call([
+#            'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
+#            img, os.path.join(root_folder, 'scantailor-universal-1200')
+#        ])
         call([
             'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
         ])
+        call('tesseract -l fra+eng {} stdout pdf > {}'.format(
+            img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
+        ), shell=True)
         img2 = os.path.join(root_folder, os.path.basename(img))
         call(convert + [img, img2])
         images.append(img2)
