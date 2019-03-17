@@ -65,7 +65,7 @@ def crop(
     """
     o_w, o_h = [int(e) for e in output(convert + [
         img, '-format', '%w %h', 'info:-'
-    ]).strip().split(b' ')]
+    ]).strip().split(' ')]
     w, h, x, y = [int(e) for e in re.split(b'[x+]', output(convert + [
         img, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
         '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz',
