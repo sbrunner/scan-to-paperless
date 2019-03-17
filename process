@@ -14,6 +14,7 @@ import subprocess
 import time
 import traceback
 import yaml
+from typing import List
 
 
 mogrify = ['gm', 'mogrify']
@@ -50,23 +51,30 @@ def call(cmd, cmd2=None, **kwargs):
     subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)
 
 
-def output(cmd, cmd2=None, **kwargs):
+def output(cmd: List[str], cmd2=None, **kwargs) -> str:
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    return subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)
+    return subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs).decode()
 
 
-def crop(img, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15, noise='7', blur='0x3', fuzz='25%'):
+def crop(
+    img, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15, noise='7',
+    blur='0x3', fuzz='25%'
+):
     """
     Margin in px
     """
-    o_w, o_h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).strip().split(b' ')]
+    o_w, o_h = [int(e) for e in output(convert + [
+        img, '-format', '%w %h', 'info:-'
+    ]).strip().split(b' ')]
     w, h, x, y = [int(e) for e in re.split(b'[x+]', output(convert + [
         img, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
-        '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz', fuzz, '-format', '%@', 'info:-'
+        '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz',
+        fuzz, '-format', '%@', 'info:-'
     ]).strip())]
     if h <= o_h and w <= o_w:
         call(convert + [img, '-background', '#ffffff', '-crop', '{}x{}+{}+{}'.format(
-            w + 2 * marging_horizontal, h + 2 * maring_vertical, x - marging_horizontal + rm_left, y - maring_vertical + rm_top
+            w + 2 * marging_horizontal, h + 2 * maring_vertical,
+            x - marging_horizontal + rm_left, y - maring_vertical + rm_top
         ), '+repage', img])
 
 
@@ -96,7 +104,9 @@ def transform(config, root_folder):
             os.makedirs(os.path.join(root_folder, path))
     count = 0
     for img in config['images']:
-        shutil.copyfile(os.path.join(root_folder, img), os.path.join(root_folder, 'process', os.path.basename(img)))
+        shutil.copyfile(os.path.join(root_folder, img), os.path.join(
+            root_folder, 'process', os.path.basename(img)
+        ))
         img = os.path.join(root_folder, 'process', os.path.basename(img))
         # force-cleanup
         if config['args']['level']:
@@ -121,20 +131,28 @@ def transform(config, root_folder):
         # Margin in mm
         marging_horizontal = 10
         maring_vertical = 7
-        crop(img, round(marging_horizontal / 10 / 2.51 * 300), round(maring_vertical / 10 / 2.51 * 300))
+        crop(
+            img,
+            round(marging_horizontal / 10 / 2.51 * 300),
+            round(maring_vertical / 10 / 2.51 * 300)
+        )
         save(root_folder, img, '4-crop')
 
         # sharpen
         call(mogrify + ['-sharpen', '0x2', img])
         save(root_folder, img, '5-sharpen')
         # dither
-        #call(mogrify + ['+dither', img])
+        # call(mogrify + ['+dither', img])
         # auto-rotate
         try:
             orientation = 0
-            orientation = output(['tesseract', img, '-', '--psm', '0', '-l', 'osd']).decode('utf-8')
-#            orientation = output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng']).decode('utf-8')
-            orientation = [e for e in orientation.splitlines() if 'Orientation in degrees' in e]
+            orientation = output([
+                'tesseract', img, '-', '--psm', '0', '-l', 'osd'
+            ])
+#            orientation = output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng'])
+            orientation = [
+                e for e in orientation.splitlines() if 'Orientation in degrees' in e
+            ]
             orientation = '-' + orientation[0].split()[3]
 
             call(mogrify + ['-rotate', orientation, img])
@@ -145,15 +163,20 @@ def transform(config, root_folder):
             )
 
         # is empty ?
-        w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).split(b' ')]
-        if output(
-            convert + [img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw', 'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-']
-        )[0:4] == b'1x1+':
+        w, h = [int(e) for e in output(convert + [
+            img, '-format', '%w %h', 'info:-'
+        ]).split(b' ')]
+        if output(convert + [
+            img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw',
+            'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'
+        ])[0:4] == b'1x1+':
             print("Ignore image with no content: {}".format(img))
             continue
 
         try:
-            w, h = [int(e) for e in output(convert + [img, '-format', '%w %h', 'info:-']).strip().split(b' ')]
+            w, h = [int(e) for e in output(convert + [
+                img, '-format', '%w %h', 'info:-'
+            ]).strip().split(b' ')]
             folder = os.path.join(root_folder, 'auto-split')
             if not os.path.exists(folder):
                 os.makedirs(folder)
@@ -229,7 +252,9 @@ def finalise(config, root_folder):
             if os.path.exists(img):
                     images2.append(img)
 
-        call(convert + images2 + ['-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')])
+        call(convert + images2 + [
+            '-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')
+        ])
         images = [os.path.join(root_folder, 'final.png')]
 
     pdf = []
