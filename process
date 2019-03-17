@@ -204,15 +204,15 @@ def transform(config, root_folder):
             'scantailor-cli', '--dpi=300', '--output-dpi=1200',
             img, os.path.join(root_folder, 'scantailor-1200')
         ])
-        call([
-            'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
-            '--output-dpi=300', '--color-mode=color_grayscale',
-            img, os.path.join(root_folder, 'scantailor-advanced')
-        ])
-        call([
-            'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
-            img, os.path.join(root_folder, 'scantailor-advanced-1200')
-        ])
+#        call([
+#            'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
+#            '--output-dpi=300', '--color-mode=color_grayscale',
+#            img, os.path.join(root_folder, 'scantailor-advanced')
+#        ])
+#        call([
+#            'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
+#            img, os.path.join(root_folder, 'scantailor-advanced-1200')
+#        ])
 #        call([
 #            'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
 #            '--output-dpi=300', '--color-mode=color_grayscale',
