@@ -193,7 +193,7 @@ def transform(config, root_folder):
             ])
 
         except Exception as e:
-            print('error: ' + e)
+            print('error: {}'.format(e))
 
         call([
             'scantailor-cli', '--dpi=300', '--content-detection=normal',
