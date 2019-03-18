@@ -66,7 +66,7 @@ def crop(
     o_w, o_h = [int(e) for e in output(convert + [
         img, '-format', '%w %h', 'info:-'
     ]).strip().split(' ')]
-    w, h, x, y = [int(e) for e in re.split(b'[x+]', output(convert + [
+    w, h, x, y = [int(e) for e in re.split('[x+]', output(convert + [
         img, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
         '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz',
         fuzz, '-format', '%@', 'info:-'
@@ -165,18 +165,18 @@ def transform(config, root_folder):
         # is empty ?
         w, h = [int(e) for e in output(convert + [
             img, '-format', '%w %h', 'info:-'
-        ]).split(b' ')]
+        ]).split(' ')]
         if output(convert + [
             img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw',
             'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'
-        ])[0:4] == b'1x1+':
+        ])[0:4] == '1x1+':
             print("Ignore image with no content: {}".format(img))
             continue
 
         try:
             w, h = [int(e) for e in output(convert + [
                 img, '-format', '%w %h', 'info:-'
-            ]).strip().split(b' ')]
+            ]).strip().split(' ')]
             folder = os.path.join(root_folder, 'auto-split')
             if not os.path.exists(folder):
                 os.makedirs(folder)
