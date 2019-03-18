@@ -99,6 +99,7 @@ def transform(config, root_folder):
         'scantailor-universal',
         'scantailor-universal-1200',
         'teseract',
+        'unpaper',
     ):
         if not os.path.exists(os.path.join(root_folder, path)):
             os.makedirs(os.path.join(root_folder, path))
