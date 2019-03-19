@@ -224,7 +224,7 @@ def transform(config, root_folder):
 #            img, os.path.join(root_folder, 'scantailor-universal-1200')
 #        ])
         call([
-            'unpaper', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
+            'unpaper', '--overwrite', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
         ])
         call('tesseract -l fra+eng {} stdout pdf > {}'.format(
             img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
