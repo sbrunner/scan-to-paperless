@@ -192,43 +192,66 @@ def transform(config, root_folder):
                 '-crop', '{}x{}+{}+0'.format(w / 2, h, w / 2),
                 img, os.path.join(folder, 'image-{}.png'.format(count))
             ])
-
         except Exception as e:
-            print('error: {}'.format(e))
+            print('Error: {}'.format(e))
 
-        call([
-            'scantailor-cli', '--dpi=300', '--content-detection=normal',
-            '--output-dpi=300', '--color-mode=color_grayscale',
-            img, os.path.join(root_folder, 'scantailor')
-        ])
-        call([
-            'scantailor-cli', '--dpi=300', '--output-dpi=1200',
-            img, os.path.join(root_folder, 'scantailor-1200')
-        ])
-#        call([
-#            'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
-#            '--output-dpi=300', '--color-mode=color_grayscale',
-#            img, os.path.join(root_folder, 'scantailor-advanced')
-#        ])
-#        call([
-#            'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
-#            img, os.path.join(root_folder, 'scantailor-advanced-1200')
-#        ])
-#        call([
-#            'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
-#            '--output-dpi=300', '--color-mode=color_grayscale',
-#            img, os.path.join(root_folder, 'scantailor-universal')
-#        ])
-#        call([
-#            'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
-#            img, os.path.join(root_folder, 'scantailor-universal-1200')
-#        ])
-        call([
-            'unpaper', '--overwrite', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
-        ])
-        call('tesseract -l fra+eng {} stdout pdf > {}'.format(
-            img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
-        ), shell=True)
+        try:
+            call([
+                'scantailor-cli', '--dpi=300', '--content-detection=normal',
+                '--output-dpi=300', '--color-mode=color_grayscale',
+                img, os.path.join(root_folder, 'scantailor')
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call([
+                'scantailor-cli', '--dpi=300', '--output-dpi=1200',
+                img, os.path.join(root_folder, 'scantailor-1200')
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call([
+                'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
+                '--output-dpi=300', '--color-mode=color_grayscale',
+                img, os.path.join(root_folder, 'scantailor-advanced')
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call([
+                'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
+                img, os.path.join(root_folder, 'scantailor-advanced-1200')
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call([
+                'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
+                '--output-dpi=300', '--color-mode=color_grayscale',
+                img, os.path.join(root_folder, 'scantailor-universal')
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call([
+                'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
+                img, os.path.join(root_folder, 'scantailor-universal-1200')
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call([
+                'unpaper', '--overwrite', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
+            ])
+        except Exception as e:
+            print('Error: {}'.format(e))
+        try:
+            call('tesseract -l fra+eng {} stdout pdf > {}'.format(
+                img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
+            ), shell=True)
+        except Exception as e:
+            print('Error: {}'.format(e))
         img2 = os.path.join(root_folder, os.path.basename(img))
         call(convert + [img, img2])
         images.append(img2)
