@@ -98,7 +98,7 @@ def transform(config, root_folder):
         'scantailor-advanced-1200',
         'scantailor-universal',
         'scantailor-universal-1200',
-        'tesseract'
+        'tesseract',
         'unpaper',
     ):
         if not os.path.exists(os.path.join(root_folder, path)):
