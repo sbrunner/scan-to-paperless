@@ -14,6 +14,9 @@ import subprocess
 import time
 import traceback
 import yaml
+import numpy as np
+import cv2
+from scipy.signal import find_peaks
 from typing import List
 
 
@@ -78,11 +81,15 @@ def crop(
         ), '+repage', img])
 
 
-def save(root_folder, img, folder):
-    if os.environ.get("PROGRESS") == "TRUE":
-        if not os.path.exists(os.path.join(root_folder, folder)):
-            os.makedirs(os.path.join(root_folder, folder))
-        shutil.copyfile(img, os.path.join(root_folder, folder, os.path.basename(img)))
+def save(root_folder, img, folder, force=False):
+    if force or os.environ.get("PROGRESS") == "TRUE":
+        dest_folder = os.path.join(root_folder, folder)
+        if not os.path.exists(dest_folder):
+            os.makedirs(dest_folder)
+        dest_file = os.path.join(dest_folder, os.path.basename(img))
+        shutil.copyfile(img, dest_file)
+        return dest_file
+    return img
 
 
 def transform(config, root_folder):
@@ -90,21 +97,25 @@ def transform(config, root_folder):
         del config['intermediate_error']
 
     images = list()
-    for path in (
-        'process',
-        'scantailor',
-        'scantailor-1200',
-        'scantailor-advanced',
-        'scantailor-advanced-1200',
-        'scantailor-universal',
-        'scantailor-universal-1200',
-        'tesseract',
-        'unpaper',
-    ):
-        if not os.path.exists(os.path.join(root_folder, path)):
-            os.makedirs(os.path.join(root_folder, path))
+    if os.environ.get("EXPERIMENTAL") == "TRUE":
+        for path in (
+            'process',
+            'scantailor',
+            'scantailor-1200',
+            'scantailor-advanced',
+            'scantailor-advanced-1200',
+            'scantailor-universal',
+            'scantailor-universal-1200',
+            'tesseract',
+            'unpaper',
+        ):
+            if not os.path.exists(os.path.join(root_folder, path)):
+                os.makedirs(os.path.join(root_folder, path))
     count = 0
-    for img in config['images']:
+    if config['args']['assisted_split']:
+        config['assisted_split'] = []
+
+    for nb, img in enumerate(config['images']):
         shutil.copyfile(os.path.join(root_folder, img), os.path.join(
             root_folder, 'process', os.path.basename(img)
         ))
@@ -174,89 +185,230 @@ def transform(config, root_folder):
             print("Ignore image with no content: {}".format(img))
             continue
 
-        try:
-            w, h = [int(e) for e in output(convert + [
-                img, '-format', '%w %h', 'info:-'
-            ]).strip().split(' ')]
-            folder = os.path.join(root_folder, 'auto-split')
-            if not os.path.exists(folder):
-                os.makedirs(folder)
+        if config['args']['assisted_split']:
+            split = {}
+            config['assisted_split'].append(split)
+            split['destinations'] = [len(config['images']) * 2 - nb, nb + 1]
 
-            count += 1
-            call(convert + [
-                '-crop', '{}x{}+0+0'.format(w / 2, h),
-                img, os.path.join(folder, 'image-{}.png'.format(count))
-            ])
-            count += 1
-            call(convert + [
-                '-crop', '{}x{}+{}+0'.format(w / 2, h, w / 2),
-                img, os.path.join(folder, 'image-{}.png'.format(count))
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
+            image = cv2.imread(img)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+            lines = cv2.HoughLinesP(
+                image=edges, rho=0.02, theta=np.pi/500, threshold=10, lines=np.array([]), minLineLength=100,
+                maxLineGap=100
+            )
 
-        try:
-            call([
-                'scantailor-cli', '--dpi=300', '--content-detection=normal',
-                '--output-dpi=300', '--color-mode=color_grayscale',
-                img, os.path.join(root_folder, 'scantailor')
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call([
-                'scantailor-cli', '--dpi=300', '--output-dpi=1200',
-                img, os.path.join(root_folder, 'scantailor-1200')
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call([
-                'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
-                '--output-dpi=300', '--color-mode=color_grayscale',
-                img, os.path.join(root_folder, 'scantailor-advanced')
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call([
-                'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
-                img, os.path.join(root_folder, 'scantailor-advanced-1200')
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call([
-                'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
-                '--output-dpi=300', '--color-mode=color_grayscale',
-                img, os.path.join(root_folder, 'scantailor-universal')
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call([
-                'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
-                img, os.path.join(root_folder, 'scantailor-universal-1200')
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call([
-                'unpaper', '--overwrite', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
-            ])
-        except Exception as e:
-            print('Error: {}'.format(e))
-        try:
-            call('tesseract -l fra+eng {} stdout pdf > {}'.format(
-                img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
-            ), shell=True)
-        except Exception as e:
-            print('Error: {}'.format(e))
-        img2 = os.path.join(root_folder, os.path.basename(img))
-        call(convert + [img, img2])
-        images.append(img2)
+            def draw_line(limits, image, vertical, i, p, value):
+                img_len = image.shape[0 if vertical else 1]
+                color = (255, 0, 0) if vertical else (0, 255, 0)
+                cv2.line(
+                    image, (p - 1, img_len), (p - 1, img_len - value), color, 2, cv2.LINE_AA
+                )
+                cv2.putText(
+                    image, str(i), (p, img_len - value), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4
+                )
+                limits.append({
+                    'name': i,
+                    'value': value,
+                    'type': 'veritcal' if vertical else 'horizontal',
+                    'margin': 0,
+                })
+
+            def fill_limits(vertical):
+                values = np.zeros(image.shape[1 if vertical else 0])
+                for i in range(lines.shape[0]):
+                    line = lines[i][0]
+                    if line[0 if vertical else 1] == line[2 if vertical else 3]:
+                        values[line[0 if vertical else 1]] += \
+                            line[1 if vertical else 0] - line[3 if vertical else 2]
+                v2 = np.correlate(values, [
+                    # .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, .9, .8, .7, .6, .5, .4, .3, .2, .1
+                    .2, .4, .6, .8, 1, .8, .6, .4, .2
+                ])
+                peaks, properties = find_peaks(values, height=100, distance=20)
+
+                limits = []
+                split['limits'] = limits
+                if len(peaks) > 0:
+                    for i, p in enumerate(peaks):
+                        value = int(round(properties['peak_heights'][i]))
+                        draw_line(limits, image, vertical, i, p, value)
+                else:
+                    i = 1
+                    p = image.shape[1 if vertical else 0] / 2
+                    draw_line(limits, image, vertical, i, p, image.shape[0 if vertical else 1] / 2)
+
+            fill_limits(True)
+            fill_limits(False)
+
+            name = os.path.join(root_folder, os.path.basename(img))
+            split['image'] = name
+            split['source'] = save(root_folder, img, '7-assisted-split', True)
+            cv2.imwrite(name, image)
+            images.append(name)
+
+        else:
+            img2 = os.path.join(root_folder, os.path.basename(img))
+            call(convert + [img, img2])
+            images.append(img2)
+
+        if os.environ.get("EXPERIMENTAL") == "TRUE":
+            try:
+                w, h = [int(e) for e in output(convert + [
+                    img, '-format', '%w %h', 'info:-'
+                ]).strip().split(' ')]
+                folder = os.path.join(root_folder, 'auto-split')
+                if not os.path.exists(folder):
+                    os.makedirs(folder)
+
+                count += 1
+                call(convert + [
+                    '-crop', '{}x{}+0+0'.format(w / 2, h),
+                    img, os.path.join(folder, 'image-{}.png'.format(count))
+                ])
+                count += 1
+                call(convert + [
+                    '-crop', '{}x{}+{}+0'.format(w / 2, h, w / 2),
+                    img, os.path.join(folder, 'image-{}.png'.format(count))
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+
+            try:
+                call([
+                    'scantailor-cli', '--dpi=300', '--content-detection=normal',
+                    '--output-dpi=300', '--color-mode=color_grayscale',
+                    img, os.path.join(root_folder, 'scantailor')
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call([
+                    'scantailor-cli', '--dpi=300', '--output-dpi=1200',
+                    img, os.path.join(root_folder, 'scantailor-1200')
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call([
+                    'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
+                    '--output-dpi=300', '--color-mode=color_grayscale',
+                    img, os.path.join(root_folder, 'scantailor-advanced')
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call([
+                    'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
+                    img, os.path.join(root_folder, 'scantailor-advanced-1200')
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call([
+                    'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
+                    '--output-dpi=300', '--color-mode=color_grayscale',
+                    img, os.path.join(root_folder, 'scantailor-universal')
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call([
+                    'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
+                    img, os.path.join(root_folder, 'scantailor-universal-1200')
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call([
+                    'unpaper', '--overwrite', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
+                ])
+            except Exception as e:
+                print('Error: {}'.format(e))
+            try:
+                call('tesseract -l fra+eng {} stdout pdf > {}'.format(
+                    img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
+                ), shell=True)
+            except Exception as e:
+                print('Error: {}'.format(e))
 
     return images
+
+
+def split(config, root_folder):
+    for split in config['assisted_split']:
+        if len(split['limits']) > 0:
+            if len(split['limits']) != len(split['destination']) + 1:
+                raise Exception("Wrong number of limits ({}) or destionations ({}) for img '{}'".format(
+                    len(split['limits']), len(split['destination']), split['source']
+                ))
+            type_ = split['limits'][0]['type']
+            for limit in split['limits']:
+                if limit['type'] != type_:
+                    raise Exception("Mix of limit type for img '{}'".format(split['source']))
+
+    for split in config['assisted_split']:
+        os.unlink(split['name'])
+
+    append = {}
+    transformed_images = []
+    for split in config['assisted_split']:
+        img = split['source']
+        w, h = [int(e) for e in output(convert + [
+            img, '-format', '%w %h', 'info:-'
+        ]).strip().split(' ')]
+        type_ = split['limits'][0]['type']
+        last_pos = 0
+        for nb, destination in enumerate(split['destinations']):
+            value = split['value']
+            margin = split['margin']
+            if type_ == 'vertical':
+                call(convert + [
+                    '-crop', '{}x{}+{}+0'.format(split['value'] - margin - last_pos, h, last_pos),
+                    img, os.path.join(root_folder, 'image-{}.png'.format(destination))
+                ])
+            else:
+                call(convert + [
+                    '-crop', '{}x{}+0+{}'.format(w, split['value'] - margin - last_pos, last_pos),
+                    img, os.path.join(root_folder, 'image-{}.png'.format(destination))
+                ])
+            last_pos = split['value'] + margin
+            if re.match(r'[0-9]+\.[0-9]+', destination):
+                page, pos = [int(e) for e in destination.split('.')]
+                if page not in append:
+                    append[page] = []
+                append[page].append({
+                    'name': img,
+                    'pos': pos,
+                    'type': type_
+                })
+            else:
+                save(root_folder, img, '8-split')
+                marging_horizontal = 10
+                maring_vertical = 7
+                crop(
+                    img,
+                    round(marging_horizontal / 10 / 2.51 * 300),
+                    round(maring_vertical / 10 / 2.51 * 300)
+                )
+                save(root_folder, img, '9-crop')
+                transformed_images.append(img)
+
+    for page, items in append.items():
+        type_ = items[0]['type']
+        for e in items:
+            if e['type'] != type_:
+                raise Exception("Mix of limit type for pahe '{}'".format(page))
+
+        call(convert + [e['name'] for e in sorted(items, key=lambda e: e['pos'])] + [
+            '-background', '#ffffff', '-append' if type_ == 'vertical' else '+append',
+            os.path.join(root_folder, 'image-{}.png'.format(page))
+        ])
+        save(root_folder, img, '8-split')
+        transformed_images.append(img)
+
+    config['splitted'] = True
+    config['transformed_images'] = sorted(transformed_images)
 
 
 def finalise(config, root_folder):
@@ -337,11 +489,16 @@ while True:
 
             if allready_proceed:
                 if not os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
-                    print(re.sub(r'.', '-', config_file_name))
-                    print(config_file_name)
-                    print("Finalise")
-
-                    finalise(config, root_folder)
+                    if config['args']['assisted_split'] and not config.get('splitted', False):
+                        print(re.sub(r'.', '-', config_file_name))
+                        print(config_file_name)
+                        print("Split")
+                        split(config, root_folder)
+                    else:
+                        print(re.sub(r'.', '-', config_file_name))
+                        print(config_file_name)
+                        print("Finalise")
+                        finalise(config, root_folder)
 
             else:
                 ok = True

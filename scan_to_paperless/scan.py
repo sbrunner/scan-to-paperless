@@ -168,6 +168,11 @@ def main():
         help='Append vertically the credit card'
     )
     add_argument(
+        '--assisted-split',
+        action='store_true',
+        help='Split operation, se help'
+    )
+    add_argument(
         '--set-config',
         nargs=2,
         action='append',
