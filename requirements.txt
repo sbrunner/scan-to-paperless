@@ -3,3 +3,4 @@ pyyaml
 numpy
 scipy
 opencv-python
+scikit-image

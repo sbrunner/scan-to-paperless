@@ -35,6 +35,40 @@ The scan utils will rotate and reorder all the sheets to get a good document.
 
 The options `--append-credit-card` will append all the sheets vertically to have the booth face of the credit card on the same page.
 
+### Assisted split
+
+1. Do your scan as usual with the extra option `--assisted-split`.
+
+2. After the process do his first pass you will have images with lines and numbers.
+   The lines represent the detected potential split of the image, the length indicate the strength of the detection.
+   In your config you will have somthing like:
+
+```
+assisted_split:
+- destinations:
+  - 4  # Page number of the left part of the image
+  - 1  # Same for the right page of the image
+  image: image-1.png  # name of the image
+  limits:
+  - margin: 0  # Margin around the split
+    name: 0  # Number visible on the generated image
+    value: 375  # The position of the split (can be manually edited)
+    vertical: true  # Will split the image vertically
+  - ...
+  source: /source/975468/7-assisted-split/image-1.png
+- ...
+```
+
+   Edit your config file, you should have one more destination then the limits.
+   If you put destinatination like that: 2.1, it mean that it will be the first part of the page 2 and the 2.2 will be the secound part.
+
+3. Delete the file `REMOVE_TO_CONTINUE`.
+
+4. After the process do his first pass you will have the final generated images.
+
+5. If it's OK delete the file `REMOVE_TO_CONTINUE`.
+
+
 ## Install
 
 Install in a venv in the home directory:

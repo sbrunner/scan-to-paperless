@@ -9,9 +9,6 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(HERE, 'README.md')) as f:
     README = f.read()
 
-with open(os.path.join(HERE, 'requirements.txt')) as f:
-    install_requires = f.read().splitlines()
-
 setup(
     name='scan-to-paperless',
     version='1.0.0',
@@ -25,7 +22,7 @@ setup(
     author_email='stephane.brunner@gmail.com',
     url='https://hub.docker.com/r/sbrunner/scan-to-paperless/',
     packages=find_packages(exclude=['tests.*']),
-    install_requires=install_requires,
+    install_requires=['argcomplete', 'pyyaml'],
     entry_points={
         'console_scripts': [
             'scan = scan_to_paperless.scan:main',

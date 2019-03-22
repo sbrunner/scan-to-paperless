@@ -1,30 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# TODO
-# - Do blur only one times
-# - other layouts
-# - fix content detection for romande energie
-# - add http://www.graphicsmagick.org/GraphicsMagick.html#details-sharpen
 
 import glob
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # nosec
+import sys
+import tempfile
 import time
 import traceback
+from typing import List
+
 import yaml
+from skimage.measure import compare_ssim
 import numpy as np
 import cv2
 from scipy.signal import find_peaks
-from typing import List
 
 
-mogrify = ['gm', 'mogrify']
-convert = ['gm', 'convert']
+CONVERT = ['gm', 'convert']
 
 
-def add_intermediate_error(config, config_file_name, error, tb):
+class Contest:  # pylint: disable=too-few-public-methods
+    def __init__(self, config, config_file_name, root_folder, image_name):
+        self.config = config
+        self.config_file_name = config_file_name
+        self.root_folder = root_folder
+        self.image_name = image_name
+        self.image = None
+
+
+def add_intermediate_error(config, config_file_name, error, traceback_):
     if 'intermediate_error' not in config:
         config['intermediate_error'] = []
 
@@ -33,52 +40,466 @@ def add_intermediate_error(config, config_file_name, error, tb):
     try:
         config['intermediate_error'].append({
             'error': error,
-            'traceback': tb,
+            'traceback': traceback_,
         })
         with open(config_file_name + '_', 'w') as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
-    except Exception as ex:
-        print(ex)
+    except Exception as exception:
+        print(exception)
         config['intermediate_error'] = old_intermediate_error
         config['intermediate_error'].append({
             'error': str(error),
-            'traceback': tb,
+            'traceback': traceback_,
         })
         with open(config_file_name + '_', 'w') as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
     os.rename(config_file_name + '_', config_file_name)
 
 
-def call(cmd, cmd2=None, **kwargs):
+def call(cmd, **kwargs):
+    if isinstance(cmd, list):
+        cmd = [str(element) for element in cmd]
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)
+    sys.stdout.flush()
+    subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)  # nosec
 
 
-def output(cmd: List[str], cmd2=None, **kwargs) -> str:
+def output(cmd: List[str], **kwargs) -> str:
+    if isinstance(cmd, list):
+        cmd = [str(element) for element in cmd]
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
-    return subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs).decode()
+    sys.stdout.flush()
+    return subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs).decode()  # nosec
+
+
+def image_diff(image1, image2):
+    if image1.shape != image2.shape:
+        print("The tow images don't have the same size {}x{} != {}x{}.".format(
+            image1.shape[0], image1.shape[1], image2.shape[0], image2.shape[1]
+        ))
+        return 9999, None
+    score, diff = compare_ssim(
+        cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY),
+        cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY),
+        full=True
+    )
+    diff = (diff * 255).astype("uint8")
+    return score, diff
+
+
+process_count = 0  # pylint: disable=invalid-name
+
+
+class Process:  # pylint: disable=too-few-public-methods
+    def __init__(self, name, experimental=False, ignore_error=False):
+        self.experimental = experimental
+        self.name = name
+        self.ignore_error = ignore_error
+
+    def __call__(self, func):
+        def wrapper(context, *args, **kwargs):
+            if self.experimental and os.environ.get("EXPERIMENTAL", "FALSE") != "TRUE":
+                return
+            old_image = context.image.copy() if self.experimental else None
+            if self.experimental or self.ignore_error:
+                try:
+                    new_image = func(context.image, *args, **kwargs)
+                    if new_image is not None:
+                        context.image = new_image
+                except Exception as exception:
+                    print(exception)
+                    add_intermediate_error(
+                        context.config, context.config_file_name,
+                        exception, traceback.format_exc().split('\n')
+                    )
+            else:
+                new_image = func(context.image, *args, **kwargs)
+                if new_image is None:
+                    raise Exception("No generated image...")
+                context.image = new_image
+            if self.experimental and context.image is not None:
+                _, diff = image_diff(old_image, context.image)
+                if diff is not None:
+                    dest_folder = os.path.join(context.root_folder, self.name)
+                    if not os.path.exists(dest_folder):
+                        os.makedirs(dest_folder)
+                    dest_image = os.path.join(dest_folder, context.image_name)
+                    cv2.imwrite(dest_image, diff)
+
+            global process_count  # pylint: disable=global-statement,invalid-name
+            if not self.experimental:
+                name = '{}-{}'.format(process_count, self.name)
+                process_count += 1
+            else:
+                name = self.name
+            if self.experimental or os.environ.get("PROGRESS", "FALSE") == "TRUE":
+                dest_folder = os.path.join(context.root_folder, name)
+                if not os.path.exists(dest_folder):
+                    os.makedirs(dest_folder)
+                dest_image = os.path.join(dest_folder, context.image_name)
+                cv2.imwrite(dest_image, context.image)
+
+        return wrapper
+
+
+def external(func):
+    def wrapper(image, *args, **kwargs):
+        source = tempfile.NamedTemporaryFile(suffix='.png')
+        cv2.imwrite(source.name, image)
+        destination = tempfile.NamedTemporaryFile(suffix='.png')
+        func(source.name, destination.name, *args, **kwargs)
+        return cv2.imread(destination.name)
+    return wrapper
 
 
 def crop(
-    img, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15, noise='7',
-    blur='0x3', fuzz='25%'
-):
+        source, destination, marging_horizontal=25, maring_vertical=25, rm_top=25, rm_left=15, noise='7',
+        blur='0x3', fuzz='25%'
+):  # pylint: disable=too-many-arguments
     """
     Margin in px
     """
-    o_w, o_h = [int(e) for e in output(convert + [
-        img, '-format', '%w %h', 'info:-'
+    o_w, o_h = [int(e) for e in output(CONVERT + [
+        source, '-format', '%w %h', 'info:-'
     ]).strip().split(' ')]
-    w, h, x, y = [int(e) for e in re.split('[x+]', output(convert + [
-        img, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
+    width, height, x, y = [int(e) for e in re.split('[x+]', output(CONVERT + [
+        source, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
         '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz',
         fuzz, '-format', '%@', 'info:-'
     ]).strip())]
-    if h <= o_h and w <= o_w:
-        call(convert + [img, '-background', '#ffffff', '-crop', '{}x{}+{}+{}'.format(
-            w + 2 * marging_horizontal, h + 2 * maring_vertical,
+    if height <= o_h and width <= o_w:
+        call(CONVERT + [source, '-background', '#ffffff', '-crop', '{}x{}+{}+{}'.format(
+            width + 2 * marging_horizontal, height + 2 * maring_vertical,
             x - marging_horizontal + rm_left, y - maring_vertical + rm_top
-        ), '+repage', img])
+        ), '+repage', destination])
+    else:
+        shutil.copyfile(source, destination)
+
+
+@Process('force-cleanup')
+@external
+def force_cleanup(source, destination, config):
+    if config['args']['level']:
+        call(CONVERT + ['-level', '15%,1,85%', source, destination])
+
+
+@Process('precrop')
+@external
+def precrop(source, destination):
+    marging_horizontal = 100
+    maring_vertical = 100
+    crop(
+        source, destination,
+        round(marging_horizontal / 10 / 2.51 * 300),
+        round(maring_vertical / 10 / 2.51 * 300)
+    )
+
+
+@Process('deskew')
+@external
+def deskew(source, destination):
+    call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', destination, source])
+
+
+@Process('docrop')
+@external
+def docrop(source, destination):
+    # Margin in mm
+    marging_horizontal = 10
+    maring_vertical = 7
+    crop(
+        source, destination,
+        round(marging_horizontal / 10 / 2.51 * 300),
+        round(maring_vertical / 10 / 2.51 * 300)
+    )
+
+
+@Process('sharpen')
+@external
+def sharpen(source, destination):
+    call(CONVERT + ['-sharpen', '0x2', source, destination])
+
+
+@Process('dither', True)
+@external
+def dither(source, destination):
+    call(CONVERT + ['+dither', source, destination])
+
+
+@Process('autorotate', False, True)
+@external
+def autorotate(source, destination):
+    orientation = 0
+    orientation = output([
+        'tesseract', source, '-', '--psm', '0', '-l', 'osd'
+    ])
+#   orientation = output(['tesseract', source, '-', '--psm', '0', '-l', 'fra+eng'])
+    orientation = [
+        e for e in orientation.splitlines() if 'Orientation in degrees' in e
+    ]
+    orientation = '-' + orientation[0].split()[3]
+
+    call(CONVERT + ['-rotate', orientation, source, destination])
+
+
+def draw_line(image, vertical, position, value, name, type_):  # pylint: disable=too-many-arguments
+    img_len = image.shape[0 if vertical else 1]
+    color = (255, 0, 0) if vertical else (0, 255, 0)
+    if vertical:
+        cv2.rectangle(
+            image, (int(position) - 1, img_len), (int(position) + 0, img_len - value), color, -1
+        )
+        cv2.putText(
+            image, name, (int(position), img_len - value), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4
+        )
+    else:
+        cv2.rectangle(
+            image, (0, int(position) - 1), (value, int(position) + 0), color, -1
+        )
+        cv2.putText(
+            image, name, (value, int(position)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4
+        )
+    return {
+        'name': name,
+        'type': type_,
+        'value': int(position),
+        'vertical': vertical,
+        'margin': 0,
+    }
+
+
+def find_lines(image, vertical):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+    lines = cv2.HoughLinesP(
+        image=edges, rho=0.02, theta=np.pi / 500, threshold=10, lines=np.array([]), minLineLength=100,
+        maxLineGap=100
+    )
+
+    values = np.zeros(image.shape[1 if vertical else 0])
+    for index in range(lines.shape[0]):
+        line = lines[index][0]
+        if line[0 if vertical else 1] == line[2 if vertical else 3]:
+            values[line[0 if vertical else 1]] += \
+                line[1 if vertical else 0] - line[3 if vertical else 2]
+    correlated_values = np.correlate(values, [
+        .2, .6, 1, .6, .2
+    ])
+    dist = 1
+    peaks, properties = find_peaks(correlated_values, height=dist * 10, distance=dist)
+    while len(peaks) > 3:
+        dist *= 2
+        peaks, properties = find_peaks(correlated_values, height=dist * 10, distance=dist)
+    peaks += 2
+
+    return peaks, properties
+
+
+def zero_ranges(values):
+    # Create an array that is 1 where a is 0, and pad each end with an extra 0.
+    iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))
+    absdiff = np.abs(np.diff(iszero))
+    # Runs start and end where absdiff is 1.
+    ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
+    return ranges
+
+
+def find_limit_contour(image, vertical):
+    contours = find_contours(image)
+    image_size = image.shape[1 if vertical else 0]
+
+    values = np.zeros(image_size)
+    for x, _, width, height in contours:
+        for value in range(x, min(x + width, image_size)):
+            values[value] += height
+
+    ranges = zero_ranges(values)
+
+    result = []
+    for ranges_ in ranges:
+        if ranges_[0] != 0 and ranges_[1] != image_size:
+            result.append(int(round(sum(ranges_) / 2)))
+
+    return result
+
+
+def fill_limits(image, vertical):
+    peaks, properties = find_lines(image, vertical)
+    contours = find_limit_contour(image, vertical)
+    third_image_size = int(image.shape[0 if vertical else 1] / 3)
+    limits = []
+    for index, peak in enumerate(peaks):
+        value = int(round(properties['peak_heights'][index] / 3))
+        limits.append(draw_line(image, vertical, peak, value, 'L{}'.format(index), 'line detection'))
+    for index, contour in enumerate(contours):
+        limits.append(draw_line(
+            image, vertical, contour, third_image_size, 'C{}'.format(index), 'contour detection'
+        ))
+    if not limits:
+        half_image_size = image.shape[1 if vertical else 0] / 2
+        limits.append(draw_line(image, vertical, half_image_size, third_image_size, 'C', 'image center'))
+
+    return limits
+
+
+def find_contours(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Clean the image using otsu method with the inversed binarized image
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 17, 25)
+
+    # Assign a rectangle kernel size
+    kernel = np.ones((5, 5), 'uint8')
+    par_img = cv2.dilate(thresh, kernel, iterations=5)
+
+    contours, _ = cv2.findContours(par_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    result = []
+
+    for cnt in contours:
+        x, y, width, height = cv2.boundingRect(cnt)
+        if width > 32 and height > 32:
+            result.append((x + 8, y + 8, width - 16, height - 16))
+
+    return result
+
+
+@Process('scantailor', True)
+@external
+def scantailor(source, destination):
+    call([
+        'scantailor-cli', '--dpi=300', '--content-detection=normal',
+        '--output-dpi=300', '--color-mode=color_grayscale',
+        source, os.path.dirname(destination)
+    ])
+
+
+@Process('scantailor-1200', True)
+@external
+def scantailor_1200(source, destination):
+    call([
+        'scantailor-cli', '--dpi=300', '--content-detection=normal',
+        '--output-dpi=300', '--color-mode=color_grayscale',
+        source, os.path.dirname(destination)
+    ])
+
+
+@Process('scantailor-advanced', True)
+@external
+def scantailor_advanced(source, destination):
+    call([
+        'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
+        '--output-dpi=300', '--color-mode=color_grayscale',
+        source, os.path.dirname(destination)
+    ])
+
+
+@Process('scantailor-advanced-1200', True)
+@external
+def scantailor_advanced_1200(source, destination):
+    call([
+        'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
+        '--output-dpi=300', '--color-mode=color_grayscale',
+        source, os.path.dirname(destination)
+    ])
+
+
+@Process('scantailor-universal', True)
+@external
+def scantailor_universal(source, destination):
+    call([
+        'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
+        '--output-dpi=300', '--color-mode=color_grayscale',
+        source, os.path.dirname(destination)
+    ])
+
+
+@Process('scantailor-universal-1200', True)
+@external
+def scantailor_universal_1200(source, destination):
+    call([
+        'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
+        '--output-dpi=300', '--color-mode=color_grayscale',
+        source, os.path.dirname(destination)
+    ])
+
+
+@Process('tesseract', True)
+@external
+def tesseract(source, destination):
+    call('tesseract -l fra+eng {} stdout pdf > {}'.format(source, destination), shell=True)  # nosec
+
+
+def transform(config, config_file_name, root_folder):
+    global process_count  # pylint: disable=global-statement,invalid-name
+
+    if 'intermediate_error' in config:
+        del config['intermediate_error']
+
+    images = list()
+
+    if config['args']['assisted_split']:
+        config['assisted_split'] = []
+
+    dest_folder = os.path.join(root_folder, 'process')  # TODO, pylint: disable=fixme
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
+    for index, img in enumerate(config['images']):
+        process_count = 0
+        image_name = os.path.basename(img)
+        image_path = os.path.join(dest_folder, image_name)
+        shutil.copyfile(os.path.join(root_folder, img), image_path)
+        context = Contest(config, config_file_name, root_folder, image_name)
+        context.image = cv2.imread(image_path)
+        force_cleanup(context, config)
+        precrop(context)
+        deskew(context)
+        docrop(context)
+        sharpen(context)
+        dither(context)
+        autorotate(context)
+
+        # is empty ?
+        contours = find_contours(context.image)
+        if not contours:
+            print("Ignore image with no content: {}".format(img))
+            continue
+
+        scantailor(context)
+        scantailor_1200(context)
+        scantailor_advanced(context)
+        scantailor_advanced_1200(context)
+        scantailor_universal(context)
+        scantailor_universal_1200(context)
+
+        if config['args']['assisted_split']:
+            assisted_split = {}
+            name = os.path.join(root_folder, context.image_name)
+            assisted_split['source'] = save_image(
+                context.image, root_folder,
+                '{}-assisted-split'.format(process_count), context.image_name, True
+            )
+            process_count += 1
+
+            config['assisted_split'].append(assisted_split)
+            destinations = [len(config['images']) * 2 - index, index + 1]
+            if index % 2 == 1:
+                destinations.reverse()
+            assisted_split['destinations'] = destinations
+
+            limits = []
+            limits.extend(fill_limits(context.image, True))
+            limits.extend(fill_limits(context.image, False))
+            assisted_split['limits'] = limits
+
+            cv2.imwrite(name, context.image)
+            assisted_split['image'] = context.image_name
+            images.append(name)
+        else:
+            img2 = os.path.join(root_folder, context.image_name)
+            cv2.imwrite(img2, context.image)
+            images.append(img2)
+
+    return images
 
 
 def save(root_folder, img, folder, force=False):
@@ -92,331 +513,120 @@ def save(root_folder, img, folder, force=False):
     return img
 
 
-def transform(config, root_folder):
-    if 'intermediate_error' in config:
-        del config['intermediate_error']
-
-    images = list()
-    if os.environ.get("EXPERIMENTAL") == "TRUE":
-        for path in (
-            'process',
-            'scantailor',
-            'scantailor-1200',
-            'scantailor-advanced',
-            'scantailor-advanced-1200',
-            'scantailor-universal',
-            'scantailor-universal-1200',
-            'tesseract',
-            'unpaper',
-        ):
-            if not os.path.exists(os.path.join(root_folder, path)):
-                os.makedirs(os.path.join(root_folder, path))
-    count = 0
-    if config['args']['assisted_split']:
-        config['assisted_split'] = []
-
-    for nb, img in enumerate(config['images']):
-        shutil.copyfile(os.path.join(root_folder, img), os.path.join(
-            root_folder, 'process', os.path.basename(img)
-        ))
-        img = os.path.join(root_folder, 'process', os.path.basename(img))
-        # force-cleanup
-        if config['args']['level']:
-            call(mogrify + ['-level', '15%,1,85%', img])
-            save(root_folder, img, '1-cleanup')
-
-        marging_horizontal = 100
-        maring_vertical = 100
-        crop(img, round(marging_horizontal / 10 / 2.51 * 300), round(maring_vertical / 10 / 2.51 * 300))
-        save(root_folder, img, '2-precrop')
-
-        try:
-            call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', img + '.d.png', img])
-            shutil.move(img + '.d.png', img)
-            save(root_folder, img, '3-deskew')
-        except subprocess.CalledProcessError as e:
-            print(e)
-            add_intermediate_error(
-                config, config_file_name, e, traceback.format_exc().split('\n')
-            )
-
-        # Margin in mm
-        marging_horizontal = 10
-        maring_vertical = 7
-        crop(
-            img,
-            round(marging_horizontal / 10 / 2.51 * 300),
-            round(maring_vertical / 10 / 2.51 * 300)
-        )
-        save(root_folder, img, '4-crop')
-
-        # sharpen
-        call(mogrify + ['-sharpen', '0x2', img])
-        save(root_folder, img, '5-sharpen')
-        # dither
-        # call(mogrify + ['+dither', img])
-        # auto-rotate
-        try:
-            orientation = 0
-            orientation = output([
-                'tesseract', img, '-', '--psm', '0', '-l', 'osd'
-            ])
-#            orientation = output(['tesseract', img, '-', '--psm', '0', '-l', 'fra+eng'])
-            orientation = [
-                e for e in orientation.splitlines() if 'Orientation in degrees' in e
-            ]
-            orientation = '-' + orientation[0].split()[3]
-
-            call(mogrify + ['-rotate', orientation, img])
-            save(root_folder, img, '6-autorotate')
-        except subprocess.CalledProcessError as e:
-            add_intermediate_error(
-                config, config_file_name, e, traceback.format_exc().split('\n')
-            )
-
-        # is empty ?
-        w, h = [int(e) for e in output(convert + [
-            img, '-format', '%w %h', 'info:-'
-        ]).split(' ')]
-        if output(convert + [
-            img, '-noise', '7', '-blur', '0x5', '-level', '20%,1,80%', '-draw',
-            'point {},{}'.format(w/2, h/2), '-format', '%@', 'info:-'
-        ])[0:4] == '1x1+':
-            print("Ignore image with no content: {}".format(img))
-            continue
-
-        if config['args']['assisted_split']:
-            split = {}
-            config['assisted_split'].append(split)
-            split['destinations'] = [len(config['images']) * 2 - nb, nb + 1]
-
-            image = cv2.imread(img)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-            lines = cv2.HoughLinesP(
-                image=edges, rho=0.02, theta=np.pi/500, threshold=10, lines=np.array([]), minLineLength=100,
-                maxLineGap=100
-            )
-
-            def draw_line(limits, image, vertical, i, p, value):
-                img_len = image.shape[0 if vertical else 1]
-                color = (255, 0, 0) if vertical else (0, 255, 0)
-                cv2.line(
-                    image, (p - 1, img_len), (p - 1, img_len - value), color, 2, cv2.LINE_AA
-                )
-                cv2.putText(
-                    image, str(i), (p, img_len - value), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4
-                )
-                limits.append({
-                    'name': i,
-                    'value': value,
-                    'type': 'veritcal' if vertical else 'horizontal',
-                    'margin': 0,
-                })
-
-            def fill_limits(vertical):
-                values = np.zeros(image.shape[1 if vertical else 0])
-                for i in range(lines.shape[0]):
-                    line = lines[i][0]
-                    if line[0 if vertical else 1] == line[2 if vertical else 3]:
-                        values[line[0 if vertical else 1]] += \
-                            line[1 if vertical else 0] - line[3 if vertical else 2]
-                v2 = np.correlate(values, [
-                    # .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, .9, .8, .7, .6, .5, .4, .3, .2, .1
-                    .2, .4, .6, .8, 1, .8, .6, .4, .2
-                ])
-                peaks, properties = find_peaks(values, height=100, distance=20)
-
-                limits = []
-                split['limits'] = limits
-                if len(peaks) > 0:
-                    for i, p in enumerate(peaks):
-                        value = int(round(properties['peak_heights'][i]))
-                        draw_line(limits, image, vertical, i, p, value)
-                else:
-                    i = 1
-                    p = image.shape[1 if vertical else 0] / 2
-                    draw_line(limits, image, vertical, i, p, image.shape[0 if vertical else 1] / 2)
-
-            fill_limits(True)
-            fill_limits(False)
-
-            name = os.path.join(root_folder, os.path.basename(img))
-            split['image'] = name
-            split['source'] = save(root_folder, img, '7-assisted-split', True)
-            cv2.imwrite(name, image)
-            images.append(name)
-
-        else:
-            img2 = os.path.join(root_folder, os.path.basename(img))
-            call(convert + [img, img2])
-            images.append(img2)
-
-        if os.environ.get("EXPERIMENTAL") == "TRUE":
-            try:
-                w, h = [int(e) for e in output(convert + [
-                    img, '-format', '%w %h', 'info:-'
-                ]).strip().split(' ')]
-                folder = os.path.join(root_folder, 'auto-split')
-                if not os.path.exists(folder):
-                    os.makedirs(folder)
-
-                count += 1
-                call(convert + [
-                    '-crop', '{}x{}+0+0'.format(w / 2, h),
-                    img, os.path.join(folder, 'image-{}.png'.format(count))
-                ])
-                count += 1
-                call(convert + [
-                    '-crop', '{}x{}+{}+0'.format(w / 2, h, w / 2),
-                    img, os.path.join(folder, 'image-{}.png'.format(count))
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-
-            try:
-                call([
-                    'scantailor-cli', '--dpi=300', '--content-detection=normal',
-                    '--output-dpi=300', '--color-mode=color_grayscale',
-                    img, os.path.join(root_folder, 'scantailor')
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call([
-                    'scantailor-cli', '--dpi=300', '--output-dpi=1200',
-                    img, os.path.join(root_folder, 'scantailor-1200')
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call([
-                    'scantailor-advanced-cli', '--dpi=300', '--content-detection=normal',
-                    '--output-dpi=300', '--color-mode=color_grayscale',
-                    img, os.path.join(root_folder, 'scantailor-advanced')
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call([
-                    'scantailor-advanced-cli', '--dpi=300', '--output-dpi=1200',
-                    img, os.path.join(root_folder, 'scantailor-advanced-1200')
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call([
-                    'scantailor-universal-cli', '--dpi=300', '--content-detection=normal',
-                    '--output-dpi=300', '--color-mode=color_grayscale',
-                    img, os.path.join(root_folder, 'scantailor-universal')
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call([
-                    'scantailor-universal-cli', '--dpi=300', '--output-dpi=1200',
-                    img, os.path.join(root_folder, 'scantailor-universal-1200')
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call([
-                    'unpaper', '--overwrite', img, os.path.join(root_folder, 'unpaper', os.path.basename(img))
-                ])
-            except Exception as e:
-                print('Error: {}'.format(e))
-            try:
-                call('tesseract -l fra+eng {} stdout pdf > {}'.format(
-                    img, os.path.join(root_folder, 'tesseract', os.path.basename(img))
-                ), shell=True)
-            except Exception as e:
-                print('Error: {}'.format(e))
-
-    return images
+def save_image(image, root_folder, folder, name, force=False):
+    if force or os.environ.get("PROGRESS") == "TRUE":
+        dest_folder = os.path.join(root_folder, folder)
+        if not os.path.exists(dest_folder):
+            os.makedirs(dest_folder)
+        dest_file = os.path.join(dest_folder, name)
+        cv2.imwrite(dest_file, image)
+        return dest_file
+    return None
 
 
-def split(config, root_folder):
-    for split in config['assisted_split']:
-        if len(split['limits']) > 0:
-            if len(split['limits']) != len(split['destination']) + 1:
-                raise Exception("Wrong number of limits ({}) or destionations ({}) for img '{}'".format(
-                    len(split['limits']), len(split['destination']), split['source']
+def split(config, root_folder, config_file_name):
+    for assisted_split in config['assisted_split']:
+        if assisted_split['limits']:
+            if len(assisted_split['limits']) != len(assisted_split['destinations']) - 1:
+                raise Exception("Wrong number of limits ({}) or destinations ({}) for img '{}'".format(
+                    len(assisted_split['limits']),
+                    len(assisted_split['destinations']),
+                    assisted_split['source'],
                 ))
-            type_ = split['limits'][0]['type']
-            for limit in split['limits']:
-                if limit['type'] != type_:
-                    raise Exception("Mix of limit type for img '{}'".format(split['source']))
+            vertical = assisted_split['limits'][0]['vertical']
+            for limit in assisted_split['limits']:
+                if limit['vertical'] != vertical:
+                    raise Exception("Mix of limit type for img '{}'".format(assisted_split['source']))
 
-    for split in config['assisted_split']:
-        os.unlink(split['name'])
+    for assisted_split in config['assisted_split']:
+        image_path = os.path.join(root_folder, assisted_split['image'])
+        if os.path.exists(image_path):
+            os.unlink(image_path)
 
     append = {}
     transformed_images = []
-    for split in config['assisted_split']:
-        img = split['source']
-        w, h = [int(e) for e in output(convert + [
+    for assisted_split in config['assisted_split']:
+        img = assisted_split['source']
+        width, height = [int(e) for e in output(CONVERT + [
             img, '-format', '%w %h', 'info:-'
         ]).strip().split(' ')]
-        type_ = split['limits'][0]['type']
+        vertical = assisted_split['limits'][0]['vertical']
         last_pos = 0
-        for nb, destination in enumerate(split['destinations']):
-            value = split['value']
-            margin = split['margin']
-            if type_ == 'vertical':
-                call(convert + [
-                    '-crop', '{}x{}+{}+0'.format(split['value'] - margin - last_pos, h, last_pos),
-                    img, os.path.join(root_folder, 'image-{}.png'.format(destination))
+        for number, destination in enumerate(assisted_split['destinations']):
+            if number < len(assisted_split['limits']):
+                limit = assisted_split['limits'][number]
+                value = limit['value']
+                margin = limit['margin']
+            else:
+                value = width if vertical else height
+                margin = 0
+            img2 = os.path.join(root_folder, 'process', 'image-{}.png'.format(destination))  # TODO, pylint: disable=fixme
+            if vertical:
+                call(CONVERT + [
+                    '-crop', '{}x{}+{}+0'.format(value - margin - last_pos, height, last_pos),
+                    '+repage', img, img2
                 ])
             else:
-                call(convert + [
-                    '-crop', '{}x{}+0+{}'.format(w, split['value'] - margin - last_pos, last_pos),
-                    img, os.path.join(root_folder, 'image-{}.png'.format(destination))
+                call(CONVERT + [
+                    '-crop', '{}x{}+0+{}'.format(width, value - margin - last_pos, last_pos),
+                    '+repage', img, img2
                 ])
-            last_pos = split['value'] + margin
-            if re.match(r'[0-9]+\.[0-9]+', destination):
+            last_pos = value + margin
+            if re.match(r'[0-9]+\.[0-9]+', str(destination)):
                 page, pos = [int(e) for e in destination.split('.')]
                 if page not in append:
                     append[page] = []
                 append[page].append({
-                    'name': img,
+                    'name': img2,
                     'pos': pos,
-                    'type': type_
+                    'vertical': vertical
                 })
             else:
-                save(root_folder, img, '8-split')
+                save(root_folder, img2, '8-split')  # TODO, pylint: disable=fixme
                 marging_horizontal = 10
                 maring_vertical = 7
                 crop(
-                    img,
+                    img2,
                     round(marging_horizontal / 10 / 2.51 * 300),
                     round(maring_vertical / 10 / 2.51 * 300)
                 )
-                save(root_folder, img, '9-crop')
-                transformed_images.append(img)
+                save(root_folder, img2, '9-crop')  # TODO, pylint: disable=fixme
+                img3 = os.path.join(root_folder, 'image-{}.png'.format(destination))
+                call(CONVERT + [img2, img3])
+                transformed_images.append(img3)
 
     for page, items in append.items():
-        type_ = items[0]['type']
-        for e in items:
-            if e['type'] != type_:
-                raise Exception("Mix of limit type for pahe '{}'".format(page))
+        vertical = items[0]['vertical']
+        for element in items:
+            if element['vertical'] != vertical:
+                raise Exception("Mix of limit type for page '{}'".format(page))
 
-        call(convert + [e['name'] for e in sorted(items, key=lambda e: e['pos'])] + [
-            '-background', '#ffffff', '-append' if type_ == 'vertical' else '+append',
-            os.path.join(root_folder, 'image-{}.png'.format(page))
+        img = os.path.join(root_folder, 'process', 'image-{}.png'.format(page))
+        call(CONVERT + [e['name'] for e in sorted(items, key=lambda e: e['pos'])] + [
+            '-background', '#ffffff', '-append' if vertical else '+append', img
         ])
-        save(root_folder, img, '8-split')
-        transformed_images.append(img)
+        save(root_folder, img, '8-split')  # TODO, pylint: disable=fixme
+        img2 = os.path.join(root_folder, 'image-{}.png'.format(page))
+        call(CONVERT + [img, '+repage', img2])
+        transformed_images.append(img2)
 
     config['splitted'] = True
     config['transformed_images'] = sorted(transformed_images)
+    with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w'):
+        pass
+    with open(config_file_name + '_', 'w') as config_file:
+        config_file.write(yaml.safe_dump(config, default_flow_style=False))
+    os.rename(config_file_name + '_', config_file_name)
 
 
 def finalise(config, root_folder):
+    """
+    Final step on document generation (convert in one pdf and copy with the right name in the cusume folder)
+    """
 
     full_name = config['full_name']
     destination = config['destination']
 
-    print(destination)
     if os.path.exists(destination):
         return
 
@@ -426,9 +636,9 @@ def finalise(config, root_folder):
         images2 = []
         for img in images:
             if os.path.exists(img):
-                    images2.append(img)
+                images2.append(img)
 
-        call(convert + images2 + [
+        call(CONVERT + images2 + [
             '-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')
         ])
         images = [os.path.join(root_folder, 'final.png')]
@@ -439,8 +649,8 @@ def finalise(config, root_folder):
             name = os.path.splitext(os.path.basename(img))[0]
             call('tesseract -l fra+eng {} stdout pdf > {}'.format(
                 img, os.path.join(root_folder, '{}-tesseract.pdf'.format(name))
-            ), shell=True)
-            call(convert + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
+            ), shell=True)  # nosec
+            call(CONVERT + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
             pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
 
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
@@ -448,91 +658,100 @@ def finalise(config, root_folder):
 
     shutil.rmtree(root_folder)
 
-#    call(['chmod', '-R', 'go+rw', '/destination'])
+
+def write_error(root_folder, message):
+    if not os.path.exists(os.path.join(root_folder, 'error.yaml')):
+        with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+            error_file.write(yaml.safe_dump({
+                'error': message,
+            }, default_flow_style=False))
 
 
-mtime = time.ctime(os.path.getmtime('/opt/process'))
+def is_allready_proceed(config):
+    if 'transformed_images' not in config:
+        return False
+    for img in config['transformed_images']:
+        if not os.path.exists(img):
+            return False
+    return True
 
-print('Welcome to scaned images document to paperless.')
-print('Script time: ' + mtime)
-while True:
-    for config_file_name in glob.glob('/source/*/config.yaml'):
-        if not os.path.exists(config_file_name):
-            continue
 
-        root_folder = os.path.dirname(config_file_name)
+def is_source_present(config, root_folder):
+    for img in config['images']:
+        if not os.path.exists(os.path.join(root_folder, img)):
+            return False
+    return True
 
-        with open(config_file_name) as config_file:
-            config = yaml.safe_load(config_file.read())
-        if config is None:
-            if not os.path.exists(os.path.join(root_folder, 'error.yaml')):
-                with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                    error_file.write(yaml.safe_dump({
-                        'error': 'Empty config',
-                    }, default_flow_style=False))
-            continue
 
-        if os.path.exists(os.path.join(root_folder, 'error.yaml')):
-            continue
+def main():
+    """
+    Main function
+    """
+    print('Welcome to scanned images document to paperless.')
+    while True:
+        for config_file_name in glob.glob('/source/*/config.yaml'):
+            if not os.path.exists(config_file_name):
+                continue
 
-        if os.path.exists(os.path.join(root_folder, 'error.yaml')):
-            os.remove(os.path.join(root_folder, 'error.yaml'))
+            root_folder = os.path.dirname(config_file_name)
 
-        try:
-            allready_proceed = True
-            if 'transformed_images' not in config:
-                allready_proceed = False
-            else:
-                for img in config['transformed_images']:
-                    if not os.path.exists(img):
-                        allready_proceed = False
+            if os.path.exists(os.path.join(root_folder, 'error.yaml')):
+                continue
 
-            if allready_proceed:
-                if not os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
+            with open(config_file_name) as config_file:
+                config = yaml.safe_load(config_file.read())
+            if config is None:
+                write_error(root_folder, 'Empty config')
+                continue
+
+            try:
+                if is_allready_proceed(config):
+                    if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
+                        continue
+
                     if config['args']['assisted_split'] and not config.get('splitted', False):
-                        print(re.sub(r'.', '-', config_file_name))
                         print(config_file_name)
                         print("Split")
-                        split(config, root_folder)
+                        split(config, root_folder, config_file_name)
                     else:
-                        print(re.sub(r'.', '-', config_file_name))
                         print(config_file_name)
                         print("Finalise")
                         finalise(config, root_folder)
+                else:
+                    if not is_source_present(config, root_folder):
+                        write_error(root_folder, 'Missing one of sources images')
+                        continue
 
-            else:
-                ok = True
-                for img in config['images']:
-                    if not os.path.exists(os.path.join(root_folder, img)):
-                        ok = False
-
-                if ok:
-                    print(re.sub(r'.', '-', config_file_name))
                     print(config_file_name)
                     print("Transform")
 
-                    config['transformed_images'] = transform(config, root_folder)
+                    config['transformed_images'] = transform(config, config_file_name, root_folder)
                     with open(config_file_name + '_', 'w') as config_file:
                         config_file.write(yaml.safe_dump(config, default_flow_style=False))
                     os.rename(config_file_name + '_', config_file_name)
 
-                    with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w') as waiting_file:
+                    with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w'):
                         pass
 
-        except Exception as e:
-            print(e)
-            try:
-                with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                    error_file.write(yaml.dump({
-                        'error': e,
-                        'traceback': traceback.format_exc().split('\n'),
-                    }, default_flow_style=False))
-            except Exception as ex:
-                print(ex)
-                with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
-                    error_file.write(yaml.safe_dump({
-                        'error': str(e),
-                        'traceback': traceback.format_exc().split('\n'),
-                    }, default_flow_style=False))
+            except Exception as exception:
+                print(exception)
+                try:
+                    with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                        error_file.write(yaml.dump({
+                            'error': exception,
+                            'traceback': traceback.format_exc().split('\n'),
+                        }, default_flow_style=False))
+                except Exception as exception2:
+                    print(exception2)
+                    with open(os.path.join(root_folder, 'error.yaml'), 'w') as error_file:
+                        error_file.write(yaml.safe_dump({
+                            'error': str(exception2),
+                            'traceback': traceback.format_exc().split('\n'),
+                        }, default_flow_style=False))
 
-    time.sleep(30)
+        sys.stdout.flush()
+        time.sleep(30)
+
+
+if __name__ == "__main__":
+    main()

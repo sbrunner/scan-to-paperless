@@ -221,6 +221,7 @@ def main():
     try:
         scanimage = [
             'scanimage',
+            # TODO: put in config
             '--device=hpaio:/usb/HP_LaserJet_MFP_M129-M134?serial=VNC8K00063',
             '--format=png',
             '--mode=color',
