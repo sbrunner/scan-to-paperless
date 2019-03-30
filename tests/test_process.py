@@ -40,19 +40,19 @@ def check_image(root_folder, image, name):
     score, diff = process.image_diff(expected, result)
     if diff is not None:
         cv2.imwrite(os.path.join(root_folder, '{}.diff.png'.format(name)), diff)
-    assert score > 0.99, '{} ({}) != {} ({})'.format(expected, result, expected_name, image)
+    assert score > 0.999, '{} ({}) != {} ({})'.format(expected, result, expected_name, image)
 
 
 @pytest.mark.parametrize('type_,limit', [
     ('lines', {
-        'name': 'L0',
+        'name': 'VL0',
         'type': 'line detection',
         'value': 1821,
         'vertical': True,
         'margin': 0
     }),
     ('contour', {
-        'name': 'C0',
+        'name': 'VC0',
         'type': 'contour detection',
         'value': 1588,
         'vertical': True,

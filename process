@@ -328,16 +328,21 @@ def fill_limits(image, vertical):
     contours = find_limit_contour(image, vertical)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
     limits = []
+    prefix = 'V' if vertical else 'H'
     for index, peak in enumerate(peaks):
         value = int(round(properties['peak_heights'][index] / 3))
-        limits.append(draw_line(image, vertical, peak, value, 'L{}'.format(index), 'line detection'))
+        limits.append(draw_line(
+            image, vertical, peak, value, '{}L{}'.format(prefix, index), 'line detection'
+        ))
     for index, contour in enumerate(contours):
         limits.append(draw_line(
-            image, vertical, contour, third_image_size, 'C{}'.format(index), 'contour detection'
+            image, vertical, contour, third_image_size, '{}C{}'.format(prefix, index), 'contour detection'
         ))
     if not limits:
         half_image_size = image.shape[1 if vertical else 0] / 2
-        limits.append(draw_line(image, vertical, half_image_size, third_image_size, 'C', 'image center'))
+        limits.append(draw_line(
+            image, vertical, half_image_size, third_image_size, '{}C'.format(prefix), 'image center'
+        ))
 
     return limits
 
