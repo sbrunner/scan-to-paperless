@@ -11,7 +11,7 @@ jobs:
       - run: docker run --rm tests bandit -r process
       - run: docker run --rm tests mypy --ignore-missing-imports --disallow-untyped-defs --strict-optional --follow-imports skip /opt
       - run: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
-      - run: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; pytest --verbose --color=yes .'
+      - run: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; pytest --cov-report term-missing --cov=process --verbose --color=yes .'
       - store_artifacts:
           path: results
           destination: tests-results

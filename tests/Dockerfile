@@ -1,6 +1,6 @@
 FROM sbrunner/scan-to-paperless
 
-RUN pip3 install pytest pylint pyflakes bandit mypy codespell
+RUN pip3 install pytest pylint pyflakes bandit mypy codespell pytest-cov
 
 WORKDIR /opt
 COPY .pylintrc /opt
