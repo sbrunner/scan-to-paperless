@@ -438,15 +438,12 @@ def transform(config, config_file_name, root_folder):
     if config['args']['assisted_split']:
         config['assisted_split'] = []
 
-    dest_folder = os.path.join(root_folder, 'process')  # TODO, pylint: disable=fixme
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder)
     for index, img in enumerate(config['images']):
         config['process_count'] = 0
-        image_name = os.path.basename(img)
-        image_path = os.path.join(dest_folder, image_name)
+        process_file = tempfile.NamedTemporaryFile(suffix='.png')
+        image_path = process_file.name
         shutil.copyfile(os.path.join(root_folder, img), image_path)
-        context = Context(config, config_file_name, root_folder, image_name)
+        context = Context(config, config_file_name, root_folder, os.path.basename(img))
         context.image = cv2.imread(image_path)
         force_cleanup(context, config)
         precrop(context)
@@ -558,7 +555,8 @@ def split(config, root_folder, config_file_name):
             else:
                 value = width if vertical else height
                 margin = 0
-            img2 = os.path.join(root_folder, 'process', 'image-{}.png'.format(destination))  # TODO, pylint: disable=fixme
+            process_file = tempfile.NamedTemporaryFile(suffix='.png')
+            img2 = process_file.name
             if vertical:
                 call(CONVERT + [
                     '-crop', '{}x{}+{}+0'.format(value - margin - last_pos, height, last_pos),
@@ -599,7 +597,8 @@ def split(config, root_folder, config_file_name):
             if element['vertical'] != vertical:
                 raise Exception("Mix of limit type for page '{}'".format(page))
 
-        img = os.path.join(root_folder, 'process', 'image-{}.png'.format(page))
+        process_file = tempfile.NamedTemporaryFile(suffix='.png')
+        img = process_file.name
         call(CONVERT + [e['name'] for e in sorted(items, key=lambda e: e['pos'])] + [
             '-background', '#ffffff', '-append' if vertical else '+append', img
         ])
