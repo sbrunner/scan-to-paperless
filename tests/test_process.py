@@ -97,7 +97,7 @@ def test_assisted_split_full(type_, limit):
     check_image(root_folder, config['transformed_images'][1], 'assisted-split-{}-4'.format(type_))
 
 
-@pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason='for test')
 def test_assisted_split_join_full():
     os.environ['PROCESS'] = 'FALSE'
     os.environ['EXPERIMENTAL'] = 'FALSE'
@@ -105,13 +105,40 @@ def test_assisted_split_join_full():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
 
-    for i in (1, 2):
+    for number in (1, 2):
         shutil.copyfile(
-            os.path.join(os.path.dirname(__file__), 'split-join-{}.png'.format(i)),
-            os.path.join(root_folder, 'image-{}.png'.format(i)),
+            os.path.join(os.path.dirname(__file__), 'split-join-{}.png'.format(number)),
+            os.path.join(root_folder, 'image-{}.png'.format(number)),
         )
 
-    # TODO
+    config = {
+        'args': {
+            'assisted_split': True,
+            'level': True,
+        },
+        'images': ['image-1.png', 'image-2.png']
+    }
+    config_file_name = os.path.join(root_folder, 'config.yaml')
+    images = process.transform(config, config_file_name, root_folder)
+    config['transformed_images'] = images
+    assert os.path.basename(images[0]) == config['assisted_split'][0]['image']
+    assert len(images) == 2
+    for number, elements in enumerate([({
+        'value': 700,
+        'vertical': True,
+        'margin': 0
+    }, ['-', 1]), ({
+        'value': 3310,
+        'vertical': True,
+        'margin': 0
+    }, [1, '-'])]):
+        limit, destinations = elements
+        config['assisted_split'][number]['limits'] = [limit]
+        config['assisted_split'][number]['destinations'] = destinations
+    process.split(config, root_folder, config_file_name)
+    assert config['splitted'] is True
+    assert len(config['transformed_images']) == 1
+    check_image(root_folder, config['transformed_images'][0], 'assisted-split-join-1'.format(type_))
 
 
 # @pytest.mark.skip(reason='for test')
