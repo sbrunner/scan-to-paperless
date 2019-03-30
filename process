@@ -73,17 +73,16 @@ def output(cmd: List[str], **kwargs) -> str:
 
 
 def image_diff(image1, image2):
-    if image1.shape != image2.shape:
-        print("The tow images don't have the same size {}x{} != {}x{}.".format(
-            image1.shape[0], image1.shape[1], image2.shape[0], image2.shape[1]
-        ))
-        return 9999, None
+    width = max(image1.shape[0], image2.shape[0])
+    height = max(image1.shape[1], image2.shape[1])
+    image1 = cv2.resize(image1, (width, height), interpolation=cv2.INTER_CUBIC)
+    image2 = cv2.resize(image2, (width, height), interpolation=cv2.INTER_CUBIC)
     score, diff = compare_ssim(
         cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY),
         cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY),
         full=True
     )
-    diff = (diff * 255).astype("uint8")
+    diff = (255 - diff * 255).astype("uint8")
     return score, diff
 
 
@@ -118,8 +117,8 @@ class Process:  # pylint: disable=too-few-public-methods
                     raise Exception("No generated image...")
                 context.image = new_image
             if self.experimental and context.image is not None:
-                _, diff = image_diff(old_image, context.image)
-                if diff is not None:
+                score, diff = image_diff(old_image, context.image)
+                if diff is not None and score < 1.0:
                     dest_folder = os.path.join(context.root_folder, self.name)
                     if not os.path.exists(dest_folder):
                         os.makedirs(dest_folder)

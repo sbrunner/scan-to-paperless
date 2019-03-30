@@ -40,7 +40,7 @@ def check_image(root_folder, image, name):
     score, diff = process.image_diff(expected, result)
     if diff is not None:
         cv2.imwrite(os.path.join(root_folder, '{}.diff.png'.format(name)), diff)
-    assert score < 2, '{} ({}) != {} ({})'.format(expected, result, expected_name, image)
+    assert score > 0.99, '{} ({}) != {} ({})'.format(expected, result, expected_name, image)
 
 
 @pytest.mark.parametrize('type_,limit', [
