@@ -131,3 +131,12 @@ def test_full(progress, experimental):
     images = process.transform(config, '/tmp/test-config.yaml', root_folder)
     check_image(root_folder, images[0], 'all-1')
     assert len(images) == 1
+
+    if progress == 'TRUE':
+        assert os.path.exists(os.path.join(root_folder, '0-force-cleanup/all-1.png'))
+    else:
+        assert not os.path.exists(os.path.join(root_folder, '0-force-cleanup'))
+    if experimental == 'TRUE':
+        assert os.path.exists(os.path.join(root_folder, 'scantailor/all-1.png'))
+    else:
+        assert not os.path.exists(os.path.join(root_folder, 'scantailor'))
