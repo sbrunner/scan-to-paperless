@@ -6,12 +6,55 @@ jobs:
       - checkout
       - run: docker build --tag=sbrunner/scan-to-paperless .
       - run: docker build --tag=tests tests
-      - run: docker run --rm tests pylint process
-      - run: docker run --rm tests python3 -m pyflakes .
-      - run: docker run --rm tests bandit -r process
-      - run: docker run --rm tests mypy --ignore-missing-imports --disallow-untyped-defs --strict-optional --follow-imports skip /opt
-      - run: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
-      - run: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; pytest --verbose --color=yes .'
+      - run:
+          name: pylint
+          command: docker run --rm tests pylint process
+      - run:
+          name: pyflakes
+          command: docker run --rm tests python3 -m pyflakes .
+      - run:
+          name: bandit
+          command: docker run --rm tests bandit -r process
+      - run:
+          name: mypy
+          command: docker run --rm tests mypy --ignore-missing-imports --disallow-untyped-defs --strict-optional --follow-imports skip /opt
+      - run:
+          name: codespell
+          command: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
+      - run:
+          name: pytest
+          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; pytest --verbose --color=yes .'
       - store_artifacts:
           path: results
           destination: tests-results
+
+  deploy:
+    machine: true
+    steps:
+      - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
+      - run: docker push origin sbrunner/scan-to-paperless
+
+  deploy-test:
+    machine: true
+    steps:
+      - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
+      - run: docker tag origin sbrunner/scan-to-paperless origin sbrunner/scan-to-paperless:test
+      - run: docker push origin sbrunner/scan-to-paperless:test
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy-test:
+          requires:
+            - build
+          filters:
+            branches:
+              only: test
