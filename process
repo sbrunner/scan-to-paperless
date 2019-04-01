@@ -607,7 +607,7 @@ def split(config, root_folder, config_file_name):
         ])
         save(root_folder, img, '8-split')  # TODO, pylint: disable=fixme
         img2 = os.path.join(root_folder, 'image-{}.png'.format(page))
-        call(CONVERT + [img, '+repage', img2])
+        call(CONVERT + [img, img2])
         transformed_images.append(img2)
 
     config['splitted'] = True
@@ -650,13 +650,17 @@ def finalise(config, root_folder):
             call('tesseract -l fra+eng {} stdout pdf > {}'.format(
                 img, os.path.join(root_folder, '{}-tesseract.pdf'.format(name))
             ), shell=True)  # nosec
-            call(CONVERT + [img, os.path.join(root_folder, '{}.pdf'.format(name))])
+            call(CONVERT + [img, '+repage', os.path.join(root_folder, '{}.pdf'.format(name))])
             pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
 
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
 
-    shutil.rmtree(root_folder)
+    if os.environ.get("PROGRESS", "FALSE") != "TRUE":
+        shutil.rmtree(root_folder)
+    else:
+        with open(os.path.join(root_folder, 'DONE'), 'w'):
+            pass
 
 
 def write_error(root_folder, message):
@@ -706,6 +710,9 @@ def main():
 
             try:
                 if is_allready_proceed(config):
+                    if os.path.exists(os.path.join(root_folder, 'DONE')):
+                        continue
+
                     if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
                         continue
 
