@@ -553,7 +553,16 @@ def split(config, root_folder, config_file_name):
         vertical = assisted_split['limits'][0]['vertical']
         last_pos = 0
         for number, destination in enumerate(assisted_split['destinations']):
-            if destination != '-':
+            if number < len(assisted_split['limits']):
+                limit = assisted_split['limits'][number]
+                value = limit['value']
+                margin = limit['margin']
+            else:
+                value = width if vertical else height
+                margin = 0
+            if destination == '-':
+                last_pos = value + margin
+            else:
                 if number < len(assisted_split['limits']):
                     limit = assisted_split['limits'][number]
                     value = limit['value']
@@ -574,32 +583,32 @@ def split(config, root_folder, config_file_name):
                         '+repage', img, img2
                     ])
                 last_pos = value + margin
+
                 if re.match(r'[0-9]+\.[0-9]+', str(destination)):
-                    page, pos = [int(e) for e in destination.split('.')]
-                    if page not in append:
-                        append[page] = []
-                    append[page].append({
-                        'name': img2,
-                        'pos': pos,
-                        'vertical': vertical
-                    })
+                    page, page_pos = [int(e) for e in destination.split('.')]
                 else:
-                    save(root_folder, img2, '{}-split'.format(context.process_count()))
-                    marging_horizontal = 10
-                    maring_vertical = 7
-                    crop(
-                        img2,
-                        round(marging_horizontal / 10 / 2.51 * 300),
-                        round(maring_vertical / 10 / 2.51 * 300)
-                    )
-                    save(root_folder, img2, '{}-crop'.format(context.process_count()))
-                    if destination not in append:
-                        append[destination] = []
-                    append[destination].append({
-                        'name': img2,
-                        'pos': 0,
-                        'vertical': vertical
-                    })
+                    page = destination
+                    page_pos = 0
+
+                save(root_folder, img2, '{}-split'.format(context.process_count()))
+                marging_horizontal = 10
+                maring_vertical = 7
+                img3_file = tempfile.NamedTemporaryFile(suffix='.png')
+                img3 = img3_file.name
+                crop(
+                    img2,
+                    img3,
+                    round(marging_horizontal / 10 / 2.51 * 300),
+                    round(maring_vertical / 10 / 2.51 * 300)
+                )
+                save(root_folder, img3, '{}-crop'.format(context.process_count()))
+                if page not in append:
+                    append[page] = []
+                append[page].append({
+                    'file': img3_file,
+                    'pos': page_pos,
+                    'vertical': vertical
+                })
 
     for page in sorted(append.keys()):
         items = append[page]
@@ -610,8 +619,8 @@ def split(config, root_folder, config_file_name):
 
         process_file = tempfile.NamedTemporaryFile(suffix='.png')
         img = process_file.name
-        call(CONVERT + [e['name'] for e in sorted(items, key=lambda e: e['pos'])] + [
-            '-background', '#ffffff', '-append' if vertical else '+append', img
+        call(CONVERT + [e['file'].name for e in sorted(items, key=lambda e: e['pos'])] + [
+            '-background', '#ffffff', '-gravity', 'center', '+append' if vertical else '-append', img
         ])
         save(root_folder, img, '{}-split'.format(context.process_count()))
         img2 = os.path.join(root_folder, 'image-{}.png'.format(page))
@@ -647,7 +656,8 @@ def finalise(config, root_folder):
                 images2.append(img)
 
         call(CONVERT + images2 + [
-            '-background', '#ffffff', '-append', os.path.join(root_folder, 'final.png')
+            '-background', '#ffffff', '-gravity', 'center', '-append',
+            os.path.join(root_folder, 'final.png')
         ])
         images = [os.path.join(root_folder, 'final.png')]
 

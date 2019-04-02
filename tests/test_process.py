@@ -127,18 +127,18 @@ def test_assisted_split_join_full():
         'value': 700,
         'vertical': True,
         'margin': 0
-    }, ['-', 1]), ({
+    }, ['-', '1.2']), ({
         'value': 3310,
         'vertical': True,
         'margin': 0
-    }, [1, '-'])]):
+    }, ['1.1', '-'])]):
         limit, destinations = elements
         config['assisted_split'][number]['limits'] = [limit]
         config['assisted_split'][number]['destinations'] = destinations
     process.split(config, root_folder, config_file_name)
     assert config['splitted'] is True
     assert len(config['transformed_images']) == 1
-    check_image(root_folder, config['transformed_images'][0], 'assisted-split-join-1'.format(type_))
+    check_image(root_folder, config['transformed_images'][0], 'assisted-split-join-1')
 
 
 # @pytest.mark.skip(reason='for test')
