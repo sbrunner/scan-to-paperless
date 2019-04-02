@@ -121,6 +121,8 @@ def test_full(progress, experimental):
     os.environ['PROGRESS'] = progress
     os.environ['EXPERIMENTAL'] = experimental
     root_folder = '/results/full-{}-{}/'.format(progress, experimental)
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
     config = {
         'args': {
             'assisted_split': False,
