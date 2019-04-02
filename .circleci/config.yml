@@ -35,14 +35,14 @@ jobs:
     machine: true
     steps:
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      - run: docker push origin sbrunner/scan-to-paperless
+      - run: docker push sbrunner/scan-to-paperless
 
   deploy-test:
     machine: true
     steps:
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      - run: docker tag origin sbrunner/scan-to-paperless origin sbrunner/scan-to-paperless:test
-      - run: docker push origin sbrunner/scan-to-paperless:test
+      - run: docker tag sbrunner/scan-to-paperless sbrunner/scan-to-paperless:test
+      - run: docker push sbrunner/scan-to-paperless:test
 
 workflows:
   version: 2
