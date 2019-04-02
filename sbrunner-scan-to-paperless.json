@@ -11,10 +11,6 @@
       {
          "key" : "LANG",
          "value" : "C.UTF-8"
-      },
-      {
-         "key" : "PROGRESS",
-         "value" : "TRUE"
       }
    ],
    "exporting" : false,
