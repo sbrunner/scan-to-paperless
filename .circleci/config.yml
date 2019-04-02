@@ -23,10 +23,13 @@ jobs:
           command: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
       - run:
           name: pytest
-          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; pytest --verbose --color=yes .'
+          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/htmlcov:/tests/htmlcov --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; coverage run --source=process --module pytest --verbose --color=yes .; coverage report; coverage html'
       - store_artifacts:
           path: results
           destination: tests-results
+      - store_artifacts:
+          path: htmlcov
+          destination: htmlcov
 
   deploy:
     machine: true
