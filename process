@@ -22,13 +22,19 @@ from scipy.signal import find_peaks
 CONVERT = ['gm', 'convert']
 
 
-class Contest:  # pylint: disable=too-few-public-methods
-    def __init__(self, config, config_file_name, root_folder, image_name):
+class Context:  # pylint: disable=too-few-public-methods
+    def __init__(self, config, config_file_name=None, root_folder=None, image_name=None):
         self.config = config
         self.config_file_name = config_file_name
         self.root_folder = root_folder
         self.image_name = image_name
         self.image = None
+
+    def process_count(self):
+        try:
+            return self.config['process_count']
+        finally:
+            self.config['process_count'] += 1
 
 
 def add_intermediate_error(config, config_file_name, error, traceback_):
@@ -86,9 +92,6 @@ def image_diff(image1, image2):
     return score, diff
 
 
-process_count = 0  # pylint: disable=invalid-name
-
-
 class Process:  # pylint: disable=too-few-public-methods
     def __init__(self, name, experimental=False, ignore_error=False):
         self.experimental = experimental
@@ -125,10 +128,8 @@ class Process:  # pylint: disable=too-few-public-methods
                     dest_image = os.path.join(dest_folder, context.image_name)
                     cv2.imwrite(dest_image, diff)
 
-            global process_count  # pylint: disable=global-statement,invalid-name
             if not self.experimental:
-                name = '{}-{}'.format(process_count, self.name)
-                process_count += 1
+                name = '{}-{}'.format(context.process_count(), self.name)
             else:
                 name = self.name
             if self.experimental or os.environ.get("PROGRESS", "FALSE") == "TRUE":
@@ -429,8 +430,6 @@ def tesseract(source, destination):
 
 
 def transform(config, config_file_name, root_folder):
-    global process_count  # pylint: disable=global-statement,invalid-name
-
     if 'intermediate_error' in config:
         del config['intermediate_error']
 
@@ -443,11 +442,11 @@ def transform(config, config_file_name, root_folder):
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
     for index, img in enumerate(config['images']):
-        process_count = 0
+        config['process_count'] = 0
         image_name = os.path.basename(img)
         image_path = os.path.join(dest_folder, image_name)
         shutil.copyfile(os.path.join(root_folder, img), image_path)
-        context = Contest(config, config_file_name, root_folder, image_name)
+        context = Context(config, config_file_name, root_folder, image_name)
         context.image = cv2.imread(image_path)
         force_cleanup(context, config)
         precrop(context)
@@ -475,9 +474,8 @@ def transform(config, config_file_name, root_folder):
             name = os.path.join(root_folder, context.image_name)
             assisted_split['source'] = save_image(
                 context.image, root_folder,
-                '{}-assisted-split'.format(process_count), context.image_name, True
+                '{}-assisted-split'.format(context.process_count()), context.image_name, True
             )
-            process_count += 1
 
             config['assisted_split'].append(assisted_split)
             destinations = [len(config['images']) * 2 - index, index + 1]
@@ -544,6 +542,7 @@ def split(config, root_folder, config_file_name):
 
     append = {}
     transformed_images = []
+    context = Context(config)
     for assisted_split in config['assisted_split']:
         img = assisted_split['source']
         width, height = [int(e) for e in output(CONVERT + [
@@ -581,7 +580,7 @@ def split(config, root_folder, config_file_name):
                     'vertical': vertical
                 })
             else:
-                save(root_folder, img2, '8-split')  # TODO, pylint: disable=fixme
+                save(root_folder, img2, '{}-split'.format(context.process_count()))
                 marging_horizontal = 10
                 maring_vertical = 7
                 crop(
@@ -589,7 +588,7 @@ def split(config, root_folder, config_file_name):
                     round(marging_horizontal / 10 / 2.51 * 300),
                     round(maring_vertical / 10 / 2.51 * 300)
                 )
-                save(root_folder, img2, '9-crop')  # TODO, pylint: disable=fixme
+                save(root_folder, img2, '{}-crop'.format(context.process_count()))
                 img3 = os.path.join(root_folder, 'image-{}.png'.format(destination))
                 call(CONVERT + [img2, img3])
                 transformed_images.append(img3)
@@ -604,7 +603,7 @@ def split(config, root_folder, config_file_name):
         call(CONVERT + [e['name'] for e in sorted(items, key=lambda e: e['pos'])] + [
             '-background', '#ffffff', '-append' if vertical else '+append', img
         ])
-        save(root_folder, img, '8-split')  # TODO, pylint: disable=fixme
+        save(root_folder, img, '{}-split'.format(context.process_count()))
         img2 = os.path.join(root_folder, 'image-{}.png'.format(page))
         call(CONVERT + [img, img2])
         transformed_images.append(img2)
