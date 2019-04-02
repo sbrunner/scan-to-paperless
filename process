@@ -553,52 +553,53 @@ def split(config, root_folder, config_file_name):
         vertical = assisted_split['limits'][0]['vertical']
         last_pos = 0
         for number, destination in enumerate(assisted_split['destinations']):
-            if number < len(assisted_split['limits']):
-                limit = assisted_split['limits'][number]
-                value = limit['value']
-                margin = limit['margin']
-            else:
-                value = width if vertical else height
-                margin = 0
-            process_file = tempfile.NamedTemporaryFile(suffix='.png')
-            img2 = process_file.name
-            if vertical:
-                call(CONVERT + [
-                    '-crop', '{}x{}+{}+0'.format(value - margin - last_pos, height, last_pos),
-                    '+repage', img, img2
-                ])
-            else:
-                call(CONVERT + [
-                    '-crop', '{}x{}+0+{}'.format(width, value - margin - last_pos, last_pos),
-                    '+repage', img, img2
-                ])
-            last_pos = value + margin
-            if re.match(r'[0-9]+\.[0-9]+', str(destination)):
-                page, pos = [int(e) for e in destination.split('.')]
-                if page not in append:
-                    append[page] = []
-                append[page].append({
-                    'name': img2,
-                    'pos': pos,
-                    'vertical': vertical
-                })
-            else:
-                save(root_folder, img2, '{}-split'.format(context.process_count()))
-                marging_horizontal = 10
-                maring_vertical = 7
-                crop(
-                    img2,
-                    round(marging_horizontal / 10 / 2.51 * 300),
-                    round(maring_vertical / 10 / 2.51 * 300)
-                )
-                save(root_folder, img2, '{}-crop'.format(context.process_count()))
-                if destination not in append:
-                    append[destination] = []
-                append[destination].append({
-                    'name': img2,
-                    'pos': 0,
-                    'vertical': vertical
-                })
+            if destination != '-':
+                if number < len(assisted_split['limits']):
+                    limit = assisted_split['limits'][number]
+                    value = limit['value']
+                    margin = limit['margin']
+                else:
+                    value = width if vertical else height
+                    margin = 0
+                process_file = tempfile.NamedTemporaryFile(suffix='.png')
+                img2 = process_file.name
+                if vertical:
+                    call(CONVERT + [
+                        '-crop', '{}x{}+{}+0'.format(value - margin - last_pos, height, last_pos),
+                        '+repage', img, img2
+                    ])
+                else:
+                    call(CONVERT + [
+                        '-crop', '{}x{}+0+{}'.format(width, value - margin - last_pos, last_pos),
+                        '+repage', img, img2
+                    ])
+                last_pos = value + margin
+                if re.match(r'[0-9]+\.[0-9]+', str(destination)):
+                    page, pos = [int(e) for e in destination.split('.')]
+                    if page not in append:
+                        append[page] = []
+                    append[page].append({
+                        'name': img2,
+                        'pos': pos,
+                        'vertical': vertical
+                    })
+                else:
+                    save(root_folder, img2, '{}-split'.format(context.process_count()))
+                    marging_horizontal = 10
+                    maring_vertical = 7
+                    crop(
+                        img2,
+                        round(marging_horizontal / 10 / 2.51 * 300),
+                        round(maring_vertical / 10 / 2.51 * 300)
+                    )
+                    save(root_folder, img2, '{}-crop'.format(context.process_count()))
+                    if destination not in append:
+                        append[destination] = []
+                    append[destination].append({
+                        'name': img2,
+                        'pos': 0,
+                        'vertical': vertical
+                    })
 
     for page in sorted(append.keys()):
         items = append[page]
