@@ -587,11 +587,16 @@ def split(config, root_folder, config_file_name):
                     round(maring_vertical / 10 / 2.51 * 300)
                 )
                 save(root_folder, img2, '{}-crop'.format(context.process_count()))
-                img3 = os.path.join(root_folder, 'image-{}.png'.format(destination))
-                call(CONVERT + [img2, img3])
-                transformed_images.append(img3)
+                if destination not in append:
+                    append[destination] = []
+                append[destination].append({
+                    'name': img2,
+                    'pos': 0,
+                    'vertical': vertical
+                })
 
-    for page, items in append.items():
+    for page in sorted(append.keys()):
+        items = append[page]
         vertical = items[0]['vertical']
         for element in items:
             if element['vertical'] != vertical:
@@ -608,7 +613,7 @@ def split(config, root_folder, config_file_name):
         transformed_images.append(img2)
 
     config['splitted'] = True
-    config['transformed_images'] = sorted(transformed_images)
+    config['transformed_images'] = transformed_images
     with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w'):
         pass
     with open(config_file_name + '_', 'w') as config_file:
