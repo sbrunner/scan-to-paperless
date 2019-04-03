@@ -23,7 +23,7 @@ jobs:
           command: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
       - run:
           name: pytest
-          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/htmlcov:/tests/htmlcov --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; coverage run --source=process --module pytest --verbose --color=yes .; coverage report; coverage html'
+          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/htmlcov:/tests/htmlcov --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py && cd /tests && coverage run --source=process --module pytest --verbose --color=yes . && coverage report && coverage html'
       - store_artifacts:
           path: results
           destination: tests-results
@@ -34,12 +34,14 @@ jobs:
   deploy:
     machine: true
     steps:
+      - run: docker build --tag=sbrunner/scan-to-paperless .
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
       - run: docker push sbrunner/scan-to-paperless
 
   deploy-test:
     machine: true
     steps:
+      - run: docker build --tag=sbrunner/scan-to-paperless .
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
       - run: docker tag sbrunner/scan-to-paperless sbrunner/scan-to-paperless:test
       - run: docker push sbrunner/scan-to-paperless:test
