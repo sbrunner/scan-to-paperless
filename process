@@ -23,18 +23,21 @@ CONVERT = ['gm', 'convert']
 
 
 class Context:  # pylint: disable=too-few-public-methods
-    def __init__(self, config, config_file_name=None, root_folder=None, image_name=None):
+    def __init__(self, config, step, config_file_name=None, root_folder=None, image_name=None):  # pylint: disable=too-many-arguments
         self.config = config
+        self.step = step
         self.config_file_name = config_file_name
         self.root_folder = root_folder
         self.image_name = image_name
         self.image = None
 
     def process_count(self):
+        if 'process_count' not in self.step:
+            self.step['process_count'] = 0
         try:
-            return self.config['process_count']
+            return self.step['process_count']
         finally:
-            self.config['process_count'] += 1
+            self.step['process_count'] += 1
 
 
 def add_intermediate_error(config, config_file_name, error, traceback_):
@@ -434,21 +437,20 @@ def tesseract(source, destination):
     call('tesseract -l fra+eng {} stdout pdf > {}'.format(source, destination), shell=True)  # nosec
 
 
-def transform(config, config_file_name, root_folder):
+def transform(config, step, config_file_name, root_folder):
     if 'intermediate_error' in config:
         del config['intermediate_error']
 
-    images = list()
+    images = []
 
     if config['args']['assisted_split']:
         config['assisted_split'] = []
 
-    for index, img in enumerate(config['images']):
-        config['process_count'] = 0
+    for index, img in enumerate(step['sources']):
         process_file = tempfile.NamedTemporaryFile(suffix='.png')
         image_path = process_file.name
         shutil.copyfile(os.path.join(root_folder, img), image_path)
-        context = Context(config, config_file_name, root_folder, os.path.basename(img))
+        context = Context(config, step, config_file_name, root_folder, os.path.basename(img))
         context.image = cv2.imread(image_path)
         force_cleanup(context, config)
         precrop(context)
@@ -480,7 +482,7 @@ def transform(config, config_file_name, root_folder):
             )
 
             config['assisted_split'].append(assisted_split)
-            destinations = [len(config['images']) * 2 - index, index + 1]
+            destinations = [len(step['sources']) * 2 - index, index + 1]
             if index % 2 == 1:
                 destinations.reverse()
             assisted_split['destinations'] = destinations
@@ -498,7 +500,10 @@ def transform(config, config_file_name, root_folder):
             cv2.imwrite(img2, context.image)
             images.append(img2)
 
-    return images
+    return {
+        'sources': images,
+        'name': 'split' if config['args']['assisted_split'] else 'finalise',
+    }
 
 
 def save(root_folder, img, folder, force=False):
@@ -523,7 +528,7 @@ def save_image(image, root_folder, folder, name, force=False):
     return None
 
 
-def split(config, root_folder, config_file_name):
+def split(config, step, root_folder):
     for assisted_split in config['assisted_split']:
         if assisted_split['limits']:
             if len(assisted_split['limits']) != len(assisted_split['destinations']) - 1:
@@ -544,7 +549,7 @@ def split(config, root_folder, config_file_name):
 
     append = {}
     transformed_images = []
-    context = Context(config)
+    context = Context(config, step)
     for assisted_split in config['assisted_split']:
         img = assisted_split['source']
         width, height = [int(e) for e in output(CONVERT + [
@@ -627,16 +632,13 @@ def split(config, root_folder, config_file_name):
         call(CONVERT + [img, img2])
         transformed_images.append(img2)
 
-    config['splitted'] = True
-    config['transformed_images'] = transformed_images
-    with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w'):
-        pass
-    with open(config_file_name + '_', 'w') as config_file:
-        config_file.write(yaml.safe_dump(config, default_flow_style=False))
-    os.rename(config_file_name + '_', config_file_name)
+    return {
+        'sources': transformed_images,
+        'name': 'finalise',
+    }
 
 
-def finalise(config, root_folder):
+def finalise(config, step, root_folder):
     """
     Final step on document generation (convert in one pdf and copy with the right name in the cusume folder)
     """
@@ -647,7 +649,7 @@ def finalise(config, root_folder):
     if os.path.exists(destination):
         return
 
-    images = config['transformed_images']
+    images = step['sources']
 
     if config['args']['append_credit_card']:
         images2 = []
@@ -674,12 +676,6 @@ def finalise(config, root_folder):
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
 
-    if os.environ.get("PROGRESS", "FALSE") != "TRUE":
-        shutil.rmtree(root_folder)
-    else:
-        with open(os.path.join(root_folder, 'DONE'), 'w'):
-            pass
-
 
 def write_error(root_folder, message):
     if not os.path.exists(os.path.join(root_folder, 'error.yaml')):
@@ -689,20 +685,17 @@ def write_error(root_folder, message):
             }, default_flow_style=False))
 
 
-def is_allready_proceed(config):
-    if 'transformed_images' not in config:
-        return False
-    for img in config['transformed_images']:
-        if not os.path.exists(img):
-            return False
-    return True
-
-
-def is_source_present(config, root_folder):
-    for img in config['images']:
+def is_sources_present(step, root_folder):
+    for img in step['sources']:
         if not os.path.exists(os.path.join(root_folder, img)):
             return False
     return True
+
+
+def save_config(config, config_file_name):
+    with open(config_file_name + '_', 'w') as config_file:
+        config_file.write(yaml.safe_dump(config, default_flow_style=False))
+    os.rename(config_file_name + '_', config_file_name)
 
 
 def main():
@@ -727,37 +720,53 @@ def main():
                 continue
 
             try:
-                if is_allready_proceed(config):
+                if 'steps' not in config or config['steps']:
+                    step = {
+                        'sources': config['images'],
+                        'name': 'transform',
+                    }
+                else:
+                    config['steps'] = config['steps'][-1]
+
+                if is_sources_present(step):
+                    if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
+                        continue
                     if os.path.exists(os.path.join(root_folder, 'DONE')):
                         continue
 
-                    if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
-                        continue
-
-                    if config['args']['assisted_split'] and not config.get('splitted', False):
+                    done = False
+                    next_step = None
+                    if step['name'] == 'transform':
+                        print(config_file_name)
+                        print("Transform")
+                        next_step = transform(config, step, config_file_name, root_folder)
+                    elif step['name'] == 'split':
                         print(config_file_name)
                         print("Split")
-                        split(config, root_folder, config_file_name)
-                    else:
+                        next_step = split(config, step, root_folder)
+                    elif step['name'] == 'finalise':
                         print(config_file_name)
                         print("Finalise")
-                        finalise(config, root_folder)
+                        finalise(config, step, root_folder)
+                        done = True
+
+                    if done and os.environ.get("PROGRESS", "FALSE") != "TRUE":
+                        shutil.rmtree(root_folder)
+                    else:
+                        if next_step is not None:
+                            config['steps'].append(next_step)
+                        save_config(config, config_file_name)
+                        with open(os.path.join(root_folder, 'DONE' if done else 'REMOVE_TO_CONTINUE'), 'w'):
+                            pass
                 else:
-                    if not is_source_present(config, root_folder):
-                        write_error(root_folder, 'Missing one of sources images')
-                        continue
-
                     print(config_file_name)
-                    print("Transform")
-
-                    config['transformed_images'] = transform(config, config_file_name, root_folder)
-                    with open(config_file_name + '_', 'w') as config_file:
-                        config_file.write(yaml.safe_dump(config, default_flow_style=False))
-                    os.rename(config_file_name + '_', config_file_name)
-
-                    with open(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'), 'w'):
-                        pass
-
+                    if config['steps']:
+                        print("Waiting image")
+                    else:
+                        config['steps'] = config['steps'][:-1]
+                        save_config(config, config_file_name)
+                        print("Rerun step")
+                    continue
             except Exception as exception:
                 print(exception)
                 try:
