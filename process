@@ -466,6 +466,7 @@ def transform(config, step, config_file_name, root_folder):
             print("Ignore image with no content: {}".format(img))
             continue
 
+        tesseract(context)
         scantailor(context)
         scantailor_1200(context)
         scantailor_advanced(context)

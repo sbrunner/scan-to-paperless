@@ -4,8 +4,10 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: docker build --tag=sbrunner/scan-to-paperless .
-      - run: docker build --tag=tests tests
+      - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
+      - run: docker build --target=all --tag=sbrunner/scan-to-paperless:all .
+      - run: docker build --target=experimental --tag=sbrunner/scan-to-paperless:experimental .
+      - run: docker build --target=tests --tag=tests .
       - run:
           name: pylint
           command: docker run --rm tests pylint process
@@ -30,36 +32,24 @@ jobs:
       - store_artifacts:
           path: htmlcov
           destination: htmlcov
-
-  deploy:
-    machine: true
-    steps:
-      - run: docker build --tag=sbrunner/scan-to-paperless .
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      - run: docker push sbrunner/scan-to-paperless
 
-  deploy-test:
-    machine: true
-    steps:
-      - run: docker build --tag=sbrunner/scan-to-paperless .
-      - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      - run: docker tag sbrunner/scan-to-paperless sbrunner/scan-to-paperless:test
-      - run: docker push sbrunner/scan-to-paperless:test
-
-workflows:
-  version: 2
-  build-and-deploy:
-    jobs:
-      - build
       - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-      - deploy-test:
-          requires:
-            - build
-          filters:
-            branches:
-              only: test
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              docker push sbrunner/scan-to-paperless
+              docker push sbrunner/scan-to-paperless:all
+              docker push sbrunner/scan-to-paperless:experimental
+            fi
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "test" ]
+            then
+              docker tag sbrunner/scan-to-paperless sbrunner/scan-to-paperless:test
+              docker tag sbrunner/scan-to-paperless:all sbrunner/scan-to-paperless:test-all
+              docker tag sbrunner/scan-to-paperless:experimental sbrunner/scan-to-paperless:test-experimental
+              docker push sbrunner/scan-to-paperless:test
+              docker push sbrunner/scan-to-paperless:test-all
+              docker push sbrunner/scan-to-paperless:test-experimental
+            fi
