@@ -667,11 +667,15 @@ def finalise(config, step, root_folder):
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
-            call('tesseract -l fra+eng {} stdout pdf > {}'.format(
-                img, os.path.join(root_folder, '{}-tesseract.pdf'.format(name))
-            ), shell=True)  # nosec
-            call(CONVERT + [img, '+repage', os.path.join(root_folder, '{}.pdf'.format(name))])
-            pdf.append(os.path.join(root_folder, '{}.pdf'.format(name)))
+            file_name = os.path.join(root_folder, '{}.pdf'.format(name))
+            if config['args'].get('tesseract', True):
+                call(
+                    'tesseract -l fra+eng {} stdout pdf > {}'.format(img, file_name),
+                    shell=True  # nosec
+                )
+            else:
+                call(CONVERT + [img, '+repage', file_name])
+            pdf.append(file_name)
 
     call(['pdftk'] + pdf + ['output', destination, 'compress'])
     call(['exiftool', '-overwrite_original_in_place', '-Title=' + full_name, destination])
