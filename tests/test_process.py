@@ -75,7 +75,8 @@ def test_assisted_split_full(type_, limit, size):
         'args': {
             'assisted_split': True,
             'level': True,
-            'append_credit_card': False
+            'append_credit_card': False,
+            'tesseract': False,
         },
         'full_name': 'Test title 1',
         'destination': os.path.join(root_folder, 'final.pdf'),
@@ -173,7 +174,7 @@ def test_assisted_split_join_full():
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
     assert pdfinfo['Title'] == 'Test title 2'
     assert pdfinfo['Pages'] == '1'
-    assert pdfinfo['Page size'] == '612 x 229 pts'
+    assert pdfinfo['Page size'] == '7006.63 x 2621.83 pts'
     process.call([
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
@@ -195,6 +196,7 @@ def test_full(progress, experimental):
             'assisted_split': False,
             'level': True,
             'append_credit_card': False,
+            'tesseract': False,
         },
         'full_name': 'Test title 3',
         'destination': os.path.join(root_folder, 'final.pdf'),
