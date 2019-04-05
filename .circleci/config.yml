@@ -11,21 +11,34 @@ jobs:
       - run:
           name: pylint
           command: docker run --rm tests pylint process
+          when: always
       - run:
           name: pyflakes
           command: docker run --rm tests python3 -m pyflakes .
+          when: always
       - run:
           name: bandit
           command: docker run --rm tests bandit -r process
+          when: always
       - run:
           name: mypy
-          command: docker run --rm tests mypy --ignore-missing-imports --disallow-untyped-defs --strict-optional --follow-imports skip /opt
+          command: docker run --rm tests mypy -- process
+          when: always
       - run:
           name: codespell
           command: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
+          when: always
       - run:
           name: pytest
-          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/htmlcov:/tests/htmlcov --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py && cd /tests && coverage run --source=process --module pytest --verbose --color=yes . && coverage report && coverage html'
+          command: >
+            docker run --rm --env=PYTHONPATH=/opt/
+            --volume=`pwd`/htmlcov:/tests/htmlcov --volume=`pwd`/results:/results
+            tests bash -c '
+            mv /opt/process /opt/process.py &&
+            cd /tests &&
+            coverage run --source=process --module pytest --verbose --color=yes . &&
+            coverage report &&
+            coverage html'
       - store_artifacts:
           path: results
           destination: tests-results
