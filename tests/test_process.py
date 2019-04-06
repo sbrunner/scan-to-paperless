@@ -11,14 +11,6 @@ def load_image(image_name):
     return cv2.imread(os.path.join(os.path.dirname(__file__), image_name))
 
 
-#def test_crop():
-#    process.crop(...)
-
-
-#def test_no_content():
-#    process.no_content(...)
-
-
 def test_find_lines():
     peaks, _ = process.find_lines(load_image('limit-lines-1.png'), True)
     assert 2844 in peaks
@@ -29,41 +21,81 @@ def test_find_limit_contour():
     assert contour == [1588]
 
 
-def check_image(root_folder, image, name):
+def check_image_file(root_folder, image, name):
     result = cv2.imread(image)
     assert result is not None, 'Wrong image: ' + image
-    cv2.imwrite(os.path.join(root_folder, '{}.result.png'.format(name)), result)
+    check_image(root_folder, result, name)
+
+
+def check_image(root_folder, image, name):
+    assert image is not None, 'Image required'
     expected_name = os.path.join(
         os.path.dirname(__file__), '{}.expected.png'.format(name)
     )
+    # Set to True to regenerate images
+    if False:
+        cv2.imwrite(expected_name, image)
+        return
     expected = cv2.imread(expected_name)
+    cv2.imwrite(os.path.join(root_folder, '{}.result.png'.format(name)), image)
     assert expected is not None, 'Wrong image: ' + expected_name
-    score, diff = process.image_diff(expected, result)
+    score, diff = process.image_diff(expected, image)
     if diff is not None:
         cv2.imwrite(os.path.join(root_folder, '{}.diff.png'.format(name)), diff)
-    assert score > 0.999, '{} ({}) != {} ({})'.format(expected, result, expected_name, image)
+    assert score > 0.999, '{} ({}) != {} ({})'.format(expected, image, expected_name, image)
 
 
+def test_crop():
+    image = load_image('image-1.png')
+    root_folder = '/results/crop'
+    check_image(root_folder, process.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), 'crop-1')
+    check_image(root_folder, process.crop_image(image, 0, 100, 300, 100, (255, 255, 255)), 'crop-2')
+    check_image(root_folder, process.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), 'crop-3')
+    check_image(root_folder, process.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), 'crop-4')
+    check_image(root_folder, process.crop_image(image, 100, 200, 100, 200, (255, 255, 255)), 'crop-5')
+    check_image(root_folder, process.crop_image(image, 200, 100, 200, 100, (255, 255, 255)), 'crop-6')
+
+
+def test_rotate():
+    image = load_image('image-1.png')
+    root_folder = '/results/rotate'
+    image = process.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
+    check_image(root_folder, process.rotate_image(image, 10, (255, 255, 255)), 'rotate-1')
+    check_image(root_folder, process.rotate_image(image, -10, (255, 255, 255)), 'rotate-2')
+    check_image(root_folder, process.rotate_image(image, 90, (255, 255, 255)), 'rotate-3')
+    check_image(root_folder, process.rotate_image(image, -90, (255, 255, 255)), 'rotate-4')
+    check_image(root_folder, process.rotate_image(image, 270, (255, 255, 255)), 'rotate-4')
+    check_image(root_folder, process.rotate_image(image, 180, (255, 255, 255)), 'rotate-5')
+
+
+def init_test():
+    os.environ['PROGRESS'] = 'FALSE'
+    os.environ['TIME'] = 'TRUE'
+    os.environ['EXPERIMENTAL'] = 'FALSE'
+    shutil.copyfile(os.path.join(os.path.dirname(__file__), 'mask.png'), '/results/mask.png')
+
+
+# @pytest.mark.skip(reason='for test')
 @pytest.mark.parametrize('type_,limit,size', [
     ('lines', {
         'name': 'VL0',
         'type': 'line detection',
-        'value': 1821,
+        'value': 1804,
         'vertical': True,
         'margin': 0
-    }, '543 x 792 pts'),
+    }, '595 x 792 pts'),
     ('contour', {
         'name': 'VC0',
         'type': 'contour detection',
-        'value': 1588,
+        'value': 1581,
         'vertical': True,
         'margin': 0
-    }, '550 x 792 pts')
+    }, '587 x 792 pts')
 ])
 def test_assisted_split_full(type_, limit, size):
-    os.environ['PROCESS'] = 'TRUE'
-    os.environ['EXPERIMENTAL'] = 'FALSE'
-    root_folder = '/results/assisted-split-full-{}/'.format(type_)
+    init_test()
+#    os.environ['PROGRESS'] = 'TRUE'
+    root_folder = '/results/assisted-split-full-{}'.format(type_)
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
 
@@ -90,8 +122,8 @@ def test_assisted_split_full(type_, limit, size):
     images = step['sources']
     assert os.path.basename(images[0]) == config['assisted_split'][0]['image']
     assert len(images) == 1
-    check_image(root_folder, images[0], 'assisted-split-{}-1'.format(type_))
-    check_image(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
+    check_image_file(root_folder, images[0], 'assisted-split-{}-1'.format(type_))
+    check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
     limits = [item for item in config['assisted_split'][0]['limits'] if item['vertical']]
     print(json.dumps(limits))
     assert not [item for item in limits if item['name'] == 'C'], "We shouldn't have center limit"
@@ -100,8 +132,8 @@ def test_assisted_split_full(type_, limit, size):
     config['assisted_split'][0]['limits'] = limits
     step = process.split(config, step, root_folder)
     assert len(step['sources']) == 2
-    check_image(root_folder, step['sources'][0], 'assisted-split-{}-3'.format(type_))
-    check_image(root_folder, step['sources'][1], 'assisted-split-{}-4'.format(type_))
+    check_image_file(root_folder, step['sources'][0], 'assisted-split-{}-3'.format(type_))
+    check_image_file(root_folder, step['sources'][1], 'assisted-split-{}-4'.format(type_))
     assert step['name'] == 'finalise'
     process.finalise(config, step, root_folder)
     pdfinfo = process.output(['pdfinfo', os.path.join(root_folder, 'final.pdf')]).split('\n')
@@ -115,14 +147,14 @@ def test_assisted_split_full(type_, limit, size):
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
-    check_image(root_folder, step['sources'][1], 'assisted-split-{}-4'.format(type_))
+    check_image_file(root_folder, step['sources'][1], 'assisted-split-{}-4'.format(type_))
 
 
 # @pytest.mark.skip(reason='for test')
 def test_assisted_split_join_full():
-    os.environ['PROCESS'] = 'FALSE'
-    os.environ['EXPERIMENTAL'] = 'FALSE'
-    root_folder = '/results/assisted-split-join-full/'
+    init_test()
+#    os.environ['PROGRESS'] = 'TRUE'
+    root_folder = '/results/assisted-split-join-full'
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
 
@@ -137,6 +169,7 @@ def test_assisted_split_join_full():
             'assisted_split': True,
             'level': True,
             'append_credit_card': False,
+            'tesseract': False,
         },
         'full_name': 'Test title 2',
         'destination': os.path.join(root_folder, 'final.pdf'),
@@ -151,11 +184,11 @@ def test_assisted_split_join_full():
     assert os.path.basename(images[0]) == config['assisted_split'][0]['image']
     assert len(images) == 2
     for number, elements in enumerate([({
-        'value': 700,
+        'value': 738,
         'vertical': True,
         'margin': 0
     }, ['-', '1.2']), ({
-        'value': 3310,
+        'value': 3300,
         'vertical': True,
         'margin': 0
     }, ['1.1', '-'])]):
@@ -165,7 +198,7 @@ def test_assisted_split_join_full():
     step = process.split(config, step, root_folder)
     assert step['name'] == 'finalise'
     assert len(step['sources']) == 1
-    check_image(root_folder, step['sources'][0], 'assisted-split-join-1')
+    check_image_file(root_folder, step['sources'][0], 'assisted-split-join-1')
 
     process.finalise(config, step, root_folder)
     pdfinfo = process.output(['pdfinfo', os.path.join(root_folder, 'final.pdf')]).split('\n')
@@ -174,21 +207,21 @@ def test_assisted_split_join_full():
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
     assert pdfinfo['Title'] == 'Test title 2'
     assert pdfinfo['Pages'] == '1'
-    assert pdfinfo['Page size'] == '7006.63 x 2621.83 pts'
     process.call([
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
-    check_image(root_folder, step['sources'][0], 'assisted-split-join-1')
+    check_image_file(root_folder, step['sources'][0], 'assisted-split-join-1')
 
 
 # @pytest.mark.skip(reason='for test')
 @pytest.mark.parametrize('progress', ['FALSE', 'TRUE'])
 @pytest.mark.parametrize('experimental', ['FALSE', 'TRUE'])
 def test_full(progress, experimental):
+    init_test()
     os.environ['PROGRESS'] = progress
     os.environ['EXPERIMENTAL'] = experimental
-    root_folder = '/results/full-{}-{}/'.format(progress, experimental)
+    root_folder = '/results/full-{}-{}'.format(progress, experimental)
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
@@ -205,7 +238,7 @@ def test_full(progress, experimental):
         'sources': [os.path.join(os.path.dirname(__file__), 'all-1.png')]
     }
     step = process.transform(config, step, '/tmp/test-config.yaml', root_folder)
-    check_image(root_folder, step['sources'][0], 'all-1')
+    check_image_file(root_folder, step['sources'][0], 'all-1')
     assert len(step['sources']) == 1
 
     if progress == 'TRUE':
@@ -225,19 +258,18 @@ def test_full(progress, experimental):
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
     assert pdfinfo['Title'] == 'Test title 3'
     assert pdfinfo['Pages'] == '1'
-    assert pdfinfo['Page size'] == '309 x 792 pts'
     process.call([
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
-    check_image(root_folder, os.path.join(root_folder, 'final.png'), 'all-2')
+    check_image_file(root_folder, os.path.join(root_folder, 'final.png'), 'all-2')
 
 
 # @pytest.mark.skip(reason='for test')
 def test_credit_card_full():
-    os.environ['PROGRESS'] = 'TRUE'
-    os.environ['EXPERIMENTAL'] = 'FALSE'
-    root_folder = '/results/credit-card/'
+    init_test()
+#    os.environ['PROGRESS'] = 'TRUE'
+    root_folder = '/results/credit-card'
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
@@ -265,9 +297,34 @@ def test_credit_card_full():
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
     assert pdfinfo['Title'] == 'Credit Card'
     assert pdfinfo['Pages'] == '1'
-    assert pdfinfo['Page size'] == '1155.09 x 1693.03 pts'
     process.call([
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
-    check_image(root_folder, os.path.join(root_folder, 'final.png'), 'credit-card-1')
+    check_image_file(root_folder, os.path.join(root_folder, 'final.png'), 'credit-card-1')
+
+
+# @pytest.mark.skip(reason='for test')
+def test_empty():
+    init_test()
+#    os.environ['PROGRESS'] = 'TRUE'
+    root_folder = '/results/empty'
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
+    config = {
+        'args': {
+            'assisted_split': False,
+            'level': True,
+            'append_credit_card': False,
+        },
+        'full_name': 'Empty',
+        'destination': os.path.join(root_folder, 'final.pdf'),
+    }
+    step = {
+        'sources': [
+            os.path.join(os.path.dirname(__file__), 'empty.png'),
+        ]
+    }
+    step = process.transform(config, step, '/tmp/test-config.yaml', root_folder)
+    assert len(step['sources']) == 0
+    assert step['name'] == 'finalise'

@@ -1,5 +1,5 @@
 *
 !process
-!tests/
 !.pylintrc
 !mypy.ini
+!setup.cfg

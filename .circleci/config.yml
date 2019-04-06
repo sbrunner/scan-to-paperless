@@ -33,22 +33,33 @@ jobs:
           command: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
           when: always
       - run:
+          name: Init Docker volumes
+          command: |
+            docker run --rm --detach --name volumes --volume=tests:/tests --volume=results:/results alpine sleep 9999
+            docker cp tests/ volumes:/tests/
+          when: always
+      - run:
           name: pytest
           command: >
             docker run --rm --env=PYTHONPATH=/opt/
-            --volume=`pwd`/htmlcov:/tests/htmlcov --volume=`pwd`/results:/results
+            --volume=results:/results --volume=tests:/tests
             tests bash -c '
             mv /opt/process /opt/process.py &&
             cd /tests &&
-            coverage run --source=process --module pytest --verbose --color=yes . &&
+            coverage run --source=process --module pytest --durations=0 --verbose --color=yes --junitxml=/results/test-reports/junit.xml . &&
             coverage report &&
-            coverage html'
+            coverage html --directory=/results/coverage'
+          no_output_timeout: 20m
+      - run:
+          name: Extract data from Docker volumes
+          command: |
+            docker cp volumes:/results/ results/
+          when: always
       - store_artifacts:
           path: results
-          destination: tests-results
-      - store_artifacts:
-          path: htmlcov
-          destination: htmlcov
+          destination: results
+      - store_test_results:
+          path: results/test-reports
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
 
       - deploy:
