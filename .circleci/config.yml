@@ -66,3 +66,41 @@ jobs:
               docker push sbrunner/scan-to-paperless:test-all
               docker push sbrunner/scan-to-paperless:test-experimental
             fi
+      - run:
+          name: Init Git
+          command: |
+            git remote add push https://${GITHUB_TOKEN}@github.com/sbrunner/scan-to-paperless
+            git config credential.helper 'cache --timeout=120'
+            git config user.email "<ci@ci.com>"
+            git config user.name "CI"
+      - run:
+          name: Init pypi
+          command: |
+            echo "[distutils]" > ~/.pypirc
+            echo "index-servers = pypi" >> ~/.pypirc
+            echo "[pypi]" >> ~/.pypirc
+            echo "username:${PYPI_USER}" >> ~/.pypirc
+            echo "password:${PYPI_PASS}" >> ~/.pypirc
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "test" ]
+            then
+              python3 setup.py egg_info --date --dev sdist bdist_wheel upload -r pypi
+            fi
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              python3 setup.py egg_info --no-date --no-dev sdist bdist_wheel upload -r pypi
+            fi
+      - run:
+          name: Bump bersion
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              pip install bump-anything
+              bump minor
+              git add setup.py
+              git commit --allow-empty -m "[skip ci] Bump Version"
+              git push push ${CIRCLE_BRANCH}
+            fi
