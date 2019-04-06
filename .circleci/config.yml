@@ -1,9 +1,13 @@
 version: 2
 jobs:
   build:
-    machine: true
+    docker:
+      - image: circleci/python:3.6
+    environment:
+      PATH: /usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin:/home/circleci/.local/bin
     steps:
       - checkout
+      - setup_remote_docker
       - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
       - run: docker build --target=all --tag=sbrunner/scan-to-paperless:all .
       - run: docker build --target=experimental --tag=sbrunner/scan-to-paperless:experimental .
@@ -76,29 +80,30 @@ jobs:
       - run:
           name: Init pypi
           command: |
-            echo "[distutils]" > ~/.pypirc
-            echo "index-servers = pypi" >> ~/.pypirc
-            echo "[pypi]" >> ~/.pypirc
-            echo "username:${PYPI_USER}" >> ~/.pypirc
-            echo "password:${PYPI_PASS}" >> ~/.pypirc
+            echo "[pypi]" > ~/.pypirc
+            echo "username = ${PYPI_USER}" >> ~/.pypirc
+            echo "password = ${PYPI_PASS}" >> ~/.pypirc
+            pip install --user wheel twine
       - deploy:
           command: |
             if [ "${CIRCLE_BRANCH}" == "test" ]
             then
-              python3 setup.py egg_info --date --dev sdist bdist_wheel upload -r pypi
+              python setup.py egg_info --tag-date --tag-build dev sdist bdist_wheel
+              twine upload dist/*
             fi
       - deploy:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]
             then
-              python3 setup.py egg_info --no-date --no-dev sdist bdist_wheel upload -r pypi
+              python setup.py egg_info --no-date sdist bdist_wheel
+              twine upload dist/*
             fi
       - run:
           name: Bump bersion
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]
             then
-              pip install bump-anything
+              pip install --user bump-anything
               bump minor
               git add setup.py
               git commit --allow-empty -m "[skip ci] Bump Version"
