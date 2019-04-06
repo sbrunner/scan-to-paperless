@@ -2,3 +2,4 @@
 !process
 !tests/
 !.pylintrc
+!mypy.ini

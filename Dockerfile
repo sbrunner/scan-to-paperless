@@ -75,7 +75,7 @@ RUN \
 RUN pip3 install pytest pylint pyflakes bandit mypy codespell coverage
 
 WORKDIR /opt
-COPY .pylintrc /opt
+COPY .pylintrc mypy.ini /opt/
 RUN touch __init__.py
 COPY tests/*.png /tests/
 COPY tests/test_* /tests/
