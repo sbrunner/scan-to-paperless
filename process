@@ -658,11 +658,11 @@ def finalise(config, step, root_folder):
             if os.path.exists(img):
                 images2.append(img)
 
+        file_name = os.path.join(root_folder, 'append.png')
         call(CONVERT + images2 + [
-            '-background', '#ffffff', '-gravity', 'center', '-append',
-            os.path.join(root_folder, 'final.png')
+            '-background', '#ffffff', '-gravity', 'center', '-append', file_name
         ])
-        images = [os.path.join(root_folder, 'final.png')]
+        images = [file_name]
 
     pdf = []
     for img in images:
