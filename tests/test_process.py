@@ -231,3 +231,43 @@ def test_full(progress, experimental):
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
     check_image(root_folder, os.path.join(root_folder, 'final.png'), 'all-2')
+
+
+# @pytest.mark.skip(reason='for test')
+def test_credit_card_full():
+    os.environ['PROGRESS'] = 'TRUE'
+    os.environ['EXPERIMENTAL'] = 'FALSE'
+    root_folder = '/results/credit-card/'
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
+    config = {
+        'args': {
+            'assisted_split': False,
+            'level': True,
+            'append_credit_card': True,
+        },
+        'full_name': 'Credit Card',
+        'destination': os.path.join(root_folder, 'final.pdf'),
+    }
+    step = {
+        'sources': [
+            os.path.join(os.path.dirname(__file__), 'credit-card-1.png'),
+            os.path.join(os.path.dirname(__file__), 'credit-card-2.png'),
+        ]
+    }
+    step = process.transform(config, step, '/tmp/test-config.yaml', root_folder)
+    assert len(step['sources']) == 2
+    assert step['name'] == 'finalise'
+    process.finalise(config, step, root_folder)
+    pdfinfo = process.output(['pdfinfo', os.path.join(root_folder, 'final.pdf')]).split('\n')
+    regex = re.compile(r'([a-zA-Z ]+): +(.*)')
+    pdfinfo = [regex.match(e) for e in pdfinfo]
+    pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
+    assert pdfinfo['Title'] == 'Credit Card'
+    assert pdfinfo['Pages'] == '1'
+    assert pdfinfo['Page size'] == '1155.09 x 1693.03 pts'
+    process.call([
+        'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
+        '+adjoin', os.path.join(root_folder, 'final.png')
+    ])
+    check_image(root_folder, os.path.join(root_folder, 'final.png'), 'credit-card-1')
