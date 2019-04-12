@@ -3,6 +3,7 @@
 
 import glob
 import os
+import math
 import re
 import shutil
 import subprocess  # nosec
@@ -21,7 +22,45 @@ from scipy.signal import find_peaks
 CONVERT = ['gm', 'convert']
 
 
-class Context:  # pylint: disable=too-few-public-methods
+def rotate_image(image: np.ndarray, angle: float, background: Any) -> np.ndarray:
+    old_width, old_height = image.shape[:2]
+    angle_radian = math.radians(angle)
+    width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
+    height = abs(np.sin(angle_radian) * old_width) + abs(np.cos(angle_radian) * old_height)
+
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    rot_mat[1, 2] += (width - old_width) / 2
+    rot_mat[0, 2] += (height - old_height) / 2
+    return cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background)
+
+
+def crop_image(  # pylint: disable=too-many-arguments
+        image: np.ndarray, x: int, y: int, width: int, height: int,
+        background: Union[Tuple[int], Tuple[int, int, int]]
+) -> np.ndarray:
+    if x < 0:
+        indices = np.zeros(-x, dtype=int)
+        image = np.insert(image, indices, background, axis=1)
+        x = 0
+    if y < 0:
+        indices = np.zeros(-y, dtype=int)
+        image = np.insert(image, indices, background, axis=0)
+        y = 0
+
+    overflow_x = x + width - image.shape[1]
+    if overflow_x > 0:
+        indices = np.zeros(overflow_x, dtype=int) + image.shape[1]
+        image = np.insert(image, indices, background, axis=1)
+    overflow_y = y + height - image.shape[0]
+    if overflow_y > 0:
+        indices = np.zeros(overflow_y, dtype=int) + int(image.shape[0])
+        image = np.insert(image, indices, background, axis=0)
+
+    return image[y:y + height, x:x + width]
+
+
+class Context:  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
             self,
             config: Dict[str, Any],
@@ -35,15 +74,52 @@ class Context:  # pylint: disable=too-few-public-methods
         self.config_file_name = config_file_name
         self.root_folder = root_folder
         self.image_name = image_name
-        self.image = None
+        self.image: Optional[np.ndarray] = None
+        self.mask: Optional[np.ndarray] = None
+        self.mask_ready: Optional[np.ndarray] = None
+        self.process_count = self.step.get('process_count', 0)
 
-    def process_count(self) -> int:
-        if 'process_count' not in self.step:
-            self.step['process_count'] = 0
+    def init_mask(self) -> None:
+        if self.image is None:
+            raise Exception('The image is None')
+        if self.mask is None:
+            raise Exception('The mask is None')
+        self.mask_ready = cv2.resize(
+            cv2.cvtColor(self.mask, cv2.COLOR_BGR2GRAY),
+            (self.image.shape[1], self.image.shape[0]),
+        )
+
+    def get_process_count(self) -> int:
         try:
-            return cast(int, self.step['process_count'])
+            return self.process_count
         finally:
-            self.step['process_count'] += 1
+            self.process_count += 1
+
+    def get_masked(self) -> np.ndarray:
+        if self.image is None:
+            raise Exception('The image is None')
+        if self.mask_ready is None:
+            return self.image
+        image = self.image.copy()
+        for x in range(image.shape[0]):
+            for y in range(image.shape[1]):
+                if self.mask_ready[x, y] == 0:
+                    image[x, y] = (255, 255, 255)
+        return image
+
+    def crop(self, x: int, y: int, width: int, height: int) -> None:
+        if self.image is None:
+            raise Exception('The image is None')
+        self.image = crop_image(self.image, x, y, width, height, (255, 255, 255))
+        if self.mask_ready is not None:
+            self.mask_ready = crop_image(self.mask_ready, x, y, width, height, (0,))
+
+    def rotate(self, angle: float) -> None:
+        if self.image is None:
+            raise Exception('The image is None')
+        self.image = rotate_image(self.image, angle, (255, 255, 255))
+        if self.mask_ready is not None:
+            self.mask_ready = rotate_image(self.mask_ready, angle, 0)
 
 
 def add_intermediate_error(
@@ -52,6 +128,8 @@ def add_intermediate_error(
         error: Exception,
         traceback_: List[str]
 ) -> None:
+    if config_file_name is None:
+        raise Exception('The config file name is required')
     if 'intermediate_error' not in config:
         config['intermediate_error'] = []
 
@@ -62,7 +140,7 @@ def add_intermediate_error(
             'error': error,
             'traceback': traceback_,
         })
-        with open(cast(str, config_file_name) + '_', 'w') as config_file:
+        with open(config_file_name + '_', 'w') as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
     except Exception as exception:
         print(exception)
@@ -71,9 +149,9 @@ def add_intermediate_error(
             'error': str(error),
             'traceback': traceback_,
         })
-        with open(cast(str, config_file_name) + '_', 'w') as config_file:
+        with open(config_file_name + '_', 'w') as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
-    os.rename(cast(str, config_file_name) + '_', cast(str, config_file_name))
+    os.rename(config_file_name + '_', config_file_name)
 
 
 def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
@@ -93,10 +171,10 @@ def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
 
 
 def image_diff(image1: np.ndarray, image2: np.ndarray) -> Tuple[float, np.ndarray]:
-    width = max(image1.shape[0], image2.shape[0])
-    height = max(image1.shape[1], image2.shape[1])
-    image1 = cv2.resize(image1, (width, height), interpolation=cv2.INTER_CUBIC)
-    image2 = cv2.resize(image2, (width, height), interpolation=cv2.INTER_CUBIC)
+    width = max(image1.shape[1], image2.shape[1])
+    height = max(image1.shape[0], image2.shape[0])
+    image1 = cv2.resize(image1, (width, height))
+    image2 = cv2.resize(image2, (width, height))
     score, diff = compare_ssim(
         cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY),
         cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY),
@@ -114,12 +192,19 @@ class Process:  # pylint: disable=too-few-public-methods
 
     def __call__(self, func: Callable) -> Callable:
         def wrapper(context: Context, *args: Any, **kwargs: Any) -> None:
+            if context.image is None:
+                raise Exception('The image is required')
+            if context.root_folder is None:
+                raise Exception('The root folder is required')
+            if context.image_name is None:
+                raise Exception('The image name is required')
             if self.experimental and os.environ.get("EXPERIMENTAL", "FALSE") != "TRUE":
                 return
-            old_image = cast(np.ndarray, context.image).copy() if self.experimental else None
+            old_image = context.image.copy() if self.experimental else None
+            start_time = time.perf_counter()
             if self.experimental or self.ignore_error:
                 try:
-                    new_image = func(context.image, *args, **kwargs)
+                    new_image = func(context, *args, **kwargs)
                     if new_image is not None:
                         context.image = new_image
                 except Exception as exception:
@@ -129,10 +214,12 @@ class Process:  # pylint: disable=too-few-public-methods
                         exception, traceback.format_exc().split('\n')
                     )
             else:
-                new_image = func(context.image, *args, **kwargs)
-                if new_image is None:
-                    raise Exception("No generated image...")
-                context.image = new_image
+                new_image = func(context, *args, **kwargs)
+                if new_image is not None:
+                    context.image = new_image
+            elapsed_time = time.perf_counter() - start_time
+            if os.environ.get("TIME", "FALSE") == "TRUE":
+                print('Elapsed time in {}: {}s.'.format(self.name, int(round(elapsed_time))))
             if self.experimental and context.image is not None:
                 score, diff = image_diff(old_image, context.image)
                 if diff is not None and score < 1.0:
@@ -142,51 +229,62 @@ class Process:  # pylint: disable=too-few-public-methods
                     dest_image = os.path.join(dest_folder, context.image_name)
                     cv2.imwrite(dest_image, diff)
 
-            name = self.name if self.experimental else '{}-{}'.format(context.process_count(), self.name)
+            name = self.name if self.experimental else '{}-{}'.format(context.get_process_count(), self.name)
             if self.experimental or os.environ.get("PROGRESS", "FALSE") == "TRUE":
-                dest_folder = os.path.join(cast(str, context.root_folder), name)
+                dest_folder = os.path.join(context.root_folder, name)
                 if not os.path.exists(dest_folder):
                     os.makedirs(dest_folder)
-                dest_image = os.path.join(dest_folder, cast(str, context.image_name))
+                dest_image = os.path.join(dest_folder, context.image_name)
                 cv2.imwrite(dest_image, context.image)
+                dest_image = os.path.join(dest_folder, 'mask-' + context.image_name)
+                cv2.imwrite(dest_image, context.mask_ready)
+                dest_image = os.path.join(dest_folder, 'masked-' + context.image_name)
+                cv2.imwrite(dest_image, context.get_masked())
 
         return wrapper
 
 
 def external(func: Callable) -> Callable:
-    def wrapper(image: np.ndarray, *args: Any, **kwargs: Any) -> np.ndarray:
+    def wrapper(context: Context, *args: Any, **kwargs: Any) -> Optional[np.ndarray]:
         source = tempfile.NamedTemporaryFile(suffix='.png')
-        cv2.imwrite(source.name, image)
+        cv2.imwrite(source.name, context.image)
         destination = tempfile.NamedTemporaryFile(suffix='.png')
         func(source.name, destination.name, *args, **kwargs)
         return cv2.imread(destination.name)
     return wrapper
 
 
-def crop(  # pylint: disable=too-many-arguments
-        source: str, destination: str,
-        marging_horizontal: int = 25, maring_vertical: int = 25,
-        rm_top: int = 25, rm_left: int = 15,
-        noise: str = '7', blur: str = '0x3', fuzz: str = '25%'
-) -> None:
+def get_contour_to_crop(
+        contours: List[Tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0
+) -> Tuple[int, int, int, int]:
+    content = [
+        contours[0][0],
+        contours[0][1],
+        contours[0][0] + contours[0][2],
+        contours[0][1] + contours[0][3]
+    ]
+    for contour in contours:
+        content[0] = min(content[0], contour[0])
+        content[1] = min(content[1], contour[1])
+        content[2] = max(content[2], contour[0] + contour[2])
+        content[3] = max(content[3], contour[1] + contour[3])
+
+    return (
+        content[0] - margin_horizontal,
+        content[1] - margin_vertical,
+        content[2] - content[0] + 2 * margin_horizontal,
+        content[3] - content[1] + 2 * margin_vertical,
+    )
+
+
+def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 25) -> None:
     """
     Margin in px
     """
-    o_w, o_h = [int(e) for e in output(CONVERT + [
-        source, '-format', '%w %h', 'info:-'
-    ]).strip().split(' ')]
-    width, height, x, y = [int(e) for e in re.split('[x+]', output(CONVERT + [
-        source, '-crop', '{}x{}+{}+{}'.format(o_w - rm_left, o_h - rm_top, rm_left, rm_top),
-        '+repage', '-virtual-pixel', 'edge', '-noise', noise, '-blur', blur, '-fuzz',
-        fuzz, '-format', '%@', 'info:-'
-    ]).strip())]
-    if height <= o_h and width <= o_w:
-        call(CONVERT + [source, '-background', '#ffffff', '-crop', '{}x{}+{}+{}'.format(
-            width + 2 * marging_horizontal, height + 2 * maring_vertical,
-            x - marging_horizontal + rm_left, y - maring_vertical + rm_top
-        ), '+repage', destination])
-    else:
-        shutil.copyfile(source, destination)
+    contours = find_contours(context.get_masked())
+    if contours:
+        x, y, width, height = get_contour_to_crop(contours, margin_horizontal, margin_vertical)
+        context.crop(x, y, width, height)
 
 
 @Process('force-cleanup')
@@ -194,36 +292,39 @@ def crop(  # pylint: disable=too-many-arguments
 def force_cleanup(source: str, destination: str, config: Dict[str, Any]) -> None:
     if config['args']['level']:
         call(CONVERT + ['-level', '15%,1,85%', source, destination])
-
-
-@Process('precrop')
-@external
-def precrop(source: str, destination: str) -> None:
-    marging_horizontal = 100
-    maring_vertical = 100
-    crop(
-        source, destination,
-        round(marging_horizontal / 10 / 2.51 * 300),
-        round(maring_vertical / 10 / 2.51 * 300)
-    )
+        # Test
+        # cv.Threshold(image, image, 15*2.55, 255, cv.THRESH_TOZERO);
+        # cv.Threshold(image, image, 85*2.55, 255, cv.THRESH_TRUNC);
+        # OR probably better
+        # equ = cv.equalizeHist(img)
+        # res = np.hstack((img,equ))
 
 
 @Process('deskew')
-@external
-def deskew(source: str, destination: str) -> None:
-    call(['/opt/Deskew/Bin/deskew', '-b', 'FFFFFF', '-o', destination, source])
+def deskew(context: Context) -> None:
+    image = context.get_masked()
+    contours = find_contours(image, 200)
+    if contours:
+        x, y, width, height = get_contour_to_crop(contours)
+        image = crop_image(image, x, y, width, height, (255, 255, 255))
+    source = tempfile.NamedTemporaryFile(suffix='.png')
+    cv2.imwrite(source.name, image)
+    out = output(['/opt/Deskew/Bin/deskew', source.name]).split('\n')
+    text = 'Skew angle found [deg]: '
+    out = [e for e in out if e.startswith(text)]
+    angle = float(out[0][len(text):])
+    context.rotate(angle)
 
 
 @Process('docrop')
-@external
-def docrop(source: str, destination: str) -> None:
+def docrop(context: Context) -> None:
     # Margin in mm
-    marging_horizontal = 10
-    maring_vertical = 7
+    marging_horizontal = 9
+    maring_vertical = 6
     crop(
-        source, destination,
-        round(marging_horizontal / 10 / 2.51 * 300),
-        round(maring_vertical / 10 / 2.51 * 300)
+        context,
+        int(round(marging_horizontal / 10 / 2.51 * 300)),
+        int(round(maring_vertical / 10 / 2.51 * 300))
     )
 
 
@@ -231,6 +332,8 @@ def docrop(source: str, destination: str) -> None:
 @external
 def sharpen(source: str, destination: str) -> None:
     call(CONVERT + ['-sharpen', '0x2', source, destination])
+    # cv::GaussianBlur(frame, image, cv::Size(0, 0), 3);
+    # cv::addWeighted(frame, 1.5, image, -0.5, 0, image);
 
 
 @Process('dither', True)
@@ -240,17 +343,16 @@ def dither(source: str, destination: str) -> None:
 
 
 @Process('autorotate', False, True)
-@external
-def autorotate(source: str, destination: str) -> None:
+def autorotate(context: Context) -> None:
+    source = tempfile.NamedTemporaryFile(suffix='.png')
+    cv2.imwrite(source.name, context.get_masked())
     orientation_lst = output([
-        'tesseract', source, '-', '--psm', '0', '-l', 'osd'
+        'tesseract', source.name, '-', '--psm', '0', '-l', 'osd'
     ]).splitlines()
     orientation_lst = [
         e for e in orientation_lst if 'Orientation in degrees' in e
     ]
-    orientation = '-' + orientation_lst[0].split()[3]
-
-    call(CONVERT + ['-rotate', orientation, source, destination])
+    context.rotate(int(orientation_lst[0].split()[3]))
 
 
 def draw_line(  # pylint: disable=too-many-arguments
@@ -303,10 +405,10 @@ def find_lines(image: np.ndarray, vertical: bool) -> Tuple[np.ndarray, Dict[str,
     correlated_values = np.correlate(values, [
         .2, .6, 1, .6, .2
     ])
-    dist = 1
+    dist = 1.0
     peaks, properties = find_peaks(correlated_values, height=dist * 10, distance=dist)
-    while len(peaks) > 3:
-        dist *= 2
+    while len(peaks) > 5:
+        dist *= 1.3
         peaks, properties = find_peaks(correlated_values, height=dist * 10, distance=dist)
     peaks += 2
 
@@ -333,7 +435,7 @@ def find_limit_contour(image: np.ndarray, vertical: bool) -> List[int]:
 
     ranges = zero_ranges(values)
 
-    result = []
+    result: List[int] = []
     for ranges_ in ranges:
         if ranges_[0] != 0 and ranges_[1] != image_size:
             result.append(int(round(sum(ranges_) / 2)))
@@ -365,7 +467,7 @@ def fill_limits(image: np.ndarray, vertical: bool) -> List[Dict[str, Any]]:
     return limits
 
 
-def find_contours(image: np.ndarray) -> List[Tuple[int, int, int, int]]:
+def find_contours(image: np.ndarray, min_size: int = 32) -> List[Tuple[int, int, int, int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Clean the image using otsu method with the inversed binarized image
@@ -380,7 +482,7 @@ def find_contours(image: np.ndarray) -> List[Tuple[int, int, int, int]]:
 
     for cnt in contours:
         x, y, width, height = cv2.boundingRect(cnt)
-        if width > 32 and height > 32:
+        if width > min_size and height > min_size:
             result.append((x + 8, y + 8, width - 16, height - 16))
 
     return result
@@ -462,26 +564,29 @@ def transform(
         del config['intermediate_error']
 
     images = []
+    process_count = 0
 
     if config['args']['assisted_split']:
         config['assisted_split'] = []
 
     for index, img in enumerate(step['sources']):
-        process_file = tempfile.NamedTemporaryFile(suffix='.png')
-        image_path = process_file.name
-        shutil.copyfile(os.path.join(root_folder, img), image_path)
         context = Context(config, step, config_file_name, root_folder, os.path.basename(img))
-        context.image = cv2.imread(image_path)
+        if context.image_name is None:
+            raise Exception("Image name is required")
+        context.image = cv2.imread(os.path.join(root_folder, img))
+        mask_file = os.path.join(os.path.dirname(root_folder), 'mask.png')
+        if os.path.exists(mask_file):
+            context.mask = cv2.imread(mask_file)
+            context.init_mask()
         force_cleanup(context, config)
-        precrop(context)
         deskew(context)
         docrop(context)
         sharpen(context)
         dither(context)
         autorotate(context)
 
-        # is empty ?
-        contours = find_contours(context.image)
+        # Is empty ?
+        contours = find_contours(context.get_masked())
         if not contours:
             print("Ignore image with no content: {}".format(img))
             continue
@@ -496,10 +601,10 @@ def transform(
 
         if config['args']['assisted_split']:
             assisted_split: Dict[str, Any] = {}
-            name = os.path.join(root_folder, cast(str, context.image_name))
+            name = os.path.join(root_folder, context.image_name)
             assisted_split['source'] = save_image(
                 context.image, root_folder,
-                '{}-assisted-split'.format(context.process_count()), cast(str, context.image_name), True
+                '{}-assisted-split'.format(context.get_process_count()), context.image_name, True
             )
 
             config['assisted_split'].append(assisted_split)
@@ -517,13 +622,15 @@ def transform(
             assisted_split['image'] = context.image_name
             images.append(name)
         else:
-            img2 = os.path.join(root_folder, cast(str, context.image_name))
+            img2 = os.path.join(root_folder, context.image_name)
             cv2.imwrite(img2, context.image)
             images.append(img2)
+        process_count = context.process_count
 
     return {
         'sources': images,
         'name': 'split' if config['args']['assisted_split'] else 'finalise',
+        'process_count': process_count,
     }
 
 
@@ -556,6 +663,7 @@ def save_image(
 
 
 def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dict[str, Any]:
+    process_count = 0
     for assisted_split in config['assisted_split']:
         if assisted_split['limits']:
             if len(assisted_split['limits']) != len(assisted_split['destinations']) - 1:
@@ -576,8 +684,8 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
 
     append: Dict[Union[str, int], List[Dict[str, Any]]] = {}
     transformed_images = []
-    context = Context(config, step)
     for assisted_split in config['assisted_split']:
+        context = Context(config, step)
         img = assisted_split['source']
         width, height = [int(e) for e in output(CONVERT + [
             img, '-format', '%w %h', 'info:-'
@@ -622,18 +730,19 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     page = destination
                     page_pos = 0
 
-                save(root_folder, img2, '{}-split'.format(context.process_count()))
+                save(root_folder, img2, '{}-split'.format(context.get_process_count()))
                 marging_horizontal = 10
                 maring_vertical = 7
-                img3_file = tempfile.NamedTemporaryFile(suffix='.png')
-                img3 = img3_file.name
+                context.image = cv2.imread(img2)
                 crop(
-                    img2,
-                    img3,
+                    context,
                     int(round(marging_horizontal / 10 / 2.51 * 300)),
                     int(round(maring_vertical / 10 / 2.51 * 300)),
                 )
-                save(root_folder, img3, '{}-crop'.format(context.process_count()))
+                img3_file = tempfile.NamedTemporaryFile(suffix='.png')
+                img3 = img3_file.name
+                cv2.imwrite(img3, context.image)
+                save(root_folder, img3, '{}-crop'.format(context.get_process_count()))
                 if page not in append:
                     append[page] = []
                 append[page].append({
@@ -641,6 +750,7 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     'pos': page_pos,
                     'vertical': vertical
                 })
+        process_count = context.process_count
 
     for page_number in sorted(append.keys()):
         items = append[page_number]
@@ -654,14 +764,16 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
         call(CONVERT + [e['file'].name for e in sorted(items, key=lambda e: e['pos'])] + [
             '-background', '#ffffff', '-gravity', 'center', '+append' if vertical else '-append', img
         ])
-        save(root_folder, img, '{}-split'.format(context.process_count()))
+        save(root_folder, img, '{}-split'.format(process_count))
         img2 = os.path.join(root_folder, 'image-{}.png'.format(page_number))
         call(CONVERT + [img, img2])
         transformed_images.append(img2)
+    process_count += 1
 
     return {
         'sources': transformed_images,
         'name': 'finalise',
+        'process_count': process_count,
     }
 
 
@@ -688,6 +800,10 @@ def finalise(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> 
         call(CONVERT + images2 + [
             '-background', '#ffffff', '-gravity', 'center', '-append', file_name
         ])
+        # To stack vertically (img1 over img2):
+        # vis = np.concatenate((img1, img2), axis=0)
+        # To stack horizontally (img1 to the left of img2):
+        # vis = np.concatenate((img1, img2), axis=1)
         images = [file_name]
 
     pdf = []

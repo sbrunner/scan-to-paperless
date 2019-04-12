@@ -38,6 +38,20 @@ ENV LANG=C.UTF-8
 COPY process /opt/
 
 
+FROM base as tests
+
+RUN \
+  . /etc/os-release && \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
+    python3-wheel python3-pip python3-setuptools poppler-utils ghostscript
+RUN pip3 install pytest pylint pyflakes bandit mypy codespell coverage
+
+WORKDIR /opt
+COPY .pylintrc mypy.ini setup.cfg /opt/
+RUN touch __init__.py
+
+
 FROM base as all
 
 RUN \
@@ -62,20 +76,3 @@ RUN \
   (apt-get install --assume-yes --no-install-recommends scantailor-universal || true) && \
   apt-get clean && \
   rm --recursive --force /var/lib/apt/lists/*
-
-
-FROM base as tests
-
-RUN \
-  . /etc/os-release && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-    python3-wheel python3-pip python3-setuptools poppler-utils ghostscript
-
-RUN pip3 install pytest pylint pyflakes bandit mypy codespell coverage
-
-WORKDIR /opt
-COPY .pylintrc mypy.ini /opt/
-RUN touch __init__.py
-COPY tests/*.png /tests/
-COPY tests/test_* /tests/
