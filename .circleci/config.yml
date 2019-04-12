@@ -46,7 +46,8 @@ jobs:
             tests bash -c '
             mv /opt/process /opt/process.py &&
             cd /tests &&
-            coverage run --source=process --module pytest --durations=0 --verbose --color=yes --junitxml=/results/test-reports/junit.xml . &&
+            coverage run --source=process --module pytest --durations=0 --verbose --color=yes
+            --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
             coverage report &&
             coverage html --directory=/results/coverage'
           no_output_timeout: 20m
@@ -54,6 +55,7 @@ jobs:
           name: Extract data from Docker volumes
           command: |
             docker cp volumes:/results/ results/
+            docker cp volumes:/tests/prof/ results/prof/
           when: always
       - store_artifacts:
           path: results
