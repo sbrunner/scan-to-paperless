@@ -100,11 +100,9 @@ class Context:  # pylint: disable=too-many-instance-attributes
             raise Exception('The image is None')
         if self.mask_ready is None:
             return self.image
+
         image = self.image.copy()
-        for x in range(image.shape[0]):
-            for y in range(image.shape[1]):
-                if self.mask_ready[x, y] == 0:
-                    image[x, y] = (255, 255, 255)
+        image[self.mask_ready == 0] = (255, 255, 255)
         return image
 
     def crop(self, x: int, y: int, width: int, height: int) -> None:
