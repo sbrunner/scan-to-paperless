@@ -80,14 +80,14 @@ def init_test():
     ('lines', {
         'name': 'VL0',
         'type': 'line detection',
-        'value': 1804,
+        'value': 1807,
         'vertical': True,
         'margin': 0
     }, '595 x 792 pts'),
     ('contour', {
         'name': 'VC0',
         'type': 'contour detection',
-        'value': 1581,
+        'value': 1583,
         'vertical': True,
         'margin': 0
     }, '587 x 792 pts')

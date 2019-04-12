@@ -2,15 +2,9 @@ FROM ubuntu:cosmic as builder
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-    python3-dev python3-wheel python3-pip python3-setuptools \
-    curl unzip
+    python3-dev python3-wheel python3-pip python3-setuptools
 
 RUN pip3 install PyYaml numpy scipy scikit-image opencv-python-headless
-
-RUN curl http://galfar.vevb.net/store/deskew-125.zip > /tmp/deskew-125.zip && \
-  unzip /tmp/deskew-125.zip -d /opt && \
-  chmod +x /opt/Deskew/Bin/deskew &&\
-  rm /tmp/deskew-125.zip
 
 
 FROM ubuntu:cosmic as base
@@ -26,7 +20,6 @@ RUN \
   rm --recursive --force /var/lib/apt/lists/*
 
 COPY --from=builder /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python3.6/dist-packages/
-COPY --from=builder /opt/Deskew /opt/Deskew
 
 CMD ["/opt/process"]
 
@@ -63,6 +56,17 @@ RUN \
   rm --recursive --force /var/lib/apt/lists/*
 
 
+FROM builder as exp-builder
+
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
+    curl unzip
+RUN curl http://galfar.vevb.net/store/deskew-125.zip > /tmp/deskew-125.zip && \
+  unzip /tmp/deskew-125.zip -d /opt && \
+  chmod +x /opt/Deskew/Bin/deskew &&\
+  rm /tmp/deskew-125.zip
+
+
 FROM all as experimental
 
 RUN \
@@ -76,3 +80,5 @@ RUN \
   (apt-get install --assume-yes --no-install-recommends scantailor-universal || true) && \
   apt-get clean && \
   rm --recursive --force /var/lib/apt/lists/*
+
+COPY --from=exp-builder /opt/Deskew /opt/Deskew

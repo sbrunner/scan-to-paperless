@@ -307,12 +307,19 @@ def deskew(context: Context) -> None:
     if contours:
         x, y, width, height = get_contour_to_crop(contours)
         image = crop_image(image, x, y, width, height, (255, 255, 255))
-    source = tempfile.NamedTemporaryFile(suffix='.png')
-    cv2.imwrite(source.name, image)
-    out = output(['/opt/Deskew/Bin/deskew', source.name]).split('\n')
-    text = 'Skew angle found [deg]: '
-    out = [e for e in out if e.startswith(text)]
-    angle = float(out[0][len(text):])
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.bitwise_not(gray)
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+
+    coords = np.column_stack(np.where(thresh > 0))
+    angle = cv2.minAreaRect(coords)[-1]
+
+    if angle < -45:
+        angle = -(90 + angle)
+    else:
+        angle = -angle
+
     context.rotate(angle)
 
 
@@ -334,6 +341,7 @@ def sharpen(source: str, destination: str) -> None:
     call(CONVERT + ['-sharpen', '0x2', source, destination])
     # cv::GaussianBlur(frame, image, cv::Size(0, 0), 3);
     # cv::addWeighted(frame, 1.5, image, -0.5, 0, image);
+    # https://stackoverflow.com/questions/4993082/how-to-sharpen-an-image-in-opencv
 
 
 @Process('dither', True)
