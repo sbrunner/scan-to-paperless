@@ -39,25 +39,11 @@ def crop_image(  # pylint: disable=too-many-arguments
         image: np.ndarray, x: int, y: int, width: int, height: int,
         background: Union[Tuple[int], Tuple[int, int, int]]
 ) -> np.ndarray:
-    if x < 0:
-        indices = np.zeros(-x, dtype=int)
-        image = np.insert(image, indices, background, axis=1)
-        x = 0
-    if y < 0:
-        indices = np.zeros(-y, dtype=int)
-        image = np.insert(image, indices, background, axis=0)
-        y = 0
-
-    overflow_x = x + width - image.shape[1]
-    if overflow_x > 0:
-        indices = np.zeros(overflow_x, dtype=int) + image.shape[1]
-        image = np.insert(image, indices, background, axis=1)
-    overflow_y = y + height - image.shape[0]
-    if overflow_y > 0:
-        indices = np.zeros(overflow_y, dtype=int) + int(image.shape[0])
-        image = np.insert(image, indices, background, axis=0)
-
-    return image[y:y + height, x:x + width]
+    matrice = np.array([
+        [1.0, 0.0, -x],
+        [0.0, 1.0, -y],
+    ])
+    return cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background)
 
 
 class Context:  # pylint: disable=too-many-instance-attributes
