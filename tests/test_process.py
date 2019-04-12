@@ -48,6 +48,8 @@ def check_image(root_folder, image, name):
 def test_crop():
     image = load_image('image-1.png')
     root_folder = '/results/crop'
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
     check_image(root_folder, process.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), 'crop-1')
     check_image(root_folder, process.crop_image(image, 0, 100, 300, 100, (255, 255, 255)), 'crop-2')
     check_image(root_folder, process.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), 'crop-3')
@@ -59,6 +61,8 @@ def test_crop():
 def test_rotate():
     image = load_image('image-1.png')
     root_folder = '/results/rotate'
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
     image = process.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
     check_image(root_folder, process.rotate_image(image, 10, (255, 255, 255)), 'rotate-1')
     check_image(root_folder, process.rotate_image(image, -10, (255, 255, 255)), 'rotate-2')
