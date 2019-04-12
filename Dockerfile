@@ -44,8 +44,8 @@ RUN \
   . /etc/os-release && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-    python3-wheel python3-pip python3-setuptools poppler-utils ghostscript
-RUN pip3 install pytest pylint pyflakes bandit mypy codespell coverage
+    python3-wheel python3-pip python3-setuptools poppler-utils ghostscript graphviz
+RUN pip3 install 'pytest<4.0.0' pylint pyflakes bandit mypy codespell coverage pytest-profiling
 
 WORKDIR /opt
 COPY .pylintrc mypy.ini setup.cfg /opt/
