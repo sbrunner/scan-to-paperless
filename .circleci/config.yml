@@ -9,8 +9,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
-      - run: docker build --target=all --tag=sbrunner/scan-to-paperless:all .
-      - run: docker build --target=experimental --tag=sbrunner/scan-to-paperless:experimental .
       - run: docker build --target=tests --tag=tests .
       - run:
           name: pylint
@@ -62,8 +60,10 @@ jobs:
           destination: results
       - store_test_results:
           path: results/test-reports
-      - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
 
+      - run: docker build --target=all --tag=sbrunner/scan-to-paperless:all .
+      - run: docker build --target=experimental --tag=sbrunner/scan-to-paperless:experimental .
+      - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
       - deploy:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]

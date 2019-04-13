@@ -21,13 +21,13 @@ def test_find_limit_contour():
     assert contour == [1588]
 
 
-def check_image_file(root_folder, image, name):
+def check_image_file(root_folder, image, name, level=0.9):
     result = cv2.imread(image)
     assert result is not None, 'Wrong image: ' + image
-    check_image(root_folder, result, name)
+    check_image(root_folder, result, name, level)
 
 
-def check_image(root_folder, image, name):
+def check_image(root_folder, image, name, level=0.9):
     assert image is not None, 'Image required'
     expected_name = os.path.join(
         os.path.dirname(__file__), '{}.expected.png'.format(name)
@@ -42,7 +42,7 @@ def check_image(root_folder, image, name):
     score, diff = process.image_diff(expected, image)
     if diff is not None:
         cv2.imwrite(os.path.join(root_folder, '{}.diff.png'.format(name)), diff)
-    assert score > 0.999, '{} ({}) != {} ({})'.format(expected, image, expected_name, image)
+    assert score > level, '{} ({}) != {} ({})'.format(expected, image, expected_name, image)
 
 
 def test_crop():
@@ -80,23 +80,23 @@ def init_test():
 
 
 # @pytest.mark.skip(reason='for test')
-@pytest.mark.parametrize('type_,limit,size', [
+@pytest.mark.parametrize('type_,limit', [
     ('lines', {
-        'name': 'VL0',
+        'name': 'VL1',
         'type': 'line detection',
-        'value': 1804,
+        'value': 1803,
         'vertical': True,
         'margin': 0
-    }, '595 x 792 pts'),
+    }),
     ('contour', {
         'name': 'VC0',
         'type': 'contour detection',
         'value': 1581,
         'vertical': True,
         'margin': 0
-    }, '587 x 792 pts')
+    })
 ])
-def test_assisted_split_full(type_, limit, size):
+def test_assisted_split_full(type_, limit):
     init_test()
 #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = '/results/assisted-split-full-{}'.format(type_)
@@ -126,8 +126,8 @@ def test_assisted_split_full(type_, limit, size):
     images = step['sources']
     assert os.path.basename(images[0]) == config['assisted_split'][0]['image']
     assert len(images) == 1
-    check_image_file(root_folder, images[0], 'assisted-split-{}-1'.format(type_))
-    check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
+    check_image_file(root_folder, images[0], 'assisted-split-{}-1'.format(type_), 0.999)
+    #check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
     limits = [item for item in config['assisted_split'][0]['limits'] if item['vertical']]
     print(json.dumps(limits))
     assert not [item for item in limits if item['name'] == 'C'], "We shouldn't have center limit"
@@ -146,12 +146,11 @@ def test_assisted_split_full(type_, limit, size):
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
     assert pdfinfo['Title'] == 'Test title 1'
     assert pdfinfo['Pages'] == '2'
-    assert pdfinfo['Page size'] == size
     process.call([
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
-    check_image_file(root_folder, step['sources'][1], 'assisted-split-{}-4'.format(type_))
+    check_image_file(root_folder, os.path.join(root_folder, 'final.png'), 'assisted-split-{}-5'.format(type_))
 
 
 # @pytest.mark.skip(reason='for test')
@@ -215,7 +214,7 @@ def test_assisted_split_join_full():
         'gm', 'convert', os.path.join(root_folder, 'final.pdf'),
         '+adjoin', os.path.join(root_folder, 'final.png')
     ])
-    check_image_file(root_folder, step['sources'][0], 'assisted-split-join-1')
+    check_image_file(root_folder, os.path.join(root_folder, 'final.png'), 'assisted-split-join-2')
 
 
 # @pytest.mark.skip(reason='for test')
@@ -246,9 +245,9 @@ def test_full(progress, experimental):
     assert len(step['sources']) == 1
 
     if progress == 'TRUE':
-        assert os.path.exists(os.path.join(root_folder, '0-force-cleanup/all-1.png'))
+        assert os.path.exists(os.path.join(root_folder, '0-level/all-1.png'))
     else:
-        assert not os.path.exists(os.path.join(root_folder, '0-force-cleanup'))
+        assert not os.path.exists(os.path.join(root_folder, '0-level'))
     if experimental == 'TRUE':
         assert os.path.exists(os.path.join(root_folder, 'scantailor/all-1.png'))
     else:

@@ -271,17 +271,27 @@ def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 2
         context.crop(x, y, width, height)
 
 
-@Process('force-cleanup')
-@external
-def force_cleanup(source: str, destination: str, config: Dict[str, Any]) -> None:
+@Process('level')
+def level(context: Context, config: Dict[str, Any]) -> np.ndarray:
+    img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
+
     if config['args']['level']:
-        call(CONVERT + ['-level', '15%,1,85%', source, destination])
-        # Test
-        # cv.Threshold(image, image, 15*2.55, 255, cv.THRESH_TOZERO);
-        # cv.Threshold(image, image, 85*2.55, 255, cv.THRESH_TRUNC);
-        # OR probably better
-        # equ = cv.equalizeHist(img)
-        # res = np.hstack((img,equ))
+        min_p100 = 15
+        max_p100 = 85
+
+        min_ = min_p100 / 100 * 255
+        max_ = max_p100 / 100 * 255
+
+        chanel_y = img_yuv[:, :, 0]
+        mins = np.zeros(chanel_y.shape)
+        maxs = np.zeros(chanel_y.shape) + 255
+
+        values = (chanel_y - min_) / (max_ - min_) * 255
+        img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
+    else:
+        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+
+    return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
 
 @Process('deskew')
@@ -562,7 +572,7 @@ def transform(
         if os.path.exists(mask_file):
             context.mask = cv2.imread(mask_file)
             context.init_mask()
-        force_cleanup(context, config)
+        level(context, config)
         deskew(context)
         docrop(context)
         sharpen(context)
