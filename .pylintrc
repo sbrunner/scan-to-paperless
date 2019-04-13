@@ -6,4 +6,4 @@ disable=R0912,R0915,R1702,W0703,R0914,C0111,E1121,E1120
 
 [FORMAT]
 max-line-length=110
-good-names=x,y
+good-names=x,y,x1,x2,y1,y2

@@ -22,7 +22,9 @@ from scipy.signal import find_peaks
 CONVERT = ['gm', 'convert']
 
 
-def rotate_image(image: np.ndarray, angle: float, background: Any) -> np.ndarray:
+def rotate_image(
+        image: np.ndarray, angle: float, background: Union[int, Tuple[int, int, int]]
+) -> np.ndarray:
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
@@ -37,7 +39,7 @@ def rotate_image(image: np.ndarray, angle: float, background: Any) -> np.ndarray
 
 def crop_image(  # pylint: disable=too-many-arguments
         image: np.ndarray, x: int, y: int, width: int, height: int,
-        background: Union[Tuple[int], Tuple[int, int, int]]
+        background: Union[int, Tuple[int, int, int]]
 ) -> np.ndarray:
     matrice = np.array([
         [1.0, 0.0, -x],
@@ -96,7 +98,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
             raise Exception('The image is None')
         self.image = crop_image(self.image, x, y, width, height, (255, 255, 255))
         if self.mask_ready is not None:
-            self.mask_ready = crop_image(self.mask_ready, x, y, width, height, (0,))
+            self.mask_ready = crop_image(self.mask_ready, x, y, width, height, 0)
 
     def rotate(self, angle: float) -> None:
         if self.image is None:
@@ -186,10 +188,11 @@ class Process:  # pylint: disable=too-few-public-methods
                 return
             old_image = context.image.copy() if self.experimental else None
             start_time = time.perf_counter()
-            if self.experimental or self.ignore_error:
+            if self.experimental and os.environ.get('TEST_EXPERIMENTAL', 'FALSE') == 'FALSE' \
+                    or self.ignore_error:
                 try:
                     new_image = func(context, *args, **kwargs)
-                    if new_image is not None:
+                    if new_image is not None and self.ignore_error:
                         context.image = new_image
                 except Exception as exception:
                     print(exception)
@@ -284,8 +287,63 @@ def force_cleanup(source: str, destination: str, config: Dict[str, Any]) -> None
         # res = np.hstack((img,equ))
 
 
-@Process('deskew')
-def deskew(context: Context) -> None:
+@Process('deskew-column-stack', True)
+def deskew_column_stack(context: Context) -> None:
+    image = context.get_masked()
+    contours = find_contours(image, 200)
+    if contours:
+        x, y, width, height = get_contour_to_crop(contours)
+        image = crop_image(image, x, y, width, height, (255, 255, 255))
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.bitwise_not(gray)
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+
+    coords = np.column_stack(np.where(thresh > 0))
+    angle = cv2.minAreaRect(coords)[-1]
+
+    if angle < -45:
+        angle = -(90 + angle)
+    else:
+        angle = -angle
+
+    return rotate_image(context.image, angle, (255, 255, 255))
+    # context.rotate(angle)
+
+
+@Process('deskew-hough-lines', True)
+def deskew_hough_lines(context: Context) -> None:
+    image = context.get_masked()
+    contours = find_contours(image, 200)
+    if contours:
+        x, y, width, height = get_contour_to_crop(contours)
+        image = crop_image(image, x, y, width, height, (255, 255, 255))
+
+    # Invert the colors of our image
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image = cv2.bitwise_not(gray)
+    width, height = image.shape
+
+    # Hough transform
+    edges = cv2.Canny(image, 150, 200, 3, 5)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=width / 2.0, maxLineGap=20)
+    lines = lines.reshape(lines.shape[0], 4)
+
+    # Calculate the angle between each line and the horizontal line
+    angle = 0.0
+    for x1, y1, x2, y2 in lines:
+        if x1 != x2:
+            angle += np.arctan2(y2 - y1, x2 - x1)
+    angle /= lines.size
+    angle = angle * 180.0 / np.pi
+
+    print(angle)
+    return rotate_image(context.image, angle, (255, 255, 255))
+    # context.rotate(angle)
+
+
+@Process('deskew-ext')
+def deskew_ext(context: Context) -> None:
     image = context.get_masked()
     contours = find_contours(image, 200)
     if contours:
@@ -563,7 +621,9 @@ def transform(
             context.mask = cv2.imread(mask_file)
             context.init_mask()
         force_cleanup(context, config)
-        deskew(context)
+        deskew_column_stack(context)
+        deskew_hough_lines(context)
+        deskew_ext(context)
         docrop(context)
         sharpen(context)
         dither(context)

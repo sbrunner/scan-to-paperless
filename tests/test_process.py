@@ -79,6 +79,26 @@ def init_test():
     shutil.copyfile(os.path.join(os.path.dirname(__file__), 'mask.png'), '/results/mask.png')
 
 
+@pytest.mark.parametrize('func,name', [
+    (process.deskew_column_stack, 'column-stack'),
+    (process.deskew_hough_lines, 'hough-lines'),
+    (process.deskew_ext, 'ext'),
+])
+@pytest.mark.parametrize('image', range(1, 8))
+def test_deskew(func, name, image):
+    init_test()
+    os.environ['EXPERIMENTAL'] = 'TRUE'
+    os.environ['TEST_EXPERIMENTAL'] = 'TRUE'
+    root_folder = '/results/deskew-{}-{}'.format(name, image)
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
+    context = process.Context(
+        {}, {}, os.path.join(root_folder, 'config.yaml'), root_folder, 'deskew-{}-{}.png'.format(name, image),
+    )
+    context.image = load_image('deskew-{}.png'.format(image))
+    func(context)
+    check_image(root_folder, context.image, 'deskew-{}-{}'.format(name, image))
+
 # @pytest.mark.skip(reason='for test')
 @pytest.mark.parametrize('type_,limit,size', [
     ('lines', {
