@@ -39,7 +39,7 @@ def rotate_image(
 
 def crop_image(  # pylint: disable=too-many-arguments
         image: np.ndarray, x: int, y: int, width: int, height: int,
-        background: Union[int, Tuple[int, int, int]]
+        background: Union[Tuple[int], Tuple[int, int, int]]
 ) -> np.ndarray:
     matrice = np.array([
         [1.0, 0.0, -x],
@@ -98,7 +98,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
             raise Exception('The image is None')
         self.image = crop_image(self.image, x, y, width, height, (255, 255, 255))
         if self.mask_ready is not None:
-            self.mask_ready = crop_image(self.mask_ready, x, y, width, height, 0)
+            self.mask_ready = crop_image(self.mask_ready, x, y, width, height, (0,))
 
     def rotate(self, angle: float) -> None:
         if self.image is None:

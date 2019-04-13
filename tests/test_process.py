@@ -89,7 +89,7 @@ def test_deskew(func, name, image):
     init_test()
     os.environ['EXPERIMENTAL'] = 'TRUE'
     os.environ['TEST_EXPERIMENTAL'] = 'TRUE'
-    root_folder = '/results/deskew-{}-{}'.format(name, image)
+    root_folder = '/results/deskew/{}-{}'.format(name, image)
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     context = process.Context(
