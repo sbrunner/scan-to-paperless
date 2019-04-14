@@ -83,9 +83,9 @@ def init_test():
 # @pytest.mark.skip(reason='for test')
 @pytest.mark.parametrize('type_,limit', [
     ('lines', {
-        'name': 'VL1',
+        'name': 'VL0',
         'type': 'line detection',
-        'value': 1803,
+        'value': 1804,
         'vertical': True,
         'margin': 0
     }),
@@ -127,7 +127,7 @@ def test_assisted_split_full(type_, limit):
     images = step['sources']
     assert os.path.basename(images[0]) == config['assisted_split'][0]['image']
     assert len(images) == 1
-    check_image_file(root_folder, images[0], 'assisted-split-{}-1'.format(type_), 0.999)
+    check_image_file(root_folder, images[0], 'assisted-split-{}-1'.format(type_), 0.998)
     #check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
     limits = [item for item in config['assisted_split'][0]['limits'] if item['vertical']]
     print(json.dumps(limits))

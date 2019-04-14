@@ -326,11 +326,11 @@ def docrop(context: Context) -> None:
 
 
 @Process('sharpen')
-@external
-def sharpen(source: str, destination: str) -> None:
-    call(CONVERT + ['-sharpen', '0x2', source, destination])
-    # cv::GaussianBlur(frame, image, cv::Size(0, 0), 3);
-    # cv::addWeighted(frame, 1.5, image, -0.5, 0, image);
+def sharpen(context: Context) -> np.ndarray:
+    if context.image is None:
+        raise Exception('The image is required')
+    image = cv2.GaussianBlur(context.image, (0, 0), 3)
+    return cv2.addWeighted(context.image, 1.5, image, -0.5, 0)
 
 
 @Process('dither', True)
