@@ -76,6 +76,7 @@ def init_test():
     os.environ['PROGRESS'] = 'FALSE'
     os.environ['TIME'] = 'TRUE'
     os.environ['EXPERIMENTAL'] = 'FALSE'
+    os.environ['TEST_EXPERIMENTAL'] = 'FALSE'
     shutil.copyfile(os.path.join(os.path.dirname(__file__), 'mask.png'), '/results/mask.png')
 
 

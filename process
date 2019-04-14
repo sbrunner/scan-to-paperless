@@ -22,7 +22,9 @@ from scipy.signal import find_peaks
 CONVERT = ['gm', 'convert']
 
 
-def rotate_image(image: np.ndarray, angle: float, background: Any) -> np.ndarray:
+def rotate_image(
+        image: np.ndarray, angle: float, background: Union[int, Tuple[int, int, int]]
+) -> np.ndarray:
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
@@ -186,10 +188,11 @@ class Process:  # pylint: disable=too-few-public-methods
                 return
             old_image = context.image.copy() if self.experimental else None
             start_time = time.perf_counter()
-            if self.experimental or self.ignore_error:
+            if self.experimental and os.environ.get('TEST_EXPERIMENTAL', 'FALSE') == 'FALSE' \
+                    or self.ignore_error:
                 try:
                     new_image = func(context, *args, **kwargs)
-                    if new_image is not None:
+                    if new_image is not None and self.ignore_error:
                         context.image = new_image
                 except Exception as exception:
                     print(exception)

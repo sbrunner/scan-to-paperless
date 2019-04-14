@@ -13,7 +13,7 @@ RUN curl http://galfar.vevb.net/store/deskew-125.zip > /tmp/deskew-125.zip && \
   rm /tmp/deskew-125.zip
 
 
-FROM ubuntu:cosmic as base
+FROM ubuntu:cosmic as base-dist
 
 RUN \
   . /etc/os-release && \
@@ -35,10 +35,8 @@ VOLUME /source \
 
 ENV LANG=C.UTF-8
 
-COPY process /opt/
 
-
-FROM base as tests
+FROM base-dist as tests-dist
 
 RUN \
   . /etc/os-release && \
@@ -48,6 +46,16 @@ RUN \
 RUN pip3 install 'pytest<4.0.0' pylint pyflakes bandit mypy codespell coverage pytest-profiling
 
 WORKDIR /opt
+
+
+FROM base-dist as base
+
+COPY process /opt/
+
+
+FROM tests-dist as tests
+
+COPY process /opt/
 COPY .pylintrc mypy.ini setup.cfg /opt/
 RUN touch __init__.py
 
