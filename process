@@ -864,13 +864,12 @@ def main() -> None:
                 continue
 
             try:
-                if 'steps' not in config or config['steps']:
+                if 'steps' not in config or not config['steps']:
                     step = {
                         'sources': config['images'],
                         'name': 'transform',
                     }
-                else:
-                    config['steps'] = config['steps'][-1]
+                    config['steps'] = [step]
 
                 if is_sources_present(step, root_folder):
                     if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
@@ -905,11 +904,11 @@ def main() -> None:
                 else:
                     print(config_file_name)
                     if config['steps']:
-                        print("Waiting image")
-                    else:
                         config['steps'] = config['steps'][:-1]
                         save_config(config, config_file_name)
                         print("Rerun step")
+                    else:
+                        print("Waiting image")
                     continue
             except Exception as exception:
                 print(exception)
