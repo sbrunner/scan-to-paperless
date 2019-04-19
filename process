@@ -870,6 +870,7 @@ def main() -> None:
                         'name': 'transform',
                     }
                     config['steps'] = [step]
+                step = config['steps'][-1]
 
                 if is_sources_present(step, root_folder):
                     if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
