@@ -17,7 +17,7 @@ RUN \
   . /etc/os-release && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-      python3 graphicsmagick pdftk-java \
+      python3 graphicsmagick pdftk-java vim \
       tesseract-ocr tesseract-ocr-fra tesseract-ocr-deu tesseract-ocr-eng \
       libimage-exiftool-perl software-properties-common && \
   apt-get clean && \
