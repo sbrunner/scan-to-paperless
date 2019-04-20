@@ -697,7 +697,7 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
             else:
                 value = width if vertical else height
                 margin = 0
-            if destination == '-':
+            if destination == '-' or destination is None:
                 last_pos = value + margin
             else:
                 if number < len(assisted_split['limits']):
