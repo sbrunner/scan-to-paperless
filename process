@@ -907,6 +907,8 @@ def main() -> None:
                     if config['steps']:
                         config['steps'] = config['steps'][:-1]
                         save_config(config, config_file_name)
+                        if os.path.exists(os.path.join(root_folder, 'REMOVE_TO_CONTINUE')):
+                            os.remove(os.path.join(root_folder, 'REMOVE_TO_CONTINUE'))
                         print("Rerun step")
                     else:
                         print("Waiting image")
