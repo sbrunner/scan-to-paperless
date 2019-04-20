@@ -687,7 +687,7 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
         width, height = [int(e) for e in output(CONVERT + [
             img, '-format', '%w %h', 'info:-'
         ]).strip().split(' ')]
-        vertical = assisted_split['limits'][0]['vertical']
+        vertical = assisted_split['limits'][0]['vertical'] if assisted_split['limits'] else True
         last_pos = 0
         for number, destination in enumerate(assisted_split['destinations']):
             if number < len(assisted_split['limits']):
