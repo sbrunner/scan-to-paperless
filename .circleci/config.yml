@@ -1,60 +1,124 @@
 version: 2
 jobs:
   build:
-    machine: true
+    docker:
+      - image: circleci/python:3.6
+    environment:
+      PATH: /usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin:/home/circleci/.local/bin
     steps:
       - checkout
-      - run: docker build --tag=sbrunner/scan-to-paperless .
-      - run: docker build --tag=tests tests
+      - setup_remote_docker
+      - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
+      - run: docker build --target=tests --tag=tests .
       - run:
           name: pylint
           command: docker run --rm tests pylint process
+          when: always
       - run:
           name: pyflakes
           command: docker run --rm tests python3 -m pyflakes .
+          when: always
       - run:
           name: bandit
           command: docker run --rm tests bandit -r process
+          when: always
       - run:
           name: mypy
-          command: docker run --rm tests mypy --ignore-missing-imports --disallow-untyped-defs --strict-optional --follow-imports skip /opt
+          command: docker run --rm tests mypy -- process
+          when: always
       - run:
           name: codespell
           command: docker run --rm tests codespell --check-filenames --skip=./Deskew/*,*.pyc,*.png
+          when: always
+      - run:
+          name: Init Docker volumes
+          command: |
+            docker run --rm --detach --name volumes --volume=tests:/tests --volume=results:/results alpine sleep 9999
+            docker cp tests/ volumes:/tests/
+          when: always
       - run:
           name: pytest
-          command: docker run --rm --env=PYTHONPATH=/opt/ --volume=`pwd`/results:/results tests bash -c 'mv /opt/process /opt/process.py; cd /tests; pytest --verbose --color=yes .'
+          command: >
+            docker run --rm --env=PYTHONPATH=/opt/
+            --volume=results:/results --volume=tests:/tests
+            tests bash -c '
+            mv /opt/process /opt/process.py &&
+            cd /tests &&
+            coverage run --source=process --module pytest --durations=0 --verbose --color=yes
+            --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
+            coverage report &&
+            coverage html --directory=/results/coverage'
+          no_output_timeout: 20m
+      - run:
+          name: Extract data from Docker volumes
+          command: |
+            docker cp volumes:/results/ results/
+            docker cp volumes:/tests/prof/ results/prof/
+          when: always
       - store_artifacts:
           path: results
-          destination: tests-results
+          destination: results
+      - store_test_results:
+          path: results/test-reports
 
-  deploy:
-    machine: true
-    steps:
+      - run: docker build --target=all --tag=sbrunner/scan-to-paperless:all .
+      - run: docker build --target=experimental --tag=sbrunner/scan-to-paperless:experimental .
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      - run: docker push origin sbrunner/scan-to-paperless
-
-  deploy-test:
-    machine: true
-    steps:
-      - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      - run: docker tag origin sbrunner/scan-to-paperless origin sbrunner/scan-to-paperless:test
-      - run: docker push origin sbrunner/scan-to-paperless:test
-
-workflows:
-  version: 2
-  build-and-deploy:
-    jobs:
-      - build
       - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-      - deploy-test:
-          requires:
-            - build
-          filters:
-            branches:
-              only: test
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              docker push sbrunner/scan-to-paperless
+              docker push sbrunner/scan-to-paperless:all
+              docker push sbrunner/scan-to-paperless:experimental
+            fi
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "test" ]
+            then
+              docker tag sbrunner/scan-to-paperless sbrunner/scan-to-paperless:test
+              docker tag sbrunner/scan-to-paperless:all sbrunner/scan-to-paperless:test-all
+              docker tag sbrunner/scan-to-paperless:experimental sbrunner/scan-to-paperless:test-experimental
+              docker push sbrunner/scan-to-paperless:test
+              docker push sbrunner/scan-to-paperless:test-all
+              docker push sbrunner/scan-to-paperless:test-experimental
+            fi
+      - run:
+          name: Init Git
+          command: |
+            git remote add push https://${GITHUB_TOKEN}@github.com/sbrunner/scan-to-paperless
+            git config credential.helper 'cache --timeout=120'
+            git config user.email "<ci@ci.com>"
+            git config user.name "CI"
+      - run:
+          name: Init pypi
+          command: |
+            echo "[pypi]" > ~/.pypirc
+            echo "username = ${PYPI_USER}" >> ~/.pypirc
+            echo "password = ${PYPI_PASS}" >> ~/.pypirc
+            pip install --user wheel twine
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "test" ]
+            then
+              python setup.py egg_info --tag-date --tag-build dev sdist bdist_wheel
+              twine upload dist/*
+            fi
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              python setup.py egg_info --no-date sdist bdist_wheel
+              twine upload dist/*
+            fi
+      - run:
+          name: Bump bersion
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              pip install --user bump-anything
+              bump minor
+              git add setup.py
+              git commit --allow-empty -m "[skip ci] Bump Version"
+              git push push ${CIRCLE_BRANCH}
+            fi

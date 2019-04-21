@@ -1,3 +1,5 @@
 *
 !process
-!requirements.txt
+!.pylintrc
+!mypy.ini
+!setup.cfg
