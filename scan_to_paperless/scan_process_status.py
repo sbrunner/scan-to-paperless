@@ -9,12 +9,14 @@ import yaml
 
 
 def main():
-    for folder in glob.glob(os.path.expanduser('~/Paperless/scan/*/')):
+    config = get_config()
+    scan_folder:
+    for folder in glob.glob(os.path.join(os.path.expanduser(config['scan_folder']), '*')):
         print(re.sub(r'.', '-', folder))
         print(folder)
 
         if not os.path.exists(os.path.join(folder, 'config.yaml')):
-            print("No config")
+            print('No config')
         else:
             with open(os.path.join(folder, 'config.yaml')) as config_file:
                 config = yaml.safe_load(config_file.read())
@@ -45,6 +47,8 @@ def main():
                 if allready_proceed:
                     if os.path.exists(os.path.join(folder, 'REMOVE_TO_CONTINUE')):
                         print('To be validated')
+                    if os.path.exists(os.path.join(folder, 'DONE')):
+                        print('Process finish')
                     else:
                         print('Waiting to be imported')
                 else:
