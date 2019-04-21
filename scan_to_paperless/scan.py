@@ -70,7 +70,7 @@ def main():
     if os.path.exists(CACHE_PATH):
         with open(CACHE_PATH, encoding='utf-8') as f:
             cache = json.loads(f.read())
-            if cache['time'] > time.monotonic() - 3600:
+            if cache['time'] > time.time() - 3600:
                 update_cache = False
 
     if update_cache:
@@ -82,13 +82,13 @@ def main():
             cache = {
                 'correspondents': [t[0] for t in cursor.execute('select name from documents_correspondent')],
                 'tags': [t[0] for t in cursor.execute('select name from documents_tag')],
-                'time': time.monotonic()
+                'time': time.time()
             }
 
             connection.close()
 
         elif 'paperless_dump' in config:
-            cache['time'] = time.monotonic()
+            cache['time'] = time.time()
             with open(config['paperless_dump']) as dumpdata:
                 dump = json.loads(dumpdata.read())
                 {
