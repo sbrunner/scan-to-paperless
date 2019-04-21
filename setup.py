@@ -22,7 +22,7 @@ setup(
     author_email='stephane.brunner@gmail.com',
     url='https://hub.docker.com/r/sbrunner/scan-to-paperless/',
     packages=find_packages(exclude=['tests.*']),
-    install_requires=['argcomplete', 'pyyaml'],
+    install_requires=['argcomplete', 'pyyaml', 'scikit-image'],
     entry_points={
         'console_scripts': [
             'scan = scan_to_paperless.scan:main',

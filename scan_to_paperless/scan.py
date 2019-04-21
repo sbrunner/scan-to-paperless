@@ -20,6 +20,8 @@ import time
 import argcomplete
 from argcomplete.completers import ChoicesCompleter
 import yaml
+from skimage import io
+from skimage.transform import rotate
 
 
 CONFIG_FILENAME = "scan-to-paperless.yaml"
@@ -216,8 +218,6 @@ def main():
     root_folder = os.path.join(config['scan_folder'], str(random.randint(0, 999999)), 'source')
     os.makedirs(root_folder)
 
-    mogrify = ['gm', 'mogrify']
-
     try:
         scanimage = [
             'scanimage',
@@ -241,7 +241,10 @@ def main():
             ])
             for img in os.listdir(root_folder):
                 if img not in odd:
-                    call(mogrify + ['-rotate', '180', os.path.join(root_folder, img)])
+                    path = os.path.join(root_folder, img)
+                    image = io.imread(path)
+                    image = rotate(image, 180) * 255
+                    io.imsave(path, image.astype(np.uint8))
         else:
             call(scanimage)
 
