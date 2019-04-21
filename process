@@ -279,25 +279,35 @@ def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 2
 
 
 @Process('level')
-def level(context: Context, config: Dict[str, Any]) -> np.ndarray:
+def level(context: Context) -> np.ndarray:
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
-    if config['args']['level']:
-        min_p100 = 15
-        max_p100 = 85
-
-        min_ = min_p100 / 100 * 255
-        max_ = max_p100 / 100 * 255
-
-        chanel_y = img_yuv[:, :, 0]
-        mins = np.zeros(chanel_y.shape)
-        maxs = np.zeros(chanel_y.shape) + 255
-
-        values = (chanel_y - min_) / (max_ - min_) * 255
-        img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
-    else:
+    level_ = context.config['args'].get('level')
+    if level_ is True:
+        min_p100 = 15.0
+        max_p100 = 85.0
+    elif level_ is False:
+        min_p100 = 0.0
+        max_p100 = 100.0
+    elif isinstance(level_, (float, int)):
+        min_p100 = 0.0 + level_
+        max_p100 = 100.0 - level_
+    elif context.config['args'].get('auto_level'):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+        return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+    else:
+        min_p100 = context.config['args'].get('min_level', 0.0)
+        max_p100 = context.config['args'].get('max_level', 100.0)
 
+    min_ = min_p100 / 100.0 * 255.0
+    max_ = max_p100 / 100.0 * 255.0
+
+    chanel_y = img_yuv[:, :, 0]
+    mins = np.zeros(chanel_y.shape)
+    maxs = np.zeros(chanel_y.shape) + 255
+
+    values = (chanel_y - min_) / (max_ - min_) * 255
+    img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
 
@@ -312,12 +322,13 @@ def deskew(context: Context) -> None:
 @Process('docrop')
 def docrop(context: Context) -> None:
     # Margin in mm
-    marging_horizontal = 9
-    maring_vertical = 6
+    marging_horizontal = context.config['args'].get('marging_horizontal', 9)
+    maring_vertical = context.config['args'].get('maring_vertical', 6)
+    dpi = context.config['args'].get('dpi', 300)
     crop(
         context,
-        int(round(marging_horizontal / 10 / 2.51 * 300)),
-        int(round(maring_vertical / 10 / 2.51 * 300))
+        int(round(marging_horizontal / 10 / 2.51 * dpi)),
+        int(round(maring_vertical / 10 / 2.51 * dpi))
     )
 
 
@@ -571,7 +582,7 @@ def transform(
         if os.path.exists(mask_file):
             context.mask = cv2.imread(mask_file)
             context.init_mask()
-        level(context, config)
+        level(context)
         deskew(context)
         docrop(context)
         sharpen(context)
@@ -724,13 +735,14 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     page_pos = 0
 
                 save(root_folder, img2, '{}-split'.format(context.get_process_count()))
-                marging_horizontal = 9
-                maring_vertical = 6
+                marging_horizontal = context.config['args'].get('marging_horizontal', 9)
+                maring_vertical = context.config['args'].get('maring_vertical', 6)
+                dpi = context.config['args'].get('dpi', 300)
                 context.image = cv2.imread(img2)
                 crop(
                     context,
-                    int(round(marging_horizontal / 10 / 2.51 * 300)),
-                    int(round(maring_vertical / 10 / 2.51 * 300)),
+                    int(round(marging_horizontal / 10 / 2.51 * dpi)),
+                    int(round(maring_vertical / 10 / 2.51 * dpi)),
                 )
                 img3_file = tempfile.NamedTemporaryFile(suffix='.png')
                 img3 = img3_file.name

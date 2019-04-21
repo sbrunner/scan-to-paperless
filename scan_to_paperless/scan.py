@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # TODO
-# - Do blur only one times
-# - other layouts
 # - fix content detection for romande energie
-# - add http://www.graphicsmagick.org/GraphicsMagick.html#details-sharpen
 
 
 import argparse
@@ -243,11 +240,14 @@ def main():
 
         regex = re.compile(r'^source\/image\-([0-9]+)\.png$')
         images = sorted(images, key=lambda e: int(regex.match(e).group(1)))
+        args_ = {}
+        args_.update(config.get('default_args', {}))
+        args_.update(dict(args._get_kwargs()))
         config = {
             'images': images,
             'full_name': full_name,
             'destination': destination,
-            'args': dict(args._get_kwargs()),
+            'args': args_,
         }
         with open(os.path.join(os.path.dirname(root_folder), 'config.yaml'), 'w') as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
