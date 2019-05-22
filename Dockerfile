@@ -29,7 +29,7 @@ RUN \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
       python3-pip python3-setuptools && \
-  python3 -m pip install PyYaml numpy scipy scikit-image opencv-python-headless && \
+  python3 -m pip install PyYaml numpy scipy scikit-image opencv-python-headless deskew && \
   DEBIAN_FRONTEND=noninteractive apt-get auto-remove --assume-yes python3-pip python3-setuptools && \
   apt-get clean && \
   rm --recursive --force /var/lib/apt/lists/* /root/.cache /var/cache/*

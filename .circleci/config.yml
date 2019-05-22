@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Init Docker volumes
           command: |
-            docker run --rm --detach --name volumes --volume=tests:/tests --volume=results:/results alpine sleep 9999
+            docker run --rm --detach --name volumes --volume=tests:/tests --volume=results:/results alpine tail -f /dev/null
             docker cp tests/ volumes:/tests/
           when: always
       - run:

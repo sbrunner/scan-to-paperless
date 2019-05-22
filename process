@@ -14,11 +14,15 @@ import traceback
 from typing import cast, List, Dict, Any, Tuple, Union, Optional, Callable
 import yaml
 from skimage.measure import compare_ssim
+from skimage.color import rgb2gray
 import numpy as np
+# read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 from scipy.signal import find_peaks
+from deskew import determine_skew
 
 
+# dither, crop, append, repage
 CONVERT = ['gm', 'convert']
 
 
@@ -300,16 +304,8 @@ def level(context: Context, config: Dict[str, Any]) -> np.ndarray:
 @Process('deskew')
 def deskew(context: Context) -> None:
     image = context.get_masked()
-    contours = find_contours(image, 200)
-    if contours:
-        x, y, width, height = get_contour_to_crop(contours)
-        image = crop_image(image, x, y, width, height, (255, 255, 255))
-    source = tempfile.NamedTemporaryFile(suffix='.png')
-    cv2.imwrite(source.name, image)
-    out = output(['/opt/Deskew/Bin/deskew', source.name]).split('\n')
-    text = 'Skew angle found [deg]: '
-    out = [e for e in out if e.startswith(text)]
-    angle = float(out[0][len(text):])
+    grayscale = rgb2gray(image)
+    angle = determine_skew(grayscale)
     context.rotate(angle)
 
 
@@ -583,7 +579,7 @@ def transform(
         autorotate(context)
 
         # Is empty ?
-        contours = find_contours(context.get_masked())
+        contours = find_contours(context.get_masked(), 70)
         if not contours:
             print("Ignore image with no content: {}".format(img))
             continue
@@ -728,8 +724,8 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     page_pos = 0
 
                 save(root_folder, img2, '{}-split'.format(context.get_process_count()))
-                marging_horizontal = 10
-                maring_vertical = 7
+                marging_horizontal = 9
+                maring_vertical = 6
                 context.image = cv2.imread(img2)
                 crop(
                     context,
