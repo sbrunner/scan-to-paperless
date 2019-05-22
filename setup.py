@@ -14,6 +14,7 @@ setup(
     version='0.6.0',
     description='Tool to scan and process documents to palerless',
     long_description=README,
+    long_description_content_type='text/markdown',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
