@@ -22,21 +22,11 @@ from argcomplete.completers import ChoicesCompleter
 import yaml
 from skimage import io
 from skimage.transform import rotate
+from scan_to_paperless import CONFIG_FOLDER, get_config
 
 
-CONFIG_FILENAME = "scan-to-paperless.yaml"
-CACHE_FILENAME = "scan-to-paperless-cache.json"
-
-if 'APPDATA' in os.environ:
-    CONFIG_PATH = os.path.join(os.environ['APPDATA'], CONFIG_FILENAME)
-    CACHE_PATH = os.path.join(os.environ['APPDATA'], CACHE_FILENAME)
-elif 'XDG_CONFIG_HOME' in os.environ:
-    CONFIG_PATH = os.path.join(os.environ['XDG_CONFIG_HOME'], CONFIG_FILENAME)
-    CACHE_PATH = os.path.join(os.environ['XDG_CONFIG_HOME'], CACHE_FILENAME)
-else:
-    CONFIG_PATH = os.path.join(os.environ['HOME'], '.config', CONFIG_FILENAME)
-    CACHE_PATH = os.path.join(os.environ['HOME'], '.config', CACHE_FILENAME)
-
+CACHE_FILENAME = 'scan-to-paperless-cache.json'
+CACHE_PATH = os.path.join(CONFIG_FOLDER, CACHE_FILENAME)
 
 def call(cmd, cmd2=None, **kwargs):
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
@@ -57,11 +47,7 @@ def output(cmd, cmd2=None, **kwargs):
 
 
 def main():
-
-    config = {}
-    if os.path.exists(CONFIG_PATH):
-        with open(CONFIG_PATH, encoding='utf-8') as f:
-            config = yaml.safe_load(f.read())
+    config = get_config()
 
     cache = {
         'correspondents': [],
@@ -94,11 +80,11 @@ def main():
             with open(config['paperless_dump']) as dumpdata:
                 dump = json.loads(dumpdata.read())
                 {
-                    "model": "contenttypes.contenttype",
-                    "pk": 1,
-                    "fields": {
-                        "app_label": "auth",
-                        "model": "permission"
+                    'model': 'contenttypes.contenttype',
+                    'pk': 1,
+                    'fields': {
+                        'app_label': 'auth',
+                        'model': 'permission'
                     }
                 }
 
@@ -154,7 +140,7 @@ def main():
     add_argument(
         '--tag',
         action='append',
-        dest="tags",
+        dest='tags',
         default=[],
         choices=cache['tags'],
         help='The document tags'
@@ -197,9 +183,9 @@ def main():
         exit(0)
 
     if 'scan_folder' not in config:
-        print('''The scan folder isn\'t set, use:
+        print('''The scan folder isn't set, use:
     scan --set-settings scan_folder <a_folder>
-    This should be shared with the process container in '\source'.''')
+    This should be shared with the process container in 'source'.''')
         exit(1)
 
     full_name = ' '.join(args.title)
@@ -215,17 +201,18 @@ def main():
         print("The name can't contans some '/' (from correspondent, tags or title).")
         exit(1)
 
-    root_folder = os.path.join(config['scan_folder'], str(random.randint(0, 999999)), 'source')
+    root_folder = os.path.join(
+        os.path.expanduser(config['scan_folder']),
+        str(random.randint(0, 999999)), 'source'
+    )
     os.makedirs(root_folder)
 
     try:
-        scanimage = [
-            'scanimage',
-            # TODO: put in config
-            '--device=hpaio:/usb/HP_LaserJet_MFP_M129-M134?serial=VNC8K00063',
+        scanimage = ['scanimage'] + config.get('scanimage_arguments', [
             '--format=png',
             '--mode=color',
-            '--resolution=300',
+            '--resolution=300'
+        ]) + [
             '--batch={}/image-%d.png'.format(root_folder),
             '--source=ADF' if args.adf else '--batch-prompt'
         ]
@@ -270,4 +257,4 @@ def main():
         exit(1)
 
     print(root_folder)
-    subprocess.call(['eog', root_folder])
+    subprocess.call([config.get('viewer', 'eog'), root_folder])
