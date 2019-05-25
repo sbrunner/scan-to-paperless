@@ -62,7 +62,6 @@ jobs:
           path: results/test-reports
 
       - run: docker build --target=all --tag=sbrunner/scan-to-paperless:all .
-      - run: docker build --target=experimental --tag=sbrunner/scan-to-paperless:experimental .
       - run: docker login --username $DOCKER_USER --password $DOCKER_PASS
       - deploy:
           command: |
@@ -70,7 +69,6 @@ jobs:
             then
               docker push sbrunner/scan-to-paperless
               docker push sbrunner/scan-to-paperless:all
-              docker push sbrunner/scan-to-paperless:experimental
             fi
       - deploy:
           command: |
@@ -78,10 +76,8 @@ jobs:
             then
               docker tag sbrunner/scan-to-paperless sbrunner/scan-to-paperless:test
               docker tag sbrunner/scan-to-paperless:all sbrunner/scan-to-paperless:test-all
-              docker tag sbrunner/scan-to-paperless:experimental sbrunner/scan-to-paperless:test-experimental
               docker push sbrunner/scan-to-paperless:test
               docker push sbrunner/scan-to-paperless:test-all
-              docker push sbrunner/scan-to-paperless:test-experimental
             fi
       - run:
           name: Init Git
