@@ -14,11 +14,15 @@ import traceback
 from typing import cast, List, Dict, Any, Tuple, Union, Optional, Callable
 import yaml
 from skimage.measure import compare_ssim
+from skimage.color import rgb2gray
 import numpy as np
+# read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 from scipy.signal import find_peaks
+from deskew import determine_skew
 
 
+# dither, crop, append, repage
 CONVERT = ['gm', 'convert']
 
 
@@ -275,53 +279,56 @@ def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 2
 
 
 @Process('level')
-def level(context: Context, config: Dict[str, Any]) -> np.ndarray:
+def level(context: Context) -> np.ndarray:
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
-    if config['args']['level']:
-        min_p100 = 15
-        max_p100 = 85
-
-        min_ = min_p100 / 100 * 255
-        max_ = max_p100 / 100 * 255
-
-        chanel_y = img_yuv[:, :, 0]
-        mins = np.zeros(chanel_y.shape)
-        maxs = np.zeros(chanel_y.shape) + 255
-
-        values = (chanel_y - min_) / (max_ - min_) * 255
-        img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
-    else:
+    level_ = context.config['args'].get('level')
+    if level_ is True:
+        min_p100 = 15.0
+        max_p100 = 85.0
+    elif level_ is False:
+        min_p100 = 0.0
+        max_p100 = 100.0
+    elif isinstance(level_, (float, int)):
+        min_p100 = 0.0 + level_
+        max_p100 = 100.0 - level_
+    elif context.config['args'].get('auto_level'):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+        return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+    else:
+        min_p100 = context.config['args'].get('min_level', 0.0)
+        max_p100 = context.config['args'].get('max_level', 100.0)
 
+    min_ = min_p100 / 100.0 * 255.0
+    max_ = max_p100 / 100.0 * 255.0
+
+    chanel_y = img_yuv[:, :, 0]
+    mins = np.zeros(chanel_y.shape)
+    maxs = np.zeros(chanel_y.shape) + 255
+
+    values = (chanel_y - min_) / (max_ - min_) * 255
+    img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
 
 @Process('deskew')
 def deskew(context: Context) -> None:
     image = context.get_masked()
-    contours = find_contours(image, 200)
-    if contours:
-        x, y, width, height = get_contour_to_crop(contours)
-        image = crop_image(image, x, y, width, height, (255, 255, 255))
-    source = tempfile.NamedTemporaryFile(suffix='.png')
-    cv2.imwrite(source.name, image)
-    out = output(['/opt/Deskew/Bin/deskew', source.name]).split('\n')
-    text = 'Skew angle found [deg]: '
-    out = [e for e in out if e.startswith(text)]
-    angle = float(out[0][len(text):])
+    grayscale = rgb2gray(image)
+    angle = determine_skew(grayscale)
     context.rotate(angle)
 
 
 @Process('docrop')
 def docrop(context: Context) -> None:
     # Margin in mm
-    marging_horizontal = 9
-    maring_vertical = 6
+    marging_horizontal = context.config['args'].get('marging_horizontal', 9)
+    maring_vertical = context.config['args'].get('maring_vertical', 6)
+    dpi = context.config['args'].get('dpi', 300)
     crop(
         context,
-        int(round(marging_horizontal / 10 / 2.51 * 300)),
-        int(round(maring_vertical / 10 / 2.51 * 300))
+        int(round(marging_horizontal / 10 / 2.51 * dpi)),
+        int(round(maring_vertical / 10 / 2.51 * dpi))
     )
 
 
@@ -575,7 +582,7 @@ def transform(
         if os.path.exists(mask_file):
             context.mask = cv2.imread(mask_file)
             context.init_mask()
-        level(context, config)
+        level(context)
         deskew(context)
         docrop(context)
         sharpen(context)
@@ -583,7 +590,7 @@ def transform(
         autorotate(context)
 
         # Is empty ?
-        contours = find_contours(context.get_masked())
+        contours = find_contours(context.get_masked(), 70)
         if not contours:
             print("Ignore image with no content: {}".format(img))
             continue
@@ -728,13 +735,14 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     page_pos = 0
 
                 save(root_folder, img2, '{}-split'.format(context.get_process_count()))
-                marging_horizontal = 10
-                maring_vertical = 7
+                marging_horizontal = context.config['args'].get('marging_horizontal', 9)
+                maring_vertical = context.config['args'].get('maring_vertical', 6)
+                dpi = context.config['args'].get('dpi', 300)
                 context.image = cv2.imread(img2)
                 crop(
                     context,
-                    int(round(marging_horizontal / 10 / 2.51 * 300)),
-                    int(round(maring_vertical / 10 / 2.51 * 300)),
+                    int(round(marging_horizontal / 10 / 2.51 * dpi)),
+                    int(round(maring_vertical / 10 / 2.51 * dpi)),
                 )
                 img3_file = tempfile.NamedTemporaryFile(suffix='.png')
                 img3 = img3_file.name

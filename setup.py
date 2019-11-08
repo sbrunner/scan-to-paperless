@@ -14,6 +14,7 @@ setup(
     version='0.6.0',
     description='Tool to scan and process documents to palerless',
     long_description=README,
+    long_description_content_type='text/markdown',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
@@ -22,7 +23,7 @@ setup(
     author_email='stephane.brunner@gmail.com',
     url='https://hub.docker.com/r/sbrunner/scan-to-paperless/',
     packages=find_packages(exclude=['tests.*']),
-    install_requires=['argcomplete', 'pyyaml'],
+    install_requires=['argcomplete', 'pyyaml', 'scikit-image'],
     entry_points={
         'console_scripts': [
             'scan = scan_to_paperless.scan:main',
