@@ -12,35 +12,40 @@ import random
 import re
 import sqlite3
 import subprocess
+import sys
 import time
+import numpy as np
 
 import argcomplete
-from argcomplete.completers import ChoicesCompleter
 import yaml
+from argcomplete.completers import ChoicesCompleter
 from skimage import io
 from skimage.transform import rotate
-from scan_to_paperless import CONFIG_FOLDER, get_config
 
+from scan_to_paperless import CONFIG_FOLDER, CONFIG_PATH, get_config
 
 CACHE_FILENAME = 'scan-to-paperless-cache.json'
 CACHE_PATH = os.path.join(CONFIG_FOLDER, CACHE_FILENAME)
 
+
 def call(cmd, cmd2=None, **kwargs):
+    del cmd2
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
     try:
         subprocess.check_call(cmd, **kwargs)
-    except subprocess.CalledProcessError as e:
-        print(e)
-        exit(1)
+    except subprocess.CalledProcessError as exeception:
+        print(exeception)
+        sys.exit(1)
 
 
 def output(cmd, cmd2=None, **kwargs):
+    del cmd2
     print(' '.join(cmd) if isinstance(cmd, list) else cmd)
     try:
         return subprocess.check_output(cmd, **kwargs)
-    except subprocess.CalledProcessError as e:
-        print(e)
-        exit(1)
+    except subprocess.CalledProcessError as exeception:
+        print(exeception)
+        sys.exit(1)
 
 
 def main():
@@ -53,8 +58,8 @@ def main():
     }
     update_cache = True
     if os.path.exists(CACHE_PATH):
-        with open(CACHE_PATH, encoding='utf-8') as f:
-            cache = json.loads(f.read())
+        with open(CACHE_PATH, encoding='utf-8') as cache_file:
+            cache = json.loads(cache_file.read())
             if cache['time'] > time.time() - 3600:
                 update_cache = False
 
@@ -76,14 +81,6 @@ def main():
             cache['time'] = time.time()
             with open(config['paperless_dump']) as dumpdata:
                 dump = json.loads(dumpdata.read())
-                {
-                    'model': 'contenttypes.contenttype',
-                    'pk': 1,
-                    'fields': {
-                        'app_label': 'auth',
-                        'model': 'permission'
-                    }
-                }
 
             for element in dump:
                 if element['model'] == 'documents.correspondent':
@@ -96,8 +93,8 @@ def main():
                 scan --set-settings paperless_db <the_path>, or
                 scan --set-settings paperless_dump <the_path>.''')
 
-        with open(CACHE_PATH, 'w', encoding='utf-8') as f:
-            f.write(json.dumps(cache))
+        with open(CACHE_PATH, 'w', encoding='utf-8') as config_file:
+            config_file.write(json.dumps(cache))
 
     parser = argparse.ArgumentParser()
 
@@ -169,21 +166,21 @@ def main():
     args = parser.parse_args()
 
     dirty = False
-    for conf in args.set_config:
+    for conf in args.set_cofig:
         config[conf[0]] = conf[1]
         dirty = True
     if dirty:
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-            f.write(yaml.safe_dump(config, default_flow_style=False))
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as config_file:
+            config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
     if len(args.title) == 0:
-        exit(0)
+        sys.exit(0)
 
     if 'scan_folder' not in config:
         print('''The scan folder isn't set, use:
     scan --set-settings scan_folder <a_folder>
     This should be shared with the process container in 'source'.''')
-        exit(1)
+        sys.exit(1)
 
     full_name = ' '.join(args.title)
     if args.correspondent is not None:
@@ -196,7 +193,7 @@ def main():
     )
     if '/' in full_name:
         print("The name can't contans some '/' (from correspondent, tags or title).")
-        exit(1)
+        sys.exit(1)
 
     root_folder = os.path.join(
         os.path.expanduser(config['scan_folder']),
@@ -242,7 +239,7 @@ def main():
         images = sorted(images, key=lambda e: int(regex.match(e).group(1)))
         args_ = {}
         args_.update(config.get('default_args', {}))
-        args_.update(dict(args._get_kwargs()))
+        args_.update(dict([arg.split("=") for arg in args]))
         config = {
             'images': images,
             'full_name': full_name,
@@ -252,9 +249,9 @@ def main():
         with open(os.path.join(os.path.dirname(root_folder), 'config.yaml'), 'w') as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
-    except subprocess.CalledProcessError as e:
-        print(e)
-        exit(1)
+    except subprocess.CalledProcessError as exeception:
+        print(exeception)
+        sys.exit(1)
 
     print(root_folder)
     subprocess.call([config.get('viewer', 'eog'), root_folder])

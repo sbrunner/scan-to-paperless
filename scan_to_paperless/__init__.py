@@ -14,6 +14,6 @@ CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILENAME)
 
 def get_config():
     if os.path.exists(CONFIG_PATH):
-        with open(CONFIG_PATH, encoding='utf-8') as f:
-            return yaml.safe_load(f.read())
+        with open(CONFIG_PATH, encoding='utf-8') as config_file:
+            return yaml.safe_load(config_file.read())
     return {}

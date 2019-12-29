@@ -10,7 +10,6 @@ import yaml
 
 def main():
     config = get_config()
-    scan_folder:
     for folder in glob.glob(os.path.join(os.path.expanduser(config['scan_folder']), '*')):
         print(re.sub(r'.', '-', folder))
         print(folder)
