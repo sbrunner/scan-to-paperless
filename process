@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import glob
-import os
 import math
+import os
 import re
 import shutil
 import subprocess  # nosec
@@ -11,16 +11,17 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import cast, List, Dict, Any, Tuple, Union, Optional, Callable
-import yaml
-from skimage.color import rgb2gray
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+
 import numpy as np
-# read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
-import cv2
+import yaml
 from scipy.signal import find_peaks
-from deskew import determine_skew
+from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
 
+# read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
+import cv2
+from deskew import determine_skew
 
 # dither, crop, append, repage
 CONVERT = ['gm', 'convert']
