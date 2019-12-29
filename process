@@ -13,13 +13,13 @@ import time
 import traceback
 from typing import cast, List, Dict, Any, Tuple, Union, Optional, Callable
 import yaml
-from skimage.measure import compare_ssim
 from skimage.color import rgb2gray
 import numpy as np
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 from scipy.signal import find_peaks
 from deskew import determine_skew
+from skimage.metrics import structural_similarity
 
 
 # dither, crop, append, repage
@@ -165,7 +165,7 @@ def image_diff(image1: np.ndarray, image2: np.ndarray) -> Tuple[float, np.ndarra
     height = max(image1.shape[0], image2.shape[0])
     image1 = cv2.resize(image1, (width, height))
     image2 = cv2.resize(image2, (width, height))
-    score, diff = compare_ssim(
+    score, diff = structural_similarity(
         cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY),
         cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY),
         full=True

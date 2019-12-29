@@ -53,6 +53,7 @@ jobs:
           name: Extract data from Docker volumes
           command: |
             docker cp volumes:/results/ results/
+            mkdir -p results
             docker cp volumes:/tests/prof/ results/prof/
           when: always
       - store_artifacts:

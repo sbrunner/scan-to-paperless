@@ -6,6 +6,7 @@ import glob
 import re
 import subprocess
 import yaml
+from scan_to_paperless import get_config
 
 
 def main():
