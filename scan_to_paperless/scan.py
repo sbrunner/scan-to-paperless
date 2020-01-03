@@ -187,7 +187,11 @@ def main():
         full_name = '{} - {}'.format(args.correspondent, full_name)
     if args.date is not None:
         full_name = '{}Z - {}'.format(args.date, full_name)
-    full_name = '{} - {}'.format(full_name, ','.join(args.tags))
+    if args.tags:
+        if args.correspondent is None and args.date is None:
+            print("tags requires to have a correspondent or a date")
+            sys.exit(1)
+        full_name = '{} - {}'.format(full_name, ','.join(args.tags))
     destination = '/destination/{}.pdf'.format(
         full_name
     )
