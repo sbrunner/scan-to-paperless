@@ -323,13 +323,13 @@ def deskew(context: Context) -> None:
 @Process('docrop')
 def docrop(context: Context) -> None:
     # Margin in mm
-    marging_horizontal = context.config['args'].get('marging_horizontal', 9)
-    maring_vertical = context.config['args'].get('maring_vertical', 6)
+    margin_horizontal = context.config['args'].get('margin_horizontal', 9)
+    margin_vertical = context.config['args'].get('margin_vertical', 6)
     dpi = context.config['args'].get('dpi', 300)
     crop(
         context,
-        int(round(marging_horizontal / 10 / 2.51 * dpi)),
-        int(round(maring_vertical / 10 / 2.51 * dpi))
+        int(round(margin_horizontal / 10 / 2.51 * dpi)),
+        int(round(margin_vertical / 10 / 2.51 * dpi))
     )
 
 
@@ -736,14 +736,14 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     page_pos = 0
 
                 save(root_folder, img2, '{}-split'.format(context.get_process_count()))
-                marging_horizontal = context.config['args'].get('marging_horizontal', 9)
-                maring_vertical = context.config['args'].get('maring_vertical', 6)
+                margin_horizontal = context.config['args'].get('margin_horizontal', 9)
+                margin_vertical = context.config['args'].get('margin_vertical', 6)
                 dpi = context.config['args'].get('dpi', 300)
                 context.image = cv2.imread(img2)
                 crop(
                     context,
-                    int(round(marging_horizontal / 10 / 2.51 * dpi)),
-                    int(round(maring_vertical / 10 / 2.51 * dpi)),
+                    int(round(margin_horizontal / 10 / 2.51 * dpi)),
+                    int(round(margin_vertical / 10 / 2.51 * dpi)),
                 )
                 img3_file = tempfile.NamedTemporaryFile(suffix='.png')
                 img3 = img3_file.name
