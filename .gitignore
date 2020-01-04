@@ -1,3 +1,4 @@
 /results/
 /dist/
 __pycache__
+/scan_to_paperless.egg-info/

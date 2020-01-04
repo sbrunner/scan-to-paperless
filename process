@@ -13,14 +13,14 @@ import time
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
+# read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
+import cv2
 import numpy as np
 import yaml
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
 
-# read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
-import cv2
 from deskew import determine_skew
 
 # dither, crop, append, repage
@@ -324,6 +324,8 @@ def deskew(context: Context) -> None:
 @Process('docrop')
 def docrop(context: Context) -> None:
     # Margin in mm
+    if context.config['args'].get('nocrop', False):
+        return
     margin_horizontal = context.config['args'].get('margin_horizontal', 9)
     margin_vertical = context.config['args'].get('margin_vertical', 6)
     dpi = context.config['args'].get('dpi', 300)
@@ -672,21 +674,29 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
     process_count = 0
     for assisted_split in config['assisted_split']:
         if assisted_split['limits']:
-            if len(assisted_split['limits']) != len(assisted_split['destinations']) - 1:
-                raise Exception("Wrong number of limits ({}) or destinations ({}) for img '{}'".format(
-                    len(assisted_split['limits']),
-                    len(assisted_split['destinations']),
-                    assisted_split['source'],
-                ))
-            vertical: bool = assisted_split['limits'][0]['vertical']
+            nb_horizontal = 1
+            nb_vertical = 1
+
             for limit in assisted_split['limits']:
-                if limit['vertical'] != vertical:
-                    raise Exception("Mix of limit type for img '{}'".format(assisted_split['source']))
+                if limit['vertical']:
+                    nb_vertical += 1
+                else:
+                    nb_horizontal += 1
+
+            if nb_vertical * nb_horizontal != len(assisted_split['destinations']):
+                raise Exception(
+                    "Wrong number of destinations ({}), vertical: {}, height: {}, img '{}'".format(
+                        len(assisted_split['destinations']),
+                        nb_horizontal, nb_vertical,
+                        assisted_split['source'],
+                    )
+                )
 
     for assisted_split in config['assisted_split']:
-        image_path = os.path.join(root_folder, assisted_split['image'])
-        if os.path.exists(image_path):
-            os.unlink(image_path)
+        if 'image' in assisted_split:
+            image_path = os.path.join(root_folder, assisted_split['image'])
+            if os.path.exists(image_path):
+                os.unlink(image_path)
 
     append: Dict[Union[str, int], List[Dict[str, Any]]] = {}
     transformed_images = []
@@ -696,75 +706,84 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
         width, height = [int(e) for e in output(CONVERT + [
             img, '-format', '%w %h', 'info:-'
         ]).strip().split(' ')]
-        vertical = assisted_split['limits'][0]['vertical'] if assisted_split['limits'] else True
-        last_pos = 0
-        for number, destination in enumerate(assisted_split['destinations']):
-            if number < len(assisted_split['limits']):
-                limit = assisted_split['limits'][number]
-                value = limit['value']
-                margin = limit['margin']
+
+        horizontal_limits = [l for l in assisted_split['limits'] if not l['vertical']]
+        vertical_limits = [l for l in assisted_split['limits'] if l['vertical']]
+
+        last_y = 0
+        number = 0
+        for horizontal_number in range(len(horizontal_limits) + 1):
+            if horizontal_number < len(horizontal_limits):
+                horizontal_limit = horizontal_limits[horizontal_number]
+                horizontal_value = horizontal_limit['value']
+                horizontal_margin = horizontal_limit['margin']
             else:
-                value = width if vertical else height
-                margin = 0
-            if destination == '-' or destination is None:
-                last_pos = value + margin
-            else:
-                if number < len(assisted_split['limits']):
-                    limit = assisted_split['limits'][number]
-                    value = limit['value']
-                    margin = limit['margin']
+                horizontal_value = height
+                horizontal_margin = 0
+            last_x = 0
+            for vertical_number in range(len(vertical_limits) + 1):
+                destination = assisted_split['destinations'][number]
+                if destination == '-' or destination is None:
+                    if vertical_number < len(vertical_limits):
+                        last_x = vertical_limits[vertical_number]['value'] + \
+                            vertical_limits[vertical_number]['margin']
                 else:
-                    value = width if vertical else height
-                    margin = 0
-                process_file = tempfile.NamedTemporaryFile(suffix='.png')
-                img2 = process_file.name
-                if vertical:
+                    if vertical_number < len(vertical_limits):
+                        vertical_limit = vertical_limits[vertical_number]
+                        vertical_value = vertical_limit['value']
+                        vertical_margin = vertical_limit['margin']
+                    else:
+                        vertical_value = width
+                        vertical_margin = 0
+                    process_file = tempfile.NamedTemporaryFile(suffix='.png')
+                    img2 = process_file.name
                     call(CONVERT + [
-                        '-crop', '{}x{}+{}+0'.format(value - margin - last_pos, height, last_pos),
+                        '-crop', '{}x{}+{}+{}'.format(
+                            vertical_value - vertical_margin - last_x,
+                            horizontal_value - horizontal_margin - last_y,
+                            last_x,
+                            last_y,
+                        ),
                         '+repage', img, img2
                     ])
-                else:
-                    call(CONVERT + [
-                        '-crop', '{}x{}+0+{}'.format(width, value - margin - last_pos, last_pos),
-                        '+repage', img, img2
-                    ])
-                last_pos = value + margin
+                    last_x = vertical_value + vertical_margin
 
-                if re.match(r'[0-9]+\.[0-9]+', str(destination)):
-                    page, page_pos = [int(e) for e in destination.split('.')]
-                else:
-                    page = destination
-                    page_pos = 0
+                    if re.match(r'[0-9]+\.[0-9]+', str(destination)):
+                        page, page_pos = [int(e) for e in destination.split('.')]
+                    else:
+                        page = destination
+                        page_pos = 0
 
-                save(root_folder, img2, '{}-split'.format(context.get_process_count()))
-                margin_horizontal = context.config['args'].get('margin_horizontal', 9)
-                margin_vertical = context.config['args'].get('margin_vertical', 6)
-                dpi = context.config['args'].get('dpi', 300)
-                context.image = cv2.imread(img2)
-                crop(
-                    context,
-                    int(round(margin_horizontal / 10 / 2.51 * dpi)),
-                    int(round(margin_vertical / 10 / 2.51 * dpi)),
-                )
-                img3_file = tempfile.NamedTemporaryFile(suffix='.png')
-                img3 = img3_file.name
-                cv2.imwrite(img3, context.image)
-                save(root_folder, img3, '{}-crop'.format(context.get_process_count()))
-                if page not in append:
-                    append[page] = []
-                append[page].append({
-                    'file': img3_file,
-                    'pos': page_pos,
-                    'vertical': vertical
-                })
+                    save(root_folder, img2, '{}-split'.format(context.get_process_count()))
+                    margin_horizontal = context.config['args'].get('margin_horizontal', 9)
+                    margin_vertical = context.config['args'].get('margin_vertical', 6)
+                    dpi = context.config['args'].get('dpi', 300)
+                    context.image = cv2.imread(img2)
+                    if not context.config['args'].get('nocrop', False):
+                        crop(
+                            context,
+                            int(round(margin_horizontal / 10 / 2.51 * dpi)),
+                            int(round(margin_vertical / 10 / 2.51 * dpi)),
+                        )
+                        process_file = tempfile.NamedTemporaryFile(suffix='.png')
+                        img3 = process_file.name
+                        cv2.imwrite(img3, context.image)
+                        save(root_folder, img3, '{}-crop'.format(context.get_process_count()))
+                    if page not in append:
+                        append[page] = []
+                    append[page].append({
+                        'file': process_file,
+                        'pos': page_pos,
+                    })
+                number += 1
+            last_y = horizontal_value + horizontal_margin
         process_count = context.process_count
 
     for page_number in sorted(append.keys()):
         items = append[page_number]
-        vertical = items[0]['vertical']
-        for element in items:
-            if element['vertical'] != vertical:
-                raise Exception("Mix of limit type for page '{}'".format(page_number))
+        vertical = len(horizontal_limits) == 0
+        if not vertical and len(vertical_limits) != 0 and len(items) > 1:
+            raise Exception("Mix of limit type for page '{}'".format(page_number))
 
         process_file = tempfile.NamedTemporaryFile(suffix='.png')
         img = process_file.name
