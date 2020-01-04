@@ -219,6 +219,61 @@ def test_assisted_split_join_full():
 
 
 # @pytest.mark.skip(reason='for test')
+def test_assisted_split_booth():
+    init_test()
+#    os.environ['PROGRESS'] = 'TRUE'
+    root_folder = '/results/assisted-split-booth'
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
+
+    shutil.copyfile(
+        os.path.join(os.path.dirname(__file__), 'image-1.png'),
+        os.path.join(root_folder, 'image-1.png'),
+    )
+
+    config = {
+        'args': {
+            'assisted_split': True,
+            'level': False,
+            'append_credit_card': False,
+            'nocrop': True,
+            'tesseract': False,
+            'margin_horizontal': 0,
+            'margin_vertical': 0,
+        },
+        'full_name': 'Test title 2',
+        'destination': os.path.join(root_folder, 'final.pdf'),
+        'assisted_split': [
+            {
+                'image': os.path.join(root_folder, 'image-1.png'),
+                'source': os.path.join(os.path.dirname(__file__), 'image-1.png'),
+                'limits': [{
+                    'value': 150,
+                    'vertical': True,
+                    'margin': 0
+                }, {
+                    'value': 150,
+                    'vertical': False,
+                    'margin': 0
+                }],
+                'destinations': ['1', '2', '3', '4']
+            },
+        ],
+    }
+    step = {
+        'name': 'split',
+        'sources': ['image-1.png'],
+    }
+    step = process.split(config, step, root_folder)
+    assert step['name'] == 'finalise'
+    assert len(step['sources']) == 4
+    check_image_file(root_folder, step['sources'][0], 'assisted-split-booth-1')
+    check_image_file(root_folder, step['sources'][1], 'assisted-split-booth-2')
+    check_image_file(root_folder, step['sources'][2], 'assisted-split-booth-3')
+    check_image_file(root_folder, step['sources'][3], 'assisted-split-booth-4')
+
+
+# @pytest.mark.skip(reason='for test')
 @pytest.mark.parametrize('progress', ['FALSE', 'TRUE'])
 @pytest.mark.parametrize('experimental', ['FALSE', 'TRUE'])
 def test_full(progress, experimental):
