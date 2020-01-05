@@ -14,9 +14,9 @@ import sqlite3
 import subprocess
 import sys
 import time
-import numpy as np
 
 import argcomplete
+import numpy as np
 import yaml
 from argcomplete.completers import ChoicesCompleter
 from skimage import io

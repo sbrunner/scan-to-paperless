@@ -21,7 +21,7 @@ from scipy.signal import find_peaks
 from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
 
-from deskew import determine_skew
+from deskew import determine_skew_dev
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
@@ -305,11 +305,57 @@ def level(context: Context) -> np.ndarray:
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
 
 
+def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> None:
+    angle = angle % 90
+    height, width = image.shape[:2]
+    center = (int(width / 2), int(height / 2))
+    length = min(width, height) / 2
+
+    angle_radian = math.radians(angle)
+    sin_a = np.sin(angle_radian) * length
+    cos_a = np.cos(angle_radian) * length
+    for matrix in ([[0, -1], [-1, 0]], [[1, 0], [0, -1]], [[0, 1], [1, 0]], [[-1, 0], [0, 1]]):
+        diff = np.dot(matrix, [sin_a, cos_a])
+        x = diff[0] + width / 2
+        y = diff[1] + height / 2
+
+        cv2.line(image, center, (int(x), int(y)), color, 2)
+        if matrix[0][0] == -1:
+            # pylint: disable=expression-not-assigned
+            cv2.putText(image, str(angle), (int(x), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color)
+
+
 @Process("deskew")
 def deskew(context: Context) -> None:
-    image = context.get_masked()
-    grayscale = rgb2gray(image)
-    angle = determine_skew(grayscale)
+    images_config = context.config.setdefault("images_config", {})
+    image_config = images_config.setdefault(context.image_name, {})
+    angle = image_config.setdefault("angle", None)
+    if angle is None:
+        image = context.get_masked()
+        grayscale = rgb2gray(image)
+        angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
+        images_status = context.config.setdefault("images_status", {})
+        image_status = images_status.setdefault(context.image_name, {})
+        image_status["angle"] = float(angle)
+        image_status["average_deviation"] = float(average_deviation)
+
+        image = cast(np.ndarray, context.image).copy()
+        float_angles = []
+        for current_angles in angles:
+            for current_angle in current_angles:
+                float_angles.append(float(current_angle))
+                draw_angle(image, current_angle, (0, 255, 0))
+        draw_angle(image, angle, (255, 0, 0))
+        image_status["angles"] = float_angles
+
+        save_image(
+            image,
+            cast(str, context.root_folder),
+            "{}-skew-angles".format(context.get_process_count()),
+            cast(str, context.image_name),
+            True,
+        )
+
     if angle:
         context.rotate(angle)
 
