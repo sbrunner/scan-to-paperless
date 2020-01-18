@@ -331,19 +331,18 @@ def deskew(context: Context) -> None:
     image_config = images_config.setdefault(context.image_name, {})
     angle = image_config.setdefault("angle", None)
     if angle is None:
+        image_status = context.config["images_status"][context.image_name]
         image = context.get_masked()
         grayscale = rgb2gray(image)
         angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
-        images_status = context.config.setdefault("images_status", {})
-        image_status = images_status.setdefault(context.image_name, {})
-        image_status["angle"] = float(angle)
+        image_status["angle"] = float(angle) % 90
         image_status["average_deviation"] = float(average_deviation)
 
         image = cast(np.ndarray, context.image).copy()
         float_angles = []
         for current_angles in angles:
             for current_angle in current_angles:
-                float_angles.append(float(current_angle))
+                float_angles.append(float(current_angle) % 90)
                 draw_angle(image, current_angle, (0, 255, 0))
         draw_angle(image, angle, (255, 0, 0))
         image_status["angles"] = float_angles
@@ -637,6 +636,9 @@ def transform(
         if context.image_name is None:
             raise Exception("Image name is required")
         context.image = cv2.imread(os.path.join(root_folder, img))
+        images_status = context.config.setdefault("images_status", {})
+        image_status = images_status.setdefault(context.image_name, {})
+        image_status["size"] = context.image.shape[:2][::-1]
         mask_file = os.path.join(os.path.dirname(root_folder), "mask.png")
         if os.path.exists(mask_file):
             context.mask = cv2.imread(mask_file)
