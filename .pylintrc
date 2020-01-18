@@ -2,7 +2,7 @@
 extension-pkg-whitelist=cv2
 
 [MESSAGES CONTROL]
-disable=R0912,R0915,R1702,W0703,R0914,C0111,E1121,E1120
+disable=R0912,R0915,R1702,W0703,R0914,C0111,E1121,E1120,locally-disabled,too-many-lines,bad-continuation
 
 [FORMAT]
 max-line-length=110
