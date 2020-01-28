@@ -166,7 +166,7 @@ def main():
     args = parser.parse_args()
 
     dirty = False
-    for conf in args.set_cofig:
+    for conf in args.set_config:
         config[conf[0]] = conf[1]
         dirty = True
     if dirty:
@@ -243,7 +243,7 @@ def main():
         images = sorted(images, key=lambda e: int(regex.match(e).group(1)))
         args_ = {}
         args_.update(config.get('default_args', {}))
-        args_.update(dict([arg.split("=") for arg in args]))
+        args_.update(dict(args._get_kwargs()))
         config = {
             'images': images,
             'full_name': full_name,
