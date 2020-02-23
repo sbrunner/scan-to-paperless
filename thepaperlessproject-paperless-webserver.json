@@ -65,7 +65,7 @@
       }
    ],
    "memory_limit" : 0,
-   "name" : "danielquinn-paperless-webserver",
+   "name" : "thepaperlessproject-paperless-webserver",
    "network" : [
       {
          "driver" : "bridge",

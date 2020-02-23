@@ -73,7 +73,7 @@
       }
    ],
    "memory_limit" : 4294967296,
-   "name" : "danielquinn-paperless-consumer",
+   "name" : "thepaperlessproject-paperless-consumer",
    "network" : [
       {
          "driver" : "bridge",
