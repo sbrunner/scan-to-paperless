@@ -59,6 +59,10 @@
       {
          "key" : "PAPERLESS_FORGIVING_OCR",
          "value" : "true"
+      },
+      {
+         "key" : "PAPERLESS_INLINE_DOC",
+         "value" : "true"
       }
    ],
    "exporting" : false,
