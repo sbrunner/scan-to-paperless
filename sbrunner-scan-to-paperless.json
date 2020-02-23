@@ -9,12 +9,20 @@
    "enabled" : false,
    "env_variables" : [
       {
+         "key" : "PATH",
+         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      {
+         "key" : "DEBIAN_FRONTEND",
+         "value" : "noninteractive"
+      },
+      {
          "key" : "LANG",
          "value" : "C.UTF-8"
       }
    ],
    "exporting" : false,
-   "id" : "3b6322a6058f8a6a02d23157c8e8dd724e136a2c59cc7c1e0b34e13d496fb973",
+   "id" : "082462f4f7ed0de9be6724d84ea5073d694a545778c521637fd3700a63778203",
    "image" : "sbrunner/scan-to-paperless:latest",
    "is_ddsm" : false,
    "is_package" : false,
@@ -31,9 +39,11 @@
    "port_bindings" : [],
    "privileged" : false,
    "shortcut" : {
-      "enable_shortcut" : false
+      "enable_shortcut" : false,
+      "enable_status_page" : false,
+      "enable_web_page" : false,
+      "web_page_url" : ""
    },
-   "ulimits" : null,
    "use_host_network" : false,
    "volume_bindings" : [
       {
@@ -46,6 +56,5 @@
          "mount_point" : "/destination",
          "type" : "rw"
       }
-   ],
-   "volumes_from" : null
+   ]
 }

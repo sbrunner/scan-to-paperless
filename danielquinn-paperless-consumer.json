@@ -9,10 +9,6 @@
    "enabled" : true,
    "env_variables" : [
       {
-         "key" : "OMP_THREAD_LIMIT",
-         "value" : "1"
-      },
-      {
          "key" : "PATH",
          "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
       },
@@ -23,6 +19,10 @@
       {
          "key" : "PAPERLESS_CONSUMPTION_DIR",
          "value" : "/consume"
+      },
+      {
+         "key" : "OMP_THREAD_LIMIT",
+         "value" : "1"
       },
       {
          "key" : "PAPERLESS_DBPASS",
@@ -62,8 +62,8 @@
       }
    ],
    "exporting" : false,
-   "id" : "fdd0dfb612203d042e5bd14357db5f2b160cb67791b1a944d62404b0def79a4a",
-   "image" : "danielquinn/paperless:latest",
+   "id" : "1d5146d6c896bc58289c845478ec4b166d2059b9766ead6d1759b6c2c1f23e98",
+   "image" : "thepaperlessproject/paperless:latest",
    "is_ddsm" : false,
    "is_package" : false,
    "links" : [
@@ -86,7 +86,6 @@
    "shortcut" : {
       "enable_shortcut" : false
    },
-   "ulimits" : null,
    "use_host_network" : false,
    "volume_bindings" : [
       {
@@ -109,6 +108,5 @@
          "mount_point" : "/usr/src/paperless/media",
          "type" : "rw"
       }
-   ],
-   "volumes_from" : null
+   ]
 }
