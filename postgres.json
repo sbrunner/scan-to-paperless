@@ -1,34 +1,5 @@
 {
-   "cap_add" : null,
-   "cap_drop" : null,
-   "cmd" : "postgres",
-   "cpu_priority" : 50,
-   "devices" : null,
-   "enable_publish_all_ports" : false,
-   "enable_restart_policy" : true,
-   "enabled" : true,
-   "entrypoint_default" : "docker-entrypoint.sh",
    "env_variables" : [
-      {
-         "key" : "PATH",
-         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/10/bin"
-      },
-      {
-         "key" : "GOSU_VERSION",
-         "value" : "1.10"
-      },
-      {
-         "key" : "LANG",
-         "value" : "en_US.utf8"
-      },
-      {
-         "key" : "PG_MAJOR",
-         "value" : "10"
-      },
-      {
-         "key" : "PG_VERSION",
-         "value" : "10.5-2.pgdg90+1"
-      },
       {
          "key" : "PGDATA",
          "value" : "/var/lib/postgresql/data"
@@ -46,40 +17,13 @@
          "value" : "1234"
       }
    ],
-   "exporting" : false,
-   "id" : "31b1f071e4f98c6ab607fc105013675c1575b4fc8abd406553cfb92cc909af29",
-   "image" : "postgres:10",
-   "is_ddsm" : false,
-   "is_package" : false,
-   "links" : [],
-   "memory_limit" : 0,
+   "image" : "postgres:12",
    "name" : "postgres",
-   "network" : [
-      {
-         "driver" : "bridge",
-         "name" : "bridge"
-      }
-   ],
-   "network_mode" : "bridge",
-   "port_bindings" : [
-      {
-         "container_port" : 5432,
-         "host_port" : 0,
-         "type" : "tcp"
-      }
-   ],
-   "privileged" : false,
-   "shortcut" : {
-      "enable_shortcut" : false
-   },
-   "ulimits" : null,
-   "use_host_network" : false,
    "volume_bindings" : [
       {
          "host_volume_file" : "/paperless/pgdata",
          "mount_point" : "/var/lib/postgresql/data",
          "type" : "rw"
       }
-   ],
-   "volumes_from" : null
+   ]
 }

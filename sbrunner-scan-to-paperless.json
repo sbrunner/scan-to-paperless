@@ -1,50 +1,6 @@
 {
-   "cap_add" : [],
-   "cap_drop" : [],
-   "cmd" : "/opt/process",
-   "cpu_priority" : 50,
-   "devices" : null,
-   "enable_publish_all_ports" : false,
-   "enable_restart_policy" : true,
-   "enabled" : false,
-   "env_variables" : [
-      {
-         "key" : "PATH",
-         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-      },
-      {
-         "key" : "DEBIAN_FRONTEND",
-         "value" : "noninteractive"
-      },
-      {
-         "key" : "LANG",
-         "value" : "C.UTF-8"
-      }
-   ],
-   "exporting" : false,
-   "id" : "082462f4f7ed0de9be6724d84ea5073d694a545778c521637fd3700a63778203",
    "image" : "sbrunner/scan-to-paperless:latest",
-   "is_ddsm" : false,
-   "is_package" : false,
-   "links" : [],
-   "memory_limit" : 0,
    "name" : "sbrunner-scan-to-paperless",
-   "network" : [
-      {
-         "driver" : "bridge",
-         "name" : "bridge"
-      }
-   ],
-   "network_mode" : "bridge",
-   "port_bindings" : [],
-   "privileged" : false,
-   "shortcut" : {
-      "enable_shortcut" : false,
-      "enable_status_page" : false,
-      "enable_web_page" : false,
-      "web_page_url" : ""
-   },
-   "use_host_network" : false,
    "volume_bindings" : [
       {
          "host_volume_file" : "/paperless/scan",

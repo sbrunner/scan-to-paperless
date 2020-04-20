@@ -1,16 +1,9 @@
 {
-   "cap_add" : [],
-   "cap_drop" : [],
    "cmd" : "document_consumer",
-   "cpu_priority" : 10,
-   "devices" : null,
-   "enable_publish_all_ports" : false,
-   "enable_restart_policy" : true,
-   "enabled" : true,
    "env_variables" : [
       {
-         "key" : "PATH",
-         "value" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+         "key" : "TZ",
+         "value" : "Europe/Zurich"
       },
       {
          "key" : "PAPERLESS_EXPORT_DIR",
@@ -59,34 +52,20 @@
       {
          "key" : "PAPERLESS_FORGIVING_OCR",
          "value" : "true"
+      },
+      {
+         "key" : "PAPERLESS_FILENAME_FORMAT",
+         "value" : "{correspondent}/{title}-{created}"
       }
    ],
-   "exporting" : false,
-   "id" : "1d5146d6c896bc58289c845478ec4b166d2059b9766ead6d1759b6c2c1f23e98",
    "image" : "thepaperlessproject/paperless:latest",
-   "is_ddsm" : false,
-   "is_package" : false,
    "links" : [
       {
          "alias" : "postgres",
          "link_container" : "postgres"
       }
    ],
-   "memory_limit" : 4294967296,
    "name" : "thepaperlessproject-paperless-consumer",
-   "network" : [
-      {
-         "driver" : "bridge",
-         "name" : "bridge"
-      }
-   ],
-   "network_mode" : "bridge",
-   "port_bindings" : [],
-   "privileged" : false,
-   "shortcut" : {
-      "enable_shortcut" : false
-   },
-   "use_host_network" : false,
    "volume_bindings" : [
       {
          "host_volume_file" : "/paperless/dumpdata",
