@@ -1,5 +1,6 @@
 {
    "cmd" : "document_consumer",
+   "enable_restart_policy" : true,
    "env_variables" : [
       {
          "key" : "TZ",
