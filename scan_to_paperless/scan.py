@@ -24,13 +24,13 @@ from skimage.transform import rotate
 
 from scan_to_paperless import CONFIG_FOLDER, CONFIG_PATH, get_config
 
-CACHE_FILENAME = 'scan-to-paperless-cache.json'
+CACHE_FILENAME = "scan-to-paperless-cache.json"
 CACHE_PATH = os.path.join(CONFIG_FOLDER, CACHE_FILENAME)
 
 
 def call(cmd, cmd2=None, **kwargs):
     del cmd2
-    print(' '.join(cmd) if isinstance(cmd, list) else cmd)
+    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
         subprocess.check_call(cmd, **kwargs)
     except subprocess.CalledProcessError as exeception:
@@ -40,7 +40,7 @@ def call(cmd, cmd2=None, **kwargs):
 
 def output(cmd, cmd2=None, **kwargs):
     del cmd2
-    print(' '.join(cmd) if isinstance(cmd, list) else cmd)
+    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
         return subprocess.check_output(cmd, **kwargs)
     except subprocess.CalledProcessError as exeception:
@@ -51,49 +51,52 @@ def output(cmd, cmd2=None, **kwargs):
 def main():
     config = get_config()
 
-    cache = {
-        'correspondents': [],
-        'tags': [],
-        'time': 0
-    }
+    cache = {"correspondents": [], "tags": [], "time": 0}
     update_cache = True
     if os.path.exists(CACHE_PATH):
-        with open(CACHE_PATH, encoding='utf-8') as cache_file:
+        with open(CACHE_PATH, encoding="utf-8") as cache_file:
             cache = json.loads(cache_file.read())
-            if cache['time'] > time.time() - 3600:
+            if cache["time"] > time.time() - 3600:
                 update_cache = False
 
     if update_cache:
 
-        if 'paperless_db' in config:
-            connection = sqlite3.connect(config['paperless_db'])
+        if "paperless_db" in config:
+            connection = sqlite3.connect(config["paperless_db"])
             cursor = connection.cursor()
 
             cache = {
-                'correspondents': [t[0] for t in cursor.execute('select name from documents_correspondent')],
-                'tags': [t[0] for t in cursor.execute('select name from documents_tag')],
-                'time': time.time()
+                "correspondents": [
+                    t[0]
+                    for t in cursor.execute("select name from documents_correspondent")
+                ],
+                "tags": [
+                    t[0] for t in cursor.execute("select name from documents_tag")
+                ],
+                "time": time.time(),
             }
 
             connection.close()
 
-        elif 'paperless_dump' in config:
-            cache['time'] = time.time()
-            with open(config['paperless_dump']) as dumpdata:
+        elif "paperless_dump" in config:
+            cache["time"] = time.time()
+            with open(config["paperless_dump"]) as dumpdata:
                 dump = json.loads(dumpdata.read())
 
             for element in dump:
-                if element['model'] == 'documents.correspondent':
-                    cache['correspondents'].append(element['fields']['name'])
-                elif element['model'] == 'documents.tag':
-                    cache['tags'].append(element['fields']['name'])
+                if element["model"] == "documents.correspondent":
+                    cache["correspondents"].append(element["fields"]["name"])
+                elif element["model"] == "documents.tag":
+                    cache["tags"].append(element["fields"]["name"])
 
         else:
-            print('''The PaperLess source path isn\'t set, use:
+            print(
+                """The PaperLess source path isn\'t set, use:
                 scan --set-settings paperless_db <the_path>, or
-                scan --set-settings paperless_dump <the_path>.''')
+                scan --set-settings paperless_dump <the_path>."""
+            )
 
-        with open(CACHE_PATH, 'w', encoding='utf-8') as config_file:
+        with open(CACHE_PATH, "w", encoding="utf-8") as config_file:
             config_file.write(json.dumps(cache))
 
     parser = argparse.ArgumentParser()
@@ -103,63 +106,49 @@ def main():
         if choices is not None:
             arg.completer = ChoicesCompleter(choices)
 
+    add_argument("--no-adf", dest="adf", action="store_false", help="Don't use ADF")
     add_argument(
-        '--no-adf',
-        dest='adf',
-        action='store_false',
-        help="Don't use ADF"
+        "--no-level",
+        dest="level",
+        action="store_false",
+        help="Don't use level correction",
     )
     add_argument(
-        '--no-level',
-        dest='level',
-        action='store_false',
-        help="Don't use level correction"
+        "--correspondent", choices=cache["correspondents"], help="The correspondent"
+    )
+    add_argument("title", nargs="*", choices=["No title"], help="The document title")
+    add_argument(
+        "--date",
+        choices=[datetime.date.today().strftime("%Y%m%d")],
+        help="The document date",
     )
     add_argument(
-        '--correspondent',
-        choices=cache['correspondents'],
-        help='The correspondent'
-    )
-    add_argument(
-        'title',
-        nargs='*',
-        choices=['No title'],
-        help='The document title'
-    )
-    add_argument(
-        '--date',
-        choices=[datetime.date.today().strftime('%Y%m%d')],
-        help='The document date'
-    )
-    add_argument(
-        '--tag',
-        action='append',
-        dest='tags',
+        "--tag",
+        action="append",
+        dest="tags",
         default=[],
-        choices=cache['tags'],
-        help='The document tags'
+        choices=cache["tags"],
+        help="The document tags",
     )
     add_argument(
-        '--double-sided',
-        action='store_true',
-        help='Number of pages in double sided mode'
+        "--double-sided",
+        action="store_true",
+        help="Number of pages in double sided mode",
     )
     add_argument(
-        '--append-credit-card',
-        action='store_true',
-        help='Append vertically the credit card'
+        "--append-credit-card",
+        action="store_true",
+        help="Append vertically the credit card",
     )
     add_argument(
-        '--assisted-split',
-        action='store_true',
-        help='Split operation, se help'
+        "--assisted-split", action="store_true", help="Split operation, se help"
     )
     add_argument(
-        '--set-config',
+        "--set-config",
         nargs=2,
-        action='append',
+        action="append",
         default=[],
-        help='Set a configuration option'
+        help="Set a configuration option",
     )
 
     argcomplete.autocomplete(parser)
@@ -170,60 +159,69 @@ def main():
         config[conf[0]] = conf[1]
         dirty = True
     if dirty:
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as config_file:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
     if len(args.title) == 0:
         sys.exit(0)
 
-    if 'scan_folder' not in config:
-        print('''The scan folder isn't set, use:
+    if "scan_folder" not in config:
+        print(
+            """The scan folder isn't set, use:
     scan --set-settings scan_folder <a_folder>
-    This should be shared with the process container in 'source'.''')
+    This should be shared with the process container in 'source'."""
+        )
         sys.exit(1)
 
-    full_name = ' '.join(args.title)
+    full_name = " ".join(args.title)
     if args.correspondent is not None:
-        full_name = '{} - {}'.format(args.correspondent, full_name)
+        full_name = "{} - {}".format(args.correspondent, full_name)
     if args.date is not None:
-        full_name = '{}Z - {}'.format(args.date, full_name)
+        full_name = "{}Z - {}".format(args.date, full_name)
     if args.tags:
         if args.correspondent is None and args.date is None:
             print("tags requires to have a correspondent or a date")
             sys.exit(1)
-        full_name = '{} - {}'.format(full_name, ','.join(args.tags))
-    destination = '/destination/{}.pdf'.format(
-        full_name
-    )
-    if '/' in full_name:
+        full_name = "{} - {}".format(full_name, ",".join(args.tags))
+    destination = "/destination/{}.pdf".format(full_name)
+    if "/" in full_name:
         print("The name can't contans some '/' (from correspondent, tags or title).")
         sys.exit(1)
 
     root_folder = os.path.join(
-        os.path.expanduser(config['scan_folder']),
-        str(random.randint(0, 999999)), 'source'
+        os.path.expanduser(config["scan_folder"]),
+        str(random.randint(0, 999999)),
+        "source",
     )
     os.makedirs(root_folder)
 
     try:
-        scanimage = ['scanimage'] + config.get('scanimage_arguments', [
-            '--format=png',
-            '--mode=color',
-            '--resolution=300'
-        ]) + [
-            '--batch={}/image-%d.png'.format(root_folder),
-            '--source=ADF' if args.adf else '--batch-prompt'
-        ]
+        scanimage = (
+            ["scanimage"]
+            + config.get(
+                "scanimage_arguments",
+                ["--format=png", "--mode=color", "--resolution=300"],
+            )
+            + [
+                "--batch={}/image-%d.png".format(root_folder),
+                "--source=ADF" if args.adf else "--batch-prompt",
+            ]
+        )
 
         if args.double_sided:
-            call(scanimage + ['--batch-start=1', '--batch-increment=2'])
+            call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
-            input('Put your document in the automatic document feeder for the other side, and press enter.')
-            call(scanimage + [
-                '--batch-start={}'.format(len(odd) * 2),
-                '--batch-increment=-2',
-                '--batch-count={}'.format(len(odd))
-            ])
+            input(
+                "Put your document in the automatic document feeder for the other side, and press enter."
+            )
+            call(
+                scanimage
+                + [
+                    "--batch-start={}".format(len(odd) * 2),
+                    "--batch-increment=-2",
+                    "--batch-count={}".format(len(odd)),
+                ]
+            )
             for img in os.listdir(root_folder):
                 if img not in odd:
                     path = os.path.join(root_folder, img)
@@ -235,22 +233,24 @@ def main():
 
         images = []
         for img in os.listdir(root_folder):
-            if not img.startswith('image-'):
+            if not img.startswith("image-"):
                 continue
-            images.append(os.path.join('source', img))
+            images.append(os.path.join("source", img))
 
-        regex = re.compile(r'^source\/image\-([0-9]+)\.png$')
+        regex = re.compile(r"^source\/image\-([0-9]+)\.png$")
         images = sorted(images, key=lambda e: int(regex.match(e).group(1)))
         args_ = {}
-        args_.update(config.get('default_args', {}))
+        args_.update(config.get("default_args", {}))
         args_.update(dict(args._get_kwargs()))
         config = {
-            'images': images,
-            'full_name': full_name,
-            'destination': destination,
-            'args': args_,
+            "images": images,
+            "full_name": full_name,
+            "destination": destination,
+            "args": args_,
         }
-        with open(os.path.join(os.path.dirname(root_folder), 'config.yaml'), 'w') as config_file:
+        with open(
+            os.path.join(os.path.dirname(root_folder), "config.yaml"), "w"
+        ) as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
     except subprocess.CalledProcessError as exeception:
@@ -258,4 +258,4 @@ def main():
         sys.exit(1)
 
     print(root_folder)
-    subprocess.call([config.get('viewer', 'eog'), root_folder])
+    subprocess.call([config.get("viewer", "eog"), root_folder])
