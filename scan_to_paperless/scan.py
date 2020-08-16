@@ -10,17 +10,13 @@ import json
 import os
 import random
 import re
-import sqlite3
 import subprocess
 import sys
 import time
 
 import argcomplete
-import numpy as np
 import yaml
 from argcomplete.completers import ChoicesCompleter
-from skimage import io
-from skimage.transform import rotate
 
 from scan_to_paperless import CONFIG_FOLDER, CONFIG_PATH, get_config
 
@@ -60,6 +56,7 @@ def main():
                 update_cache = False
 
     if update_cache:
+        import sqlite3
 
         if "paperless_db" in config:
             connection = sqlite3.connect(config["paperless_db"])
@@ -154,6 +151,9 @@ def main():
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
+    import numpy as np
+    from skimage import io
+
     dirty = False
     for conf in args.set_config:
         config[conf[0]] = conf[1]
@@ -226,7 +226,7 @@ def main():
                 if img not in odd:
                     path = os.path.join(root_folder, img)
                     image = io.imread(path)
-                    image = rotate(image, 180) * 255
+                    image = np.rot90(image, 2)
                     io.imsave(path, image.astype(np.uint8))
         else:
             call(scanimage)
