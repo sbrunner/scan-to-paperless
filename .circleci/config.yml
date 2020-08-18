@@ -94,6 +94,17 @@ jobs:
             echo "username = ${PYPI_USER}" >> ~/.pypirc
             echo "password = ${PYPI_PASS}" >> ~/.pypirc
             pip install --user wheel twine
+      - run:
+        name: Bump version
+        command: |
+          if [ "${CIRCLE_BRANCH}" == "master" ]
+          then
+            pip install --user bump-anything
+            bump minor
+            git add setup.py
+            git commit --allow-empty -m "[skip ci] Bump Version"
+            git push push ${CIRCLE_BRANCH}
+          fi
       - deploy:
           command: |
             if [ "${CIRCLE_BRANCH}" == "test" ]
@@ -107,15 +118,4 @@ jobs:
             then
               python setup.py egg_info --no-date sdist bdist_wheel
               twine upload dist/*
-            fi
-      - run:
-          name: Bump version
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]
-            then
-              pip install --user bump-anything
-              bump minor
-              git add setup.py
-              git commit --allow-empty -m "[skip ci] Bump Version"
-              git push push ${CIRCLE_BRANCH}
             fi
