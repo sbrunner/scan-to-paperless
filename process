@@ -334,18 +334,19 @@ def deskew(context: Context) -> None:
         image_status = context.config["images_status"][context.image_name]
         image = context.get_masked()
         grayscale = rgb2gray(image)
+        image = cast(np.ndarray, context.image).copy()
+
         angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
-        if angle:
+        if angle is not None:
             image_status["angle"] = float(angle) % 90
+            draw_angle(image, angle, (255, 0, 0))
         image_status["average_deviation"] = float(average_deviation)
 
-        image = cast(np.ndarray, context.image).copy()
         float_angles = []
         for current_angles in angles:
             for current_angle in current_angles:
                 float_angles.append(float(current_angle) % 90)
                 draw_angle(image, current_angle, (0, 255, 0))
-        draw_angle(image, angle, (255, 0, 0))
         image_status["angles"] = float_angles
 
         save_image(
