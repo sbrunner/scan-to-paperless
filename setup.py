@@ -15,7 +15,7 @@ setup(
     description="Tool to scan and process documents to palerless",
     long_description=README,
     long_description_content_type="text/markdown",
-    classifiers=["Programming Language :: Python", "Programming Language :: Python :: 3",],
+    classifiers=["Programming Language :: Python", "Programming Language :: Python :: 3"],
     author="Stéphane Brunner",
     author_email="stephane.brunner@gmail.com",
     url="https://hub.docker.com/r/sbrunner/scan-to-paperless/",
