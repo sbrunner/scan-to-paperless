@@ -218,11 +218,19 @@ class Process:  # pylint: disable=too-few-public-methods
                 if not os.path.exists(dest_folder):
                     os.makedirs(dest_folder)
                 dest_image = os.path.join(dest_folder, context.image_name)
-                cv2.imwrite(dest_image, context.image)
+                try:
+                    cv2.imwrite(dest_image, context.image)
+                except Exception as e:
+                    print(e)
                 dest_image = os.path.join(dest_folder, "mask-" + context.image_name)
-                cv2.imwrite(dest_image, context.mask_ready)
-                dest_image = os.path.join(dest_folder, "masked-" + context.image_name)
-                cv2.imwrite(dest_image, context.get_masked())
+                try:
+                    dest_image = os.path.join(dest_folder, "masked-" + context.image_name)
+                except Exception as e:
+                    print(e)
+                try:
+                    cv2.imwrite(dest_image, context.get_masked())
+                except Exception as e:
+                    print(e)
 
         return wrapper
 
