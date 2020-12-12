@@ -1,20 +1,6 @@
 checks:
   versions: False
-  isort:
-    ignore_patterns_re:
-      - .*/\.vim/.*
-  black:
-    ignore_patterns_re:
-      - .*/\.vim/.*
-  codespell:
-    ignore_re:
-      - .*\.yaml
-      - .*\.desktop
-      - .*/\.vim/.*
-      - apt-to-snap\.home
-      - list-manual-package-wrk38
   required_workflows:
     backport.yaml: False
-    dependabot-auto-merge.yaml: False
     clean.yaml: False
     audit.yaml: False
