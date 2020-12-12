@@ -41,7 +41,7 @@ The options `--append-credit-card` will append all the sheets vertically to have
 
 2. After the process do his first pass you will have images with lines and numbers.
    The lines represent the detected potential split of the image, the length indicate the strength of the detection.
-   In your config you will have somthing like:
+   In your config you will have something like:
 
 ```
 assisted_split:
@@ -60,7 +60,7 @@ assisted_split:
 ```
 
    Edit your config file, you should have one more destination then the limits.
-   If you put destinatination like that: 2.1, it mean that it will be the first part of the page 2 and the 2.2 will be the secound part.
+   If you put destinatination like that: 2.1, it mean that it will be the first part of the page 2 and the 2.2 will be the second part.
 
 3. Delete the file `REMOVE_TO_CONTINUE`.
 

@@ -17,11 +17,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 import cv2
 import numpy as np
 import yaml
+from deskew import determine_skew_dev
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
-
-from deskew import determine_skew_dev
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]

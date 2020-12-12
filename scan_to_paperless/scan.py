@@ -29,8 +29,8 @@ def call(cmd, cmd2=None, **kwargs):
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
         subprocess.check_call(cmd, **kwargs)
-    except subprocess.CalledProcessError as exeception:
-        print(exeception)
+    except subprocess.CalledProcessError as exception:
+        print(exception)
         sys.exit(1)
 
 
@@ -39,8 +39,8 @@ def output(cmd, cmd2=None, **kwargs):
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
         return subprocess.check_output(cmd, **kwargs)
-    except subprocess.CalledProcessError as exeception:
-        print(exeception)
+    except subprocess.CalledProcessError as exception:
+        print(exception)
         sys.exit(1)
 
 
@@ -63,13 +63,8 @@ def main():
             cursor = connection.cursor()
 
             cache = {
-                "correspondents": [
-                    t[0]
-                    for t in cursor.execute("select name from documents_correspondent")
-                ],
-                "tags": [
-                    t[0] for t in cursor.execute("select name from documents_tag")
-                ],
+                "correspondents": [t[0] for t in cursor.execute("select name from documents_correspondent")],
+                "tags": [t[0] for t in cursor.execute("select name from documents_tag")],
                 "time": time.time(),
             }
 
@@ -110,9 +105,7 @@ def main():
         action="store_false",
         help="Don't use level correction",
     )
-    add_argument(
-        "--correspondent", choices=cache["correspondents"], help="The correspondent"
-    )
+    add_argument("--correspondent", choices=cache["correspondents"], help="The correspondent")
     add_argument("title", nargs="*", choices=["No title"], help="The document title")
     add_argument(
         "--date",
@@ -137,9 +130,7 @@ def main():
         action="store_true",
         help="Append vertically the credit card",
     )
-    add_argument(
-        "--assisted-split", action="store_true", help="Split operation, se help"
-    )
+    add_argument("--assisted-split", action="store_true", help="Split operation, se help")
     add_argument(
         "--set-config",
         nargs=2,
@@ -185,7 +176,7 @@ def main():
         full_name = "{} - {}".format(full_name, ",".join(args.tags))
     destination = "/destination/{}.pdf".format(full_name)
     if "/" in full_name:
-        print("The name can't contans some '/' (from correspondent, tags or title).")
+        print("The name can't contains some '/' (from correspondent, tags or title).")
         sys.exit(1)
 
     root_folder = os.path.join(
@@ -211,9 +202,7 @@ def main():
         if args.double_sided:
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
-            input(
-                "Put your document in the automatic document feeder for the other side, and press enter."
-            )
+            input("Put your document in the automatic document feeder for the other side, and press enter.")
             call(
                 scanimage
                 + [
@@ -248,13 +237,11 @@ def main():
             "destination": destination,
             "args": args_,
         }
-        with open(
-            os.path.join(os.path.dirname(root_folder), "config.yaml"), "w"
-        ) as config_file:
+        with open(os.path.join(os.path.dirname(root_folder), "config.yaml"), "w") as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
-    except subprocess.CalledProcessError as exeception:
-        print(exeception)
+    except subprocess.CalledProcessError as exception:
+        print(exception)
         sys.exit(1)
 
     print(root_folder)
