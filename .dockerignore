@@ -3,3 +3,6 @@
 !.pylintrc
 !mypy.ini
 !setup.cfg
+!requirements-install.txt
+!Pipfile
+!Pipfile.lock

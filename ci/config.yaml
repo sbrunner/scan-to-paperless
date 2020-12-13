@@ -4,3 +4,11 @@ checks:
     backport.yaml: False
     clean.yaml: False
     audit.yaml: False
+
+publish:
+  docker:
+    images:
+      - name: sbrunner/scan-to-paperless
+        tags:
+          - '{version}'
+          - '{version}-all'
