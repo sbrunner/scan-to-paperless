@@ -1,21 +1,27 @@
 ---
-name: Build
+name: Rebuild
 
 on:
-  push:
-
-env:
-  IN_CI: '1'
+  schedule:
+    - cron: '30 2 * * *'
 
 jobs:
-  build:
-    name: Build
+  rebuild:
     runs-on: ubuntu-20.04
+    name: Rebuild
     timeout-minutes: 15
-    if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - test
+          - master
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.branch }}
 
       - run: sudo python3 -m pip install --requirement=ci/requirements.txt
 
@@ -75,4 +81,4 @@ jobs:
           fi
 
       - name: Publish
-        run: c2cciutils-publish
+        run: c2cciutils-publish --type=rebuild --branch=${{ matrix.branch }}
