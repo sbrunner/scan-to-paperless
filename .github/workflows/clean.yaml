@@ -18,3 +18,6 @@ jobs:
 
       - name: Clean docker hub tags
         run: c2cciutils-clean
+        env:
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
