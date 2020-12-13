@@ -17,13 +17,7 @@ jobs:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
 
-      - run: |
-          sudo rm /etc/apt/sources.list.d/*.list
-          sudo apt update
-          sudo apt install --yes python3-wheel
-
       - run: python3 -m pip install --user c2cciutils
-      - run: echo ~/.local/bin >> $GITHUB_PATH
 
       - name: Clean docker hub tags
         run: c2cciutils-clean
