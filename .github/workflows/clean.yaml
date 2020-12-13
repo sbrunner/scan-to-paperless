@@ -14,7 +14,7 @@ jobs:
 
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
 
-      - run: python3 -m pip install --user c2cciutils
+      - run: sudo python3 -m pip install --requirement=ci/requirements.txt
 
       - name: Clean docker hub tags
         run: c2cciutils-clean
