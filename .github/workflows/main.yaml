@@ -65,6 +65,11 @@ jobs:
           echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
           pip install --user wheel twine
 
+      - name: Init Git
+        run: |
+          git config user.email "<ci@ci.com>"
+          git config user.name "CI"
+
       - name: Bump version
         run: |
           python3 -m pip install --user bump-anything
