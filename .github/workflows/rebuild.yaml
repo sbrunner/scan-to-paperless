@@ -23,7 +23,8 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
-      - run: sudo python3 -m pip install --requirement=ci/requirements.txt
+      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
       - name: Checks
         run: c2cciutils-checks
@@ -72,7 +73,7 @@ jobs:
 
       - name: Bump version
         run: |
-          pip install --user bump-anything
+          python3 -m pip install --user bump-anything
           bump minor
           git add setup.py
           git commit --allow-empty -m "[skip ci] Bump Version"
