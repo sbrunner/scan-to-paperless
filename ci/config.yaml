@@ -11,3 +11,6 @@ publish:
         tags:
           - '{version}'
           - '{version}-all'
+    repository:
+      github:
+        versions: []
