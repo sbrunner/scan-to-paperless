@@ -63,16 +63,17 @@ jobs:
           echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
           echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
           pip install --user wheel twine
+
       - name: Bump version
         run: |
-          if [ "${CIRCLE_BRANCH}" == "master" ]
-          then
-            pip install --user bump-anything
-            bump minor
-            git add setup.py
-            git commit --allow-empty -m "[skip ci] Bump Version"
-            git push push ${CIRCLE_BRANCH}
-          fi
+          pip install --user bump-anything
+          bump minor
+          git add setup.py
+          git commit --allow-empty -m "[skip ci] Bump Version"
+          git push
+        if: github.ref == 'refs/heads/master'
 
       - name: Publish
-        run: c2cciutils-publish
+        run: |
+          c2cciutils-publish --type=version_tag
+          c2cciutils-publish --group=docker
