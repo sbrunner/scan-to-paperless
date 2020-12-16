@@ -79,7 +79,11 @@ jobs:
           git push
         if: github.ref == 'refs/heads/master'
 
-      - name: Publish
+      - name: Publish PyPI
         run: |
-          c2cciutils-publish --type=version_tag
+          c2cciutils-publish --type=version_tag --version=$(python3 ./setup.py --version)
+        if: github.ref == 'refs/heads/master'
+
+      - name: Publish Docker
+        run: |
           c2cciutils-publish --group=docker
