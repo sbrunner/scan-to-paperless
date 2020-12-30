@@ -56,11 +56,15 @@ jobs:
         with:
           name: results
           path: results
+          if-no-files-found: ignore
+          retention-days: 5
         if: failure()
       - uses: actions/upload-artifact@v1
         with:
           name: Test report
           path: results/test-reports
+          if-no-files-found: ignore
+          retention-days: 5
         if: failure()
 
       - run: docker build --target=all --tag=sbrunner/scan-to-paperless:latest-all .
