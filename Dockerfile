@@ -16,7 +16,7 @@ RUN python3 -m pip install --disable-pip-version-check --no-cache-dir --requirem
 
 COPY Pipfile Pipfile.lock /tmp/
 RUN cd /tmp && pipenv install --system --clear && \
-    rm --recursive --force /usr/local/lib/python3.8/dist-packages/tests/ /root/.cache/*
+    rm --recursive --force /usr/local/lib/python3.*/dist-packages/tests/ /root/.cache/*
 
 VOLUME /source \
     /destination
