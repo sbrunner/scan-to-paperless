@@ -30,18 +30,18 @@ def check_image_file(root_folder, image, name, level=0.9):
 
 def check_image(root_folder, image, name, level=0.9):
     assert image is not None, "Image required"
-    expected_name = os.path.join(os.path.dirname(__file__), "{}.expected.png".format(name))
+    expected_name = os.path.join(os.path.dirname(__file__), f"{name}.expected.png")
     # Set to True to regenerate images
     if False:
         cv2.imwrite(expected_name, image)
         return
     expected = cv2.imread(expected_name)
-    cv2.imwrite(os.path.join(root_folder, "{}.result.png".format(name)), image)
+    cv2.imwrite(os.path.join(root_folder, f"{name}.result.png"), image)
     assert expected is not None, "Wrong image: " + expected_name
     score, diff = process.image_diff(expected, image)
     if diff is not None:
-        cv2.imwrite(os.path.join(root_folder, "{}.diff.png".format(name)), diff)
-    assert score > level, "{} ({}) != {} ({})".format(expected, image, expected_name, image)
+        cv2.imwrite(os.path.join(root_folder, f"{name}.diff.png"), diff)
+    assert score > level, f"{expected} ({image}) != {expected_name} ({image})"
 
 
 def test_crop():
@@ -93,12 +93,12 @@ def init_test():
 def test_assisted_split_full(type_, limit):
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
-    root_folder = "/results/assisted-split-full-{}".format(type_)
+    root_folder = f"/results/assisted-split-full-{type_}"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
 
     shutil.copyfile(
-        os.path.join(os.path.dirname(__file__), "limit-{}-all-1.png".format(type_)),
+        os.path.join(os.path.dirname(__file__), f"limit-{type_}-all-1.png"),
         os.path.join(root_folder, "image-1.png"),
     )
     config = {
@@ -120,7 +120,7 @@ def test_assisted_split_full(type_, limit):
     images = step["sources"]
     assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
     assert len(images) == 1
-    check_image_file(root_folder, images[0], "assisted-split-{}-1".format(type_), 0.998)
+    check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
     # check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
     limits = [item for item in config["assisted_split"][0]["limits"] if item["vertical"]]
     print(json.dumps(limits))
@@ -130,8 +130,8 @@ def test_assisted_split_full(type_, limit):
     config["assisted_split"][0]["limits"] = limits
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
-    check_image_file(root_folder, step["sources"][0], "assisted-split-{}-3".format(type_))
-    check_image_file(root_folder, step["sources"][1], "assisted-split-{}-4".format(type_))
+    check_image_file(root_folder, step["sources"][0], f"assisted-split-{type_}-3")
+    check_image_file(root_folder, step["sources"][1], f"assisted-split-{type_}-4")
     assert step["name"] == "finalise"
     process.finalise(config, step, root_folder)
     pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
@@ -149,7 +149,7 @@ def test_assisted_split_full(type_, limit):
             os.path.join(root_folder, "final.png"),
         ]
     )
-    check_image_file(root_folder, os.path.join(root_folder, "final.png"), "assisted-split-{}-5".format(type_))
+    check_image_file(root_folder, os.path.join(root_folder, "final.png"), f"assisted-split-{type_}-5")
 
 
 # @pytest.mark.skip(reason='for test')
@@ -162,8 +162,8 @@ def test_assisted_split_join_full():
 
     for number in (1, 2):
         shutil.copyfile(
-            os.path.join(os.path.dirname(__file__), "split-join-{}.png".format(number)),
-            os.path.join(root_folder, "image-{}.png".format(number)),
+            os.path.join(os.path.dirname(__file__), f"split-join-{number}.png"),
+            os.path.join(root_folder, f"image-{number}.png"),
         )
 
     config = {
@@ -275,7 +275,7 @@ def test_full(progress, experimental):
     init_test()
     os.environ["PROGRESS"] = progress
     os.environ["EXPERIMENTAL"] = experimental
-    root_folder = "/results/full-{}-{}".format(progress, experimental)
+    root_folder = f"/results/full-{progress}-{experimental}"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {

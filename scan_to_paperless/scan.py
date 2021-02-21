@@ -166,15 +166,15 @@ def main():
 
     full_name = " ".join(args.title)
     if args.correspondent is not None:
-        full_name = "{} - {}".format(args.correspondent, full_name)
+        full_name = f"{args.correspondent} - {full_name}"
     if args.date is not None:
-        full_name = "{}Z - {}".format(args.date, full_name)
+        full_name = f"{args.date}Z - {full_name}"
     if args.tags:
         if args.correspondent is None and args.date is None:
             print("tags requires to have a correspondent or a date")
             sys.exit(1)
-        full_name = "{} - {}".format(full_name, ",".join(args.tags))
-    destination = "/destination/{}.pdf".format(full_name)
+        full_name = f"{full_name} - {','.join(args.tags)}"
+    destination = f"/destination/{full_name}.pdf"
     if "/" in full_name:
         print("The name can't contains some '/' (from correspondent, tags or title).")
         sys.exit(1)
@@ -194,7 +194,7 @@ def main():
                 ["--format=png", "--mode=color", "--resolution=300"],
             )
             + [
-                "--batch={}/image-%d.png".format(root_folder),
+                f"--batch={root_folder}/image-%d.png",
                 "--source=ADF" if args.adf else "--batch-prompt",
             ]
         )
@@ -206,9 +206,9 @@ def main():
             call(
                 scanimage
                 + [
-                    "--batch-start={}".format(len(odd) * 2),
+                    f"--batch-start={len(odd) * 2}",
                     "--batch-increment=-2",
-                    "--batch-count={}".format(len(odd)),
+                    f"--batch-count={len(odd)}",
                 ]
             )
             for img in os.listdir(root_folder):
