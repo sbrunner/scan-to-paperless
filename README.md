@@ -1,8 +1,8 @@
-# Scan and prepare your document for paperless
+# Scan and prepare your document for paperless-ng
 
 ## Usage
 
-1. Use the scan command, with auto-completion on your correspondents and your tags to import your document, to scan your documents.
+1. Use the scan command to import your document, to scan your documents.
 
 2. The document is transferred to your NAS (I use [Syncthing](https://syncthing.net/)).
 
@@ -12,10 +12,10 @@
 
 5. Validate your documents.
 
-4. If your happy with that remove the REMOVE_TO_CONTINUE file.
+6. If your happy with that remove the REMOVE_TO_CONTINUE file.
    (To restart the process remove one of the generated images, to cancel the job just remove the folder).
 
-5. The process will continue his job and import the document in paperless.
+7. The process will continue his job and import the document in paperless-ng.
 
 ## Nice feature
 
@@ -59,15 +59,14 @@ assisted_split:
 - ...
 ```
 
-   Edit your config file, you should have one more destination then the limits.
-   If you put destinatination like that: 2.1, it mean that it will be the first part of the page 2 and the 2.2 will be the second part.
+Edit your config file, you should have one more destination then the limits.
+If you put destinatination like that: 2.1, it mean that it will be the first part of the page 2 and the 2.2 will be the second part.
 
 3. Delete the file `REMOVE_TO_CONTINUE`.
 
 4. After the process do his first pass you will have the final generated images.
 
 5. If it's OK delete the file `REMOVE_TO_CONTINUE`.
-
 
 ## Install
 
@@ -84,4 +83,4 @@ $ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
 ## NAS
 
 The Docker support is required, Personally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
-and you can get the *.syno.json files to configure your Docker services.
+and you can get the \*.syno.json files to configure your Docker services.

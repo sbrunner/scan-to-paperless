@@ -1,26 +1,19 @@
 #!/usr/bin/env python3
-# TODO
-# - fix content detection for romande energie
 
 
 import argparse
 import datetime
-import json
 import os
 import random
 import re
 import subprocess
 import sys
-import time
 
 import argcomplete
 import yaml
 from argcomplete.completers import ChoicesCompleter
 
 from scan_to_paperless import CONFIG_FOLDER, CONFIG_PATH, get_config
-
-CACHE_FILENAME = "scan-to-paperless-cache.json"
-CACHE_PATH = os.path.join(CONFIG_FOLDER, CACHE_FILENAME)
 
 
 def call(cmd, cmd2=None, **kwargs):
@@ -46,50 +39,6 @@ def output(cmd, cmd2=None, **kwargs):
 def main():
     config = get_config()
 
-    cache = {"correspondents": [], "tags": [], "time": 0}
-    update_cache = True
-    if os.path.exists(CACHE_PATH):
-        with open(CACHE_PATH, encoding="utf-8") as cache_file:
-            cache = json.loads(cache_file.read())
-            if cache["time"] > time.time() - 3600:
-                update_cache = False
-
-    if update_cache:
-        import sqlite3
-
-        if "paperless_db" in config:
-            connection = sqlite3.connect(config["paperless_db"])
-            cursor = connection.cursor()
-
-            cache = {
-                "correspondents": [t[0] for t in cursor.execute("select name from documents_correspondent")],
-                "tags": [t[0] for t in cursor.execute("select name from documents_tag")],
-                "time": time.time(),
-            }
-
-            connection.close()
-
-        elif "paperless_dump" in config:
-            cache["time"] = time.time()
-            with open(config["paperless_dump"]) as dumpdata:
-                dump = json.loads(dumpdata.read())
-
-            for element in dump:
-                if element["model"] == "documents.correspondent":
-                    cache["correspondents"].append(element["fields"]["name"])
-                elif element["model"] == "documents.tag":
-                    cache["tags"].append(element["fields"]["name"])
-
-        else:
-            print(
-                """The PaperLess source path isn\'t set, use:
-                scan --set-settings paperless_db <the_path>, or
-                scan --set-settings paperless_dump <the_path>."""
-            )
-
-        with open(CACHE_PATH, "w", encoding="utf-8") as config_file:
-            config_file.write(json.dumps(cache))
-
     parser = argparse.ArgumentParser()
 
     def add_argument(name, choices=None, **kwargs):
@@ -104,20 +53,11 @@ def main():
         action="store_false",
         help="Don't use level correction",
     )
-    add_argument("--correspondent", choices=cache["correspondents"], help="The correspondent")
     add_argument("title", nargs="*", choices=["No title"], help="The document title")
     add_argument(
         "--date",
         choices=[datetime.date.today().strftime("%Y%m%d")],
         help="The document date",
-    )
-    add_argument(
-        "--tag",
-        action="append",
-        dest="tags",
-        default=[],
-        choices=cache["tags"],
-        help="The document tags",
     )
     add_argument(
         "--double-sided",
@@ -152,9 +92,6 @@ def main():
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
 
-    if len(args.title) == 0:
-        sys.exit(0)
-
     if "scan_folder" not in config:
         print(
             """The scan folder isn't set, use:
@@ -164,18 +101,11 @@ def main():
         sys.exit(1)
 
     full_name = " ".join(args.title)
-    if args.correspondent is not None:
-        full_name = f"{args.correspondent} - {full_name}"
     if args.date is not None:
         full_name = f"{args.date}Z - {full_name}"
-    if args.tags:
-        if args.correspondent is None and args.date is None:
-            print("tags requires to have a correspondent or a date")
-            sys.exit(1)
-        full_name = f"{full_name} - {','.join(args.tags)}"
     destination = f"/destination/{full_name}.pdf"
     if "/" in full_name:
-        print("The name can't contains some '/' (from correspondent, tags or title).")
+        print("The name can't contains some '/' in the title.")
         sys.exit(1)
 
     root_folder = os.path.join(
