@@ -100,13 +100,21 @@ def main():
         )
         sys.exit(1)
 
-    full_name = " ".join(args.title)
-    if args.date is not None:
-        full_name = f"{args.date}Z - {full_name}"
-    destination = f"/destination/{full_name}.pdf"
-    if "/" in full_name:
-        print("The name can't contains some '/' in the title.")
-        sys.exit(1)
+    title = None
+    full_name = None
+    if args.title:
+        title = " ".join(args.title)
+        full_name = title
+        if args.date is not None:
+            full_name = f"{args.date}Z - {full_name}"
+        if "/" in full_name:
+            print("The name can't contains some '/' in the title.")
+            sys.exit(1)
+        destination = f"/destination/{full_name}.pdf"
+    elif args.date is not None:
+        destination = f"/destination/{args.date}Z - {random.randint(0, 999999)}.pdf"
+    else:
+        destination = f"/destination/{random.randint(0, 999999)}.pdf"
 
     root_folder = os.path.join(
         os.path.expanduser(config["scan_folder"]),
@@ -162,6 +170,7 @@ def main():
         args_.update(dict(args._get_kwargs()))
         config = {
             "images": images,
+            "title": title,
             "full_name": full_name,
             "destination": destination,
             "args": args_,
