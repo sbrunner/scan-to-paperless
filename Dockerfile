@@ -15,7 +15,7 @@ RUN python3 -m pip install --disable-pip-version-check --no-cache-dir --requirem
     rm --recursive --force /tmp/*
 
 COPY Pipfile Pipfile.lock /tmp/
-RUN cd /tmp && pipenv install --system --clear && \
+RUN cd /tmp && pipenv sync --system --clear && \
     rm --recursive --force /usr/local/lib/python3.*/dist-packages/tests/ /root/.cache/*
 
 VOLUME /source \
@@ -30,7 +30,7 @@ RUN apt update
 RUN DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
     poppler-utils ghostscript graphviz
 
-RUN cd /tmp && pipenv install --system --clear --dev
+RUN cd /tmp && pipenv sync --system --clear --dev
 
 WORKDIR /opt
 
