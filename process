@@ -877,7 +877,7 @@ def finalise(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> 
     Final step on document generation (convert in one pdf and copy with the right name in the cusume folder)
     """
 
-    full_name = config["full_name"]
+    title = config["title"]
     destination = config["destination"]
 
     if os.path.exists(destination):
@@ -911,7 +911,11 @@ def finalise(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> 
             pdf.append(file_name)
 
     call(["pdftk"] + pdf + ["output", destination, "compress"])
-    call(["exiftool", "-overwrite_original_in_place", "-Title=" + full_name, destination])
+    exiftool_cmd = ["exiftool", "-overwrite_original_in_place"]
+    if title:
+        exiftool_cmd.append("-Title=" + title)
+    exiftool_cmd.append(destination)
+    call(exiftool_cmd)
 
 
 def write_error(root_folder: str, message: str) -> None:

@@ -108,7 +108,7 @@ def test_assisted_split_full(type_, limit):
             "append_credit_card": False,
             "tesseract": False,
         },
-        "full_name": "Test title 1",
+        "title": "Test title 1",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -173,7 +173,7 @@ def test_assisted_split_join_full():
             "append_credit_card": False,
             "tesseract": False,
         },
-        "full_name": "Test title 2",
+        "title": "Test title 2",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -241,7 +241,7 @@ def test_assisted_split_booth():
             "margin_horizontal": 0,
             "margin_vertical": 0,
         },
-        "full_name": "Test title 2",
+        "title": "Test title 2",
         "destination": os.path.join(root_folder, "final.pdf"),
         "assisted_split": [
             {
@@ -285,7 +285,7 @@ def test_full(progress, experimental):
             "append_credit_card": False,
             "tesseract": False,
         },
-        "full_name": "Test title 3",
+        "title": "Test title 3",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
@@ -335,7 +335,7 @@ def test_credit_card_full():
             "level": True,
             "append_credit_card": True,
         },
-        "full_name": "Credit Card",
+        "title": "Credit Card",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -379,7 +379,7 @@ def test_empty():
             "level": True,
             "append_credit_card": False,
         },
-        "full_name": "Empty",
+        "title": "Empty",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
