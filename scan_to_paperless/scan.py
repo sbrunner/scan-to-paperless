@@ -102,6 +102,7 @@ def main():
 
     title = None
     full_name = None
+    rand_int = str(random.randint(0, 999999))
     if args.title:
         title = " ".join(args.title)
         full_name = title
@@ -112,13 +113,13 @@ def main():
             sys.exit(1)
         destination = f"/destination/{full_name}.pdf"
     elif args.date is not None:
-        destination = f"/destination/{args.date}Z - {random.randint(0, 999999)}.pdf"
+        destination = f"/destination/{args.date}Z - {rand_int}.pdf"
     else:
-        destination = f"/destination/{random.randint(0, 999999)}.pdf"
+        destination = f"/destination/{rand_int}.pdf"
 
     root_folder = os.path.join(
         os.path.expanduser(config["scan_folder"]),
-        str(random.randint(0, 999999)),
+        rand_int,
         "source",
     )
     os.makedirs(root_folder)
