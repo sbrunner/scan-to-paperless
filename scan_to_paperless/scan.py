@@ -103,6 +103,11 @@ def main():
     title = None
     full_name = None
     rand_int = str(random.randint(0, 999999))
+    base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
+    while os.path.exists(base_folder):
+        rand_int = str(random.randint(0, 999999))
+        base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
+
     if args.title:
         title = " ".join(args.title)
         full_name = title
@@ -117,11 +122,7 @@ def main():
     else:
         destination = f"/destination/{rand_int}.pdf"
 
-    root_folder = os.path.join(
-        os.path.expanduser(config["scan_folder"]),
-        rand_int,
-        "source",
-    )
+    root_folder = os.path.join(base_folder, "source")
     os.makedirs(root_folder)
 
     try:
