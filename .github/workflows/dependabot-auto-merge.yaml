@@ -2,12 +2,11 @@
 name: Auto merge Dependabot updates
 
 on:
-  check_suite:
+  workflow_run:
+    workflows:
+      - Continuous integration
     types:
       - completed
-  pull_request:
-    types:
-      - opened
 
 jobs:
   auto-merge:
@@ -16,6 +15,6 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Auto merge
-        uses: ridedott/dependabot-auto-merge-action@master
+        uses: ridedott/merge-me-action@master
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

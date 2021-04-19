@@ -3,9 +3,10 @@ name: Build
 
 on:
   push:
+  pull_request:
 
 env:
-  IN_CI: '1'
+  HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
 
 jobs:
   build:
@@ -70,11 +71,13 @@ jobs:
           echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
           echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
           pip install --user wheel twine
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - name: Init Git
         run: |
           git config user.email "<ci@ci.com>"
           git config user.name "CI"
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - name: Bump version
         run: |
@@ -93,3 +96,4 @@ jobs:
       - name: Publish Docker
         run: |
           c2cciutils-publish --group=docker
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
