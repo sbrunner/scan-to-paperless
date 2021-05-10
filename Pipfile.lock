@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "cd85e61257ce5e0025af73d3c7982827433fc2dbc530bd5f5aebdf108c3794d4"
+            "sha256": "6d13b7d764818edb281325975166dd99ed42a0e53feee52e35c2aa5dec2bea7a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -32,11 +32,11 @@
         },
         "deskew": {
             "hashes": [
-                "sha256:28d3077a58a90245a0c9ef996a1f5f8ab29235cb5824cefe4f0dda9974a80897",
-                "sha256:e1a78ce2c9b391f2e71bbea54a8ac4ec8d24974662f0da9220bbb4b85b809d43"
+                "sha256:16a20c10803e128e695ce60ca0cbaca98e9c1cd320b694fc4c1dbbdda55cb004",
+                "sha256:2fcbac78e46d6b5188a7d47b0e7469f423bf9aeb3a0423976ef0456e3ec23cdd"
             ],
             "index": "pypi",
-            "version": "==0.10.3"
+            "version": "==0.10.28"
         },
         "imageio": {
             "hashes": [
