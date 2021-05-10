@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 pyyaml = "==5.4.1"
 numpy = "==1.19.4"
-scipy = "==1.5.4"
+scipy = "==1.6.3"
 scikit-image = "==0.17.2"
 opencv-python-headless = "==4.5.2.52"
 deskew = "==0.10.28"
