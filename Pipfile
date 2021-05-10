@@ -14,7 +14,7 @@ deskew = "==0.10.3"
 [dev-packages]
 prospector = {extras = ["bandit", "mypy"], version = "==1.3.1"}
 flake8 = "==3.8.4"
-pytest = "==6.2.0"
+pytest = "==6.2.4"
 coverage = "==5.3"
 pytest-profiling = "==1.7.0"
 
