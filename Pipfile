@@ -9,7 +9,7 @@ numpy = "==1.19.4"
 scipy = "==1.5.4"
 scikit-image = "==0.17.2"
 opencv-python-headless = "==4.5.2.52"
-deskew = "==0.10.3"
+deskew = "==0.10.28"
 
 [dev-packages]
 prospector = {extras = ["bandit", "mypy"], version = "==1.3.1"}
