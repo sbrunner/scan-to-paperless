@@ -1,8 +1,98 @@
 # Scan and prepare your document for paperless-ng
 
+## Features
+
+The main goal of this project is to prepare the documents by using heavy tools without needed to wait
+(=> doing them in background) and using too many resources on my desktop. It's the reason wy it's a
+little bit complicated to put ti in place.
+
+Features:
+
+-   Scan the images optionally by using the Automatic Document Feeder
+-   Easily scan double sided images using the Automatic Document Feeder
+-   Change the images levels
+-   Deskew the images
+-   Crop the images
+-   Sharpen the images (disable by default)
+-   Dither the images (disable by default)
+-   Autorotate the images by using tesseract (To have the text on the right side)
+-   Assisted split, used to split a prospectus page in more pages (Requires to modify the yaml...)
+-   Append credit cart, used to have the too faces of a credit cart on the same page.
+
+## Install
+
+### On the desktop
+
+```bash
+$ python3 -m pip install scan-to-paperless
+$ sudo activate-global-python-argcomplete
+$ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
+```
+
+Create the configuration file on `<home_config>/scan-to-paperless.yaml` (on Linux it's `~/.config/scan-to-paperless.yaml`), with:
+
+```yaml
+scan_folder: /home/sbrunner/Paperless/scan/
+scanimage_arguments: # Additional argument passed to the scanimage command
+    - --device=... # Use `scanimage --list` to get the possible values
+    - --format=png
+    - --mode=color
+    - --resolution=300
+default_args:
+    ## Level
+    # true: => do level on 15% - 85% (under 15 % will be black above 85% will be white)
+    # false: => 0% - 100%
+    # <number>: => (0 + <number>)% - (100 - number)%
+    level:
+    # If no level specified, do auto level
+    auto_level: False
+    # min level if no level end no autolovel
+    min_level: 15
+    # max level if no level end no autolovel
+    max_level: 95
+
+    ## Crop
+    no_crop: False # Don't do any crop
+    marging_horizontal: 9 # mm, the horizontal margin used on autodetect content
+    marging_vertical: 6 # mm, the vertical margin used on autodetect content
+    dpi: 300 # The DPI uset to convert the mm to pixel
+
+    # Sharpen
+    sharpen: False # Do the sharpen
+
+    # Dither
+    dither: False # Do the dither
+
+    ## OCR
+    tesseract: True # Use tesseract to to an OCR on the document
+    tesseract_lang: fra+eng # The used language
+```
+
+### On the NAS
+
+The Docker support is required, Personally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
+and you can get the \*.syno.json files to configure your Docker services.
+
+Otherwise use:
+
+```bash
+docker run --rm --restart=unless-stopped \
+    --volume=<scan_folder>:/source \
+    --volume=<consume_folder>:/destination \
+    sbrunner/scan-to-paperless
+```
+
+You can set the environment variable `PROGRESS` to `TRUE` to get all the intermediate images.
+
+### Repoitory link
+
+You should find a way to synchronise or using sharing to link the scan folder on your desktop and on your nas.
+
+You should also link the consume folder to `paperless-ng` probabls just by using the same folder.
+
 ## Usage
 
-1. Use the scan command to import your document, to scan your documents.
+1. Use the `scan` command to import your document, to scan your documents.
 
 2. The document is transferred to your NAS (I use [Syncthing](https://syncthing.net/)).
 
@@ -12,10 +102,10 @@
 
 5. Validate your documents.
 
-6. If your happy with that remove the REMOVE_TO_CONTINUE file.
+6. If your happy with that remove the `REMOVE_TO_CONTINUE` file.
    (To restart the process remove one of the generated images, to cancel the job just remove the folder).
 
-7. The process will continue his job and import the document in paperless-ng.
+7. The process will continue his job and import the document in `paperless-ng`.
 
 ## Nice feature
 
@@ -44,19 +134,22 @@ The options `--append-credit-card` will append all the sheets vertically to have
    In your config you will have something like:
 
 ```
+
 assisted_split:
-- destinations:
-  - 4  # Page number of the left part of the image
-  - 1  # Same for the right page of the image
-  image: image-1.png  # name of the image
-  limits:
-  - margin: 0  # Margin around the split
-    name: 0  # Number visible on the generated image
-    value: 375  # The position of the split (can be manually edited)
-    vertical: true  # Will split the image vertically
-  - ...
-  source: /source/975468/7-assisted-split/image-1.png
-- ...
+
+-   destinations:
+    -   4 # Page number of the left part of the image
+    -   1 # Same for the right page of the image
+        image: image-1.png # name of the image
+        limits:
+    -   margin: 0 # Margin around the split
+        name: 0 # Number visible on the generated image
+        value: 375 # The position of the split (can be manually edited)
+        vertical: true # Will split the image vertically
+    -   ...
+        source: /source/975468/7-assisted-split/image-1.png
+-   ...
+
 ```
 
 Edit your config file, you should have one more destination then the limits.
@@ -67,20 +160,3 @@ If you put destinatination like that: 2.1, it mean that it will be the first par
 4. After the process do his first pass you will have the final generated images.
 
 5. If it's OK delete the file `REMOVE_TO_CONTINUE`.
-
-## Install
-
-Install in a venv in the home directory:
-
-```
-$ cd
-$ python3 -m venv venv
-$ ~/venv/bin/pip install scan-to-paperless
-$ sudo activate-global-python-argcomplete
-$ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
-```
-
-## NAS
-
-The Docker support is required, Personally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
-and you can get the \*.syno.json files to configure your Docker services.

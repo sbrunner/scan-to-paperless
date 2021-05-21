@@ -107,6 +107,7 @@ def test_assisted_split_full(type_, limit):
             "level": True,
             "append_credit_card": False,
             "tesseract": False,
+            "sharpen": True,
         },
         "title": "Test title 1",
         "destination": os.path.join(root_folder, "final.pdf"),

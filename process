@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
 import glob
 import math
 import os
@@ -240,7 +241,7 @@ def external(func: Callable) -> Callable:
         source = tempfile.NamedTemporaryFile(suffix=".png")
         cv2.imwrite(source.name, context.image)
         destination = tempfile.NamedTemporaryFile(suffix=".png")
-        func(source.name, destination.name, *args, **kwargs)
+        func(context, source.name, destination.name, *args, **kwargs)
         return cv2.imread(destination.name)
 
     return wrapper
@@ -385,15 +386,19 @@ def docrop(context: Context) -> None:
 
 @Process("sharpen")
 def sharpen(context: Context) -> np.ndarray:
+    if context.config["args"].get("sharpen", False) == False:
+        return
     if context.image is None:
         raise Exception("The image is required")
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
     return cv2.addWeighted(context.image, 1.5, image, -0.5, 0)
 
 
-@Process("dither", True)
+@Process("dither")
 @external
-def dither(source: str, destination: str) -> None:
+def dither(context: Context, source: str, destination: str) -> None:
+    if context.config["args"].get("dither", False) == False:
+        return
     call(CONVERT + ["+dither", source, destination])
 
 
@@ -528,7 +533,8 @@ def find_contours(image: np.ndarray, min_size: int = 32) -> List[Tuple[int, int,
 
 @Process("scantailor", True)
 @external
-def scantailor(source: str, destination: str) -> None:
+def scantailor(context: Context, source: str, destination: str) -> None:
+    del context
     call(
         [
             "scantailor-cli",
@@ -544,7 +550,8 @@ def scantailor(source: str, destination: str) -> None:
 
 @Process("scantailor-1200", True)
 @external
-def scantailor_1200(source: str, destination: str) -> None:
+def scantailor_1200(context: Context, source: str, destination: str) -> None:
+    del context
     call(
         [
             "scantailor-cli",
@@ -560,7 +567,8 @@ def scantailor_1200(source: str, destination: str) -> None:
 
 @Process("scantailor-advanced", True)
 @external
-def scantailor_advanced(source: str, destination: str) -> None:
+def scantailor_advanced(context: Context, source: str, destination: str) -> None:
+    del context
     call(
         [
             "scantailor-advanced-cli",
@@ -576,7 +584,8 @@ def scantailor_advanced(source: str, destination: str) -> None:
 
 @Process("scantailor-advanced-1200", True)
 @external
-def scantailor_advanced_1200(source: str, destination: str) -> None:
+def scantailor_advanced_1200(context: Context, source: str, destination: str) -> None:
+    del context
     call(
         [
             "scantailor-advanced-cli",
@@ -592,7 +601,8 @@ def scantailor_advanced_1200(source: str, destination: str) -> None:
 
 @Process("scantailor-universal", True)
 @external
-def scantailor_universal(source: str, destination: str) -> None:
+def scantailor_universal(context: Context, source: str, destination: str) -> None:
+    del context
     call(
         [
             "scantailor-universal-cli",
@@ -608,7 +618,8 @@ def scantailor_universal(source: str, destination: str) -> None:
 
 @Process("scantailor-universal-1200", True)
 @external
-def scantailor_universal_1200(source: str, destination: str) -> None:
+def scantailor_universal_1200(context: Context, source: str, destination: str) -> None:
+    del context
     call(
         [
             "scantailor-universal-cli",
@@ -624,7 +635,8 @@ def scantailor_universal_1200(source: str, destination: str) -> None:
 
 @Process("tesseract", True)
 @external
-def tesseract(source: str, destination: str) -> None:
+def tesseract(context: Context, source: str, destination: str) -> None:
+    del context
     call("tesseract -l fra+eng {} stdout pdf > {}".format(source, destination), shell=True)  # nosec
 
 
@@ -905,7 +917,12 @@ def finalise(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> 
             name = os.path.splitext(os.path.basename(img))[0]
             file_name = os.path.join(root_folder, "{}.pdf".format(name))
             if config["args"].get("tesseract", True):
-                call("tesseract -l fra+eng {} stdout pdf > {}".format(img, file_name), shell=True)  # nosec
+                call(
+                    "tesseract -l {} {} stdout pdf > {}".format(
+                        config["args"].get("tesseract_lang", "fra+eng"), img, file_name
+                    ),
+                    shell=True,
+                )  # nosec
             else:
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
@@ -938,12 +955,16 @@ def save_config(config: Dict[str, Any], config_file_name: str) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--folder", default="/source", help="The folder to be processed")
+    args = parser.parse_args()
+
     """
     Main function
     """
     print("Welcome to scanned images document to paperless.")
     while True:
-        for config_file_name in glob.glob("/source/*/config.yaml"):
+        for config_file_name in glob.glob(os.path.join(args.folder, "*/config.yaml")):
             if not os.path.exists(config_file_name):
                 continue
 
