@@ -14,7 +14,7 @@ with open(os.path.join(HERE, "README.md")) as f:
 
 setup(
     name="scan-to-paperless",
-    version="0.17.0",
+    version="0.18.0",
     description="Tool to scan and process documents to palerless",
     long_description=README,
     long_description_content_type="text/markdown",
