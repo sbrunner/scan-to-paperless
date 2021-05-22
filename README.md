@@ -133,10 +133,8 @@ The options `--append-credit-card` will append all the sheets vertically to have
    The lines represent the detected potential split of the image, the length indicate the strength of the detection.
    In your config you will have something like:
 
-```
-
+```yaml
 assisted_split:
-
 -   destinations:
     -   4 # Page number of the left part of the image
     -   1 # Same for the right page of the image
