@@ -3,14 +3,15 @@
 import glob
 import os
 import re
-import subprocess
+import subprocess  # nosec
 
 import yaml
 
+import scan_to_paperless.process_schema
 from scan_to_paperless import get_config
 
 
-def main():
+def main() -> None:
     config = get_config()
     for folder in glob.glob(os.path.join(os.path.expanduser(config["scan_folder"]), "*")):
         print(re.sub(r".", "-", folder))
@@ -20,11 +21,13 @@ def main():
             print("No config")
         else:
             with open(os.path.join(folder, "config.yaml")) as config_file:
-                config = yaml.safe_load(config_file.read())
+                job_config: scan_to_paperless.process_schema.Configuration = yaml.safe_load(
+                    config_file.read()
+                )
 
             if os.path.exists(os.path.join(folder, "error.yaml")):
                 with open(os.path.join(folder, "error.yaml")) as error_file:
-                    error = yaml.load(error_file.read())
+                    error = yaml.safe_load(error_file.read())
                     if error is not None and "error" in error:
                         print(error["error"])
                         if isinstance(error["error"], subprocess.CalledProcessError):
@@ -38,10 +41,10 @@ def main():
                         print(error)
             else:
                 allready_proceed = True
-                if "transformed_images" not in config:
+                if "transformed_images" not in job_config:
                     allready_proceed = False
                 else:
-                    for img in config["transformed_images"]:
+                    for img in job_config["transformed_images"]:
                         img = os.path.join(folder, os.path.basename(img))
                         if not os.path.exists(img):
                             allready_proceed = False

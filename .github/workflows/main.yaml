@@ -29,9 +29,17 @@ jobs:
       - name: Checks
         run: c2cciutils-checks
 
+      # the if the generated files are up to date
+      - run: ./run-jsonschema-gentypes
+      - run: jsonschema2md scan_to_paperless/config-schema.json config.md
+      - run: jsonschema2md scan_to_paperless/process.json process.md
+      - run: git diff --quiet
+      - run: git diff
+        if: failure()
+
       - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
       - run: docker build --target=tests --tag=tests .
-      - run: docker run --rm tests prospector
+      - run: docker run --rm tests prospector --output=pylint
       - name: Init Docker volumes
         run: |
           docker run --rm --detach --name volumes --volume=tests:/tests --volume=results:/results alpine tail -f /dev/null
@@ -41,9 +49,8 @@ jobs:
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=results:/results --volume=tests:/tests
           tests bash -c '
-          mv /opt/process /opt/process.py &&
           cd /tests &&
-          coverage run --source=process --module pytest --durations=0 --verbose --color=yes
+          coverage run --source=scan_to_paperless --module pytest --durations=0 --verbose --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
           coverage report &&
           coverage html --directory=/results/coverage'

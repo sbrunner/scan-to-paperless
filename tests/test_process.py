@@ -4,8 +4,9 @@ import re
 import shutil
 
 import cv2
-import process
 import pytest
+
+from scan_to_paperless import process
 
 
 def load_image(image_name):

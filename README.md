@@ -1,12 +1,14 @@
-# Scan and prepare your document for paperless-ng
+# Scan and prepare your document for [Paperless](https://github.com/jonaswinkler/paperless-ng)
+
+The main goal of this project is to have some productive process from the document scanning to
+[Paperless](https://github.com/jonaswinkler/paperless-ng).
+For that we need to prepare the documents some tools that need many resources, then the idea to to do it
+in the background and ideally on an other host like a NAS.
+A consecence of that it's a not easy to put it in place bet the you will be relay productive.
+The interface between the user and the process is the `scan` command to do the initial scan, and the filesystem
+to verify that the result is OK (and do some advance operations describe below) and validate it.
 
 ## Features
-
-The main goal of this project is to prepare the documents by using heavy tools without needed to wait
-(=> doing them in background) and using too many resources on my desktop. It's the reason wy it's a
-little bit complicated to put ti in place.
-
-Features:
 
 -   Scan the images optionally by using the Automatic Document Feeder
 -   Easily scan double sided images using the Automatic Document Feeder
@@ -17,7 +19,22 @@ Features:
 -   Dither the images (disable by default)
 -   Autorotate the images by using tesseract (To have the text on the right side)
 -   Assisted split, used to split a prospectus page in more pages (Requires to modify the yaml...)
--   Append credit cart, used to have the too faces of a credit cart on the same page.
+-   Append credit cart, used to have the too faces of a credit cart on the same page
+-   Be able to copy the OCR result from the PDF
+
+## Requirements
+
+On the desktop:
+
+-   [Python](https://www.python.org/) >= 3.6
+-   The [scanimage](http://www.sane-project.org/) command, on Windows it should be able to use an other command
+    but it's never be tested.
+    This command yould be an adapter that interpret the following arguments:
+    `--batch`, `--source=ADF`, `--batch-prompt`, `--batch-start`, `--batch-increment`, `--batch-count`.
+
+On the NAS:
+
+-   [Docker](https://www.docker.com/)
 
 ## Install
 
@@ -55,7 +72,7 @@ default_args:
     no_crop: False # Don't do any crop
     marging_horizontal: 9 # mm, the horizontal margin used on autodetect content
     marging_vertical: 6 # mm, the vertical margin used on autodetect content
-    dpi: 300 # The DPI uset to convert the mm to pixel
+    dpi: 300 # The DPI used to convert the mm to pixel
 
     # Sharpen
     sharpen: False # Do the sharpen
@@ -67,6 +84,8 @@ default_args:
     tesseract: True # Use tesseract to to an OCR on the document
     tesseract_lang: fra+eng # The used language
 ```
+
+[Full config documentation](./config.md)
 
 ### On the NAS
 
@@ -107,7 +126,25 @@ You should also link the consume folder to `paperless-ng` probabls just by using
 
 7. The process will continue his job and import the document in `paperless-ng`.
 
-## Nice feature
+## Job config file
+
+In the `config.yaml` file present in the document folder, you can find sone information generated during
+the processing and some of the can be modified.
+
+E.g. you can modify an image angle to fix the deskew, then remove a generated image for torce to regenerate
+the images.
+
+[Full job config documentation](./process.md)
+
+## Advance feature
+
+### Add a mask
+
+If your scanner add some margin around the scanned image it will relay case some issue the deskew and the
+content detection.
+
+To solve that you can add a black and white image namev `mask.png` in the root folder and draw in black the
+part that should not be taken in account.
 
 ### Double sized scanning
 
