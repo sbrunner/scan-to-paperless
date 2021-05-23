@@ -23,39 +23,38 @@ VOLUME /source \
 
 ENV LANG=C.UTF-8
 
+WORKDIR /opt
 
 FROM base-dist as tests-dist
 
-RUN apt update
-RUN DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
-    poppler-utils ghostscript graphviz
-
-RUN cd /tmp && pipenv sync --system --clear --dev
-
-WORKDIR /opt
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
+    poppler-utils ghostscript graphviz && \
+    apt-get clean && \
+    rm --recursive --force /var/lib/apt/lists/* /root/.cache /var/cache/* && \
+    cd /tmp && pipenv sync --system --clear --dev
 
 
 FROM base-dist as base
 
-COPY process /opt/
+COPY scan_to_paperless scan_to_paperless/
+COPY setup.py README.md ./
+RUN python3 -m pip install --no-cache-dir --editable .
 
-CMD ["/opt/process"]
+CMD ["scan-process"]
 
 
 FROM tests-dist as tests
 
-COPY process /opt/
-COPY .pylintrc mypy.ini setup.cfg /opt/
-RUN touch __init__.py
-
-CMD ["/opt/process"]
+COPY . ./
+RUN python3 -m pip install --no-cache-dir --editable .
 
 
 FROM base as all
 
 RUN \
-    apt update && \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
     tesseract-ocr-all && \
-    apt clean && \
+    apt-get clean && \
     rm --recursive --force /var/lib/apt/lists/* /var/cache/*

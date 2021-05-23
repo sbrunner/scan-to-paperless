@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/jsonschema-gentypes/master/jsonschema_gentypes/schema.json
+
+headers: >
+# Automatically generated file from a JSON schema
+# Used to correctly format the generated file
+callbacks:
+  - - black
+  - - isort
+generate:
+  - source: scan_to_paperless/config-schema.json
+    destination: scan_to_paperless/config.py
+  - source: scan_to_paperless/process.json
+    destination: scan_to_paperless/process_schema.py

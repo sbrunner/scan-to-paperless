@@ -12,7 +12,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+from typing import IO, Any, Dict, List, Optional, Tuple, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -22,6 +22,9 @@ from deskew import determine_skew_dev
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
+from typing_extensions import Protocol, TypedDict
+
+import scan_to_paperless.process_schema
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
@@ -37,7 +40,10 @@ def rotate_image(image: np.ndarray, angle: float, background: Union[int, Tuple[i
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
     rot_mat[1, 2] += (width - old_width) / 2
     rot_mat[0, 2] += (height - old_height) / 2
-    return cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background)
+    return cast(
+        np.ndarray,
+        cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background),
+    )
 
 
 def crop_image(  # pylint: disable=too-many-arguments
@@ -49,14 +55,17 @@ def crop_image(  # pylint: disable=too-many-arguments
     background: Union[Tuple[int], Tuple[int, int, int]],
 ) -> np.ndarray:
     matrice = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
-    return cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background)
+    return cast(
+        np.ndarray,
+        cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background),
+    )
 
 
 class Context:  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        config: Dict[str, Any],
-        step: Dict[str, Any],
+        config: scan_to_paperless.process_schema.Configuration,
+        step: scan_to_paperless.process_schema.Step,
         config_file_name: Optional[str] = None,
         root_folder: Optional[str] = None,
         image_name: Optional[str] = None,
@@ -112,17 +121,20 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
 
 def add_intermediate_error(
-    config: Dict[str, Any], config_file_name: Optional[str], error: Exception, traceback_: List[str]
+    config: scan_to_paperless.process_schema.Configuration,
+    config_file_name: Optional[str],
+    error: Exception,
+    traceback_: List[str],
 ) -> None:
     if config_file_name is None:
         raise Exception("The config file name is required")
     if "intermediate_error" not in config:
         config["intermediate_error"] = []
 
-    old_intermediate_error: List[Dict[str, Any]] = []
+    old_intermediate_error: List[scan_to_paperless.process_schema.IntermediateError] = []
     old_intermediate_error.extend(config["intermediate_error"])
     try:
-        config["intermediate_error"].append({"error": error, "traceback": traceback_})
+        config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
         with open(config_file_name + "_", "w") as config_file:
             config_file.write(yaml.safe_dump(config, default_flow_style=False))
     except Exception as exception:
@@ -162,14 +174,29 @@ def image_diff(image1: np.ndarray, image2: np.ndarray) -> Tuple[float, np.ndarra
     return score, diff
 
 
+class FunctionWithContextReturnsImage(Protocol):
+    def __call__(self, context: Context) -> Optional[np.ndarray]:
+        pass
+
+
+class FunctionWithContextReturnsNone(Protocol):
+    def __call__(self, context: Context) -> None:
+        pass
+
+
+class ExternalFunction(Protocol):
+    def __call__(self, context: Context, source: str, destination: str) -> None:
+        pass
+
+
 class Process:  # pylint: disable=too-few-public-methods
     def __init__(self, name: str, experimental: bool = False, ignore_error: bool = False) -> None:
         self.experimental = experimental
         self.name = name
         self.ignore_error = ignore_error
 
-    def __call__(self, func: Callable) -> Callable:
-        def wrapper(context: Context, *args: Any, **kwargs: Any) -> None:
+    def __call__(self, func: FunctionWithContextReturnsImage) -> FunctionWithContextReturnsNone:
+        def wrapper(context: Context) -> None:
             if context.image is None:
                 raise Exception("The image is required")
             if context.root_folder is None:
@@ -186,7 +213,7 @@ class Process:  # pylint: disable=too-few-public-methods
                 or self.ignore_error
             ):
                 try:
-                    new_image = func(context, *args, **kwargs)
+                    new_image = func(context)
                     if new_image is not None and self.ignore_error:
                         context.image = new_image
                 except Exception as exception:
@@ -198,13 +225,15 @@ class Process:  # pylint: disable=too-few-public-methods
                         traceback.format_exc().split("\n"),
                     )
             else:
-                new_image = func(context, *args, **kwargs)
+                new_image = func(context)
                 if new_image is not None:
                     context.image = new_image
             elapsed_time = time.perf_counter() - start_time
             if os.environ.get("TIME", "FALSE") == "TRUE":
                 print("Elapsed time in {}: {}s.".format(self.name, int(round(elapsed_time))))
             if self.experimental and context.image is not None:
+                assert context.image is not None
+                assert old_image is not None
                 score, diff = image_diff(old_image, context.image)
                 if diff is not None and score < 1.0:
                     dest_folder = os.path.join(context.root_folder, self.name)
@@ -221,28 +250,28 @@ class Process:  # pylint: disable=too-few-public-methods
                 dest_image = os.path.join(dest_folder, context.image_name)
                 try:
                     cv2.imwrite(dest_image, context.image)
-                except Exception as e:
-                    print(e)
+                except Exception as exception:
+                    print(exception)
                 dest_image = os.path.join(dest_folder, "mask-" + context.image_name)
                 try:
                     dest_image = os.path.join(dest_folder, "masked-" + context.image_name)
-                except Exception as e:
-                    print(e)
+                except Exception as exception:
+                    print(exception)
                 try:
                     cv2.imwrite(dest_image, context.get_masked())
-                except Exception as e:
-                    print(e)
+                except Exception as exception:
+                    print(exception)
 
         return wrapper
 
 
-def external(func: Callable) -> Callable:
-    def wrapper(context: Context, *args: Any, **kwargs: Any) -> Optional[np.ndarray]:
+def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
+    def wrapper(context: Context) -> Optional[np.ndarray]:
         source = tempfile.NamedTemporaryFile(suffix=".png")
         cv2.imwrite(source.name, context.image)
         destination = tempfile.NamedTemporaryFile(suffix=".png")
-        func(context, source.name, destination.name, *args, **kwargs)
-        return cv2.imread(destination.name)
+        func(context, source.name, destination.name)
+        return cast(np.ndarray, cv2.imread(destination.name))
 
     return wrapper
 
@@ -296,7 +325,7 @@ def level(context: Context) -> np.ndarray:
         max_p100 = 100.0 - level_
     elif context.config["args"].get("auto_level"):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
-        return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+        return cast(np.ndarray, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
     else:
         min_p100 = context.config["args"].get("min_level", 0.0)
         max_p100 = context.config["args"].get("max_level", 100.0)
@@ -310,7 +339,7 @@ def level(context: Context) -> np.ndarray:
 
     values = (chanel_y - min_) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
-    return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+    return cast(np.ndarray, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
 
 def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> None:
@@ -329,13 +358,13 @@ def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> 
 
         cv2.line(image, center, (int(x), int(y)), color, 2)
         if matrix[0][0] == -1:
-            # pylint: disable=expression-not-assigned
             cv2.putText(image, str(angle), (int(x), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color)
 
 
 @Process("deskew")
 def deskew(context: Context) -> None:
     images_config = context.config.setdefault("images_config", {})
+    assert context.image_name
     image_config = images_config.setdefault(context.image_name, {})
     angle = image_config.setdefault("angle", None)
     if angle is None:
@@ -357,11 +386,12 @@ def deskew(context: Context) -> None:
                 draw_angle(image, current_angle, (0, 255, 0))
         image_status["angles"] = float_angles
 
+        assert context.root_folder
         save_image(
             image,
-            cast(str, context.root_folder),
+            context.root_folder,
             "{}-skew-angles".format(context.get_process_count()),
-            cast(str, context.image_name),
+            context.image_name,
             True,
         )
 
@@ -385,19 +415,19 @@ def docrop(context: Context) -> None:
 
 
 @Process("sharpen")
-def sharpen(context: Context) -> np.ndarray:
-    if context.config["args"].get("sharpen", False) == False:
-        return
+def sharpen(context: Context) -> Optional[np.ndarray]:
+    if context.config["args"].get("sharpen", False) is False:
+        return None
     if context.image is None:
         raise Exception("The image is required")
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
-    return cv2.addWeighted(context.image, 1.5, image, -0.5, 0)
+    return cast(np.ndarray, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
 
 
 @Process("dither")
 @external
 def dither(context: Context, source: str, destination: str) -> None:
-    if context.config["args"].get("dither", False) == False:
+    if context.config["args"].get("dither", False) is False:
         return
     call(CONVERT + ["+dither", source, destination])
 
@@ -412,8 +442,8 @@ def autorotate(context: Context) -> None:
 
 
 def draw_line(  # pylint: disable=too-many-arguments
-    image: np.ndarray, vertical: bool, position: int, value: int, name: str, type_: str
-) -> Dict[str, Any]:
+    image: np.ndarray, vertical: bool, position: float, value: int, name: str, type_: str
+) -> scan_to_paperless.process_schema.Limit:
     img_len = image.shape[0 if vertical else 1]
     color = (255, 0, 0) if vertical else (0, 255, 0)
     if vertical:
@@ -460,7 +490,7 @@ def zero_ranges(values: np.ndarray) -> np.ndarray:
     absdiff = np.abs(np.diff(iszero))
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
-    return ranges
+    return cast(np.ndarray, ranges)
 
 
 def find_limit_contour(image: np.ndarray, vertical: bool) -> List[int]:
@@ -482,11 +512,11 @@ def find_limit_contour(image: np.ndarray, vertical: bool) -> List[int]:
     return result
 
 
-def fill_limits(image: np.ndarray, vertical: bool) -> List[Dict[str, Any]]:
+def fill_limits(image: np.ndarray, vertical: bool) -> List[scan_to_paperless.process_schema.Limit]:
     peaks, properties = find_lines(image, vertical)
     contours = find_limit_contour(image, vertical)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
-    limits: List[Dict[str, Any]] = []
+    limits: List[scan_to_paperless.process_schema.Limit] = []
     prefix = "V" if vertical else "H"
     for index, peak in enumerate(peaks):
         value = int(round(properties["peak_heights"][index] / 3))
@@ -641,8 +671,11 @@ def tesseract(context: Context, source: str, destination: str) -> None:
 
 
 def transform(
-    config: Dict[str, Any], step: Dict[str, Any], config_file_name: str, root_folder: str
-) -> Dict[str, Any]:
+    config: scan_to_paperless.process_schema.Configuration,
+    step: scan_to_paperless.process_schema.Step,
+    config_file_name: str,
+    root_folder: str,
+) -> scan_to_paperless.process_schema.Step:
     if "intermediate_error" in config:
         del config["intermediate_error"]
 
@@ -659,6 +692,7 @@ def transform(
         context.image = cv2.imread(os.path.join(root_folder, img))
         images_status = context.config.setdefault("images_status", {})
         image_status = images_status.setdefault(context.image_name, {})
+        assert context.image is not None
         image_status["size"] = context.image.shape[:2][::-1]
         mask_file = os.path.join(os.path.dirname(root_folder), "mask.png")
         if os.path.exists(mask_file):
@@ -686,23 +720,27 @@ def transform(
         scantailor_universal_1200(context)
 
         if config["args"]["assisted_split"]:
-            assisted_split: Dict[str, Any] = {}
+            assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}
             name = os.path.join(root_folder, context.image_name)
-            assisted_split["source"] = save_image(
+            assert context.image is not None
+            source = save_image(
                 context.image,
                 root_folder,
                 "{}-assisted-split".format(context.get_process_count()),
                 context.image_name,
                 True,
             )
+            assert source
+            assisted_split["source"] = source
 
             config["assisted_split"].append(assisted_split)
             destinations = [len(step["sources"]) * 2 - index, index + 1]
             if index % 2 == 1:
                 destinations.reverse()
-            assisted_split["destinations"] = destinations
+            assisted_split["destinations"] = list(destinations)
 
             limits = []
+            assert context.image is not None
             limits.extend(fill_limits(context.image, True))
             limits.extend(fill_limits(context.image, False))
             assisted_split["limits"] = limits
@@ -747,7 +785,16 @@ def save_image(
     return None
 
 
-def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dict[str, Any]:
+class Item(TypedDict, total=False):
+    pos: int
+    file: IO[bytes]
+
+
+def split(
+    config: scan_to_paperless.process_schema.Configuration,
+    step: scan_to_paperless.process_schema.Step,
+    root_folder: str,
+) -> scan_to_paperless.process_schema.Step:
     process_count = 0
     for assisted_split in config["assisted_split"]:
         if assisted_split["limits"]:
@@ -776,7 +823,7 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
             if os.path.exists(image_path):
                 os.unlink(image_path)
 
-    append: Dict[Union[str, int], List[Dict[str, Any]]] = {}
+    append: Dict[Union[str, int], List[Item]] = {}
     transformed_images = []
     for assisted_split in config["assisted_split"]:
         context = Context(config, step)
@@ -785,8 +832,8 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
             int(e) for e in output(CONVERT + [img, "-format", "%w %h", "info:-"]).strip().split(" ")
         ]
 
-        horizontal_limits = [l for l in assisted_split["limits"] if not l["vertical"]]
-        vertical_limits = [l for l in assisted_split["limits"] if l["vertical"]]
+        horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
+        vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
 
         last_y = 0
         number = 0
@@ -835,9 +882,9 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
                     last_x = vertical_value + vertical_margin
 
                     if re.match(r"[0-9]+\.[0-9]+", str(destination)):
-                        page, page_pos = [int(e) for e in destination.split(".")]
+                        page, page_pos = [int(e) for e in str(destination).split(".")]
                     else:
-                        page = destination
+                        page = int(destination)
                         page_pos = 0
 
                     save(root_folder, img2, "{}-split".format(context.get_process_count()))
@@ -863,7 +910,7 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
         process_count = context.process_count
 
     for page_number in sorted(append.keys()):
-        items = append[page_number]
+        items: List[Item] = append[page_number]
         vertical = len(horizontal_limits) == 0
         if not vertical and len(vertical_limits) != 0 and len(items) > 1:
             raise Exception("Mix of limit type for page '{}'".format(page_number))
@@ -884,7 +931,11 @@ def split(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> Dic
     return {"sources": transformed_images, "name": "finalise", "process_count": process_count}
 
 
-def finalise(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> None:
+def finalise(
+    config: scan_to_paperless.process_schema.Configuration,
+    step: scan_to_paperless.process_schema.Step,
+    root_folder: str,
+) -> None:
     """
     Final step on document generation (convert in one pdf and copy with the right name in the cusume folder)
     """
@@ -921,8 +972,8 @@ def finalise(config: Dict[str, Any], step: Dict[str, Any], root_folder: str) -> 
                     "tesseract -l {} {} stdout pdf > {}".format(
                         config["args"].get("tesseract_lang", "fra+eng"), img, file_name
                     ),
-                    shell=True,
-                )  # nosec
+                    shell=True,  # nosec
+                )
             else:
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
@@ -941,27 +992,27 @@ def write_error(root_folder: str, message: str) -> None:
             error_file.write(yaml.safe_dump({"error": message}, default_flow_style=False))
 
 
-def is_sources_present(step: Dict[str, Any], root_folder: str) -> bool:
+def is_sources_present(step: scan_to_paperless.process_schema.Step, root_folder: str) -> bool:
     for img in step["sources"]:
         if not os.path.exists(os.path.join(root_folder, img)):
             return False
     return True
 
 
-def save_config(config: Dict[str, Any], config_file_name: str) -> None:
+def save_config(config: scan_to_paperless.process_schema.Configuration, config_file_name: str) -> None:
     with open(config_file_name + "_", "w") as config_file:
         config_file.write(yaml.safe_dump(config, default_flow_style=False))
     os.rename(config_file_name + "_", config_file_name)
 
 
 def main() -> None:
+    """
+    Main function
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", default="/source", help="The folder to be processed")
     args = parser.parse_args()
 
-    """
-    Main function
-    """
     print("Welcome to scanned images document to paperless.")
     while True:
         for config_file_name in glob.glob(os.path.join(args.folder, "*/config.yaml")):
@@ -974,14 +1025,17 @@ def main() -> None:
                 continue
 
             with open(config_file_name) as config_file:
-                config = yaml.safe_load(config_file.read())
+                config: scan_to_paperless.process_schema.Configuration = yaml.safe_load(config_file.read())
             if config is None:
                 write_error(root_folder, "Empty config")
                 continue
 
             try:
                 if "steps" not in config or not config["steps"]:
-                    step = {"sources": config["images"], "name": "transform"}
+                    step: scan_to_paperless.process_schema.Step = {
+                        "sources": config["images"],
+                        "name": "transform",
+                    }
                     config["steps"] = [step]
                 step = config["steps"][-1]
 

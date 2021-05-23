@@ -1,7 +1,10 @@
 *
-!process
-!.pylintrc
+!scan_to_paperless
+!.prospector.yaml
+!.bandit.yaml
 !mypy.ini
+!README.md
+!setup.py
 !setup.cfg
 !requirements-install.txt
 !Pipfile
