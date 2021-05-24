@@ -1,0 +1,35 @@
+---
+strictness: veryhigh
+
+ignore-paths:
+  - scan_to_paperless/process_schema.py
+  - scan_to_paperless/config.py
+
+pylint:
+  disable:
+    - wrong-import-order
+    - line-too-long
+    - no-value-for-parameter
+    - too-few-public-methods
+    - too-many-lines
+    - too-many-branches
+    - too-many-statements
+    - too-many-locals
+    - too-many-nested-blocks
+    - broad-except
+  options:
+    good-names: x,y
+
+bandit:
+  run: true
+  options:
+    config: .bandit.yaml
+
+mypy:
+  run: true
+
+mccabe:
+  run: false
+
+pyroma:
+  run: true

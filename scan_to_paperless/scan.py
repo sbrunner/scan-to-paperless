@@ -6,45 +6,53 @@ import datetime
 import os
 import random
 import re
-import subprocess
+import subprocess  # nosec
 import sys
+from typing import Any, List, Optional, cast
 
 import argcomplete
-import yaml
+import numpy as np
 from argcomplete.completers import ChoicesCompleter
+from ruamel.yaml.main import YAML
+from skimage import io
 
-from scan_to_paperless import CONFIG_FOLDER, CONFIG_PATH, get_config
+from scan_to_paperless import CONFIG_PATH, get_config
+
+if sys.version_info.minor >= 8:
+    from scan_to_paperless import config as stp_config
+else:
+    from scan_to_paperless import config_old as stp_config  # type: ignore
 
 
-def call(cmd, cmd2=None, **kwargs):
+def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> None:
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
-        subprocess.check_call(cmd, **kwargs)
+        subprocess.check_call(cmd, **kwargs)  # nosec
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
 
-def output(cmd, cmd2=None, **kwargs):
+def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> bytes:
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
-        return subprocess.check_output(cmd, **kwargs)
+        return cast(bytes, subprocess.check_output(cmd, **kwargs))  # nosec
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
 
-def main():
-    config = get_config()
+def main() -> None:
+    config: stp_config.Configuration = get_config()
 
     parser = argparse.ArgumentParser()
 
-    def add_argument(name, choices=None, **kwargs):
+    def add_argument(name: str, choices: Optional[List[str]] = None, **kwargs: Any) -> None:
         arg = parser.add_argument(name, **kwargs)
         if choices is not None:
-            arg.completer = ChoicesCompleter(choices)
+            arg.completer = ChoicesCompleter(choices)  # type: ignore
 
     add_argument("--no-adf", dest="adf", action="store_false", help="Don't use ADF")
     add_argument(
@@ -81,16 +89,15 @@ def main():
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
-    import numpy as np
-    from skimage import io
-
     dirty = False
     for conf in args.set_config:
-        config[conf[0]] = conf[1]
+        config[conf[0]] = conf[1]  # type: ignore
         dirty = True
     if dirty:
+        yaml = YAML(typ="safe")
+        yaml.default_flow_style = False
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
-            config_file.write(yaml.safe_dump(config, default_flow_style=False))
+            config_file.write(yaml.dump(config))
 
     if "scan_folder" not in config:
         print(
@@ -102,10 +109,10 @@ def main():
 
     title = None
     full_name = None
-    rand_int = str(random.randint(0, 999999))
+    rand_int = str(random.randint(0, 999999))  # nosec
     base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
     while os.path.exists(base_folder):
-        rand_int = str(random.randint(0, 999999))
+        rand_int = str(random.randint(0, 999999))  # nosec
         base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
 
     if args.title:
@@ -126,17 +133,12 @@ def main():
     os.makedirs(root_folder)
 
     try:
-        scanimage = (
-            ["scanimage"]
-            + config.get(
-                "scanimage_arguments",
-                ["--format=png", "--mode=color", "--resolution=300"],
-            )
-            + [
-                f"--batch={root_folder}/image-%d.png",
-                "--source=ADF" if args.adf else "--batch-prompt",
-            ]
-        )
+        scanimage: List[str] = [config.get("scanimage", "scanimage")]
+        scanimage += config.get("scanimage_arguments", ["--format=png", "--mode=color", "--resolution=300"])
+        scanimage += [
+            f"--batch={root_folder}/image-%d.png",
+            "--source=ADF" if args.adf else "--batch-prompt",
+        ]
 
         if args.double_sided:
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
@@ -166,23 +168,40 @@ def main():
             images.append(os.path.join("source", img))
 
         regex = re.compile(r"^source\/image\-([0-9]+)\.png$")
-        images = sorted(images, key=lambda e: int(regex.match(e).group(1)))
-        args_ = {}
+
+        def image_match(image_name: str) -> int:
+            match = regex.match(image_name)
+            assert match
+            return int(match.group(1))
+
+        images = sorted(images, key=image_match)
+        args_: stp_config.Arguments = {}
         args_.update(config.get("default_args", {}))
-        args_.update(dict(args._get_kwargs()))
-        config = {
+        args_.update(
+            cast(
+                stp_config.Arguments,
+                dict(args._get_kwargs()),  # pylint: disable=protected-access
+            )
+        )
+        process_config = {
             "images": images,
             "title": title,
             "full_name": full_name,
             "destination": destination,
             "args": args_,
         }
+        yaml = YAML(typ="safe")
+        yaml.default_flow_style = False
         with open(os.path.join(os.path.dirname(root_folder), "config.yaml"), "w") as config_file:
-            config_file.write(yaml.safe_dump(config, default_flow_style=False))
+            config_file.write(
+                "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
+                "/master/schema.json\n\n"
+            )
+            config_file.write(yaml.dump(process_config))
 
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
     print(root_folder)
-    subprocess.call([config.get("viewer", "eog"), root_folder])
+    subprocess.call([config.get("viewer", "eog"), root_folder])  # nosec
