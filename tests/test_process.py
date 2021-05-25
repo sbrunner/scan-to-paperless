@@ -300,9 +300,9 @@ def test_full(progress, experimental):
     else:
         assert not os.path.exists(os.path.join(root_folder, "0-level"))
     if experimental == "TRUE":
-        assert os.path.exists(os.path.join(root_folder, "scantailor/all-1.png"))
+        assert os.path.exists(os.path.join(root_folder, "tesseract/all-1.png"))
     else:
-        assert not os.path.exists(os.path.join(root_folder, "scantailor"))
+        assert not os.path.exists(os.path.join(root_folder, "tesseract"))
 
     assert step["name"] == "finalise"
     process.finalise(config, step, root_folder)
