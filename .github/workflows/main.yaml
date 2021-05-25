@@ -31,8 +31,8 @@ jobs:
 
       # the if the generated files are up to date
       - run: ./run-jsonschema-gentypes
-      - run: jsonschema2md scan_to_paperless/config-schema.json config.md
-      - run: jsonschema2md scan_to_paperless/process.json process.md
+      - run: jsonschema2md scan_to_paperless/config_schema.json config.md
+      - run: jsonschema2md scan_to_paperless/process_schema.json process.md
       - run: git diff --quiet
       - run: git diff
         if: failure()

@@ -49,6 +49,8 @@ $ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
 Create the configuration file on `<home_config>/scan-to-paperless.yaml` (on Linux it's `~/.config/scan-to-paperless.yaml`), with:
 
 ```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless/master/scan_to_paperless/config_schema.json
+
 scan_folder: /home/sbrunner/Paperless/scan/
 scanimage_arguments: # Additional argument passed to the scanimage command
     - --device=... # Use `scanimage --list` to get the possible values
