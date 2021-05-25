@@ -12,7 +12,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, Any, Dict, List, Optional, Tuple, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Tuple, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -22,7 +22,6 @@ from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
-from typing_extensions import Protocol, TypedDict
 
 import scan_to_paperless.process_schema
 
@@ -176,19 +175,26 @@ def image_diff(image1: np.ndarray, image2: np.ndarray) -> Tuple[float, np.ndarra
     return score, diff
 
 
-class FunctionWithContextReturnsImage(Protocol):
-    def __call__(self, context: Context) -> Optional[np.ndarray]:
-        pass
+if TYPE_CHECKING:
+    from typing_extensions import Protocol
+
+    class FunctionWithContextReturnsImage(Protocol):
+        def __call__(self, context: Context) -> Optional[np.ndarray]:
+            pass
+
+    class FunctionWithContextReturnsNone(Protocol):
+        def __call__(self, context: Context) -> None:
+            pass
+
+    class ExternalFunction(Protocol):
+        def __call__(self, context: Context, source: str, destination: str) -> None:
+            pass
 
 
-class FunctionWithContextReturnsNone(Protocol):
-    def __call__(self, context: Context) -> None:
-        pass
-
-
-class ExternalFunction(Protocol):
-    def __call__(self, context: Context, source: str, destination: str) -> None:
-        pass
+else:
+    FunctionWithContextReturnsImage = Any
+    FunctionWithContextReturnsNone = Any
+    ExternalFunction = Any
 
 
 class Process:  # pylint: disable=too-few-public-methods
