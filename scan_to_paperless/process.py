@@ -569,108 +569,6 @@ def find_contours(image: np.ndarray, min_size: int = 32) -> List[Tuple[int, int,
     return result
 
 
-@Process("scantailor", True)
-@external
-def scantailor(context: Context, source: str, destination: str) -> None:
-    del context
-    call(
-        [
-            "scantailor-cli",
-            "--dpi=300",
-            "--content-detection=normal",
-            "--output-dpi=300",
-            "--color-mode=color_grayscale",
-            source,
-            os.path.dirname(destination),
-        ]
-    )
-
-
-@Process("scantailor-1200", True)
-@external
-def scantailor_1200(context: Context, source: str, destination: str) -> None:
-    del context
-    call(
-        [
-            "scantailor-cli",
-            "--dpi=300",
-            "--content-detection=normal",
-            "--output-dpi=300",
-            "--color-mode=color_grayscale",
-            source,
-            os.path.dirname(destination),
-        ]
-    )
-
-
-@Process("scantailor-advanced", True)
-@external
-def scantailor_advanced(context: Context, source: str, destination: str) -> None:
-    del context
-    call(
-        [
-            "scantailor-advanced-cli",
-            "--dpi=300",
-            "--content-detection=normal",
-            "--output-dpi=300",
-            "--color-mode=color_grayscale",
-            source,
-            os.path.dirname(destination),
-        ]
-    )
-
-
-@Process("scantailor-advanced-1200", True)
-@external
-def scantailor_advanced_1200(context: Context, source: str, destination: str) -> None:
-    del context
-    call(
-        [
-            "scantailor-advanced-cli",
-            "--dpi=300",
-            "--content-detection=normal",
-            "--output-dpi=300",
-            "--color-mode=color_grayscale",
-            source,
-            os.path.dirname(destination),
-        ]
-    )
-
-
-@Process("scantailor-universal", True)
-@external
-def scantailor_universal(context: Context, source: str, destination: str) -> None:
-    del context
-    call(
-        [
-            "scantailor-universal-cli",
-            "--dpi=300",
-            "--content-detection=normal",
-            "--output-dpi=300",
-            "--color-mode=color_grayscale",
-            source,
-            os.path.dirname(destination),
-        ]
-    )
-
-
-@Process("scantailor-universal-1200", True)
-@external
-def scantailor_universal_1200(context: Context, source: str, destination: str) -> None:
-    del context
-    call(
-        [
-            "scantailor-universal-cli",
-            "--dpi=300",
-            "--content-detection=normal",
-            "--output-dpi=300",
-            "--color-mode=color_grayscale",
-            source,
-            os.path.dirname(destination),
-        ]
-    )
-
-
 @Process("tesseract", True)
 @external
 def tesseract(context: Context, source: str, destination: str) -> None:
@@ -720,12 +618,6 @@ def transform(
             continue
 
         tesseract(context)
-        scantailor(context)
-        scantailor_1200(context)
-        scantailor_advanced(context)
-        scantailor_advanced_1200(context)
-        scantailor_universal(context)
-        scantailor_universal_1200(context)
 
         if config["args"]["assisted_split"]:
             assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}
