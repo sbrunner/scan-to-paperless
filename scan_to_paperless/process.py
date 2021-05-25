@@ -132,7 +132,7 @@ def add_intermediate_error(
 
     old_intermediate_error: List[scan_to_paperless.process_schema.IntermediateError] = []
     old_intermediate_error.extend(config["intermediate_error"])
-    yaml = YAML(typ="safe")
+    yaml = YAML()
     yaml.default_flow_style = False
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
@@ -902,7 +902,7 @@ def is_sources_present(step: scan_to_paperless.process_schema.Step, root_folder:
 
 
 def save_config(config: scan_to_paperless.process_schema.Configuration, config_file_name: str) -> None:
-    yaml = YAML(typ="safe")
+    yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name + "_", "w") as config_file:
         yaml.dump(config, config_file)
@@ -928,7 +928,7 @@ def main() -> None:
             if os.path.exists(os.path.join(root_folder, "error.yaml")):
                 continue
 
-            yaml = YAML(typ="safe")
+            yaml = YAML()
             yaml.default_flow_style = False
             with open(config_file_name) as config_file:
                 config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())

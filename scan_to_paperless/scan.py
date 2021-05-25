@@ -94,7 +94,7 @@ def main() -> None:
         config[conf[0]] = conf[1]  # type: ignore
         dirty = True
     if dirty:
-        yaml = YAML(typ="safe")
+        yaml = YAML()
         yaml.default_flow_style = False
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
