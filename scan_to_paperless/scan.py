@@ -97,7 +97,7 @@ def main() -> None:
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
-            config_file.write(yaml.dump(config))
+            yaml.dump(config, config_file)
 
     if "scan_folder" not in config:
         print(
@@ -195,9 +195,9 @@ def main() -> None:
         with open(os.path.join(os.path.dirname(root_folder), "config.yaml"), "w") as config_file:
             config_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/schema.json\n\n"
+                "/master/scan_to_paperless/process_schema.json\n\n"
             )
-            config_file.write(yaml.dump(process_config))
+            yaml.dump(process_config, config_file)
 
     except subprocess.CalledProcessError as exception:
         print(exception)

@@ -17,8 +17,8 @@ from typing import IO, Any, Dict, List, Optional, Tuple, Union, cast
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 import numpy as np
-import yaml
 from deskew import determine_skew_dev
+from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray
 from skimage.metrics import structural_similarity
@@ -133,16 +133,18 @@ def add_intermediate_error(
 
     old_intermediate_error: List[scan_to_paperless.process_schema.IntermediateError] = []
     old_intermediate_error.extend(config["intermediate_error"])
+    yaml = YAML(typ="safe")
+    yaml.default_flow_style = False
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
         with open(config_file_name + "_", "w") as config_file:
-            config_file.write(yaml.safe_dump(config, default_flow_style=False))
+            yaml.dump(config, config_file)
     except Exception as exception:
         print(exception)
         config["intermediate_error"] = old_intermediate_error
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
         with open(config_file_name + "_", "w") as config_file:
-            config_file.write(yaml.safe_dump(config, default_flow_style=False))
+            yaml.dump(config, config_file)
     os.rename(config_file_name + "_", config_file_name)
 
 
@@ -988,8 +990,10 @@ def finalise(
 
 def write_error(root_folder: str, message: str) -> None:
     if not os.path.exists(os.path.join(root_folder, "error.yaml")):
+        yaml = YAML(typ="safe")
+        yaml.default_flow_style = False
         with open(os.path.join(root_folder, "error.yaml"), "w") as error_file:
-            error_file.write(yaml.safe_dump({"error": message}, default_flow_style=False))
+            yaml.dump({"error": message}, error_file)
 
 
 def is_sources_present(step: scan_to_paperless.process_schema.Step, root_folder: str) -> bool:
@@ -1000,8 +1004,10 @@ def is_sources_present(step: scan_to_paperless.process_schema.Step, root_folder:
 
 
 def save_config(config: scan_to_paperless.process_schema.Configuration, config_file_name: str) -> None:
+    yaml = YAML(typ="safe")
+    yaml.default_flow_style = False
     with open(config_file_name + "_", "w") as config_file:
-        config_file.write(yaml.safe_dump(config, default_flow_style=False))
+        yaml.dump(config, config_file)
     os.rename(config_file_name + "_", config_file_name)
 
 
@@ -1024,8 +1030,10 @@ def main() -> None:
             if os.path.exists(os.path.join(root_folder, "error.yaml")):
                 continue
 
+            yaml = YAML(typ="safe")
+            yaml.default_flow_style = False
             with open(config_file_name) as config_file:
-                config: scan_to_paperless.process_schema.Configuration = yaml.safe_load(config_file.read())
+                config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
             if config is None:
                 write_error(root_folder, "Empty config")
                 continue
@@ -1082,22 +1090,20 @@ def main() -> None:
                     continue
             except Exception as exception:
                 print(exception)
+                yaml = YAML(typ="safe")
+                yaml.default_flow_style = False
                 try:
                     with open(os.path.join(root_folder, "error.yaml"), "w") as error_file:
-                        error_file.write(
-                            yaml.dump(
-                                {"error": exception, "traceback": traceback.format_exc().split("\n")},
-                                default_flow_style=False,
-                            )
+                        yaml.dump(
+                            {"error": exception, "traceback": traceback.format_exc().split("\n")},
+                            error_file,
                         )
                 except Exception as exception2:
                     print(exception2)
                     with open(os.path.join(root_folder, "error.yaml"), "w") as error_file:
-                        error_file.write(
-                            yaml.safe_dump(
-                                {"error": str(exception2), "traceback": traceback.format_exc().split("\n")},
-                                default_flow_style=False,
-                            )
+                        yaml.dump(
+                            {"error": str(exception2), "traceback": traceback.format_exc().split("\n")},
+                            error_file,
                         )
 
         sys.stdout.flush()

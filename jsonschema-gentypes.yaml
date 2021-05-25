@@ -7,7 +7,7 @@ callbacks:
   - - black
   - - isort
 generate:
-  - source: scan_to_paperless/config-schema.json
+  - source: scan_to_paperless/config_schema.json
     destination: scan_to_paperless/config.py
-  - source: scan_to_paperless/process.json
+  - source: scan_to_paperless/process_schema.json
     destination: scan_to_paperless/process_schema.py

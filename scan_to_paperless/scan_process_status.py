@@ -5,7 +5,7 @@ import os
 import re
 import subprocess  # nosec
 
-import yaml
+from ruamel.yaml.main import YAML
 
 import scan_to_paperless.process_schema
 from scan_to_paperless import get_config
@@ -20,14 +20,14 @@ def main() -> None:
         if not os.path.exists(os.path.join(folder, "config.yaml")):
             print("No config")
         else:
+            yaml = YAML(typ="safe")
+            yaml.default_flow_style = False
             with open(os.path.join(folder, "config.yaml")) as config_file:
-                job_config: scan_to_paperless.process_schema.Configuration = yaml.safe_load(
-                    config_file.read()
-                )
+                job_config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
 
             if os.path.exists(os.path.join(folder, "error.yaml")):
                 with open(os.path.join(folder, "error.yaml")) as error_file:
-                    error = yaml.safe_load(error_file.read())
+                    error = yaml.load(error_file.read())
                     if error is not None and "error" in error:
                         print(error["error"])
                         if isinstance(error["error"], subprocess.CalledProcessError):
