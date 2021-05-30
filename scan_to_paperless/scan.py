@@ -177,12 +177,12 @@ def main() -> None:
         images = sorted(images, key=image_match)
         args_: stp_config.Arguments = {}
         args_.update(config.get("default_args", {}))
-        args_.update(
-            cast(
-                stp_config.Arguments,
-                dict(args._get_kwargs()),  # pylint: disable=protected-access
-            )
-        )
+        args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
+        del args_cmd["adf"]
+        del args_cmd["double_sided"]
+        del args_cmd["set_config"]
+        del args_cmd["title"]
+        args_.update(cast(stp_config.Arguments, args_cmd))
         process_config = {
             "images": images,
             "title": title,
