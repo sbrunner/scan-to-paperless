@@ -369,6 +369,10 @@ def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> 
             cv2.putText(image, str(angle), (int(x), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color)
 
 
+def nice_angle(angle: float) -> float:
+    return ((angle + 180) % 360) - 180
+
+
 @Process("deskew")
 def deskew(context: Context) -> None:
     images_config = context.config.setdefault("images_config", {})
@@ -383,16 +387,16 @@ def deskew(context: Context) -> None:
 
         angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
         if angle is not None:
-            image_status["angle"] = float(angle) % 90
+            image_status["angle"] = nice_angle(float(angle))
             draw_angle(image, angle, (255, 0, 0))
         image_status["average_deviation"] = float(average_deviation)
 
-        float_angles = []
+        float_angles = set()
         for current_angles in angles:
             for current_angle in current_angles:
-                float_angles.append(float(current_angle) % 90)
+                float_angles.add(nice_angle(float(current_angle)))
                 draw_angle(image, current_angle, (0, 255, 0))
-        image_status["angles"] = float_angles
+        image_status["angles"] = list(float_angles)
 
         assert context.root_folder
         save_image(
