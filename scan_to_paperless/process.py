@@ -370,7 +370,7 @@ def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> 
 
 
 def nice_angle(angle: float) -> float:
-    return ((angle + 180) % 360) - 180
+    return ((angle + 45) % 90) - 45
 
 
 @Process("deskew")
