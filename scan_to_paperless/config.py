@@ -71,9 +71,13 @@ Configuration = TypedDict(
         #
         # default: scanimage
         "scanimage": str,
+        # default:
+        #   - --format=png
+        #   - --mode=color
+        #   - --resolution=300
         "scanimage_arguments": List[str],
         # WARNING: The required are not correctly taken in account,
-        # See: https://www.python.org/dev/peps/pep-0655/
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         #
         # required
         "default_args": "Arguments",

@@ -103,7 +103,7 @@ Configuration = TypedDict(
         # required
         "destination": str,
         # WARNING: The required are not correctly taken in account,
-        # See: https://www.python.org/dev/peps/pep-0655/
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         #
         # required
         "args": "Arguments",
