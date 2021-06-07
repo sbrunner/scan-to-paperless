@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3c41b7fbb68d25f8b2536859b1c1807f9ba6dffac3f80a5ddef2a2fc861bf546"
+            "sha256": "ed05d243e33051851e438d515cd5d59c4aceffbb924a0c3c25dd819d86ef2905"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -82,10 +82,10 @@
         },
         "jsonschema-gentypes": {
             "hashes": [
-                "sha256:c6487bd15f2cc29312305d941c5e07f71fc51226241996f60b31622ddf441186"
+                "sha256:6a4ae561dc9eb6d2ce641c319c2b8f585d2e58e7df8735bf155622d2715ed89e"
             ],
             "index": "pypi",
-            "version": "==0.9.2"
+            "version": "==0.9.3"
         },
         "kiwisolver": {
             "hashes": [
@@ -409,10 +409,10 @@
         },
         "tifffile": {
             "hashes": [
-                "sha256:1cfc55f5b728e200142580a7bf108b72775c4097d007b4111876559fa1fb7432",
-                "sha256:55aa8baad38e1567c9fe450fff52160e4a21294a612f241c5e414da80f87209b"
+                "sha256:73a750277e89f1d9cb88bba03e2e31aeda1aa714d91a20c477abf3cb85fa112f",
+                "sha256:aa6c2afb75378432856e2ecfba8cba347b6615b541bb71f1f83a9860ebe8fa70"
             ],
-            "version": "==2021.4.8"
+            "version": "==2021.6.6"
         },
         "unidecode": {
             "hashes": [
