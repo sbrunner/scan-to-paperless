@@ -2,7 +2,6 @@
 
 
 import argparse
-import datetime
 import os
 import random
 import re
@@ -56,18 +55,6 @@ def main() -> None:
 
     add_argument("--no-adf", dest="adf", action="store_false", help="Don't use ADF")
     add_argument(
-        "--no-level",
-        dest="level",
-        action="store_false",
-        help="Don't use level correction",
-    )
-    add_argument("title", nargs="*", choices=["No title"], help="The document title")
-    add_argument(
-        "--date",
-        choices=[datetime.date.today().strftime("%Y%m%d")],
-        help="The document date",
-    )
-    add_argument(
         "--double-sided",
         action="store_true",
         help="Number of pages in double sided mode",
@@ -107,27 +94,13 @@ def main() -> None:
         )
         sys.exit(1)
 
-    title = None
-    full_name = None
     rand_int = str(random.randint(0, 999999))  # nosec
     base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
     while os.path.exists(base_folder):
         rand_int = str(random.randint(0, 999999))  # nosec
         base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
 
-    if args.title:
-        title = " ".join(args.title)
-        full_name = title
-        if args.date is not None:
-            full_name = f"{args.date}Z - {full_name}"
-        if "/" in full_name:
-            print("The name can't contains some '/' in the title.")
-            sys.exit(1)
-        destination = f"/destination/{full_name}.pdf"
-    elif args.date is not None:
-        destination = f"/destination/{args.date}Z - {rand_int}.pdf"
-    else:
-        destination = f"/destination/{rand_int}.pdf"
+    destination = f"/destination/{rand_int}.pdf"
 
     root_folder = os.path.join(base_folder, "source")
     os.makedirs(root_folder)
@@ -181,12 +154,9 @@ def main() -> None:
         del args_cmd["adf"]
         del args_cmd["double_sided"]
         del args_cmd["set_config"]
-        del args_cmd["title"]
         args_.update(cast(stp_config.Arguments, args_cmd))
         process_config = {
             "images": images,
-            "title": title,
-            "full_name": full_name,
             "destination": destination,
             "args": args_,
         }
