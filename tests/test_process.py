@@ -42,7 +42,9 @@ def check_image(root_folder, image, name, level=0.9):
     score, diff = process.image_diff(expected, image)
     if diff is not None:
         cv2.imwrite(os.path.join(root_folder, f"{name}.diff.png"), diff)
-    assert score > level, f"{expected} ({image}) != {expected_name} ({image})"
+    assert (
+        score > level
+    ), f"{root_folder}/{name}.result.png != {expected_name} => {root_folder}/{name}.diff.png ({score} > {level})"
 
 
 def test_crop():
