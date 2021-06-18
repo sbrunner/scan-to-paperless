@@ -321,22 +321,21 @@ def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 2
 def level(context: Context) -> np.ndarray:
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
+    if context.config["args"].get("auto_level"):
+        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+        return cast(np.ndarray, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
     level_ = context.config["args"].get("level")
+    min_p100 = 0.0
+    max_p100 = 100.0
     if level_ is True:
         min_p100 = 15.0
         max_p100 = 85.0
-    elif level_ is False:
-        min_p100 = 0.0
-        max_p100 = 100.0
     elif isinstance(level_, (float, int)):
         min_p100 = 0.0 + level_
         max_p100 = 100.0 - level_
-    elif context.config["args"].get("auto_level"):
-        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
-        return cast(np.ndarray, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
-    else:
-        min_p100 = context.config["args"].get("min_level", 0.0)
-        max_p100 = context.config["args"].get("max_level", 100.0)
+    if level_ is not False:
+        min_p100 = context.config["args"].get("min_level", min_p100)
+        max_p100 = context.config["args"].get("max_level", max_p100)
 
     min_ = min_p100 / 100.0 * 255.0
     max_ = max_p100 / 100.0 * 255.0
