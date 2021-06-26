@@ -25,37 +25,44 @@ from skimage.metrics import structural_similarity
 
 import scan_to_paperless.process_schema
 
+if TYPE_CHECKING:
+    np_ndarray_int = np.ndarray[None, np.dtype[np.uint8]]  # pylint: disable=unsubscriptable-object
+else:
+    np_ndarray_int = np.ndarray  # pylint: disable=invalid-name
+
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
 
 
-def rotate_image(image: np.ndarray, angle: float, background: Union[int, Tuple[int, int, int]]) -> np.ndarray:
+def rotate_image(
+    image: np_ndarray_int, angle: float, background: Union[int, Tuple[int, int, int]]
+) -> np_ndarray_int:
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
     height = abs(np.sin(angle_radian) * old_width) + abs(np.cos(angle_radian) * old_height)
 
-    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    image_center: Tuple[Any, ...] = tuple(np.array(image.shape[1::-1]) / 2)
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
     rot_mat[1, 2] += (width - old_width) / 2
     rot_mat[0, 2] += (height - old_height) / 2
     return cast(
-        np.ndarray,
+        np_ndarray_int,
         cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background),
     )
 
 
 def crop_image(  # pylint: disable=too-many-arguments
-    image: np.ndarray,
+    image: np_ndarray_int,
     x: int,
     y: int,
     width: int,
     height: int,
     background: Union[Tuple[int], Tuple[int, int, int]],
-) -> np.ndarray:
+) -> np_ndarray_int:
     matrice = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
-        np.ndarray,
+        np_ndarray_int,
         cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background),
     )
 
@@ -74,9 +81,9 @@ class Context:  # pylint: disable=too-many-instance-attributes
         self.config_file_name = config_file_name
         self.root_folder = root_folder
         self.image_name = image_name
-        self.image: Optional[np.ndarray] = None
-        self.mask: Optional[np.ndarray] = None
-        self.mask_ready: Optional[np.ndarray] = None
+        self.image: Optional[np_ndarray_int] = None
+        self.mask: Optional[np_ndarray_int] = None
+        self.mask_ready: Optional[np_ndarray_int] = None
         self.process_count = self.step.get("process_count", 0)
 
     def init_mask(self) -> None:
@@ -94,7 +101,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         finally:
             self.process_count += 1
 
-    def get_masked(self) -> np.ndarray:
+    def get_masked(self) -> np_ndarray_int:
         if self.image is None:
             raise Exception("The image is None")
         if self.mask_ready is None:
@@ -163,7 +170,7 @@ def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
     return cast(bytes, subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)).decode()  # nosec
 
 
-def image_diff(image1: np.ndarray, image2: np.ndarray) -> Tuple[float, np.ndarray]:
+def image_diff(image1: np_ndarray_int, image2: np_ndarray_int) -> Tuple[float, np_ndarray_int]:
     width = max(image1.shape[1], image2.shape[1])
     height = max(image1.shape[0], image2.shape[0])
     image1 = cv2.resize(image1, (width, height))
@@ -179,7 +186,7 @@ if TYPE_CHECKING:
     from typing_extensions import Protocol
 
     class FunctionWithContextReturnsImage(Protocol):
-        def __call__(self, context: Context) -> Optional[np.ndarray]:
+        def __call__(self, context: Context) -> Optional[np_ndarray_int]:
             pass
 
     class FunctionWithContextReturnsNone(Protocol):
@@ -274,12 +281,12 @@ class Process:  # pylint: disable=too-few-public-methods
 
 
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
-    def wrapper(context: Context) -> Optional[np.ndarray]:
+    def wrapper(context: Context) -> Optional[np_ndarray_int]:
         source = tempfile.NamedTemporaryFile(suffix=".png")
         cv2.imwrite(source.name, context.image)
         destination = tempfile.NamedTemporaryFile(suffix=".png")
         func(context, source.name, destination.name)
-        return cast(np.ndarray, cv2.imread(destination.name))
+        return cast(np_ndarray_int, cv2.imread(destination.name))
 
     return wrapper
 
@@ -318,39 +325,38 @@ def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 2
 
 
 @Process("level")
-def level(context: Context) -> np.ndarray:
+def level(context: Context) -> np_ndarray_int:
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
+    if context.config["args"].get("auto_level"):
+        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+        return cast(np_ndarray_int, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
     level_ = context.config["args"].get("level")
+    min_p100 = 0.0
+    max_p100 = 100.0
     if level_ is True:
         min_p100 = 15.0
         max_p100 = 85.0
-    elif level_ is False:
-        min_p100 = 0.0
-        max_p100 = 100.0
     elif isinstance(level_, (float, int)):
         min_p100 = 0.0 + level_
         max_p100 = 100.0 - level_
-    elif context.config["args"].get("auto_level"):
-        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
-        return cast(np.ndarray, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
-    else:
-        min_p100 = context.config["args"].get("min_level", 0.0)
-        max_p100 = context.config["args"].get("max_level", 100.0)
+    if level_ is not False:
+        min_p100 = context.config["args"].get("min_level", min_p100)
+        max_p100 = context.config["args"].get("max_level", max_p100)
 
     min_ = min_p100 / 100.0 * 255.0
     max_ = max_p100 / 100.0 * 255.0
 
     chanel_y = img_yuv[:, :, 0]
     mins = np.zeros(chanel_y.shape)
-    maxs = np.zeros(chanel_y.shape) + 255
+    maxs: np_ndarray_int = np.zeros(chanel_y.shape) + 255
 
     values = (chanel_y - min_) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
-    return cast(np.ndarray, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+    return cast(np_ndarray_int, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
 
-def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> None:
+def draw_angle(image: np_ndarray_int, angle: float, color: Tuple[int, int, int]) -> None:
     angle = angle % 90
     height, width = image.shape[:2]
     center = (int(width / 2), int(height / 2))
@@ -360,7 +366,7 @@ def draw_angle(image: np.ndarray, angle: float, color: Tuple[int, int, int]) -> 
     sin_a = np.sin(angle_radian) * length
     cos_a = np.cos(angle_radian) * length
     for matrix in ([[0, -1], [-1, 0]], [[1, 0], [0, -1]], [[0, 1], [1, 0]], [[-1, 0], [0, 1]]):
-        diff = np.dot(matrix, [sin_a, cos_a])
+        diff = np.dot(matrix, [sin_a, cos_a])  # type: ignore
         x = diff[0] + width / 2
         y = diff[1] + height / 2
 
@@ -383,7 +389,7 @@ def deskew(context: Context) -> None:
         image_status = context.config["images_status"][context.image_name]
         image = context.get_masked()
         grayscale = rgb2gray(image)
-        image = cast(np.ndarray, context.image).copy()
+        image = cast(np_ndarray_int, context.image).copy()
 
         angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
         if angle is not None:
@@ -427,13 +433,13 @@ def docrop(context: Context) -> None:
 
 
 @Process("sharpen")
-def sharpen(context: Context) -> Optional[np.ndarray]:
+def sharpen(context: Context) -> Optional[np_ndarray_int]:
     if context.config["args"].get("sharpen", False) is False:
         return None
     if context.image is None:
         raise Exception("The image is required")
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
-    return cast(np.ndarray, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
+    return cast(np_ndarray_int, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
 
 
 @Process("dither")
@@ -454,7 +460,7 @@ def autorotate(context: Context) -> None:
 
 
 def draw_line(  # pylint: disable=too-many-arguments
-    image: np.ndarray, vertical: bool, position: float, value: int, name: str, type_: str
+    image: np_ndarray_int, vertical: bool, position: float, value: int, name: str, type_: str
 ) -> scan_to_paperless.process_schema.Limit:
     img_len = image.shape[0 if vertical else 1]
     color = (255, 0, 0) if vertical else (0, 255, 0)
@@ -467,7 +473,7 @@ def draw_line(  # pylint: disable=too-many-arguments
     return {"name": name, "type": type_, "value": int(position), "vertical": vertical, "margin": 0}
 
 
-def find_lines(image: np.ndarray, vertical: bool) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
+def find_lines(image: np_ndarray_int, vertical: bool) -> Tuple[np_ndarray_int, Dict[str, np_ndarray_int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
     lines = cv2.HoughLinesP(
@@ -496,16 +502,16 @@ def find_lines(image: np.ndarray, vertical: bool) -> Tuple[np.ndarray, Dict[str,
     return peaks, properties
 
 
-def zero_ranges(values: np.ndarray) -> np.ndarray:
+def zero_ranges(values: np_ndarray_int) -> np_ndarray_int:
     # Create an array that is 1 where a is 0, and pad each end with an extra 0.
-    iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))
-    absdiff = np.abs(np.diff(iszero))
+    iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))  # type: ignore
+    absdiff = np.abs(np.diff(iszero))  # type: ignore
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
-    return cast(np.ndarray, ranges)
+    return cast(np_ndarray_int, ranges)
 
 
-def find_limit_contour(image: np.ndarray, vertical: bool) -> List[int]:
+def find_limit_contour(image: np_ndarray_int, vertical: bool) -> List[int]:
     contours = find_contours(image)
     image_size = image.shape[1 if vertical else 0]
 
@@ -524,7 +530,7 @@ def find_limit_contour(image: np.ndarray, vertical: bool) -> List[int]:
     return result
 
 
-def fill_limits(image: np.ndarray, vertical: bool) -> List[scan_to_paperless.process_schema.Limit]:
+def fill_limits(image: np_ndarray_int, vertical: bool) -> List[scan_to_paperless.process_schema.Limit]:
     peaks, properties = find_lines(image, vertical)
     contours = find_limit_contour(image, vertical)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
@@ -552,7 +558,7 @@ def fill_limits(image: np.ndarray, vertical: bool) -> List[scan_to_paperless.pro
     return limits
 
 
-def find_contours(image: np.ndarray, min_size: int = 32) -> List[Tuple[int, int, int, int]]:
+def find_contours(image: np_ndarray_int, min_size: int = 32) -> List[Tuple[int, int, int, int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Clean the image using otsu method with the inversed binarized image
@@ -677,7 +683,7 @@ def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
 
 
 def save_image(
-    image: np.ndarray, root_folder: str, folder: str, name: str, force: bool = False
+    image: np_ndarray_int, root_folder: str, folder: str, name: str, force: bool = False
 ) -> Optional[str]:
     if force or os.environ.get("PROGRESS") == "TRUE":
         dest_folder = os.path.join(root_folder, folder)

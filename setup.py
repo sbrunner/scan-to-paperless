@@ -20,11 +20,14 @@ setup(
     long_description_content_type="text/markdown",
     keywords=["scan", "paperless"],
     classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
-        "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: BSD License",
+        "Typing :: Typed",
     ],
     author="Stéphane Brunner",
     author_email="stephane.brunner@gmail.com",
@@ -38,5 +41,5 @@ setup(
             "scan-process = scan_to_paperless.process:main",
         ],
     },
-    data={"scan_to_paperless": ["*.json"]},
+    data={"scan_to_paperless": ["*.json", "py.typed"]},
 )
