@@ -4,8 +4,6 @@
 
 - **`images`** *(array)*: The images.
   - **Items** *(string)*
-- **`title`** *(string)*: The tile.
-- **`full_name`** *(string)*: The full name.
 - **`destination`** *(string)*: The destination file name.
 - **`args`**: Refer to *#/definitions/args*.
 - **`steps`** *(array)*: The carried out steps description.
@@ -38,7 +36,7 @@
 - **`images_status`** *(object)*: Can contain additional properties.
 ## Definitions
 
-- **`args`** *(object)*: Cannot contain additional properties.
+- **`args`** *(object)*
   - **`level`** *(['boolean', 'integer'])*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%.
   - **`auto_level`** *(boolean)*: If no level specified, do auto level. Default: `False`.
   - **`min_level`** *(integer)*: Min level if no level end no autolovel. Default: `15`.

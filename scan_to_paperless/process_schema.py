@@ -90,14 +90,6 @@ Configuration = TypedDict(
         #
         # required
         "images": List[str],
-        # The tile
-        #
-        # required
-        "title": str,
-        # The full name
-        #
-        # required
-        "full_name": str,
         # The destination file name
         #
         # required

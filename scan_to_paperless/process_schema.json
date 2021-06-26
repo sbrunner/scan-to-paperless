@@ -8,7 +8,6 @@
         "args": {
             "type": "object",
             "title": "Arguments",
-            "additionalProperties": false,
             "properties": {
                 "level": {
                     "type": ["boolean", "integer"],
@@ -87,14 +86,6 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "The images"
-        },
-        "title": {
-            "type": "string",
-            "description": "The tile"
-        },
-        "full_name": {
-            "type": "string",
-            "description": "The full name"
         },
         "destination": {
             "type": "string",

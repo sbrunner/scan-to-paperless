@@ -112,7 +112,6 @@ def test_assisted_split_full(type_, limit):
             "tesseract": False,
             "sharpen": True,
         },
-        "title": "Test title 1",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -142,7 +141,6 @@ def test_assisted_split_full(type_, limit):
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
-    assert pdfinfo["Title"] == "Test title 1"
     assert pdfinfo["Pages"] == "2"
     process.call(
         [
@@ -177,7 +175,6 @@ def test_assisted_split_join_full():
             "append_credit_card": False,
             "tesseract": False,
         },
-        "title": "Test title 2",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -208,7 +205,6 @@ def test_assisted_split_join_full():
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
-    assert pdfinfo["Title"] == "Test title 2"
     assert pdfinfo["Pages"] == "1"
     process.call(
         [
@@ -245,7 +241,6 @@ def test_assisted_split_booth():
             "margin_horizontal": 0,
             "margin_vertical": 0,
         },
-        "title": "Test title 2",
         "destination": os.path.join(root_folder, "final.pdf"),
         "assisted_split": [
             {
@@ -289,7 +284,6 @@ def test_full(progress, experimental):
             "append_credit_card": False,
             "tesseract": False,
         },
-        "title": "Test title 3",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
@@ -312,7 +306,6 @@ def test_full(progress, experimental):
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
-    assert pdfinfo["Title"] == "Test title 3"
     assert pdfinfo["Pages"] == "1"
     process.call(
         [
@@ -339,7 +332,6 @@ def test_credit_card_full():
             "level": True,
             "append_credit_card": True,
         },
-        "title": "Credit Card",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -356,7 +348,6 @@ def test_credit_card_full():
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
-    assert pdfinfo["Title"] == "Credit Card"
     assert pdfinfo["Pages"] == "1"
     process.call(
         [
@@ -383,7 +374,6 @@ def test_empty():
             "level": True,
             "append_credit_card": False,
         },
-        "title": "Empty",
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
