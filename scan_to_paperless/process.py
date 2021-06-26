@@ -850,7 +850,6 @@ def finalise(
     Final step on document generation (convert in one pdf and copy with the right name in the cusume folder)
     """
 
-    title = config["title"]
     destination = config["destination"]
 
     if os.path.exists(destination):
@@ -890,8 +889,6 @@ def finalise(
 
     call(["pdftk"] + pdf + ["output", destination, "compress"])
     exiftool_cmd = ["exiftool", "-overwrite_original_in_place"]
-    if title:
-        exiftool_cmd.append("-Title=" + title)
     exiftool_cmd.append(destination)
     call(exiftool_cmd)
 
