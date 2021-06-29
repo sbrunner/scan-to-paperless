@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 numpy = "==1.21.0"
 scipy = "==1.7.0"
-scikit-image = "==0.18.1"
+scikit-image = "==0.18.2"
 opencv-python-headless = "==4.5.2.54"
 deskew = "==0.10.30"
 jsonschema-gentypes = "==0.9.4"
