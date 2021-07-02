@@ -43,8 +43,6 @@ def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> b
 
 
 def main() -> None:
-    config: stp_config.Configuration = get_config()
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -61,6 +59,11 @@ def main() -> None:
     )
     parser.add_argument("--assisted-split", action="store_true", help="Split operation, se help")
     parser.add_argument(
+        "--config",
+        action="store_true",
+        help="Print the configuration and exit",
+    )
+    parser.add_argument(
         "--set-config",
         nargs=2,
         action="append",
@@ -71,7 +74,15 @@ def main() -> None:
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
+    config: stp_config.Configuration = get_config()
+
     dirty = False
+    if args.config:
+        yaml = YAML()
+        yaml.default_flow_style = False
+        print("Config from file: " + CONFIG_PATH)
+        yaml.dump(config, sys.stdout)
+        sys.exit()
     for conf in args.set_config:
         config[conf[0]] = conf[1]  # type: ignore
         dirty = True
