@@ -8,11 +8,11 @@ import subprocess  # nosec
 from ruamel.yaml.main import YAML
 
 import scan_to_paperless.process_schema
-from scan_to_paperless import get_config
+from scan_to_paperless import CONFIG_PATH, get_config
 
 
 def main() -> None:
-    config = get_config()
+    config = get_config(CONFIG_PATH)
     for folder in glob.glob(os.path.join(os.path.expanduser(config["scan_folder"]), "*")):
         print(re.sub(r".", "-", folder))
         print(folder)
