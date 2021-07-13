@@ -1,252 +1,252 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/camptocamp/tilecloud-chain/master/tilecloud_chain/schema.json",
-    "type": "object",
-    "title": "Configuration",
-    "additionalProperties": false,
-    "definitions": {
-        "args": {
-            "type": "object",
-            "title": "Arguments",
-            "properties": {
-                "level": {
-                    "type": ["boolean", "integer"],
-                    "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%"
-                },
-                "auto_level": {
-                    "type": "boolean",
-                    "description": "If no level specified, do auto level",
-                    "default": false
-                },
-                "min_level": {
-                    "type": "integer",
-                    "description": "Min level if no level end no autolovel",
-                    "default": 15
-                },
-                "max_level": {
-                    "type": "integer",
-                    "description": "Max level if no level end no autolovel",
-                    "default": 15
-                },
-                "nocrop": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Don't do any crop"
-                },
-                "margin_horizontal": {
-                    "type": "number",
-                    "default": 9,
-                    "description": "The horizontal margin used on autodetect content [mm]"
-                },
-                "margin_vertical": {
-                    "type": "number",
-                    "default": 6,
-                    "description": "The vertical margin used on autodetect content [mm]"
-                },
-                "dpi": {
-                    "type": "number",
-                    "default": 300,
-                    "description": "The DPI used to convert the mm to pixel"
-                },
-                "sharpen": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do the sharpen"
-                },
-                "dither": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do the dither"
-                },
-                "tesseract": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Use tesseract to to an OCR on the document"
-                },
-                "tesseract_lang": {
-                    "type": "string",
-                    "default": "fra+eng",
-                    "description": "The used language for tesseract"
-                },
-                "append_credit_card": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do an assisted split"
-                },
-                "assisted_split": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do an assisted split"
-                }
-            }
-        }
-    },
-    "properties": {
-        "images": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "The images"
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/camptocamp/tilecloud-chain/master/tilecloud_chain/schema.json",
+  "type": "object",
+  "title": "Configuration",
+  "additionalProperties": false,
+  "definitions": {
+    "args": {
+      "type": "object",
+      "title": "Arguments",
+      "properties": {
+        "level": {
+          "type": ["boolean", "integer"],
+          "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%"
         },
-        "destination": {
-            "type": "string",
-            "description": "The destination file name"
+        "auto_level": {
+          "type": "boolean",
+          "description": "If no level specified, do auto level",
+          "default": false
         },
-        "args": {
-            "$ref": "#/definitions/args"
+        "min_level": {
+          "type": "integer",
+          "description": "Min level if no level end no autolovel",
+          "default": 15
         },
-        "steps": {
-            "type": "array",
-            "description": "The carried out steps description",
-            "items": {
-                "type": "object",
-                "title": "Step",
-                "additionalProperties": false,
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The step name"
-                    },
-                    "sources": {
-                        "type": "array",
-                        "description": "The images obtain after the current step",
-                        "items": { "type": "string" }
-                    },
-                    "process_count": {
-                        "type": "integer",
-                        "description": "The step number"
-                    }
-                }
-            }
+        "max_level": {
+          "type": "integer",
+          "description": "Max level if no level end no autolovel",
+          "default": 15
+        },
+        "nocrop": {
+          "type": "boolean",
+          "default": false,
+          "description": "Don't do any crop"
+        },
+        "margin_horizontal": {
+          "type": "number",
+          "default": 9,
+          "description": "The horizontal margin used on autodetect content [mm]"
+        },
+        "margin_vertical": {
+          "type": "number",
+          "default": 6,
+          "description": "The vertical margin used on autodetect content [mm]"
+        },
+        "dpi": {
+          "type": "number",
+          "default": 300,
+          "description": "The DPI used to convert the mm to pixel"
+        },
+        "sharpen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do the sharpen"
+        },
+        "dither": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do the dither"
+        },
+        "tesseract": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use tesseract to to an OCR on the document"
+        },
+        "tesseract_lang": {
+          "type": "string",
+          "default": "fra+eng",
+          "description": "The used language for tesseract"
+        },
+        "append_credit_card": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do an assisted split"
         },
         "assisted_split": {
-            "type": "array",
-            "items": {
-                "title": "Assisted split",
-
-                "type": "object",
-                "additionalProperties": false,
-                "description": "Assited split configuration",
-                "properties": {
-                    "source": {
-                        "type": "string",
-                        "title": "The source image name"
-                    },
-                    "destinations": {
-                        "type": "array",
-                        "title": "The destination image positions",
-                        "items": {
-                            "type": ["integer", "string"]
-                        }
-                    },
-                    "image": {
-                        "type": "string",
-                        "title": "The enhanced image name"
-                    },
-                    "limits": {
-                        "type": "array",
-                        "description": "The (proposed) limits to do the assisted split, You should keep only the right one",
-                        "items": {
-                            "type": "object",
-                            "title": "Limit",
-                            "additionalProperties": false,
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name visible on the generated image"
-                                },
-                                "type": {
-                                    "type": "string",
-                                    "description": "The kind of split"
-                                },
-                                "value": {
-                                    "type": "integer",
-                                    "description": "The split position"
-                                },
-                                "vertical": {
-                                    "type": "boolean",
-                                    "description": "Is vertical?"
-                                },
-                                "margin": {
-                                    "type": "integer",
-                                    "description": "The margin around the split, can be used to remove a fold"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "transformed_images": {
-            "type": "array",
-            "description": "The transformed image, if removed the jobs will rag again from start",
-            "items": {
-                "type": "string"
-            }
-        },
-        "intermediate_error": {
-            "type": "array",
-            "description": "The ignored errors",
-            "items": {
-                "type": "object",
-                "title": "Intermediate error",
-                "additionalProperties": false,
-                "properties": {
-                    "error": {
-                        "type": "string"
-                    },
-                    "traceback": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "images_config": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "angle": {
-                        "type": ["number", "null"],
-                        "description": "The used angle to deskex, can be change, restart by deleting one of the generated images"
-                    }
-                }
-            }
-        },
-        "images_status": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "angle": {
-                        "type": "number",
-                        "description": "The measured deskew angle"
-                    },
-                    "average_deviation": {
-                        "type": "number",
-                        "description": "The measured deskew angle deviation"
-                    },
-                    "angles": {
-                        "type": "array",
-                        "description": "The measured possible deskew angles, visible on the generated image",
-                        "items": {
-                            "type": "number"
-                        }
-                    },
-                    "size": {
-                        "type": "array",
-                        "description": "The image dimensions",
-                        "items": {
-                            "type": "number"
-                        }
-                    }
-                }
-            }
+          "type": "boolean",
+          "default": false,
+          "description": "Do an assisted split"
         }
+      }
+    }
+  },
+  "properties": {
+    "images": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The images"
     },
-    "required": ["images", "title", "full_name", "destination", "args"]
+    "destination": {
+      "type": "string",
+      "description": "The destination file name"
+    },
+    "args": {
+      "$ref": "#/definitions/args"
+    },
+    "steps": {
+      "type": "array",
+      "description": "The carried out steps description",
+      "items": {
+        "type": "object",
+        "title": "Step",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The step name"
+          },
+          "sources": {
+            "type": "array",
+            "description": "The images obtain after the current step",
+            "items": { "type": "string" }
+          },
+          "process_count": {
+            "type": "integer",
+            "description": "The step number"
+          }
+        }
+      }
+    },
+    "assisted_split": {
+      "type": "array",
+      "items": {
+        "title": "Assisted split",
+
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Assited split configuration",
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "The source image name"
+          },
+          "destinations": {
+            "type": "array",
+            "title": "The destination image positions",
+            "items": {
+              "type": ["integer", "string"]
+            }
+          },
+          "image": {
+            "type": "string",
+            "title": "The enhanced image name"
+          },
+          "limits": {
+            "type": "array",
+            "description": "The (proposed) limits to do the assisted split, You should keep only the right one",
+            "items": {
+              "type": "object",
+              "title": "Limit",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name visible on the generated image"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The kind of split"
+                },
+                "value": {
+                  "type": "integer",
+                  "description": "The split position"
+                },
+                "vertical": {
+                  "type": "boolean",
+                  "description": "Is vertical?"
+                },
+                "margin": {
+                  "type": "integer",
+                  "description": "The margin around the split, can be used to remove a fold"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "transformed_images": {
+      "type": "array",
+      "description": "The transformed image, if removed the jobs will rag again from start",
+      "items": {
+        "type": "string"
+      }
+    },
+    "intermediate_error": {
+      "type": "array",
+      "description": "The ignored errors",
+      "items": {
+        "type": "object",
+        "title": "Intermediate error",
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "traceback": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "images_config": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "angle": {
+            "type": ["number", "null"],
+            "description": "The used angle to deskex, can be change, restart by deleting one of the generated images"
+          }
+        }
+      }
+    },
+    "images_status": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "angle": {
+            "type": "number",
+            "description": "The measured deskew angle"
+          },
+          "average_deviation": {
+            "type": "number",
+            "description": "The measured deskew angle deviation"
+          },
+          "angles": {
+            "type": "array",
+            "description": "The measured possible deskew angles, visible on the generated image",
+            "items": {
+              "type": "number"
+            }
+          },
+          "size": {
+            "type": "array",
+            "description": "The image dimensions",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["images", "title", "full_name", "destination", "args"]
 }

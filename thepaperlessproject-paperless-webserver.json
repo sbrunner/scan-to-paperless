@@ -1,81 +1,81 @@
 {
-   "cmd" : "gunicorn -b 0.0.0.0:8000",
-   "enable_restart_policy" : true,
-   "env_variables" : [
-      {
-         "key" : "TZ",
-         "value" : "Europe/Zurich"
-      },
-      {
-         "key" : "PAPERLESS_EXPORT_DIR",
-         "value" : "/export"
-      },
-      {
-         "key" : "PAPERLESS_CONSUMPTION_DIR",
-         "value" : "/consume"
-      },
-      {
-         "key" : "PAPERLESS_DBPASS",
-         "value" : "1234"
-      },
-      {
-         "key" : "PAPERLESS_DBUSER",
-         "value" : "paperless"
-      },
-      {
-         "key" : "PAPERLESS_DBHOST",
-         "value" : "postgres"
-      },
-      {
-         "key" : "USERMAP_UID",
-         "value" : "114670"
-      },
-      {
-         "key" : "USERMAP_GID",
-         "value" : "104555"
-      },
-      {
-         "key" : "PAPERLESS_DISABLE_LOGIN",
-         "value" : "true"
-      },
-      {
-         "key" : "PAPERLESS_LIST_PER_PAGE",
-         "value" : "100"
-      },
-      {
-         "key" : "PAPERLESS_INLINE_DOC",
-         "value" : "true"
-      },
-      {
-         "key" : "PAPERLESS_FILENAME_FORMAT",
-         "value" : "{correspondent}/{title}-{created}"
-      }
-   ],
-   "image" : "thepaperlessproject/paperless:latest",
-   "links" : [
-      {
-         "alias" : "postgres",
-         "link_container" : "postgres"
-      }
-   ],
-   "name" : "thepaperlessproject-paperless-webserver",
-   "port_bindings" : [
-      {
-         "container_port" : 8000,
-         "host_port" : 8000,
-         "type" : "tcp"
-      }
-   ],
-   "volume_bindings" : [
-      {
-         "host_volume_file" : "/paperless/dumpdata",
-         "mount_point" : "/dump",
-         "type" : "rw"
-      },
-      {
-         "host_volume_file" : "/paperless/media",
-         "mount_point" : "/usr/src/paperless/media",
-         "type" : "rw"
-      }
-   ]
+  "cmd": "gunicorn -b 0.0.0.0:8000",
+  "enable_restart_policy": true,
+  "env_variables": [
+    {
+      "key": "TZ",
+      "value": "Europe/Zurich"
+    },
+    {
+      "key": "PAPERLESS_EXPORT_DIR",
+      "value": "/export"
+    },
+    {
+      "key": "PAPERLESS_CONSUMPTION_DIR",
+      "value": "/consume"
+    },
+    {
+      "key": "PAPERLESS_DBPASS",
+      "value": "1234"
+    },
+    {
+      "key": "PAPERLESS_DBUSER",
+      "value": "paperless"
+    },
+    {
+      "key": "PAPERLESS_DBHOST",
+      "value": "postgres"
+    },
+    {
+      "key": "USERMAP_UID",
+      "value": "114670"
+    },
+    {
+      "key": "USERMAP_GID",
+      "value": "104555"
+    },
+    {
+      "key": "PAPERLESS_DISABLE_LOGIN",
+      "value": "true"
+    },
+    {
+      "key": "PAPERLESS_LIST_PER_PAGE",
+      "value": "100"
+    },
+    {
+      "key": "PAPERLESS_INLINE_DOC",
+      "value": "true"
+    },
+    {
+      "key": "PAPERLESS_FILENAME_FORMAT",
+      "value": "{correspondent}/{title}-{created}"
+    }
+  ],
+  "image": "thepaperlessproject/paperless:latest",
+  "links": [
+    {
+      "alias": "postgres",
+      "link_container": "postgres"
+    }
+  ],
+  "name": "thepaperlessproject-paperless-webserver",
+  "port_bindings": [
+    {
+      "container_port": 8000,
+      "host_port": 8000,
+      "type": "tcp"
+    }
+  ],
+  "volume_bindings": [
+    {
+      "host_volume_file": "/paperless/dumpdata",
+      "mount_point": "/dump",
+      "type": "rw"
+    },
+    {
+      "host_volume_file": "/paperless/media",
+      "mount_point": "/usr/src/paperless/media",
+      "type": "rw"
+    }
+  ]
 }
