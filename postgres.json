@@ -1,29 +1,29 @@
 {
-   "env_variables" : [
-      {
-         "key" : "PGDATA",
-         "value" : "/var/lib/postgresql/data"
-      },
-      {
-         "key" : "POSTGRES_DB",
-         "value" : "paperless"
-      },
-      {
-         "key" : "POSTGRES_USER",
-         "value" : "paperless"
-      },
-      {
-         "key" : "POSTGRES_PASSWORD",
-         "value" : "1234"
-      }
-   ],
-   "image" : "postgres:12",
-   "name" : "postgres",
-   "volume_bindings" : [
-      {
-         "host_volume_file" : "/paperless/pgdata",
-         "mount_point" : "/var/lib/postgresql/data",
-         "type" : "rw"
-      }
-   ]
+  "env_variables": [
+    {
+      "key": "PGDATA",
+      "value": "/var/lib/postgresql/data"
+    },
+    {
+      "key": "POSTGRES_DB",
+      "value": "paperless"
+    },
+    {
+      "key": "POSTGRES_USER",
+      "value": "paperless"
+    },
+    {
+      "key": "POSTGRES_PASSWORD",
+      "value": "1234"
+    }
+  ],
+  "image": "postgres:12",
+  "name": "postgres",
+  "volume_bindings": [
+    {
+      "host_volume_file": "/paperless/pgdata",
+      "mount_point": "/var/lib/postgresql/data",
+      "type": "rw"
+    }
+  ]
 }

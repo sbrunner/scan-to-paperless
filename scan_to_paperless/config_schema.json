@@ -1,105 +1,105 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/camptocamp/tilecloud-chain/master/tilecloud_chain/schema.json",
-    "type": "object",
-    "title": "Configuration",
-    "additionalProperties": false,
-    "definitions": {
-        "args": {
-            "type": "object",
-            "additionalProperties": false,
-            "title": "Arguments",
-            "properties": {
-                "level": {
-                    "type": ["boolean", "integer"],
-                    "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%"
-                },
-                "auto_level": {
-                    "type": "boolean",
-                    "description": "If no level specified, do auto level",
-                    "default": false
-                },
-                "min_level": {
-                    "type": "integer",
-                    "description": "Min level if no level end no autolovel",
-                    "default": 15
-                },
-                "max_level": {
-                    "type": "integer",
-                    "description": "Max level if no level end no autolovel",
-                    "default": 15
-                },
-                "nocrop": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Don't do any crop"
-                },
-                "margin_horizontal": {
-                    "type": "number",
-                    "default": 9,
-                    "description": "The horizontal margin used on autodetect content [mm]"
-                },
-                "margin_vertical": {
-                    "type": "number",
-                    "default": 6,
-                    "description": "The vertical margin used on autodetect content [mm]"
-                },
-                "dpi": {
-                    "type": "number",
-                    "default": 300,
-                    "description": "The DPI used to convert the mm to pixel"
-                },
-                "sharpen": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do the sharpen"
-                },
-                "dither": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do the dither"
-                },
-                "tesseract": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Use tesseract to to an OCR on the document"
-                },
-                "tesseract_lang": {
-                    "type": "string",
-                    "default": "fra+eng",
-                    "description": "The used language for tesseract"
-                },
-                "assisted_split": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Do en assited split"
-                }
-            }
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/camptocamp/tilecloud-chain/master/tilecloud_chain/schema.json",
+  "type": "object",
+  "title": "Configuration",
+  "additionalProperties": false,
+  "definitions": {
+    "args": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "Arguments",
+      "properties": {
+        "level": {
+          "type": ["boolean", "integer"],
+          "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%"
+        },
+        "auto_level": {
+          "type": "boolean",
+          "description": "If no level specified, do auto level",
+          "default": false
+        },
+        "min_level": {
+          "type": "integer",
+          "description": "Min level if no level end no autolovel",
+          "default": 15
+        },
+        "max_level": {
+          "type": "integer",
+          "description": "Max level if no level end no autolovel",
+          "default": 15
+        },
+        "nocrop": {
+          "type": "boolean",
+          "default": false,
+          "description": "Don't do any crop"
+        },
+        "margin_horizontal": {
+          "type": "number",
+          "default": 9,
+          "description": "The horizontal margin used on autodetect content [mm]"
+        },
+        "margin_vertical": {
+          "type": "number",
+          "default": 6,
+          "description": "The vertical margin used on autodetect content [mm]"
+        },
+        "dpi": {
+          "type": "number",
+          "default": 300,
+          "description": "The DPI used to convert the mm to pixel"
+        },
+        "sharpen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do the sharpen"
+        },
+        "dither": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do the dither"
+        },
+        "tesseract": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use tesseract to to an OCR on the document"
+        },
+        "tesseract_lang": {
+          "type": "string",
+          "default": "fra+eng",
+          "description": "The used language for tesseract"
+        },
+        "assisted_split": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do en assited split"
         }
+      }
+    }
+  },
+  "properties": {
+    "scan_folder": {
+      "type": "string",
+      "description": "This should be shared with the process container in 'source'."
     },
-    "properties": {
-        "scan_folder": {
-            "type": "string",
-            "description": "This should be shared with the process container in 'source'."
-        },
-        "scanimage": {
-            "type": "string",
-            "default": "scanimage",
-            "description": "The scanimage command"
-        },
-        "scanimage_arguments": {
-            "type": "array",
-            "default": ["--format=png", "--mode=color", "--resolution=300"],
-            "items": { "type": "string" }
-        },
-        "default_args": {
-            "$ref": "#/definitions/args"
-        },
-        "viewer": {
-            "type": "string",
-            "description": "The command used to start the viewer",
-            "default": "eog"
-        }
+    "scanimage": {
+      "type": "string",
+      "default": "scanimage",
+      "description": "The scanimage command"
     },
-    "required": ["scan_folder", "default_args"]
+    "scanimage_arguments": {
+      "type": "array",
+      "default": ["--format=png", "--mode=color", "--resolution=300"],
+      "items": { "type": "string" }
+    },
+    "default_args": {
+      "$ref": "#/definitions/args"
+    },
+    "viewer": {
+      "type": "string",
+      "description": "The command used to start the viewer",
+      "default": "eog"
+    }
+  },
+  "required": ["scan_folder", "default_args"]
 }

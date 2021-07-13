@@ -1,27 +1,27 @@
 {
-   "env_variables" : [
-      {
-         "key" : "PROGRESS",
-         "value" : "TRUE"
-      },
-      {
-         "key" : "EXPERIMENTAL",
-         "value" : "TRUE"
-      }
-   ],
-   "image" : "sbrunner/scan-to-paperless:test",
-   "name" : "sbrunner-scan-to-paperless-test",
-   "volume_bindings" : [
-      {
-         "host_volume_file" : "/paperless/test/scan",
-         "mount_point" : "/source",
-         "type" : "rw"
-      },
-      {
-         "host_volume_file" : "/paperless/test/consume",
-         "mount_point" : "/destination",
-         "type" : "rw"
-      }
-   ],
-   "volumes_from" : null
+  "env_variables": [
+    {
+      "key": "PROGRESS",
+      "value": "TRUE"
+    },
+    {
+      "key": "EXPERIMENTAL",
+      "value": "TRUE"
+    }
+  ],
+  "image": "sbrunner/scan-to-paperless:test",
+  "name": "sbrunner-scan-to-paperless-test",
+  "volume_bindings": [
+    {
+      "host_volume_file": "/paperless/test/scan",
+      "mount_point": "/source",
+      "type": "rw"
+    },
+    {
+      "host_volume_file": "/paperless/test/consume",
+      "mount_point": "/destination",
+      "type": "rw"
+    }
+  ],
+  "volumes_from": null
 }

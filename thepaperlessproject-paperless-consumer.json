@@ -1,92 +1,92 @@
 {
-   "cmd" : "document_consumer",
-   "enable_restart_policy" : true,
-   "env_variables" : [
-      {
-         "key" : "TZ",
-         "value" : "Europe/Zurich"
-      },
-      {
-         "key" : "PAPERLESS_EXPORT_DIR",
-         "value" : "/export"
-      },
-      {
-         "key" : "PAPERLESS_CONSUMPTION_DIR",
-         "value" : "/consume"
-      },
-      {
-         "key" : "OMP_THREAD_LIMIT",
-         "value" : "1"
-      },
-      {
-         "key" : "PAPERLESS_DBPASS",
-         "value" : "1234"
-      },
-      {
-         "key" : "PAPERLESS_DBUSER",
-         "value" : "paperless"
-      },
-      {
-         "key" : "PAPERLESS_DBHOST",
-         "value" : "postgres"
-      },
-      {
-         "key" : "PAPERLESS_CONVERT_MEMORY_LIMIT",
-         "value" : "32000000"
-      },
-      {
-         "key" : "USERMAP_UID",
-         "value" : "114670"
-      },
-      {
-         "key" : "USERMAP_GID",
-         "value" : "104555"
-      },
-      {
-         "key" : "PAPERLESS_OCR_LANGUAGES",
-         "value" : "fra"
-      },
-      {
-         "key" : "PAPERLESS_OCR_THREADS",
-         "value" : "1"
-      },
-      {
-         "key" : "PAPERLESS_FORGIVING_OCR",
-         "value" : "true"
-      },
-      {
-         "key" : "PAPERLESS_FILENAME_FORMAT",
-         "value" : "{correspondent}/{title}-{created}"
-      }
-   ],
-   "image" : "thepaperlessproject/paperless:latest",
-   "links" : [
-      {
-         "alias" : "postgres",
-         "link_container" : "postgres"
-      }
-   ],
-   "name" : "thepaperlessproject-paperless-consumer",
-   "volume_bindings" : [
-      {
-         "host_volume_file" : "/paperless/dumpdata",
-         "mount_point" : "/dumpdata",
-         "type" : "rw"
-      },
-      {
-         "host_volume_file" : "/paperless/export",
-         "mount_point" : "/export",
-         "type" : "rw"
-      },
-      {
-         "host_volume_file" : "/paperless/consume",
-         "mount_point" : "/consume",
-         "type" : "rw"
-      },
-      {
-         "host_volume_file" : "/paperless/media",
-         "mount_point" : "/usr/src/paperless/media",
-         "type" : "rw"
-      }
-   ]
+  "cmd": "document_consumer",
+  "enable_restart_policy": true,
+  "env_variables": [
+    {
+      "key": "TZ",
+      "value": "Europe/Zurich"
+    },
+    {
+      "key": "PAPERLESS_EXPORT_DIR",
+      "value": "/export"
+    },
+    {
+      "key": "PAPERLESS_CONSUMPTION_DIR",
+      "value": "/consume"
+    },
+    {
+      "key": "OMP_THREAD_LIMIT",
+      "value": "1"
+    },
+    {
+      "key": "PAPERLESS_DBPASS",
+      "value": "1234"
+    },
+    {
+      "key": "PAPERLESS_DBUSER",
+      "value": "paperless"
+    },
+    {
+      "key": "PAPERLESS_DBHOST",
+      "value": "postgres"
+    },
+    {
+      "key": "PAPERLESS_CONVERT_MEMORY_LIMIT",
+      "value": "32000000"
+    },
+    {
+      "key": "USERMAP_UID",
+      "value": "114670"
+    },
+    {
+      "key": "USERMAP_GID",
+      "value": "104555"
+    },
+    {
+      "key": "PAPERLESS_OCR_LANGUAGES",
+      "value": "fra"
+    },
+    {
+      "key": "PAPERLESS_OCR_THREADS",
+      "value": "1"
+    },
+    {
+      "key": "PAPERLESS_FORGIVING_OCR",
+      "value": "true"
+    },
+    {
+      "key": "PAPERLESS_FILENAME_FORMAT",
+      "value": "{correspondent}/{title}-{created}"
+    }
+  ],
+  "image": "thepaperlessproject/paperless:latest",
+  "links": [
+    {
+      "alias": "postgres",
+      "link_container": "postgres"
+    }
+  ],
+  "name": "thepaperlessproject-paperless-consumer",
+  "volume_bindings": [
+    {
+      "host_volume_file": "/paperless/dumpdata",
+      "mount_point": "/dumpdata",
+      "type": "rw"
+    },
+    {
+      "host_volume_file": "/paperless/export",
+      "mount_point": "/export",
+      "type": "rw"
+    },
+    {
+      "host_volume_file": "/paperless/consume",
+      "mount_point": "/consume",
+      "type": "rw"
+    },
+    {
+      "host_volume_file": "/paperless/media",
+      "mount_point": "/usr/src/paperless/media",
+      "type": "rw"
+    }
+  ]
 }

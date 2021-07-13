@@ -10,31 +10,31 @@ to verify that the result is OK (and do some advance operations describe below) 
 
 ## Features
 
--   Scan the images optionally by using the Automatic Document Feeder
--   Easily scan double sided images using the Automatic Document Feeder
--   Change the images levels
--   Deskew the images
--   Crop the images
--   Sharpen the images (disable by default)
--   Dither the images (disable by default)
--   Autorotate the images by using tesseract (To have the text on the right side)
--   Assisted split, used to split a prospectus page in more pages (Requires to modify the yaml...)
--   Append credit cart, used to have the too faces of a credit cart on the same page
--   Be able to copy the OCR result from the PDF
+- Scan the images optionally by using the Automatic Document Feeder
+- Easily scan double sided images using the Automatic Document Feeder
+- Change the images levels
+- Deskew the images
+- Crop the images
+- Sharpen the images (disable by default)
+- Dither the images (disable by default)
+- Autorotate the images by using tesseract (To have the text on the right side)
+- Assisted split, used to split a prospectus page in more pages (Requires to modify the yaml...)
+- Append credit cart, used to have the too faces of a credit cart on the same page
+- Be able to copy the OCR result from the PDF
 
 ## Requirements
 
 On the desktop:
 
--   [Python](https://www.python.org/) >= 3.6
--   The [scanimage](http://www.sane-project.org/) command, on Windows it should be able to use an other command
-    but it's never be tested.
-    This command yould be an adapter that interpret the following arguments:
-    `--batch`, `--source=ADF`, `--batch-prompt`, `--batch-start`, `--batch-increment`, `--batch-count`.
+- [Python](https://www.python.org/) >= 3.6
+- The [scanimage](http://www.sane-project.org/) command, on Windows it should be able to use an other command
+  but it's never be tested.
+  This command yould be an adapter that interpret the following arguments:
+  `--batch`, `--source=ADF`, `--batch-prompt`, `--batch-start`, `--batch-increment`, `--batch-count`.
 
 On the NAS:
 
--   [Docker](https://www.docker.com/)
+- [Docker](https://www.docker.com/)
 
 ## Install
 
@@ -53,38 +53,38 @@ Create the configuration file on `<home_config>/scan-to-paperless.yaml` (on Linu
 
 scan_folder: /home/sbrunner/Paperless/scan/
 scanimage_arguments: # Additional argument passed to the scanimage command
-    - --device=... # Use `scanimage --list` to get the possible values
-    - --format=png
-    - --mode=color
-    - --resolution=300
+  - --device=... # Use `scanimage --list` to get the possible values
+  - --format=png
+  - --mode=color
+  - --resolution=300
 default_args:
-    ## Level
-    # true: => do level on 15% - 85% (under 15 % will be black above 85% will be white)
-    # false: => 0% - 100%
-    # <number>: => (0 + <number>)% - (100 - number)%
-    level:
-    # If no level specified, do auto level
-    auto_level: False
-    # min level if no level end no autolovel
-    min_level: 15
-    # max level if no level end no autolovel
-    max_level: 95
+  ## Level
+  # true: => do level on 15% - 85% (under 15 % will be black above 85% will be white)
+  # false: => 0% - 100%
+  # <number>: => (0 + <number>)% - (100 - number)%
+  level:
+  # If no level specified, do auto level
+  auto_level: False
+  # min level if no level end no autolovel
+  min_level: 15
+  # max level if no level end no autolovel
+  max_level: 95
 
-    ## Crop
-    no_crop: False # Don't do any crop
-    marging_horizontal: 9 # mm, the horizontal margin used on autodetect content
-    marging_vertical: 6 # mm, the vertical margin used on autodetect content
-    dpi: 300 # The DPI used to convert the mm to pixel
+  ## Crop
+  no_crop: False # Don't do any crop
+  marging_horizontal: 9 # mm, the horizontal margin used on autodetect content
+  marging_vertical: 6 # mm, the vertical margin used on autodetect content
+  dpi: 300 # The DPI used to convert the mm to pixel
 
-    # Sharpen
-    sharpen: False # Do the sharpen
+  # Sharpen
+  sharpen: False # Do the sharpen
 
-    # Dither
-    dither: False # Do the dither
+  # Dither
+  dither: False # Do the dither
 
-    ## OCR
-    tesseract: True # Use tesseract to to an OCR on the document
-    tesseract_lang: fra+eng # The used language
+  ## OCR
+  tesseract: True # Use tesseract to to an OCR on the document
+  tesseract_lang: fra+eng # The used language
 ```
 
 [Full config documentation](./config.md)
