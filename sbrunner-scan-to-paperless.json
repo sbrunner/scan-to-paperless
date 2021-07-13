@@ -1,16 +1,16 @@
 {
-   "image" : "sbrunner/scan-to-paperless:latest",
-   "name" : "sbrunner-scan-to-paperless",
-   "volume_bindings" : [
-      {
-         "host_volume_file" : "/paperless/scan",
-         "mount_point" : "/source",
-         "type" : "rw"
-      },
-      {
-         "host_volume_file" : "/paperless/consume",
-         "mount_point" : "/destination",
-         "type" : "rw"
-      }
-   ]
+  "image": "sbrunner/scan-to-paperless:latest",
+  "name": "sbrunner-scan-to-paperless",
+  "volume_bindings": [
+    {
+      "host_volume_file": "/paperless/scan",
+      "mount_point": "/source",
+      "type": "rw"
+    },
+    {
+      "host_volume_file": "/paperless/consume",
+      "mount_point": "/destination",
+      "type": "rw"
+    }
+  ]
 }
