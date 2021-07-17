@@ -77,6 +77,21 @@
           "type": "boolean",
           "default": false,
           "description": "Do an assisted split"
+        },
+        "min_box_size_crop": {
+          "type": "number",
+          "default": 3,
+          "description": "The minimum box size to find the content on witch one we will crop [mm]"
+        },
+        "min_box_size_limit": {
+          "type": "number",
+          "default": 10,
+          "description": "The minimum box size to find the limits based on content [mm]"
+        },
+        "min_box_size_empty": {
+          "type": "number",
+          "default": 20,
+          "description": "The minimum box size to find the content to determine if the page is empty [mm]"
         }
       }
     }

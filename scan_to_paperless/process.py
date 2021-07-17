@@ -125,6 +125,14 @@ class Context:  # pylint: disable=too-many-instance-attributes
         if self.mask_ready is not None:
             self.mask_ready = rotate_image(self.mask_ready, angle, 0)
 
+    def get_px_value(self, name: str, default: Union[int, float]) -> float:
+        return (
+            cast(float, self.config["args"].get(name, default))
+            / 10
+            / 2.51
+            * self.config["args"].get("dpi", 300)
+        )
+
 
 def add_intermediate_error(
     config: scan_to_paperless.process_schema.Configuration,
@@ -314,11 +322,14 @@ def get_contour_to_crop(
     )
 
 
-def crop(context: Context, margin_horizontal: int = 25, margin_vertical: int = 25) -> None:
+def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None:
     """
     Margin in px
     """
-    contours = find_contours(context.get_masked())
+    contours = find_contours(
+        context.get_masked(),
+        context.get_px_value("min_box_size_crop", 3),
+    )
     if contours:
         x, y, width, height = get_contour_to_crop(contours, margin_horizontal, margin_vertical)
         context.crop(x, y, width, height)
@@ -422,14 +433,9 @@ def docrop(context: Context) -> None:
     # Margin in mm
     if context.config["args"].get("nocrop", False):
         return
-    margin_horizontal = context.config["args"].get("margin_horizontal", 9)
-    margin_vertical = context.config["args"].get("margin_vertical", 6)
-    dpi = context.config["args"].get("dpi", 300)
-    crop(
-        context,
-        int(round(margin_horizontal / 10 / 2.51 * dpi)),
-        int(round(margin_vertical / 10 / 2.51 * dpi)),
-    )
+    margin_horizontal = context.get_px_value("margin_horizontal", 9)
+    margin_vertical = context.get_px_value("margin_vertical", 6)
+    crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
 
 
 @Process("sharpen")
@@ -473,6 +479,15 @@ def draw_line(  # pylint: disable=too-many-arguments
     return {"name": name, "type": type_, "value": int(position), "vertical": vertical, "margin": 0}
 
 
+def draw_rectangle(image: np_ndarray_int, vertical: bool, contour: Tuple[int, int, int, int]) -> None:
+    color = (255, 0, 0) if vertical else (0, 255, 0)
+    x, y, width, height = contour
+    cv2.rectangle(image, (x, y), (x + 1, y + height), color, -1)
+    cv2.rectangle(image, (x, y), (x + width, y + 1), color, -1)
+    cv2.rectangle(image, (x, y + height - 1), (x + width, y + height), color, -1)
+    cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
+
+
 def find_lines(image: np_ndarray_int, vertical: bool) -> Tuple[np_ndarray_int, Dict[str, np_ndarray_int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
@@ -511,8 +526,10 @@ def zero_ranges(values: np_ndarray_int) -> np_ndarray_int:
     return cast(np_ndarray_int, ranges)
 
 
-def find_limit_contour(image: np_ndarray_int, vertical: bool) -> List[int]:
-    contours = find_contours(image)
+def find_limit_contour(
+    image: np_ndarray_int, vertical: bool, min_box_size: float
+) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
+    contours = find_contours(image, min_box_size)
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -527,12 +544,18 @@ def find_limit_contour(image: np_ndarray_int, vertical: bool) -> List[int]:
         if ranges_[0] != 0 and ranges_[1] != image_size:
             result.append(int(round(sum(ranges_) / 2)))
 
-    return result
+    return result, contours
 
 
-def fill_limits(image: np_ndarray_int, vertical: bool) -> List[scan_to_paperless.process_schema.Limit]:
+def fill_limits(
+    image: np_ndarray_int, vertical: bool, context: Context
+) -> List[scan_to_paperless.process_schema.Limit]:
     peaks, properties = find_lines(image, vertical)
-    contours = find_limit_contour(image, vertical)
+    contours_limits, contours = find_limit_contour(
+        image, vertical, context.get_px_value("min_box_size_limit", 10)
+    )
+    for contour_limit in contours:
+        draw_rectangle(image, vertical, contour_limit)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
     limits: List[scan_to_paperless.process_schema.Limit] = []
     prefix = "V" if vertical else "H"
@@ -541,7 +564,7 @@ def fill_limits(image: np_ndarray_int, vertical: bool) -> List[scan_to_paperless
         limits.append(
             draw_line(image, vertical, peak, value, "{}L{}".format(prefix, index), "line detection")
         )
-    for index, contour in enumerate(contours):
+    for index, contour in enumerate(contours_limits):
         limits.append(
             draw_line(
                 image, vertical, contour, third_image_size, "{}C{}".format(prefix, index), "contour detection"
@@ -558,7 +581,7 @@ def fill_limits(image: np_ndarray_int, vertical: bool) -> List[scan_to_paperless
     return limits
 
 
-def find_contours(image: np_ndarray_int, min_size: int = 32) -> List[Tuple[int, int, int, int]]:
+def find_contours(image: np_ndarray_int, min_size: Union[float, int]) -> List[Tuple[int, int, int, int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Clean the image using otsu method with the inversed binarized image
@@ -622,7 +645,10 @@ def transform(
         autorotate(context)
 
         # Is empty ?
-        contours = find_contours(context.get_masked(), 70)
+        contours = find_contours(
+            context.get_masked(),
+            context.get_px_value("min_box_size_empty", 20),
+        )
         if not contours:
             print("Ignore image with no content: {}".format(img))
             continue
@@ -651,8 +677,8 @@ def transform(
 
             limits = []
             assert context.image is not None
-            limits.extend(fill_limits(context.image, True))
-            limits.extend(fill_limits(context.image, False))
+            limits.extend(fill_limits(context.image, True, context))
+            limits.extend(fill_limits(context.image, False, context))
             assisted_split["limits"] = limits
 
             cv2.imwrite(name, context.image)
@@ -798,16 +824,11 @@ def split(
                         page_pos = 0
 
                     save(root_folder, img2, "{}-split".format(context.get_process_count()))
-                    margin_horizontal = context.config["args"].get("margin_horizontal", 9)
-                    margin_vertical = context.config["args"].get("margin_vertical", 6)
-                    dpi = context.config["args"].get("dpi", 300)
+                    margin_horizontal = context.get_px_value("margin_horizontal", 9)
+                    margin_vertical = context.get_px_value("margin_vertical", 6)
                     context.image = cv2.imread(img2)
                     if not context.config["args"].get("nocrop", False):
-                        crop(
-                            context,
-                            int(round(margin_horizontal / 10 / 2.51 * dpi)),
-                            int(round(margin_vertical / 10 / 2.51 * dpi)),
-                        )
+                        crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
                         process_file = tempfile.NamedTemporaryFile(suffix=".png")
                         img3 = process_file.name
                         cv2.imwrite(img3, context.image)

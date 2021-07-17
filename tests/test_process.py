@@ -19,8 +19,8 @@ def test_find_lines():
 
 
 def test_find_limit_contour():
-    contour = process.find_limit_contour(load_image("limit-contour-1.png"), True)
-    assert contour == [1588]
+    limits, _ = process.find_limit_contour(load_image("limit-contour-1.png"), True, 40)
+    assert limits == [1588]
 
 
 def check_image_file(root_folder, image, name, level=0.9):
@@ -86,10 +86,9 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0}),
         (
             "contour",
-            {"name": "VC0", "type": "contour detection", "value": 1617, "vertical": True, "margin": 0},
+            {"name": "VC0", "type": "contour detection", "value": 1618, "vertical": True, "margin": 0},
         ),
     ],
 )
@@ -121,8 +120,8 @@ def test_assisted_split_full(type_, limit):
     step = process.transform(config, step, config_file_name, root_folder)
     assert step["name"] == "split"
     images = step["sources"]
-    assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
     assert len(images) == 1
+    assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
     check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
     # check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
     limits = [item for item in config["assisted_split"][0]["limits"] if item["vertical"]]
@@ -131,11 +130,12 @@ def test_assisted_split_full(type_, limit):
     limits = [item for item in limits if item["name"] == limit["name"]]
     assert limits == [limit]
     config["assisted_split"][0]["limits"] = limits
+    check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
+    assert step["name"] == "finalise"
     check_image_file(root_folder, step["sources"][0], f"assisted-split-{type_}-3")
     check_image_file(root_folder, step["sources"][1], f"assisted-split-{type_}-4")
-    assert step["name"] == "finalise"
     process.finalise(config, step, root_folder)
     pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
@@ -288,8 +288,8 @@ def test_full(progress, experimental):
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
-    check_image_file(root_folder, step["sources"][0], "all-1")
     assert len(step["sources"]) == 1
+    check_image_file(root_folder, step["sources"][0], "all-1")
 
     if progress == "TRUE":
         assert os.path.exists(os.path.join(root_folder, "0-level/all-1.png"))
