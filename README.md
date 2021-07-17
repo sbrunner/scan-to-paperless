@@ -152,7 +152,7 @@ part that should not be taken in account.
 
 1. Pour your sheets on the Automatic Document Feeder.
 
-2. Run `scan` with the option `--double-sided`.
+2. Run `scan` with the option `--mode=double`.
 
 3. Press enter to start scanning the first side of all sheets.
 

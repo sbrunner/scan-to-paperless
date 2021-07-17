@@ -11,7 +11,6 @@ from typing import Any, List, Optional, cast
 
 import argcomplete
 import numpy as np
-from argcomplete.completers import ChoicesCompleter
 from ruamel.yaml.main import YAML
 from skimage import io
 
@@ -48,24 +47,20 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
 
-    def add_argument(name: str, choices: Optional[List[str]] = None, **kwargs: Any) -> None:
-        arg = parser.add_argument(name, **kwargs)
-        if choices is not None:
-            arg.completer = ChoicesCompleter(choices)  # type: ignore
-
-    add_argument("--no-adf", dest="adf", action="store_false", help="Don't use ADF")
-    add_argument(
-        "--double-sided",
-        action="store_true",
-        help="Number of pages in double sided mode",
+    parser.add_argument(
+        "--mode",
+        choices=("adf", "one", "multi", "double"),
+        default="adf",
+        help="The scan mode ('adf': use Auto Document Feeder (Default), )"
+        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF",
     )
-    add_argument(
+    parser.add_argument(
         "--append-credit-card",
         action="store_true",
         help="Append vertically the credit card",
     )
-    add_argument("--assisted-split", action="store_true", help="Split operation, se help")
-    add_argument(
+    parser.add_argument("--assisted-split", action="store_true", help="Split operation, se help")
+    parser.add_argument(
         "--set-config",
         nargs=2,
         action="append",
@@ -107,13 +102,16 @@ def main() -> None:
 
     try:
         scanimage: List[str] = [config.get("scanimage", "scanimage")]
-        scanimage += config.get("scanimage_arguments", ["--format=png", "--mode=color", "--resolution=300"])
-        scanimage += [
-            f"--batch={root_folder}/image-%d.png",
-            "--source=ADF" if args.adf else "--batch-prompt",
-        ]
+        scanimage += config.get(
+            "scanimage_arguments",
+            ["--format=png", "--mode=color", "--resolution=300", f"--batch={root_folder}/image-%d.png"],
+        )
+        if args.mode in ("adf", "double"):
+            scanimage += ["--source=ADF"]
+        if args.mode == "multi":
+            scanimage += ["--batch-prompt"]
 
-        if args.double_sided:
+        if args.mode == "double":
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
             input("Put your document in the automatic document feeder for the other side, and press enter.")
@@ -152,6 +150,7 @@ def main() -> None:
         args_.update(config.get("default_args", {}))
         args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
         del args_cmd["adf"]
+        del args_cmd["one_page"]
         del args_cmd["double_sided"]
         del args_cmd["set_config"]
         args_.update(cast(stp_config.Arguments, args_cmd))
