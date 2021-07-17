@@ -42,7 +42,7 @@ On the NAS:
 
 ```bash
 $ python3 -m pip install scan-to-paperless
-$ sudo activate-global-python-argcomplete
+$ sudo activate-global-python-argcomplete # optional
 $ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
 ```
 
@@ -97,7 +97,7 @@ and you can get the \*.syno.json files to configure your Docker services.
 Otherwise use:
 
 ```bash
-docker run --rm --restart=unless-stopped \
+docker run --name=scan-to-paperless --restart=unless-stopped --detatch \
     --volume=<scan_folder>:/source \
     --volume=<consume_folder>:/destination \
     sbrunner/scan-to-paperless
@@ -105,7 +105,14 @@ docker run --rm --restart=unless-stopped \
 
 You can set the environment variable `PROGRESS` to `TRUE` to get all the intermediate images.
 
-### Repoitory link
+To stop run:
+
+```bash
+docker stop scan-to-paperless
+docker rm scan-to-paperless
+```
+
+### Repertory link
 
 You should find a way to synchronise or using sharing to link the scan folder on your desktop and on your nas.
 
