@@ -51,7 +51,7 @@ def main() -> None:
         "--mode",
         choices=("adf", "one", "multi", "double"),
         default="adf",
-        help="The scan mode ('adf': use Auto Document Feeder (Default), )"
+        help="The scan mode: 'adf': use Auto Document Feeder (Default), "
         "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF",
     )
     parser.add_argument(
