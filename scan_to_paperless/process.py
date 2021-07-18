@@ -326,11 +326,21 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     """
     Margin in px
     """
-    contours = find_contours(
-        context.get_masked(),
-        context.get_px_value("min_box_size_crop", 3),
-    )
+    image = context.get_masked()
+    contours = find_contours(image, context.get_px_value("min_box_size_crop", 3))
+
     if contours:
+        for contour in contours:
+            draw_rectangle(image, False, contour)
+        if context.root_folder is not None and context.image_name is not None:
+            save_image(
+                image,
+                context.root_folder,
+                "{}-crop".format(context.get_process_count()),
+                context.image_name,
+                True,
+            )
+
         x, y, width, height = get_contour_to_crop(contours, margin_horizontal, margin_vertical)
         context.crop(x, y, width, height)
 
