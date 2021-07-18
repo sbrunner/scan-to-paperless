@@ -88,6 +88,21 @@
           "type": "number",
           "default": 20,
           "description": "The minimum box size to find the content to determine if the page is empty [mm]"
+        },
+        "min_box_black_crop": {
+          "type": "number",
+          "default": 2,
+          "description": "The minimum black in a box on content find on witch one we will crop [%]"
+        },
+        "min_box_black_limit": {
+          "type": "number",
+          "default": 2,
+          "description": "The minimum black in a box on content find the limits based on content [%]"
+        },
+        "min_box_black_empty": {
+          "type": "number",
+          "default": 2,
+          "description": "The minimum black in a box on content find to determine if the page is empty [%]"
         }
       }
     }

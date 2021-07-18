@@ -27,3 +27,6 @@
   - **`min_box_size_crop`** *(number)*: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
   - **`min_box_size_limit`** *(number)*: The minimum box size to find the limits based on content [mm]. Default: `10`.
   - **`min_box_size_empty`** *(number)*: The minimum box size to find the content to determine if the page is empty [mm]. Default: `20`.
+  - **`min_box_black_crop`** *(number)*: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
+  - **`min_box_black_limit`** *(number)*: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
+  - **`min_box_black_empty`** *(number)*: The minimum black in a box on content find to determine if the page is empty [%]. Default: `2`.

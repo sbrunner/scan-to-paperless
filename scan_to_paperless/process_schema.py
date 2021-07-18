@@ -70,6 +70,18 @@ Arguments = TypedDict(
         #
         # default: 20
         "min_box_size_empty": Union[int, float],
+        # The minimum black in a box on content find on witch one we will crop [%]
+        #
+        # default: 2
+        "min_box_black_crop": Union[int, float],
+        # The minimum black in a box on content find the limits based on content [%]
+        #
+        # default: 2
+        "min_box_black_limit": Union[int, float],
+        # The minimum black in a box on content find to determine if the page is empty [%]
+        #
+        # default: 2
+        "min_box_black_empty": Union[int, float],
     },
     total=False,
 )

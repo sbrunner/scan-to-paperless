@@ -327,7 +327,11 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     Margin in px
     """
     image = context.get_masked()
-    contours = find_contours(image, context.get_px_value("min_box_size_crop", 3))
+    contours = find_contours(
+        image,
+        context.get_px_value("min_box_size_crop", 3),
+        context.config["args"].get("min_box_black_crop", 2),
+    )
 
     if contours:
         for contour in contours:
@@ -537,9 +541,9 @@ def zero_ranges(values: np_ndarray_int) -> np_ndarray_int:
 
 
 def find_limit_contour(
-    image: np_ndarray_int, vertical: bool, min_box_size: float
+    image: np_ndarray_int, vertical: bool, min_box_size: float, min_box_black: Union[int, float]
 ) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
-    contours = find_contours(image, min_box_size)
+    contours = find_contours(image, min_box_size, min_box_black)
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -562,7 +566,10 @@ def fill_limits(
 ) -> List[scan_to_paperless.process_schema.Limit]:
     peaks, properties = find_lines(image, vertical)
     contours_limits, contours = find_limit_contour(
-        image, vertical, context.get_px_value("min_box_size_limit", 10)
+        image,
+        vertical,
+        context.get_px_value("min_box_size_limit", 10),
+        context.config["args"].get("min_box_black_limit", 2),
     )
     for contour_limit in contours:
         draw_rectangle(image, vertical, contour_limit)
@@ -591,7 +598,9 @@ def fill_limits(
     return limits
 
 
-def find_contours(image: np_ndarray_int, min_size: Union[float, int]) -> List[Tuple[int, int, int, int]]:
+def find_contours(
+    image: np_ndarray_int, min_size: Union[float, int], min_black: Union[float, int]
+) -> List[Tuple[int, int, int, int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Clean the image using otsu method with the inversed binarized image
@@ -607,7 +616,10 @@ def find_contours(image: np_ndarray_int, min_size: Union[float, int]) -> List[Tu
     for cnt in contours:
         x, y, width, height = cv2.boundingRect(cnt)
         if width > min_size and height > min_size:
-            result.append((x + 8, y + 8, width - 16, height - 16))
+            contour_image = crop_image(image, x, y, width, height, (255, 255, 255))
+            contour_image = rgb2gray(contour_image)
+            if ((1 - np.mean(contour_image)) * 100) > min_black:
+                result.append((x + 8, y + 8, width - 16, height - 16))
 
     return result
 
@@ -658,6 +670,7 @@ def transform(
         contours = find_contours(
             context.get_masked(),
             context.get_px_value("min_box_size_empty", 20),
+            context.config["args"].get("min_box_black_crop", 2),
         )
         if not contours:
             print("Ignore image with no content: {}".format(img))
