@@ -132,20 +132,6 @@ def main() -> None:
         else:
             call(scanimage)
 
-        images = []
-        for img in os.listdir(root_folder):
-            if not img.startswith("image-"):
-                continue
-            images.append(os.path.join("source", img))
-
-        regex = re.compile(r"^source\/image\-([0-9]+)\.png$")
-
-        def image_match(image_name: str) -> int:
-            match = regex.match(image_name)
-            assert match
-            return int(match.group(1))
-
-        images = sorted(images, key=image_match)
         args_: stp_config.Arguments = {}
         args_.update(config.get("default_args", {}))
         args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
@@ -154,6 +140,29 @@ def main() -> None:
         del args_cmd["double_sided"]
         del args_cmd["set_config"]
         args_.update(cast(stp_config.Arguments, args_cmd))
+
+    except subprocess.CalledProcessError as exception:
+        print(exception)
+        sys.exit(1)
+
+    print(root_folder)
+    subprocess.call([config.get("viewer", "eog"), root_folder])  # nosec
+
+    images = []
+    for img in os.listdir(root_folder):
+        if not img.startswith("image-"):
+            continue
+        images.append(os.path.join("source", img))
+
+    regex = re.compile(r"^source\/image\-([0-9]+)\.png$")
+
+    def image_match(image_name: str) -> int:
+        match = regex.match(image_name)
+        assert match
+        return int(match.group(1))
+
+    images = sorted(images, key=image_match)
+    if images:
         process_config = {
             "images": images,
             "destination": destination,
@@ -167,10 +176,6 @@ def main() -> None:
                 "/master/scan_to_paperless/process_schema.json\n\n"
             )
             yaml.dump(process_config, config_file)
-
-    except subprocess.CalledProcessError as exception:
-        print(exception)
-        sys.exit(1)
-
-    print(root_folder)
-    subprocess.call([config.get("viewer", "eog"), root_folder])  # nosec
+    else:
+        os.rmdir(root_folder)
+        os.rmdir(base_folder)
