@@ -30,3 +30,5 @@
   - **`min_box_black_crop`** *(number)*: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
   - **`min_box_black_limit`** *(number)*: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
   - **`min_box_black_empty`** *(number)*: The minimum black in a box on content find to determine if the page is empty [%]. Default: `2`.
+  - **`box_block_size`** *(number)*: The block size used in a box on content find [mm]. Default: `1.5`.
+  - **`box_threshold_value_c`** *(number)*: A variable of double type representing the constant used in the both methods (subtracted from the mean or weighted mean, used in a box on content find. Default: `25`.

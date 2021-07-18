@@ -82,6 +82,14 @@ Arguments = TypedDict(
         #
         # default: 2
         "min_box_black_empty": Union[int, float],
+        # The block size used in a box on content find [mm]
+        #
+        # default: 1.5
+        "box_block_size": Union[int, float],
+        # A variable of double type representing the constant used in the both methods (subtracted from the mean or weighted mean, used in a box on content find
+        #
+        # default: 25
+        "box_threshold_value_c": Union[int, float],
     },
     total=False,
 )

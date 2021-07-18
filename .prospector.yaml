@@ -16,6 +16,7 @@ pylint:
     - too-many-statements
     - too-many-locals
     - too-many-nested-blocks
+    - too-many-arguments
     - broad-except
   options:
     good-names: x,y
