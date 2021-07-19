@@ -326,12 +326,15 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     Margin in px
     """
     image = context.get_masked()
+    process_count = context.get_process_count()
     contours = find_contours(
         image,
+        f"{process_count}-crop",
         context.get_px_value("min_box_size_crop", 3),
         context.config["args"].get("min_box_black_crop", 2),
+        context.get_px_value("box_kernel_size", 1.5),
         context.get_px_value("box_block_size", 1.5),
-        context.config["args"].get("box_threshold_value_c", 25),
+        context.config["args"].get("box_threshold_value_c", 70),
     )
 
     if contours:
@@ -341,7 +344,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
             save_image(
                 image,
                 context.root_folder,
-                "{}-crop".format(context.get_process_count()),
+                "{}-crop".format(process_count),
                 context.image_name,
                 True,
             )
@@ -547,13 +550,17 @@ def zero_ranges(values: np_ndarray_int) -> np_ndarray_int:
 
 def find_limit_contour(
     image: np_ndarray_int,
+    name: str,
     vertical: bool,
     min_box_size: float,
     min_box_black: Union[int, float],
-    block_size: Union[float, int] = 17,
-    threshold_value_c: Union[float, int] = 25,
+    kernel_size: Union[float, int] = 16,
+    block_size: Union[float, int] = 16,
+    threshold_value_c: Union[float, int] = 100,
 ) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
-    contours = find_contours(image, min_box_size, min_box_black, block_size, threshold_value_c)
+    contours = find_contours(
+        image, name, min_box_size, min_box_black, kernel_size, block_size, threshold_value_c
+    )
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -578,11 +585,13 @@ def fill_limits(
     peaks, properties = find_lines(image, vertical)
     contours_limits, contours = find_limit_contour(
         image,
+        f"{context.get_process_count()}-limits",
         vertical,
         context.get_px_value("min_box_size_limit", 10),
         context.config["args"].get("min_box_black_limit", 2),
+        context.get_px_value("box_kernel_size", 1.5),
         context.get_px_value("box_block_size", 1.5),
-        context.config["args"].get("box_threshold_value_c", 25),
+        context.config["args"].get("box_threshold_value_c", 70),
     )
     for contour_limit in contours:
         draw_rectangle(image, contour_limit)
@@ -613,21 +622,26 @@ def fill_limits(
 
 def find_contours(
     image: np_ndarray_int,
+    name: str,
     min_size: Union[float, int],
     min_black: Union[float, int],
+    kernel_size: Union[float, int] = 16,
     block_size: Union[float, int] = 16,
-    threshold_value_c: Union[float, int] = 25,
+    threshold_value_c: Union[float, int] = 100,
 ) -> List[Tuple[int, int, int, int]]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     block_size = int(round(block_size / 2) * 2)
+    kernel_size = int(round(kernel_size / 2))
 
     # Clean the image using otsu method with the inversed binarized image
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
+    if os.environ.get("PROGRESS", "FALSE") == "TRUE":
+        cv2.imwrite(os.path.join(name, "threshold.png"), thresh)
 
     # Assign a rectangle kernel size
-    kernel = np.ones((5, 5), "uint8")
+    kernel = np.ones((kernel_size, kernel_size), "uint8")
     par_img = cv2.dilate(thresh, kernel, iterations=5)
 
     contours, _ = cv2.findContours(par_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -640,7 +654,12 @@ def find_contours(
             contour_image = rgb2gray(contour_image)
             if ((1 - np.mean(contour_image)) * 100) > min_black:
                 result.append(
-                    (x + block_size / 2, y + block_size / 2, width - block_size, height - block_size)
+                    (
+                        x + kernel_size * 2,
+                        y + kernel_size * 2,
+                        width - kernel_size * 4,
+                        height - kernel_size * 4,
+                    )
                 )
 
     return result
@@ -665,7 +684,7 @@ def transform(
     images = []
     process_count = 0
 
-    if config["args"]["assisted_split"]:
+    if config["args"].get("assisted_split", False):
         config["assisted_split"] = []
 
     for index, img in enumerate(step["sources"]):
@@ -691,10 +710,12 @@ def transform(
         # Is empty ?
         contours = find_contours(
             context.get_masked(),
+            f"{context.get_process_count()}-is-empty",
             context.get_px_value("min_box_size_empty", 20),
             context.config["args"].get("min_box_black_crop", 2),
+            context.get_px_value("box_kernel_size", 1.5),
             context.get_px_value("box_block_size", 1.5),
-            context.config["args"].get("box_threshold_value_c", 25),
+            context.config["args"].get("box_threshold_value_c", 70),
         )
         if not contours:
             print("Ignore image with no content: {}".format(img))
@@ -702,7 +723,7 @@ def transform(
 
         tesseract(context)
 
-        if config["args"]["assisted_split"]:
+        if config["args"].get("assisted_split", False):
             assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}
             name = os.path.join(root_folder, context.image_name)
             assert context.image is not None
@@ -739,7 +760,7 @@ def transform(
 
     return {
         "sources": images,
-        "name": "split" if config["args"]["assisted_split"] else "finalise",
+        "name": "split" if config["args"].get("assisted_split", False) else "finalise",
         "process_count": process_count,
     }
 
@@ -925,7 +946,7 @@ def finalise(
 
     images = step["sources"]
 
-    if config["args"]["append_credit_card"]:
+    if config["args"].get("append_credit_card", False):
         images2 = []
         for img in images:
             if os.path.exists(img):

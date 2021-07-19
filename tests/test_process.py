@@ -19,8 +19,8 @@ def test_find_lines():
 
 
 def test_find_limit_contour():
-    limits, _ = process.find_limit_contour(load_image("limit-contour-1.png"), True, 40, 2)
-    assert limits == [1588]
+    limits, _ = process.find_limit_contour(load_image("limit-contour-1.png"), "test", True, 40, 2)
+    assert limits == [1592]
 
 
 def check_image_file(root_folder, image, name, level=0.9):
@@ -58,6 +58,7 @@ def test_crop():
     check_image(root_folder, process.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), "crop-4")
     check_image(root_folder, process.crop_image(image, 100, 200, 100, 200, (255, 255, 255)), "crop-5")
     check_image(root_folder, process.crop_image(image, 200, 100, 200, 100, (255, 255, 255)), "crop-6")
+    shutil.rmtree(root_folder)
 
 
 def test_rotate():
@@ -72,6 +73,7 @@ def test_rotate():
     check_image(root_folder, process.rotate_image(image, -90, (255, 255, 255)), "rotate-4")
     check_image(root_folder, process.rotate_image(image, 270, (255, 255, 255)), "rotate-4")
     check_image(root_folder, process.rotate_image(image, 180, (255, 255, 255)), "rotate-5")
+    shutil.rmtree(root_folder)
 
 
 def init_test():
@@ -86,10 +88,10 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL0", "type": "line detection", "value": 1812, "vertical": True, "margin": 0}),
+        ("lines", {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0}),
         (
             "contour",
-            {"name": "VC0", "type": "contour detection", "value": 1617, "vertical": True, "margin": 0},
+            {"name": "VC0", "type": "contour detection", "value": 1616, "vertical": True, "margin": 0},
         ),
     ],
 )
@@ -108,7 +110,6 @@ def test_assisted_split_full(type_, limit):
         "args": {
             "assisted_split": True,
             "level": True,
-            "append_credit_card": False,
             "tesseract": False,
             "sharpen": True,
         },
@@ -153,6 +154,7 @@ def test_assisted_split_full(type_, limit):
         ]
     )
     check_image_file(root_folder, os.path.join(root_folder, "final.png"), f"assisted-split-{type_}-5")
+    shutil.rmtree(root_folder)
 
 
 # @pytest.mark.skip(reason='for test')
@@ -173,7 +175,6 @@ def test_assisted_split_join_full():
         "args": {
             "assisted_split": True,
             "level": True,
-            "append_credit_card": False,
             "tesseract": False,
         },
         "destination": os.path.join(root_folder, "final.pdf"),
@@ -217,6 +218,7 @@ def test_assisted_split_join_full():
         ]
     )
     check_image_file(root_folder, os.path.join(root_folder, "final.png"), "assisted-split-join-2")
+    shutil.rmtree(root_folder)
 
 
 # @pytest.mark.skip(reason='for test')
@@ -236,7 +238,6 @@ def test_assisted_split_booth():
         "args": {
             "assisted_split": True,
             "level": False,
-            "append_credit_card": False,
             "nocrop": True,
             "tesseract": False,
             "margin_horizontal": 0,
@@ -266,6 +267,7 @@ def test_assisted_split_booth():
     check_image_file(root_folder, step["sources"][1], "assisted-split-booth-2")
     check_image_file(root_folder, step["sources"][2], "assisted-split-booth-3")
     check_image_file(root_folder, step["sources"][3], "assisted-split-booth-4")
+    shutil.rmtree(root_folder)
 
 
 # @pytest.mark.skip(reason='for test')
@@ -280,9 +282,7 @@ def test_full(progress, experimental):
         os.makedirs(root_folder)
     config = {
         "args": {
-            "assisted_split": False,
             "level": True,
-            "append_credit_card": False,
             "tesseract": False,
         },
         "destination": os.path.join(root_folder, "final.pdf"),
@@ -318,6 +318,7 @@ def test_full(progress, experimental):
         ]
     )
     check_image_file(root_folder, os.path.join(root_folder, "final.png"), "all-2")
+    shutil.rmtree(root_folder)
 
 
 # @pytest.mark.skip(reason='for test')
@@ -329,7 +330,6 @@ def test_credit_card_full():
         os.makedirs(root_folder)
     config = {
         "args": {
-            "assisted_split": False,
             "level": True,
             "append_credit_card": True,
         },
@@ -360,6 +360,7 @@ def test_credit_card_full():
         ]
     )
     check_image_file(root_folder, os.path.join(root_folder, "final.png"), "credit-card-1")
+    shutil.rmtree(root_folder)
 
 
 # @pytest.mark.skip(reason='for test')
@@ -371,9 +372,7 @@ def test_empty():
         os.makedirs(root_folder)
     config = {
         "args": {
-            "assisted_split": False,
             "level": True,
-            "append_credit_card": False,
         },
         "destination": os.path.join(root_folder, "final.pdf"),
     }
@@ -385,3 +384,21 @@ def test_empty():
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 0
     assert step["name"] == "finalise"
+    shutil.rmtree(root_folder)
+
+
+# @pytest.mark.skip(reason='for test')
+@pytest.mark.parametrize("test,args", [("600", {"dpi": 600})])
+def test_custom_process(test, args):
+    init_test()
+    root_folder = f"/results/600"
+    if not os.path.exists(root_folder):
+        os.makedirs(root_folder)
+    config = {
+        "args": args,
+    }
+    step = {"sources": [os.path.join(os.path.dirname(__file__), f"{test}.png")]}
+    step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    assert len(step["sources"]) == 1
+    check_image_file(root_folder, step["sources"][0], test)
+    shutil.rmtree(root_folder)

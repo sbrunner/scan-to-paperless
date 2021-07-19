@@ -104,6 +104,11 @@
           "default": 2,
           "description": "The minimum black in a box on content find to determine if the page is empty [%]"
         },
+        "box_kernel_size": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on content find [mm]"
+        },
         "box_block_size": {
           "type": "number",
           "default": 1.5,
@@ -111,8 +116,8 @@
         },
         "box_threshold_value_c": {
           "type": "number",
-          "default": 25,
-          "description": "A variable of double type representing the constant used in the both methods (subtracted from the mean or weighted mean, used in a box on content find"
+          "default": 70,
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find"
         }
       }
     }

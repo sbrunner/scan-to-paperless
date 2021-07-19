@@ -15,4 +15,12 @@ prospector: build-test
 
 .PHONY: pytest
 pytest: build-test
-	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes'
+	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes'
+
+.PHONY: pytest-last-failed
+pytest-last-failed:
+	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes --last-failed'
+
+.PHONY: pytest-exitfirst
+pytest-exitfirst:
+	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes --exitfirst'

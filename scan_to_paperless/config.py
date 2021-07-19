@@ -81,10 +81,14 @@ Arguments = TypedDict(
         # The block size used in a box on content find [mm]
         #
         # default: 1.5
-        "box_block_size": Union[int, float],
-        # A variable of double type representing the constant used in the both methods (subtracted from the mean or weighted mean, used in a box on content find
+        "box_kernel_size": Union[int, float],
+        # The block size used in a box on content find [mm]
         #
-        # default: 25
+        # default: 1.5
+        "box_block_size": Union[int, float],
+        # A variable used on threshold, should be low on low contrast image, used in a box on content find
+        #
+        # default: 70
         "box_threshold_value_c": Union[int, float],
     },
     total=False,
