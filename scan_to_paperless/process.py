@@ -1020,6 +1020,14 @@ def main() -> None:
                     config["steps"] = [step]
                 step = config["steps"][-1]
 
+                while not is_sources_present(step, root_folder) and config["steps"]:
+                    print(config_file_name)
+                    config["steps"] = config["steps"][:-1]
+                    save_config(config, config_file_name)
+                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
+                        os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
+                    print("Rerun step")
+
                 if is_sources_present(step, root_folder):
                     if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
                         continue
@@ -1050,16 +1058,6 @@ def main() -> None:
                         save_config(config, config_file_name)
                         with open(os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"), "w"):
                             pass
-                else:
-                    print(config_file_name)
-                    if config["steps"]:
-                        config["steps"] = config["steps"][:-1]
-                        save_config(config, config_file_name)
-                        if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
-                            os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
-                        print("Rerun step")
-                    else:
-                        print("Waiting image")
                     continue
             except Exception as exception:
                 print(exception)
