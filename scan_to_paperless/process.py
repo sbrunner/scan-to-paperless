@@ -990,9 +990,10 @@ def write_error(root_folder: str, message: str) -> None:
             yaml.dump({"error": message}, error_file)
 
 
-def is_sources_present(step: scan_to_paperless.process_schema.Step, root_folder: str) -> bool:
-    for img in step["sources"]:
+def is_sources_present(images: List[str], root_folder: str) -> bool:
+    for img in images:
         if not os.path.exists(os.path.join(root_folder, img)):
+            print(f"Missing {root_folder} - {img}")
             return False
     return True
 
@@ -1029,10 +1030,26 @@ def main() -> None:
             with open(config_file_name) as config_file:
                 config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
             if config is None:
-                write_error(root_folder, "Empty config")
+                print(config_file_name)
+                print("Empty config")
+                continue
+
+            if not is_sources_present(config["images"], root_folder):
+                print(config_file_name)
+                print("Missing images")
                 continue
 
             try:
+                while config.get("steps") and not is_sources_present(
+                    config["steps"][-1]["sources"], root_folder
+                ):
+                    config["steps"] = config["steps"][:-1]
+                    save_config(config, config_file_name)
+                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
+                        os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
+                    print(config_file_name)
+                    print("Rerun step")
+
                 if "steps" not in config or not config["steps"]:
                     step: scan_to_paperless.process_schema.Step = {
                         "sources": config["images"],
@@ -1041,32 +1058,23 @@ def main() -> None:
                     config["steps"] = [step]
                 step = config["steps"][-1]
 
-                while not is_sources_present(step, root_folder) and config["steps"]:
-                    print(config_file_name)
-                    config["steps"] = config["steps"][:-1]
-                    save_config(config, config_file_name)
-                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
-                        os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
-                    print("Rerun step")
-
-                if is_sources_present(step, root_folder):
+                if is_sources_present(step["sources"], root_folder):
                     if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
                         continue
                     if os.path.exists(os.path.join(root_folder, "DONE")):
                         continue
 
+                    print(config_file_name)
+
                     done = False
                     next_step = None
                     if step["name"] == "transform":
-                        print(config_file_name)
                         print("Transform")
                         next_step = transform(config, step, config_file_name, root_folder)
                     elif step["name"] == "split":
-                        print(config_file_name)
                         print("Split")
                         next_step = split(config, step, root_folder)
                     elif step["name"] == "finalise":
-                        print(config_file_name)
                         print("Finalise")
                         finalise(config, step, root_folder)
                         done = True
