@@ -26,10 +26,10 @@
   - **`assisted_split`** *(boolean)*: Do en assited split. Default: `False`.
   - **`min_box_size_crop`** *(number)*: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
   - **`min_box_size_limit`** *(number)*: The minimum box size to find the limits based on content [mm]. Default: `10`.
-  - **`min_box_size_empty`** *(number)*: The minimum box size to find the content to determine if the page is empty [mm]. Default: `20`.
+  - **`min_box_size_empty`** *(number)*: The minimum box size to find the content to determine if the page is empty [mm]. Default: `10`.
   - **`min_box_black_crop`** *(number)*: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
   - **`min_box_black_limit`** *(number)*: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
   - **`min_box_black_empty`** *(number)*: The minimum black in a box on content find to determine if the page is empty [%]. Default: `2`.
   - **`box_kernel_size`** *(number)*: The block size used in a box on content find [mm]. Default: `1.5`.
-  - **`box_block_size`** *(number)*: The block size used in a box on content find [mm]. Default: `1.5`.
+  - **`box_block_size`** *(number)*: The block size used in a box on threshold for content find [mm]. Default: `1.5`.
   - **`box_threshold_value_c`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find. Default: `70`.

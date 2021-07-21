@@ -711,7 +711,7 @@ def transform(
         contours = find_contours(
             context.get_masked(),
             f"{context.get_process_count()}-is-empty",
-            context.get_px_value("min_box_size_empty", 20),
+            context.get_px_value("min_box_size_empty", 10),
             context.config["args"].get("min_box_black_crop", 2),
             context.get_px_value("box_kernel_size", 1.5),
             context.get_px_value("box_block_size", 1.5),

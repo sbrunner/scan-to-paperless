@@ -86,7 +86,7 @@
         },
         "min_box_size_empty": {
           "type": "number",
-          "default": 20,
+          "default": 10,
           "description": "The minimum box size to find the content to determine if the page is empty [mm]"
         },
         "min_box_black_crop": {
@@ -112,7 +112,7 @@
         "box_block_size": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on content find [mm]"
+          "description": "The block size used in a box on threshold for content find [mm]"
         },
         "box_threshold_value_c": {
           "type": "number",

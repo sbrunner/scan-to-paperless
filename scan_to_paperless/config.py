@@ -64,7 +64,7 @@ Arguments = TypedDict(
         "min_box_size_limit": Union[int, float],
         # The minimum box size to find the content to determine if the page is empty [mm]
         #
-        # default: 20
+        # default: 10
         "min_box_size_empty": Union[int, float],
         # The minimum black in a box on content find on witch one we will crop [%]
         #
@@ -82,7 +82,7 @@ Arguments = TypedDict(
         #
         # default: 1.5
         "box_kernel_size": Union[int, float],
-        # The block size used in a box on content find [mm]
+        # The block size used in a box on threshold for content find [mm]
         #
         # default: 1.5
         "box_block_size": Union[int, float],
