@@ -1015,7 +1015,9 @@ def main() -> None:
     args = parser.parse_args()
 
     print("Welcome to scanned images document to paperless.")
+    print_waiting = True
     while True:
+        dirty = False
         for config_file_name in glob.glob(os.path.join(args.folder, "*/config.yaml")):
             if not os.path.exists(config_file_name):
                 continue
@@ -1032,11 +1034,13 @@ def main() -> None:
             if config is None:
                 print(config_file_name)
                 print("Empty config")
+                print_waiting = True
                 continue
 
             if not is_sources_present(config["images"], root_folder):
                 print(config_file_name)
                 print("Missing images")
+                print_waiting = True
                 continue
 
             try:
@@ -1049,6 +1053,7 @@ def main() -> None:
                         os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
                     print(config_file_name)
                     print("Rerun step")
+                    print_waiting = True
 
                 if "steps" not in config or not config["steps"]:
                     step: scan_to_paperless.process_schema.Step = {
@@ -1065,6 +1070,8 @@ def main() -> None:
                         continue
 
                     print(config_file_name)
+                    print_waiting = True
+                    dirty = True
 
                     done = False
                     next_step = None
@@ -1087,9 +1094,9 @@ def main() -> None:
                         save_config(config, config_file_name)
                         with open(os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"), "w"):
                             pass
-                    continue
             except Exception as exception:
                 print(exception)
+                print_waiting = True
                 yaml = YAML(typ="safe")
                 yaml.default_flow_style = False
                 try:
@@ -1107,7 +1114,11 @@ def main() -> None:
                         )
 
         sys.stdout.flush()
-        time.sleep(30)
+        if not dirty:
+            if print_waiting:
+                print_waiting = False
+                print("Waiting...")
+            time.sleep(30)
 
 
 if __name__ == "__main__":
