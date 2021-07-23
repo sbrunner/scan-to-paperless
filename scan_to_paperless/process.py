@@ -252,7 +252,7 @@ class Process:  # pylint: disable=too-few-public-methods
                     context.image = new_image
             elapsed_time = time.perf_counter() - start_time
             if os.environ.get("TIME", "FALSE") == "TRUE":
-                print("Elapsed time in {}: {}s.".format(self.name, int(round(elapsed_time))))
+                print(f"Elapsed time in {self.name}: {int(round(elapsed_time))}s.")
             if self.experimental and context.image is not None:
                 assert context.image is not None
                 assert old_image is not None
@@ -264,7 +264,7 @@ class Process:  # pylint: disable=too-few-public-methods
                     dest_image = os.path.join(dest_folder, context.image_name)
                     cv2.imwrite(dest_image, diff)
 
-            name = self.name if self.experimental else "{}-{}".format(context.get_process_count(), self.name)
+            name = self.name if self.experimental else f"{context.get_process_count()}-{self.name}"
             if self.experimental or os.environ.get("PROGRESS", "FALSE") == "TRUE":
                 dest_folder = os.path.join(context.root_folder, name)
                 if not os.path.exists(dest_folder):
@@ -344,7 +344,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
             save_image(
                 image,
                 context.root_folder,
-                "{}-crop".format(process_count),
+                f"{process_count}-crop",
                 context.image_name,
                 True,
             )
@@ -437,7 +437,7 @@ def deskew(context: Context) -> None:
         save_image(
             image,
             context.root_folder,
-            "{}-skew-angles".format(context.get_process_count()),
+            f"{context.get_process_count()}-skew-angles",
             context.image_name,
             True,
         )
@@ -600,21 +600,15 @@ def fill_limits(
     prefix = "V" if vertical else "H"
     for index, peak in enumerate(peaks):
         value = int(round(properties["peak_heights"][index] / 3))
-        limits.append(
-            draw_line(image, vertical, peak, value, "{}L{}".format(prefix, index), "line detection")
-        )
+        limits.append(draw_line(image, vertical, peak, value, f"{prefix}L{index}", "line detection"))
     for index, contour in enumerate(contours_limits):
         limits.append(
-            draw_line(
-                image, vertical, contour, third_image_size, "{}C{}".format(prefix, index), "contour detection"
-            )
+            draw_line(image, vertical, contour, third_image_size, f"{prefix}C{index}", "contour detection")
         )
     if not limits:
         half_image_size = image.shape[1 if vertical else 0] / 2
         limits.append(
-            draw_line(
-                image, vertical, half_image_size, third_image_size, "{}C".format(prefix), "image center"
-            )
+            draw_line(image, vertical, half_image_size, third_image_size, f"{prefix}C", "image center")
         )
 
     return limits
@@ -669,7 +663,7 @@ def find_contours(
 @external
 def tesseract(context: Context, source: str, destination: str) -> None:
     del context
-    call("tesseract -l fra+eng {} stdout pdf > {}".format(source, destination), shell=True)  # nosec
+    call(f"tesseract -l fra+eng {source} stdout pdf > {destination}", shell=True)  # nosec
 
 
 def transform(
@@ -718,7 +712,7 @@ def transform(
             context.config["args"].get("box_threshold_value_c", 70),
         )
         if not contours:
-            print("Ignore image with no content: {}".format(img))
+            print(f"Ignore image with no content: {img}")
             continue
 
         tesseract(context)
@@ -730,7 +724,7 @@ def transform(
             source = save_image(
                 context.image,
                 root_folder,
-                "{}-assisted-split".format(context.get_process_count()),
+                f"{context.get_process_count()}-assisted-split",
                 context.image_name,
                 True,
             )
@@ -832,9 +826,9 @@ def split(
     for assisted_split in config["assisted_split"]:
         context = Context(config, step)
         img = assisted_split["source"]
-        width, height = [
+        width, height = (
             int(e) for e in output(CONVERT + [img, "-format", "%w %h", "info:-"]).strip().split(" ")
-        ]
+        )
 
         horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
         vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
@@ -886,12 +880,12 @@ def split(
                     last_x = vertical_value + vertical_margin
 
                     if re.match(r"[0-9]+\.[0-9]+", str(destination)):
-                        page, page_pos = [int(e) for e in str(destination).split(".")]
+                        page, page_pos = (int(e) for e in str(destination).split("."))
                     else:
                         page = int(destination)
                         page_pos = 0
 
-                    save(root_folder, img2, "{}-split".format(context.get_process_count()))
+                    save(root_folder, img2, f"{context.get_process_count()}-split")
                     margin_horizontal = context.get_px_value("margin_horizontal", 9)
                     margin_vertical = context.get_px_value("margin_vertical", 6)
                     context.image = cv2.imread(img2)
@@ -900,7 +894,7 @@ def split(
                         process_file = tempfile.NamedTemporaryFile(suffix=".png")
                         img3 = process_file.name
                         cv2.imwrite(img3, context.image)
-                        save(root_folder, img3, "{}-crop".format(context.get_process_count()))
+                        save(root_folder, img3, f"{context.get_process_count()}-crop")
                     if page not in append:
                         append[page] = []
                     append[page].append({"file": process_file, "pos": page_pos})
@@ -912,7 +906,7 @@ def split(
         items: List[Item] = append[page_number]
         vertical = len(horizontal_limits) == 0
         if not vertical and len(vertical_limits) != 0 and len(items) > 1:
-            raise Exception("Mix of limit type for page '{}'".format(page_number))
+            raise Exception(f"Mix of limit type for page '{page_number}'")
 
         process_file = tempfile.NamedTemporaryFile(suffix=".png")
         img = process_file.name
@@ -921,8 +915,8 @@ def split(
             + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
             + ["-background", "#ffffff", "-gravity", "center", "+append" if vertical else "-append", img]
         )
-        save(root_folder, img, "{}-split".format(process_count))
-        img2 = os.path.join(root_folder, "image-{}.png".format(page_number))
+        save(root_folder, img, f"{process_count}-split")
+        img2 = os.path.join(root_folder, f"image-{page_number}.png")
         call(CONVERT + [img, img2])
         transformed_images.append(img2)
     process_count += 1
@@ -964,7 +958,7 @@ def finalise(
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
-            file_name = os.path.join(root_folder, "{}.pdf".format(name))
+            file_name = os.path.join(root_folder, f"{name}.pdf")
             if config["args"].get("tesseract", True):
                 call(
                     "tesseract -l {} {} stdout pdf > {}".format(
