@@ -21,10 +21,11 @@ else:
 CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILENAME)
 
 
-def get_config() -> stp_config.Configuration:
-    if os.path.exists(CONFIG_PATH):
+def get_config(config_filename: str) -> stp_config.Configuration:
+    if os.path.exists(config_filename):
         yaml = YAML()
         yaml.default_flow_style = False
-        with open(CONFIG_PATH, encoding="utf-8") as config_file:
+        with open(config_filename, encoding="utf-8") as config_file:
             return cast(stp_config.Configuration, yaml.load(config_file.read()))
+    print("Missig config file: " + config_filename)
     return {}

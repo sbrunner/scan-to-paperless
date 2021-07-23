@@ -53,6 +53,10 @@ def main() -> None:
         "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF",
     )
     parser.add_argument(
+        "--preset",
+        help="Use an alternate configuration",
+    )
+    parser.add_argument(
         "--append-credit-card",
         action="store_true",
         help="Append vertically the credit card",
@@ -74,22 +78,28 @@ def main() -> None:
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
-    config: stp_config.Configuration = get_config()
+    config_filename = CONFIG_PATH if args.preset is None else f"{CONFIG_PATH[:-5]}-{args.preset}.yaml"
+    config: stp_config.Configuration = get_config(config_filename)
 
-    dirty = False
     if args.config:
         yaml = YAML()
         yaml.default_flow_style = False
-        print("Config from file: " + CONFIG_PATH)
+        print("Config from file: " + config_filename)
         yaml.dump(config, sys.stdout)
         sys.exit()
+
+    dirty = False
     for conf in args.set_config:
         config[conf[0]] = conf[1]  # type: ignore
         dirty = True
     if dirty:
         yaml = YAML()
         yaml.default_flow_style = False
-        with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
+        with open(config_filename, "w", encoding="utf-8") as config_file:
+            config_file.write(
+                "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
+                "/master/scan_to_paperless/config_schema.json\n\n"
+            )
             yaml.dump(config, config_file)
 
     if "scan_folder" not in config:
@@ -181,12 +191,12 @@ def main() -> None:
         }
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
-        with open(os.path.join(os.path.dirname(root_folder), "config.yaml"), "w") as config_file:
-            config_file.write(
+        with open(os.path.join(os.path.dirname(root_folder), "config.yaml"), "w") as process_file:
+            process_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
                 "/master/scan_to_paperless/process_schema.json\n\n"
             )
-            yaml.dump(process_config, config_file)
+            yaml.dump(process_config, process_file)
     else:
         os.rmdir(root_folder)
         os.rmdir(base_folder)
