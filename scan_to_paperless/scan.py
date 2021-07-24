@@ -123,10 +123,8 @@ def main() -> None:
 
     try:
         scanimage: List[str] = [config.get("scanimage", "scanimage")]
-        scanimage += config.get(
-            "scanimage_arguments",
-            ["--format=png", "--mode=color", "--resolution=300", f"--batch={root_folder}/image-%d.png"],
-        )
+        scanimage += config.get("scanimage_arguments", ["--format=png", "--mode=color", "--resolution=300"])
+        scanimage += [f"--batch={root_folder}/image-%d.png"]
         if args.mode in ("adf", "double"):
             scanimage += ["--source=ADF"]
         if args.mode == "multi":
