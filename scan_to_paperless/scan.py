@@ -129,6 +129,8 @@ def main() -> None:
             scanimage += ["--source=ADF"]
         if args.mode == "multi":
             scanimage += ["--batch-prompt"]
+        if args.mode == "one":
+            scanimage += ["--batch-count=1"]
 
         if args.mode == "double":
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
