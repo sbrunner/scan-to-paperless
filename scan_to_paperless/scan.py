@@ -156,9 +156,9 @@ def main() -> None:
         args_: stp_config.Arguments = {}
         args_.update(config.get("default_args", {}))
         args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
-        del args_cmd["adf"]
-        del args_cmd["one_page"]
-        del args_cmd["double_sided"]
+        del args_cmd["mode"]
+        del args_cmd["preset"]
+        del args_cmd["config"]
         del args_cmd["set_config"]
         args_.update(cast(stp_config.Arguments, args_cmd))
 
