@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 numpy = "==1.21.1"
-scipy = "==1.7.0"
+scipy = "==1.7.1"
 scikit-image = "==0.18.2"
 opencv-python-headless = "==4.5.3.56"
 deskew = "==0.10.33"
