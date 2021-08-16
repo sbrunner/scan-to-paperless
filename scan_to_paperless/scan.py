@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
-
 import argparse
+import glob
 import os
 import random
 import re
@@ -45,6 +43,8 @@ def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> b
 def main() -> None:
     parser = argparse.ArgumentParser()
 
+    presets = [e[len(CONFIG_PATH) - 4 : -5] for e in glob.glob(f"{CONFIG_PATH[:-5]}-*.yaml")]  # noqa
+
     parser.add_argument(
         "--mode",
         choices=("adf", "one", "multi", "double"),
@@ -54,6 +54,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--preset",
+        choices=presets,
         help="Use an alternate configuration",
     )
     parser.add_argument(
