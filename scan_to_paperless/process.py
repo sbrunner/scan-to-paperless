@@ -150,13 +150,13 @@ def add_intermediate_error(
     yaml.default_flow_style = False
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        with open(config_file_name + "_", "w") as config_file:
+        with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
     except Exception as exception:
         print(exception)
         config["intermediate_error"] = old_intermediate_error
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        with open(config_file_name + "_", "w") as config_file:
+        with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
     os.rename(config_file_name + "_", config_file_name)
 
@@ -289,11 +289,11 @@ class Process:  # pylint: disable=too-few-public-methods
 
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     def wrapper(context: Context) -> Optional[np_ndarray_int]:
-        source = tempfile.NamedTemporaryFile(suffix=".png")
-        cv2.imwrite(source.name, context.image)
-        destination = tempfile.NamedTemporaryFile(suffix=".png")
-        func(context, source.name, destination.name)
-        return cast(np_ndarray_int, cv2.imread(destination.name))
+        with tempfile.NamedTemporaryFile(suffix=".png") as source:
+            cv2.imwrite(source.name, context.image)
+            with tempfile.NamedTemporaryFile(suffix=".png") as destination:
+                func(context, source.name, destination.name)
+                return cast(np_ndarray_int, cv2.imread(destination.name))
 
     return wrapper
 
@@ -476,11 +476,11 @@ def dither(context: Context, source: str, destination: str) -> None:
 
 @Process("autorotate", False, True)
 def autorotate(context: Context) -> None:
-    source = tempfile.NamedTemporaryFile(suffix=".png")
-    cv2.imwrite(source.name, context.get_masked())
-    orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
-    orientation_lst = [e for e in orientation_lst if "Orientation in degrees" in e]
-    context.rotate(int(orientation_lst[0].split()[3]))
+    with tempfile.NamedTemporaryFile(suffix=".png") as source:
+        cv2.imwrite(source.name, context.get_masked())
+        orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
+        orientation_lst = [e for e in orientation_lst if "Orientation in degrees" in e]
+        context.rotate(int(orientation_lst[0].split()[3]))
 
 
 def draw_line(  # pylint: disable=too-many-arguments
@@ -646,7 +646,7 @@ def find_contours(
         if width > min_size and height > min_size:
             contour_image = crop_image(image, x, y, width, height, (255, 255, 255))
             contour_image = rgb2gray(contour_image)
-            if ((1 - np.mean(contour_image)) * 100) > min_black:
+            if (1 - np.mean(contour_image)) * 100 > min_black:
                 result.append(
                     (
                         x + kernel_size * 2,
@@ -860,8 +860,9 @@ def split(
                     else:
                         vertical_value = width
                         vertical_margin = 0
-                    process_file = tempfile.NamedTemporaryFile(suffix=".png")
-                    img2 = process_file.name
+                    process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
+                        suffix=".png"
+                    )
                     call(
                         CONVERT
                         + [
@@ -874,7 +875,7 @@ def split(
                             ),
                             "+repage",
                             img,
-                            img2,
+                            process_file.name,
                         ]
                     )
                     last_x = vertical_value + vertical_margin
@@ -885,16 +886,17 @@ def split(
                         page = int(destination)
                         page_pos = 0
 
-                    save(root_folder, img2, f"{context.get_process_count()}-split")
+                    save(root_folder, process_file.name, f"{context.get_process_count()}-split")
                     margin_horizontal = context.get_px_value("margin_horizontal", 9)
                     margin_vertical = context.get_px_value("margin_vertical", 6)
-                    context.image = cv2.imread(img2)
+                    context.image = cv2.imread(process_file.name)
                     if not context.config["args"].get("nocrop", False):
                         crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
-                        process_file = tempfile.NamedTemporaryFile(suffix=".png")
-                        img3 = process_file.name
-                        cv2.imwrite(img3, context.image)
-                        save(root_folder, img3, f"{context.get_process_count()}-crop")
+                        process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
+                            suffix=".png"
+                        )
+                        cv2.imwrite(process_file.name, context.image)
+                        save(root_folder, process_file.name, f"{context.get_process_count()}-crop")
                     if page not in append:
                         append[page] = []
                     append[page].append({"file": process_file, "pos": page_pos})
@@ -908,17 +910,23 @@ def split(
         if not vertical and len(vertical_limits) != 0 and len(items) > 1:
             raise Exception(f"Mix of limit type for page '{page_number}'")
 
-        process_file = tempfile.NamedTemporaryFile(suffix=".png")
-        img = process_file.name
-        call(
-            CONVERT
-            + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
-            + ["-background", "#ffffff", "-gravity", "center", "+append" if vertical else "-append", img]
-        )
-        save(root_folder, img, f"{process_count}-split")
-        img2 = os.path.join(root_folder, f"image-{page_number}.png")
-        call(CONVERT + [img, img2])
-        transformed_images.append(img2)
+        with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
+            call(
+                CONVERT
+                + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
+                + [
+                    "-background",
+                    "#ffffff",
+                    "-gravity",
+                    "center",
+                    "+append" if vertical else "-append",
+                    process_file.name,
+                ]
+            )
+            save(root_folder, process_file.name, f"{process_count}-split")
+            img2 = os.path.join(root_folder, f"image-{page_number}.png")
+            call(CONVERT + [process_file.name, img2])
+            transformed_images.append(img2)
     process_count += 1
 
     return {"sources": transformed_images, "name": "finalise", "process_count": process_count}
@@ -980,7 +988,7 @@ def write_error(root_folder: str, message: str) -> None:
     if not os.path.exists(os.path.join(root_folder, "error.yaml")):
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
-        with open(os.path.join(root_folder, "error.yaml"), "w") as error_file:
+        with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
             yaml.dump({"error": message}, error_file)
 
 
@@ -995,7 +1003,7 @@ def is_sources_present(images: List[str], root_folder: str) -> bool:
 def save_config(config: scan_to_paperless.process_schema.Configuration, config_file_name: str) -> None:
     yaml = YAML()
     yaml.default_flow_style = False
-    with open(config_file_name + "_", "w") as config_file:
+    with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
         yaml.dump(config, config_file)
     os.rename(config_file_name + "_", config_file_name)
 
@@ -1023,7 +1031,7 @@ def main() -> None:
 
             yaml = YAML()
             yaml.default_flow_style = False
-            with open(config_file_name) as config_file:
+            with open(config_file_name, encoding="utf-8") as config_file:
                 config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
             if config is None:
                 print(config_file_name)
@@ -1086,7 +1094,11 @@ def main() -> None:
                         if next_step is not None:
                             config["steps"].append(next_step)
                         save_config(config, config_file_name)
-                        with open(os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"), "w"):
+                        with open(
+                            os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"),
+                            "w",
+                            encoding="utf-8",
+                        ):
                             pass
             except Exception as exception:
                 print(exception)
@@ -1094,14 +1106,14 @@ def main() -> None:
                 yaml = YAML(typ="safe")
                 yaml.default_flow_style = False
                 try:
-                    with open(os.path.join(root_folder, "error.yaml"), "w") as error_file:
+                    with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                         yaml.dump(
                             {"error": exception, "traceback": traceback.format_exc().split("\n")},
                             error_file,
                         )
                 except Exception as exception2:
                     print(exception2)
-                    with open(os.path.join(root_folder, "error.yaml"), "w") as error_file:
+                    with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                         yaml.dump(
                             {"error": str(exception2), "traceback": traceback.format_exc().split("\n")},
                             error_file,

@@ -9,7 +9,7 @@ from setuptools import find_packages, setup
 site.ENABLE_USER_SITE = "--user" in sys.argv
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(HERE, "README.md")) as f:
+with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
     README = f.read()
 
 setup(
