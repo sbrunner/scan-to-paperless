@@ -22,11 +22,11 @@ def main() -> None:
         else:
             yaml = YAML(typ="safe")
             yaml.default_flow_style = False
-            with open(os.path.join(folder, "config.yaml")) as config_file:
+            with open(os.path.join(folder, "config.yaml"), encoding="utf-8") as config_file:
                 job_config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
 
             if os.path.exists(os.path.join(folder, "error.yaml")):
-                with open(os.path.join(folder, "error.yaml")) as error_file:
+                with open(os.path.join(folder, "error.yaml"), encoding="utf-8") as error_file:
                     error = yaml.load(error_file.read())
                     if error is not None and "error" in error:
                         print(error["error"])
