@@ -5,6 +5,10 @@ ignore-paths:
   - scan_to_paperless/process_schema.py
   - scan_to_paperless/config.py
 
+pep8:
+  disable:
+    - E203 # whitespace before ':'
+
 pylint:
   disable:
     - wrong-import-order
