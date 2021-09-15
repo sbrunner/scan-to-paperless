@@ -1,2 +1,2 @@
-c2cciutils==1.1.dev20210913073441
+c2cciutils==1.1.dev20210915084344
 jsonschema2md==0.2.1
