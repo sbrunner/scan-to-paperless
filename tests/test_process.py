@@ -238,7 +238,7 @@ def test_assisted_split_booth():
         "args": {
             "assisted_split": True,
             "level": False,
-            "nocrop": True,
+            "no_crop": True,
             "tesseract": False,
             "margin_horizontal": 0,
             "margin_vertical": 0,
