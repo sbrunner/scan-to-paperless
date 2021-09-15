@@ -41,7 +41,7 @@
   - **`auto_level`** *(boolean)*: If no level specified, do auto level. Default: `False`.
   - **`min_level`** *(integer)*: Min level if no level end no autolovel. Default: `15`.
   - **`max_level`** *(integer)*: Max level if no level end no autolovel. Default: `15`.
-  - **`nocrop`** *(boolean)*: Don't do any crop. Default: `False`.
+  - **`no_crop`** *(boolean)*: Don't do any crop. Default: `False`.
   - **`margin_horizontal`** *(number)*: The horizontal margin used on autodetect content [mm]. Default: `9`.
   - **`margin_vertical`** *(number)*: The vertical margin used on autodetect content [mm]. Default: `6`.
   - **`dpi`** *(number)*: The DPI used to convert the mm to pixel. Default: `300`.

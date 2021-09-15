@@ -21,7 +21,7 @@ Arguments = TypedDict(
         # Don't do any crop
         #
         # default: False
-        "nocrop": bool,
+        "no_crop": bool,
         # The horizontal margin used on autodetect content [mm]
         #
         # default: 9

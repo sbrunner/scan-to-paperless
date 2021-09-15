@@ -28,7 +28,7 @@
           "description": "Max level if no level end no autolovel",
           "default": 15
         },
-        "nocrop": {
+        "no_crop": {
           "type": "boolean",
           "default": false,
           "description": "Don't do any crop"

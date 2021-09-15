@@ -449,7 +449,7 @@ def deskew(context: Context) -> None:
 @Process("docrop")
 def docrop(context: Context) -> None:
     # Margin in mm
-    if context.config["args"].get("nocrop", False):
+    if context.config["args"].get("no_crop", False):
         return
     margin_horizontal = context.get_px_value("margin_horizontal", 9)
     margin_vertical = context.get_px_value("margin_vertical", 6)
@@ -890,7 +890,7 @@ def split(
                     margin_horizontal = context.get_px_value("margin_horizontal", 9)
                     margin_vertical = context.get_px_value("margin_vertical", 6)
                     context.image = cv2.imread(process_file.name)
-                    if not context.config["args"].get("nocrop", False):
+                    if not context.config["args"].get("no_crop", False):
                         crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png"
