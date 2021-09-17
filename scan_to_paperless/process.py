@@ -104,7 +104,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         if self.image is None:
             raise Exception("The image is None")
         if self.mask_ready is None:
-            return self.image
+            return self.image.copy()
 
         image = self.image.copy()
         image[self.mask_ready == 0] = (255, 255, 255)
