@@ -807,12 +807,8 @@ def split(
 
             if nb_vertical * nb_horizontal != len(assisted_split["destinations"]):
                 raise Exception(
-                    "Wrong number of destinations ({}), vertical: {}, height: {}, img '{}'".format(
-                        len(assisted_split["destinations"]),
-                        nb_horizontal,
-                        nb_vertical,
-                        assisted_split["source"],
-                    )
+                    f"Wrong number of destinations ({len(assisted_split['destinations'])}), "
+                    f"vertical: {nb_horizontal}, height: {nb_vertical}, img '{assisted_split['source']}'"
                 )
 
     for assisted_split in config["assisted_split"]:
@@ -867,12 +863,8 @@ def split(
                         CONVERT
                         + [
                             "-crop",
-                            "{}x{}+{}+{}".format(
-                                vertical_value - vertical_margin - last_x,
-                                horizontal_value - horizontal_margin - last_y,
-                                last_x,
-                                last_y,
-                            ),
+                            f"{vertical_value - vertical_margin - last_x}x"
+                            f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
                             "+repage",
                             img,
                             process_file.name,
@@ -969,9 +961,8 @@ def finalise(
             file_name = os.path.join(root_folder, f"{name}.pdf")
             if config["args"].get("tesseract", True):
                 call(
-                    "tesseract -l {} {} stdout pdf > {}".format(
-                        config["args"].get("tesseract_lang", "fra+eng"), img, file_name
-                    ),
+                    f'tesseract -l {config["args"].get("tesseract_lang", "fra+eng")} {img} stdout pdf'
+                    f" > {file_name}",
                     shell=True,  # nosec
                 )
             else:
