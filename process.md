@@ -13,7 +13,7 @@
       - **Items** *(string)*
     - **`process_count`** *(integer)*: The step number.
 - **`assisted_split`** *(array)*
-  - **Items** *(object)*: Assited split configuration. Cannot contain additional properties.
+  - **Items** *(object)*: Assisted split configuration. Cannot contain additional properties.
     - **`source`** *(string)*
     - **`destinations`** *(array)*
       - **Items** *(['integer', 'string'])*
@@ -33,17 +33,16 @@
     - **`traceback`** *(array)*
       - **Items** *(string)*
 - **`images_config`** *(object)*: Can contain additional properties.
-- **`images_status`** *(object)*: Can contain additional properties.
 ## Definitions
 
 - **`args`** *(object)*
   - **`level`** *(['boolean', 'integer'])*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%.
   - **`auto_level`** *(boolean)*: If no level specified, do auto level. Default: `False`.
-  - **`min_level`** *(integer)*: Min level if no level end no autolovel. Default: `15`.
-  - **`max_level`** *(integer)*: Max level if no level end no autolovel. Default: `15`.
+  - **`min_level`** *(integer)*: Min level if no level end no auto-level. Default: `15`.
+  - **`max_level`** *(integer)*: Max level if no level end no auto-level. Default: `15`.
   - **`no_crop`** *(boolean)*: Don't do any crop. Default: `False`.
-  - **`margin_horizontal`** *(number)*: The horizontal margin used on autodetect content [mm]. Default: `9`.
-  - **`margin_vertical`** *(number)*: The vertical margin used on autodetect content [mm]. Default: `6`.
+  - **`margin_horizontal`** *(number)*: The horizontal margin used on auto-detect content [mm]. Default: `9`.
+  - **`margin_vertical`** *(number)*: The vertical margin used on auto-detect content [mm]. Default: `6`.
   - **`dpi`** *(number)*: The DPI used to convert the mm to pixel. Default: `300`.
   - **`sharpen`** *(boolean)*: Do the sharpen. Default: `False`.
   - **`dither`** *(boolean)*: Do the dither. Default: `False`.
