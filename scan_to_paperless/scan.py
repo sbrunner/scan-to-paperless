@@ -1,3 +1,5 @@
+"""Scan a new document."""
+
 import argparse
 import glob
 import os
@@ -21,6 +23,7 @@ else:
 
 
 def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> None:
+    """Verbose implementation of check_call."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
@@ -31,6 +34,7 @@ def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> Non
 
 
 def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> bytes:
+    """Verbose implementation of check_output."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
@@ -41,6 +45,7 @@ def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> b
 
 
 def main() -> None:
+    """Scan a new document."""
     parser = argparse.ArgumentParser()
 
     presets = [e[len(CONFIG_PATH) - 4 : -5] for e in glob.glob(f"{CONFIG_PATH[:-5]}-*.yaml")]  # noqa

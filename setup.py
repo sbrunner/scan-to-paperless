@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Scan to paperlass package."""
+
 import os
 import site
 import sys
