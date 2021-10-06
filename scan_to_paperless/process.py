@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Process the scanned documents."""
+
 import argparse
 import glob
 import math
@@ -36,6 +38,7 @@ CONVERT = ["gm", "convert"]
 def rotate_image(
     image: np_ndarray_int, angle: float, background: Union[int, Tuple[int, int, int]]
 ) -> np_ndarray_int:
+    """Rotate the image."""
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
@@ -59,6 +62,7 @@ def crop_image(  # pylint: disable=too-many-arguments
     height: int,
     background: Union[Tuple[int], Tuple[int, int, int]],
 ) -> np_ndarray_int:
+    """Crop the image."""
     matrice = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         np_ndarray_int,
@@ -67,6 +71,8 @@ def crop_image(  # pylint: disable=too-many-arguments
 
 
 class Context:  # pylint: disable=too-many-instance-attributes
+    """All the context of the current image with his mask."""
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         config: scan_to_paperless.process_schema.Configuration,
@@ -75,6 +81,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         root_folder: Optional[str] = None,
         image_name: Optional[str] = None,
     ) -> None:
+        """Initialize."""
         self.config = config
         self.step = step
         self.config_file_name = config_file_name
@@ -86,6 +93,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         self.process_count = self.step.get("process_count", 0)
 
     def init_mask(self) -> None:
+        """Init the mask."""
         if self.image is None:
             raise Exception("The image is None")
         if self.mask is None:
@@ -95,12 +103,14 @@ class Context:  # pylint: disable=too-many-instance-attributes
         )
 
     def get_process_count(self) -> int:
+        """Get the step number."""
         try:
             return self.process_count
         finally:
             self.process_count += 1
 
     def get_masked(self) -> np_ndarray_int:
+        """Get the mask."""
         if self.image is None:
             raise Exception("The image is None")
         if self.mask_ready is None:
@@ -111,6 +121,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         return image
 
     def crop(self, x: int, y: int, width: int, height: int) -> None:
+        """Crop the image."""
         if self.image is None:
             raise Exception("The image is None")
         self.image = crop_image(self.image, x, y, width, height, (255, 255, 255))
@@ -118,6 +129,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
             self.mask_ready = crop_image(self.mask_ready, x, y, width, height, (0,))
 
     def rotate(self, angle: float) -> None:
+        """Rotate the image."""
         if self.image is None:
             raise Exception("The image is None")
         self.image = rotate_image(self.image, angle, (255, 255, 255))
@@ -125,6 +137,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
             self.mask_ready = rotate_image(self.mask_ready, angle, 0)
 
     def get_px_value(self, name: str, default: Union[int, float]) -> float:
+        """Get the value in px."""
         return (
             cast(float, self.config["args"].get(name, default))
             / 10
@@ -139,6 +152,7 @@ def add_intermediate_error(
     error: Exception,
     traceback_: List[str],
 ) -> None:
+    """Add in the config non fatal error."""
     if config_file_name is None:
         raise Exception("The config file name is required")
     if "intermediate_error" not in config:
@@ -162,6 +176,7 @@ def add_intermediate_error(
 
 
 def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
+    """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -170,6 +185,7 @@ def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
 
 
 def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
+    """Verbose version of check_output."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -178,6 +194,7 @@ def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
 
 
 def image_diff(image1: np_ndarray_int, image2: np_ndarray_int) -> Tuple[float, np_ndarray_int]:
+    """Do a diff between images."""
     width = max(image1.shape[1], image2.shape[1])
     height = max(image1.shape[0], image2.shape[0])
     image1 = cv2.resize(image1, (width, height))
@@ -193,16 +210,22 @@ if TYPE_CHECKING:
     from typing_extensions import Protocol
 
     class FunctionWithContextReturnsImage(Protocol):
+        """Function with context and returns an image."""
+
         def __call__(self, context: Context) -> Optional[np_ndarray_int]:
-            pass
+            """Call the function."""
 
     class FunctionWithContextReturnsNone(Protocol):
+        """Function with context and no return."""
+
         def __call__(self, context: Context) -> None:
-            pass
+            """Call the function."""
 
     class ExternalFunction(Protocol):
+        """Function that call an external tool."""
+
         def __call__(self, context: Context, source: str, destination: str) -> None:
-            pass
+            """Call the function."""
 
 
 else:
@@ -211,13 +234,23 @@ else:
     ExternalFunction = Any
 
 
+# Decorate a step of the transform
 class Process:  # pylint: disable=too-few-public-methods
+    """
+    Encapulate a transform function.
+
+    To save the process image when needed.
+    """
+
     def __init__(self, name: str, experimental: bool = False, ignore_error: bool = False) -> None:
+        """Initialize."""
         self.experimental = experimental
         self.name = name
         self.ignore_error = ignore_error
 
     def __call__(self, func: FunctionWithContextReturnsImage) -> FunctionWithContextReturnsNone:
+        """Call the function."""
+
         def wrapper(context: Context) -> None:
             if context.image is None:
                 raise Exception("The image is required")
@@ -288,6 +321,8 @@ class Process:  # pylint: disable=too-few-public-methods
 
 
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
+    """Run an external tool."""
+
     def wrapper(context: Context) -> Optional[np_ndarray_int]:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
             cv2.imwrite(source.name, context.image)
@@ -301,6 +336,7 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
 def get_contour_to_crop(
     contours: List[Tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0
 ) -> Tuple[int, int, int, int]:
+    """Get the contour to crop."""
     content = [
         contours[0][0],
         contours[0][1],
@@ -323,6 +359,8 @@ def get_contour_to_crop(
 
 def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None:
     """
+    Do a crop on an image.
+
     Margin in px
     """
     image = context.get_masked()
@@ -355,6 +393,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
 
 @Process("level")
 def level(context: Context) -> np_ndarray_int:
+    """Do the level on an image."""
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
     if context.config["args"].get("auto_level"):
@@ -386,6 +425,7 @@ def level(context: Context) -> np_ndarray_int:
 
 
 def draw_angle(image: np_ndarray_int, angle: float, color: Tuple[int, int, int]) -> None:
+    """Draw an angle on the image (as a line passed at the center of the image)."""
     angle = angle % 90
     height, width = image.shape[:2]
     center = (int(width / 2), int(height / 2))
@@ -405,11 +445,13 @@ def draw_angle(image: np_ndarray_int, angle: float, color: Tuple[int, int, int])
 
 
 def nice_angle(angle: float) -> float:
+    """Fix the angle to be between -45° and 45°."""
     return ((angle + 45) % 90) - 45
 
 
 @Process("deskew")
 def deskew(context: Context) -> None:
+    """Deskew an image."""
     images_config = context.config.setdefault("images_config", {})
     assert context.image_name
     image_config = images_config.setdefault(context.image_name, {})
@@ -448,6 +490,7 @@ def deskew(context: Context) -> None:
 
 @Process("docrop")
 def docrop(context: Context) -> None:
+    """Crop an image."""
     # Margin in mm
     if context.config["args"].get("no_crop", False):
         return
@@ -458,6 +501,7 @@ def docrop(context: Context) -> None:
 
 @Process("sharpen")
 def sharpen(context: Context) -> Optional[np_ndarray_int]:
+    """Sharpen an image."""
     if context.config["args"].get("sharpen", False) is False:
         return None
     if context.image is None:
@@ -469,6 +513,7 @@ def sharpen(context: Context) -> Optional[np_ndarray_int]:
 @Process("dither")
 @external
 def dither(context: Context, source: str, destination: str) -> None:
+    """Dither an image."""
     if context.config["args"].get("dither", False) is False:
         return
     call(CONVERT + ["+dither", source, destination])
@@ -476,6 +521,11 @@ def dither(context: Context, source: str, destination: str) -> None:
 
 @Process("autorotate", False, True)
 def autorotate(context: Context) -> None:
+    """
+    Auto rotate an image.
+
+    Put the text in the right position.
+    """
     with tempfile.NamedTemporaryFile(suffix=".png") as source:
         cv2.imwrite(source.name, context.get_masked())
         orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
@@ -486,6 +536,7 @@ def autorotate(context: Context) -> None:
 def draw_line(  # pylint: disable=too-many-arguments
     image: np_ndarray_int, vertical: bool, position: float, value: int, name: str, type_: str
 ) -> scan_to_paperless.process_schema.Limit:
+    """Draw a line on an image."""
     img_len = image.shape[0 if vertical else 1]
     color = (255, 0, 0) if vertical else (0, 255, 0)
     if vertical:
@@ -498,6 +549,7 @@ def draw_line(  # pylint: disable=too-many-arguments
 
 
 def draw_rectangle(image: np_ndarray_int, contour: Tuple[int, int, int, int]) -> None:
+    """Draw a rectangle on an image."""
     color = (0, 255, 0)
     x, y, width, height = contour
     x = int(round(x))
@@ -511,6 +563,7 @@ def draw_rectangle(image: np_ndarray_int, contour: Tuple[int, int, int, int]) ->
 
 
 def find_lines(image: np_ndarray_int, vertical: bool) -> Tuple[np_ndarray_int, Dict[str, np_ndarray_int]]:
+    """Find the lines on an image."""
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
     lines = cv2.HoughLinesP(
@@ -540,7 +593,7 @@ def find_lines(image: np_ndarray_int, vertical: bool) -> Tuple[np_ndarray_int, D
 
 
 def zero_ranges(values: np_ndarray_int) -> np_ndarray_int:
-    # Create an array that is 1 where a is 0, and pad each end with an extra 0.
+    """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
     iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))  # type: ignore
     absdiff = np.abs(np.diff(iszero))  # type: ignore
     # Runs start and end where absdiff is 1.
@@ -558,6 +611,7 @@ def find_limit_contour(
     block_size: Union[float, int] = 16,
     threshold_value_c: Union[float, int] = 100,
 ) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
+    """Find the contour for assisted split."""
     contours = find_contours(
         image, name, min_box_size, min_box_black, kernel_size, block_size, threshold_value_c
     )
@@ -582,6 +636,7 @@ def find_limit_contour(
 def fill_limits(
     image: np_ndarray_int, vertical: bool, context: Context
 ) -> List[scan_to_paperless.process_schema.Limit]:
+    """Find the limit for assisted split."""
     peaks, properties = find_lines(image, vertical)
     contours_limits, contours = find_limit_contour(
         image,
@@ -623,6 +678,7 @@ def find_contours(
     block_size: Union[float, int] = 16,
     threshold_value_c: Union[float, int] = 100,
 ) -> List[Tuple[int, int, int, int]]:
+    """Find the contours on an image."""
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     block_size = int(round(block_size / 2) * 2)
     kernel_size = int(round(kernel_size / 2))
@@ -662,6 +718,7 @@ def find_contours(
 @Process("tesseract", True)
 @external
 def tesseract(context: Context, source: str, destination: str) -> None:
+    """Run tesseract on an image."""
     del context
     call(f"tesseract -l fra+eng {source} stdout pdf > {destination}", shell=True)  # nosec
 
@@ -672,6 +729,7 @@ def transform(
     config_file_name: str,
     root_folder: str,
 ) -> scan_to_paperless.process_schema.Step:
+    """Apply the transforms on a document."""
     if "intermediate_error" in config:
         del config["intermediate_error"]
 
@@ -760,6 +818,7 @@ def transform(
 
 
 def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
+    """Save the current image in a subfolder if progress mode in enabled."""
     if force or os.environ.get("PROGRESS") == "TRUE":
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
@@ -773,6 +832,7 @@ def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
 def save_image(
     image: np_ndarray_int, root_folder: str, folder: str, name: str, force: bool = False
 ) -> Optional[str]:
+    """Save an image."""
     if force or os.environ.get("PROGRESS") == "TRUE":
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
@@ -784,6 +844,12 @@ def save_image(
 
 
 class Item(TypedDict, total=False):
+    """
+    Image content and position.
+
+    Used to create the final document
+    """
+
     pos: int
     file: IO[bytes]
 
@@ -793,6 +859,7 @@ def split(
     step: scan_to_paperless.process_schema.Step,
     root_folder: str,
 ) -> scan_to_paperless.process_schema.Step:
+    """Split an image using the assisted split instructions."""
     process_count = 0
     for assisted_split in config["assisted_split"]:
         if assisted_split["limits"]:
@@ -924,15 +991,16 @@ def split(
     return {"sources": transformed_images, "name": "finalise", "process_count": process_count}
 
 
-def finalise(
+def finalize(
     config: scan_to_paperless.process_schema.Configuration,
     step: scan_to_paperless.process_schema.Step,
     root_folder: str,
 ) -> None:
     """
-    Final step on document generation (convert in one pdf and copy with the right name in the cusume folder)
-    """
+    Do final step on document generation.
 
+    convert in one pdf and copy with the right name in the consume folder
+    """
     destination = config["destination"]
 
     if os.path.exists(destination):
@@ -976,6 +1044,7 @@ def finalise(
 
 
 def write_error(root_folder: str, message: str) -> None:
+    """Write the exception in an error file."""
     if not os.path.exists(os.path.join(root_folder, "error.yaml")):
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
@@ -984,6 +1053,7 @@ def write_error(root_folder: str, message: str) -> None:
 
 
 def is_sources_present(images: List[str], root_folder: str) -> bool:
+    """Are sources present for the next step."""
     for img in images:
         if not os.path.exists(os.path.join(root_folder, img)):
             print(f"Missing {root_folder} - {img}")
@@ -992,6 +1062,7 @@ def is_sources_present(images: List[str], root_folder: str) -> bool:
 
 
 def save_config(config: scan_to_paperless.process_schema.Configuration, config_file_name: str) -> None:
+    """Save the configuration."""
     yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
@@ -1000,9 +1071,7 @@ def save_config(config: scan_to_paperless.process_schema.Configuration, config_f
 
 
 def main() -> None:
-    """
-    Main function
-    """
+    """Process the scanned documents."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", default="/source", help="The folder to be processed")
     args = parser.parse_args()
@@ -1076,7 +1145,7 @@ def main() -> None:
                         next_step = split(config, step, root_folder)
                     elif step["name"] == "finalise":
                         print("Finalise")
-                        finalise(config, step, root_folder)
+                        finalize(config, step, root_folder)
                         done = True
 
                     if done and os.environ.get("PROGRESS", "FALSE") != "TRUE":

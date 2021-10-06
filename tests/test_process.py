@@ -138,7 +138,7 @@ def test_assisted_split_full(type_, limit):
     assert step["name"] == "finalise"
     check_image_file(root_folder, step["sources"][0], f"assisted-split-{type_}-3")
     check_image_file(root_folder, step["sources"][1], f"assisted-split-{type_}-4")
-    process.finalise(config, step, root_folder)
+    process.finalize(config, step, root_folder)
     pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
@@ -202,7 +202,7 @@ def test_assisted_split_join_full():
     assert len(step["sources"]) == 1
     check_image_file(root_folder, step["sources"][0], "assisted-split-join-1")
 
-    process.finalise(config, step, root_folder)
+    process.finalize(config, step, root_folder)
     pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
@@ -302,7 +302,7 @@ def test_full(progress, experimental):
         assert not os.path.exists(os.path.join(root_folder, "tesseract"))
 
     assert step["name"] == "finalise"
-    process.finalise(config, step, root_folder)
+    process.finalize(config, step, root_folder)
     pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
@@ -344,7 +344,7 @@ def test_credit_card_full():
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalise"
-    process.finalise(config, step, root_folder)
+    process.finalize(config, step, root_folder)
     pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]

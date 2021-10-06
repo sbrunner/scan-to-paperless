@@ -1,3 +1,4 @@
+"""The scan to Paperless main module."""
 import os.path
 import sys
 from typing import cast
@@ -22,6 +23,7 @@ CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILENAME)
 
 
 def get_config(config_filename: str) -> stp_config.Configuration:
+    """Get the configuration."""
     if os.path.exists(config_filename):
         yaml = YAML()
         yaml.default_flow_style = False
