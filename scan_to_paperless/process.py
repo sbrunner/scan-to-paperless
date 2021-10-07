@@ -27,17 +27,17 @@ from skimage.metrics import structural_similarity
 import scan_to_paperless.process_schema
 
 if TYPE_CHECKING:
-    np_ndarray_int = np.ndarray[None, np.dtype[np.uint8]]  # pylint: disable=unsubscriptable-object
+    NpNdarrayInt = np.ndarray[np.uint8, Any]
 else:
-    np_ndarray_int = np.ndarray  # pylint: disable=invalid-name
+    NpNdarrayInt = np.ndarray
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
 
 
 def rotate_image(
-    image: np_ndarray_int, angle: float, background: Union[int, Tuple[int, int, int]]
-) -> np_ndarray_int:
+    image: NpNdarrayInt, angle: float, background: Union[int, Tuple[int, int, int]]
+) -> NpNdarrayInt:
     """Rotate the image."""
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
@@ -49,23 +49,23 @@ def rotate_image(
     rot_mat[1, 2] += (width - old_width) / 2
     rot_mat[0, 2] += (height - old_height) / 2
     return cast(
-        np_ndarray_int,
+        NpNdarrayInt,
         cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background),
     )
 
 
 def crop_image(  # pylint: disable=too-many-arguments
-    image: np_ndarray_int,
+    image: NpNdarrayInt,
     x: int,
     y: int,
     width: int,
     height: int,
     background: Union[Tuple[int], Tuple[int, int, int]],
-) -> np_ndarray_int:
+) -> NpNdarrayInt:
     """Crop the image."""
     matrice = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
-        np_ndarray_int,
+        NpNdarrayInt,
         cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background),
     )
 
@@ -87,9 +87,9 @@ class Context:  # pylint: disable=too-many-instance-attributes
         self.config_file_name = config_file_name
         self.root_folder = root_folder
         self.image_name = image_name
-        self.image: Optional[np_ndarray_int] = None
-        self.mask: Optional[np_ndarray_int] = None
-        self.mask_ready: Optional[np_ndarray_int] = None
+        self.image: Optional[NpNdarrayInt] = None
+        self.mask: Optional[NpNdarrayInt] = None
+        self.mask_ready: Optional[NpNdarrayInt] = None
         self.process_count = self.step.get("process_count", 0)
 
     def init_mask(self) -> None:
@@ -109,7 +109,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         finally:
             self.process_count += 1
 
-    def get_masked(self) -> np_ndarray_int:
+    def get_masked(self) -> NpNdarrayInt:
         """Get the mask."""
         if self.image is None:
             raise Exception("The image is None")
@@ -193,7 +193,7 @@ def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
     return cast(bytes, subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)).decode()  # nosec
 
 
-def image_diff(image1: np_ndarray_int, image2: np_ndarray_int) -> Tuple[float, np_ndarray_int]:
+def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> Tuple[float, NpNdarrayInt]:
     """Do a diff between images."""
     width = max(image1.shape[1], image2.shape[1])
     height = max(image1.shape[0], image2.shape[0])
@@ -212,7 +212,7 @@ if TYPE_CHECKING:
     class FunctionWithContextReturnsImage(Protocol):
         """Function with context and returns an image."""
 
-        def __call__(self, context: Context) -> Optional[np_ndarray_int]:
+        def __call__(self, context: Context) -> Optional[NpNdarrayInt]:
             """Call the function."""
 
     class FunctionWithContextReturnsNone(Protocol):
@@ -323,12 +323,12 @@ class Process:  # pylint: disable=too-few-public-methods
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
-    def wrapper(context: Context) -> Optional[np_ndarray_int]:
+    def wrapper(context: Context) -> Optional[NpNdarrayInt]:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
             cv2.imwrite(source.name, context.image)
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
                 func(context, source.name, destination.name)
-                return cast(np_ndarray_int, cv2.imread(destination.name))
+                return cast(NpNdarrayInt, cv2.imread(destination.name))
 
     return wrapper
 
@@ -392,13 +392,13 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
 
 
 @Process("level")
-def level(context: Context) -> np_ndarray_int:
+def level(context: Context) -> NpNdarrayInt:
     """Do the level on an image."""
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
     if context.config["args"].get("auto_level"):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
-        return cast(np_ndarray_int, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+        return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
     level_ = context.config["args"].get("level")
     min_p100 = 0.0
     max_p100 = 100.0
@@ -417,14 +417,14 @@ def level(context: Context) -> np_ndarray_int:
 
     chanel_y = img_yuv[:, :, 0]
     mins = np.zeros(chanel_y.shape)
-    maxs: np_ndarray_int = np.zeros(chanel_y.shape) + 255
+    maxs: NpNdarrayInt = np.zeros(chanel_y.shape) + 255
 
     values = (chanel_y - min_) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
-    return cast(np_ndarray_int, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+    return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
 
-def draw_angle(image: np_ndarray_int, angle: float, color: Tuple[int, int, int]) -> None:
+def draw_angle(image: NpNdarrayInt, angle: float, color: Tuple[int, int, int]) -> None:
     """Draw an angle on the image (as a line passed at the center of the image)."""
     angle = angle % 90
     height, width = image.shape[:2]
@@ -460,7 +460,7 @@ def deskew(context: Context) -> None:
         image_status = context.config["images_status"][context.image_name]
         image = context.get_masked()
         grayscale = rgb2gray(image)
-        image = cast(np_ndarray_int, context.image).copy()
+        image = cast(NpNdarrayInt, context.image).copy()
 
         angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
         if angle is not None:
@@ -500,14 +500,14 @@ def docrop(context: Context) -> None:
 
 
 @Process("sharpen")
-def sharpen(context: Context) -> Optional[np_ndarray_int]:
+def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
     if context.config["args"].get("sharpen", False) is False:
         return None
     if context.image is None:
         raise Exception("The image is required")
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
-    return cast(np_ndarray_int, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
+    return cast(NpNdarrayInt, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
 
 
 @Process("dither")
@@ -534,7 +534,7 @@ def autorotate(context: Context) -> None:
 
 
 def draw_line(  # pylint: disable=too-many-arguments
-    image: np_ndarray_int, vertical: bool, position: float, value: int, name: str, type_: str
+    image: NpNdarrayInt, vertical: bool, position: float, value: int, name: str, type_: str
 ) -> scan_to_paperless.process_schema.Limit:
     """Draw a line on an image."""
     img_len = image.shape[0 if vertical else 1]
@@ -548,7 +548,7 @@ def draw_line(  # pylint: disable=too-many-arguments
     return {"name": name, "type": type_, "value": int(position), "vertical": vertical, "margin": 0}
 
 
-def draw_rectangle(image: np_ndarray_int, contour: Tuple[int, int, int, int]) -> None:
+def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int]) -> None:
     """Draw a rectangle on an image."""
     color = (0, 255, 0)
     x, y, width, height = contour
@@ -562,7 +562,7 @@ def draw_rectangle(image: np_ndarray_int, contour: Tuple[int, int, int, int]) ->
     cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
 
 
-def find_lines(image: np_ndarray_int, vertical: bool) -> Tuple[np_ndarray_int, Dict[str, np_ndarray_int]]:
+def find_lines(image: NpNdarrayInt, vertical: bool) -> Tuple[NpNdarrayInt, Dict[str, NpNdarrayInt]]:
     """Find the lines on an image."""
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
@@ -592,17 +592,17 @@ def find_lines(image: np_ndarray_int, vertical: bool) -> Tuple[np_ndarray_int, D
     return peaks, properties
 
 
-def zero_ranges(values: np_ndarray_int) -> np_ndarray_int:
+def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
     iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))  # type: ignore
     absdiff = np.abs(np.diff(iszero))  # type: ignore
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
-    return cast(np_ndarray_int, ranges)
+    return cast(NpNdarrayInt, ranges)
 
 
 def find_limit_contour(
-    image: np_ndarray_int,
+    image: NpNdarrayInt,
     name: str,
     vertical: bool,
     min_box_size: float,
@@ -634,7 +634,7 @@ def find_limit_contour(
 
 
 def fill_limits(
-    image: np_ndarray_int, vertical: bool, context: Context
+    image: NpNdarrayInt, vertical: bool, context: Context
 ) -> List[scan_to_paperless.process_schema.Limit]:
     """Find the limit for assisted split."""
     peaks, properties = find_lines(image, vertical)
@@ -670,7 +670,7 @@ def fill_limits(
 
 
 def find_contours(
-    image: np_ndarray_int,
+    image: NpNdarrayInt,
     name: str,
     min_size: Union[float, int],
     min_black: Union[float, int],
@@ -830,7 +830,7 @@ def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
 
 
 def save_image(
-    image: np_ndarray_int, root_folder: str, folder: str, name: str, force: bool = False
+    image: NpNdarrayInt, root_folder: str, folder: str, name: str, force: bool = False
 ) -> Optional[str]:
     """Save an image."""
     if force or os.environ.get("PROGRESS") == "TRUE":
