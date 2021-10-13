@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Tuple, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -455,9 +455,9 @@ def deskew(context: Context) -> None:
     images_config = context.config.setdefault("images_config", {})
     assert context.image_name
     image_config = images_config.setdefault(context.image_name, {})
+    image_status = image_config.setdefault("status", {})
     angle = image_config.setdefault("angle", None)
     if angle is None:
-        image_status = context.config["images_status"][context.image_name]
         image = context.get_masked()
         grayscale = rgb2gray(image)
         image = cast(NpNdarrayInt, context.image).copy()
@@ -466,13 +466,19 @@ def deskew(context: Context) -> None:
         if angle is not None:
             image_status["angle"] = nice_angle(float(angle))
             draw_angle(image, angle, (255, 0, 0))
-        image_status["average_deviation"] = float(average_deviation)
 
-        float_angles = set()
+        float_angles: Set[float] = set()
+        average_deviation_float = float(average_deviation)
+        image_status["average_deviation"] = average_deviation_float
+        average_deviation2 = nice_angle(average_deviation_float - 45)
+        image_status["average_deviation2"] = average_deviation2
+        float_angles.add(average_deviation2)
+
         for current_angles in angles:
             for current_angle in current_angles:
                 float_angles.add(nice_angle(float(current_angle)))
-                draw_angle(image, current_angle, (0, 255, 0))
+        for current_angle in float_angles:
+            draw_angle(image, current_angle, (0, 255, 0))
         image_status["angles"] = list(float_angles)
 
         assert context.root_folder
@@ -744,8 +750,9 @@ def transform(
         if context.image_name is None:
             raise Exception("Image name is required")
         context.image = cv2.imread(os.path.join(root_folder, img))
-        images_status = context.config.setdefault("images_status", {})
-        image_status = images_status.setdefault(context.image_name, {})
+        images_config = context.config.setdefault("images_config", {})
+        image_config = images_config.setdefault(context.image_name, {})
+        image_status = image_config.setdefault("status", {})
         assert context.image is not None
         image_status["size"] = context.image.shape[:2][::-1]
         mask_file = os.path.join(os.path.dirname(root_folder), "mask.png")

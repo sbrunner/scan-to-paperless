@@ -21,12 +21,12 @@
         },
         "min_level": {
           "type": "integer",
-          "description": "Min level if no level end no autolovel",
+          "description": "Min level if no level end no auto-level",
           "default": 15
         },
         "max_level": {
           "type": "integer",
-          "description": "Max level if no level end no autolovel",
+          "description": "Max level if no level end no auto-level",
           "default": 15
         },
         "no_crop": {
@@ -37,12 +37,12 @@
         "margin_horizontal": {
           "type": "number",
           "default": 9,
-          "description": "The horizontal margin used on autodetect content [mm]"
+          "description": "The horizontal margin used on auto-detect content [mm]"
         },
         "margin_vertical": {
           "type": "number",
           "default": 6,
-          "description": "The vertical margin used on autodetect content [mm]"
+          "description": "The vertical margin used on auto-detect content [mm]"
         },
         "dpi": {
           "type": "number",
@@ -72,7 +72,7 @@
         "assisted_split": {
           "type": "boolean",
           "default": false,
-          "description": "Do en assited split"
+          "description": "Do en assisted split"
         },
         "min_box_size_crop": {
           "type": "number",

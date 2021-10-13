@@ -10,11 +10,11 @@ Arguments = TypedDict(
         #
         # default: False
         "auto_level": bool,
-        # Min level if no level end no autolovel
+        # Min level if no level end no auto-level
         #
         # default: 15
         "min_level": int,
-        # Max level if no level end no autolovel
+        # Max level if no level end no auto-level
         #
         # default: 15
         "max_level": int,
@@ -22,11 +22,11 @@ Arguments = TypedDict(
         #
         # default: False
         "no_crop": bool,
-        # The horizontal margin used on autodetect content [mm]
+        # The horizontal margin used on auto-detect content [mm]
         #
         # default: 9
         "margin_horizontal": Union[int, float],
-        # The vertical margin used on autodetect content [mm]
+        # The vertical margin used on auto-detect content [mm]
         #
         # default: 6
         "margin_vertical": Union[int, float],
@@ -101,7 +101,7 @@ Arguments = TypedDict(
 
 # Assisted split
 #
-# Assited split configuration
+# Assisted split configuration
 AssistedSplit = TypedDict(
     "AssistedSplit",
     {
@@ -143,7 +143,6 @@ Configuration = TypedDict(
         # The ignored errors
         "intermediate_error": List["IntermediateError"],
         "images_config": Dict[str, "_ConfigurationImagesConfigAdditionalproperties"],
-        "images_status": Dict[str, "_ConfigurationImagesStatusAdditionalproperties"],
     },
     total=False,
 )
@@ -197,20 +196,25 @@ Step = TypedDict(
 _ConfigurationImagesConfigAdditionalproperties = TypedDict(
     "_ConfigurationImagesConfigAdditionalproperties",
     {
-        # The used angle to deskex, can be change, restart by deleting one of the generated images
+        # The used angle to deskew, can be change, restart by deleting one of the generated images
         "angle": Union[Union[int, float], None],
+        # WARNING: The required are not correctly taken in account,
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+        "status": "_ConfigurationImagesConfigAdditionalpropertiesStatus",
     },
     total=False,
 )
 
 
-_ConfigurationImagesStatusAdditionalproperties = TypedDict(
-    "_ConfigurationImagesStatusAdditionalproperties",
+_ConfigurationImagesConfigAdditionalpropertiesStatus = TypedDict(
+    "_ConfigurationImagesConfigAdditionalpropertiesStatus",
     {
         # The measured deskew angle
         "angle": Union[int, float],
         # The measured deskew angle deviation
         "average_deviation": Union[int, float],
+        # The measured deskew angle deviation, corrected
+        "average_deviation2": Union[int, float],
         # The measured possible deskew angles, visible on the generated image
         "angles": List[Union[int, float]],
         # The image dimensions

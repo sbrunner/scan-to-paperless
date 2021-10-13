@@ -10,11 +10,11 @@ Arguments = TypedDict(
         #
         # default: False
         "auto_level": bool,
-        # Min level if no level end no autolovel
+        # Min level if no level end no auto-level
         #
         # default: 15
         "min_level": int,
-        # Max level if no level end no autolovel
+        # Max level if no level end no auto-level
         #
         # default: 15
         "max_level": int,
@@ -22,11 +22,11 @@ Arguments = TypedDict(
         #
         # default: False
         "no_crop": bool,
-        # The horizontal margin used on autodetect content [mm]
+        # The horizontal margin used on auto-detect content [mm]
         #
         # default: 9
         "margin_horizontal": Union[int, float],
-        # The vertical margin used on autodetect content [mm]
+        # The vertical margin used on auto-detect content [mm]
         #
         # default: 6
         "margin_vertical": Union[int, float],
@@ -50,7 +50,7 @@ Arguments = TypedDict(
         #
         # default: fra+eng
         "tesseract_lang": str,
-        # Do en assited split
+        # Do en assisted split
         #
         # default: False
         "assisted_split": bool,
