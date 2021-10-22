@@ -6,7 +6,7 @@ RUN \
     apt install --assume-yes --no-install-recommends \
     graphicsmagick pdftk-java \
     tesseract-ocr tesseract-ocr-fra tesseract-ocr-deu tesseract-ocr-eng \
-    libimage-exiftool-perl software-properties-common python3-pip && \
+    libimage-exiftool-perl software-properties-common python3-pip ghostscript && \
     apt clean && \
     rm --recursive --force /var/lib/apt/lists/* /root/.cache /var/cache/*
 

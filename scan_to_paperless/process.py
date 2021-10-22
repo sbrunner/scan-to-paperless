@@ -1044,10 +1044,14 @@ def finalize(
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
 
-    call(["pdftk"] + pdf + ["output", destination, "compress"])
+    intermediate_file = os.path.join(root_folder, "intermediate.pdf")
+    call(["pdftk"] + pdf + ["output", intermediate_file, "compress"])
+
     exiftool_cmd = ["exiftool", "-overwrite_original_in_place"]
-    exiftool_cmd.append(destination)
+    exiftool_cmd.append(intermediate_file)
     call(exiftool_cmd)
+
+    call(["ps2pdf", intermediate_file, destination])
 
 
 def write_error(root_folder: str, message: str) -> None:
