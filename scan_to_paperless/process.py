@@ -1170,16 +1170,9 @@ def main() -> None:
                 print_waiting = True
 
                 out = {"error": str(exception), "traceback": trace.split("\n")}
-                if hasattr("returncode", exception):
-                    out["returncode"] = exception.returncode
-                if hasattr("cmd", exception):
-                    out["cmd"] = exception.cmd
-                if hasattr("output", exception):
-                    out["output"] = exception.output
-                if hasattr("stdout", exception):
-                    out["stdout"] = exception.stdout
-                if hasattr("stderr", exception):
-                    out["stderr"] = exception.stderr
+                for attribute in ("returncode", "cmd", "output", "stdout", "stderr"):
+                    if hasattr(exception, attribute):
+                        out[attribute] = getattr(exception, attribute)
 
                 yaml = YAML(typ="safe")
                 yaml.default_flow_style = False
