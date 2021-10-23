@@ -1054,15 +1054,6 @@ def finalize(
     call(["ps2pdf", intermediate_file, destination])
 
 
-def write_error(root_folder: str, message: str) -> None:
-    """Write the exception in an error file."""
-    if not os.path.exists(os.path.join(root_folder, "error.yaml")):
-        yaml = YAML(typ="safe")
-        yaml.default_flow_style = False
-        with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
-            yaml.dump({"error": message}, error_file)
-
-
 def is_sources_present(images: List[str], root_folder: str) -> bool:
     """Are sources present for the next step."""
     for img in images:
@@ -1173,20 +1164,25 @@ def main() -> None:
                             pass
             except Exception as exception:
                 print(exception)
+                trace = traceback.format_exc()
+                print(trace)
                 print_waiting = True
                 yaml = YAML(typ="safe")
                 yaml.default_flow_style = False
                 try:
                     with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                         yaml.dump(
-                            {"error": exception, "traceback": traceback.format_exc().split("\n")},
+                            {"error": str(exception), "traceback": trace.split("\n")},
                             error_file,
                         )
                 except Exception as exception2:
                     print(exception2)
+                    print(traceback.format_exc())
+                    yaml = YAML()
+                    yaml.default_flow_style = False
                     with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                         yaml.dump(
-                            {"error": str(exception2), "traceback": traceback.format_exc().split("\n")},
+                            {"error": str(exception), "traceback": trace.split("\n")},
                             error_file,
                         )
 
