@@ -472,7 +472,8 @@ def deskew(context: Context) -> None:
         image_status["average_deviation"] = average_deviation_float
         average_deviation2 = nice_angle(average_deviation_float - 45)
         image_status["average_deviation2"] = average_deviation2
-        float_angles.add(average_deviation2)
+        if math.isfinite(average_deviation2):
+            float_angles.add(average_deviation2)
 
         for current_angles in angles:
             for current_angle in current_angles:
