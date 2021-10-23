@@ -1168,24 +1168,31 @@ def main() -> None:
                 trace = traceback.format_exc()
                 print(trace)
                 print_waiting = True
+
+                out = {"error": str(exception), "traceback": trace.split("\n")}
+                if hasattr("returncode", exception):
+                    out["returncode"] = exception.returncode
+                if hasattr("cmd", exception):
+                    out["cmd"] = exception.cmd
+                if hasattr("output", exception):
+                    out["output"] = exception.output
+                if hasattr("stdout", exception):
+                    out["stdout"] = exception.stdout
+                if hasattr("stderr", exception):
+                    out["stderr"] = exception.stderr
+
                 yaml = YAML(typ="safe")
                 yaml.default_flow_style = False
                 try:
                     with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
-                        yaml.dump(
-                            {"error": str(exception), "traceback": trace.split("\n")},
-                            error_file,
-                        )
+                        yaml.dump(out, error_file)
                 except Exception as exception2:
                     print(exception2)
                     print(traceback.format_exc())
                     yaml = YAML()
                     yaml.default_flow_style = False
                     with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
-                        yaml.dump(
-                            {"error": str(exception), "traceback": trace.split("\n")},
-                            error_file,
-                        )
+                        yaml.dump(out, error_file)
 
         sys.stdout.flush()
         if not dirty:
