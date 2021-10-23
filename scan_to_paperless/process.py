@@ -28,8 +28,10 @@ import scan_to_paperless.process_schema
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
+    CompletedProcess = subprocess.CompletedProcess[str]  # pylint: disable=unsubscriptable-object
 else:
     NpNdarrayInt = np.ndarray
+    CompletedProcess = subprocess.CompletedProcess
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
@@ -181,7 +183,16 @@ def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     sys.stdout.flush()
-    subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)  # nosec
+    subprocess.check_call(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)  # nosec
+
+
+def run(cmd: Union[str, List[str]], **kwargs: Any) -> CompletedProcess:
+    """Verbose version of check_output with no returns."""
+    if isinstance(cmd, list):
+        cmd = [str(element) for element in cmd]
+    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    sys.stdout.flush()
+    return subprocess.run(cmd, stderr=subprocess.PIPE, check=True, **kwargs)  # nosec
 
 
 def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
@@ -1037,11 +1048,20 @@ def finalize(
             name = os.path.splitext(os.path.basename(img))[0]
             file_name = os.path.join(root_folder, f"{name}.pdf")
             if config["args"].get("tesseract", True):
-                call(
-                    f'tesseract -l {config["args"].get("tesseract_lang", "fra+eng")} {img} stdout pdf'
-                    f" > {file_name}",
-                    shell=True,  # nosec
-                )
+                with open(file_name, "w", encoding="utf8") as output_file:
+                    process = run(
+                        [
+                            "tesseract",
+                            "-l",
+                            config["args"].get("tesseract_lang", "fra+eng"),
+                            img,
+                            "stdout",
+                            "pdf",
+                        ],
+                        stdout=output_file,
+                    )
+                    if process.stderr:
+                        print(process.stderr)
             else:
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
