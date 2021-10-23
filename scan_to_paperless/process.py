@@ -476,7 +476,8 @@ def deskew(context: Context) -> None:
 
         for current_angles in angles:
             for current_angle in current_angles:
-                float_angles.add(nice_angle(float(current_angle)))
+                if current_angle is not None:
+                    float_angles.add(nice_angle(float(current_angle)))
         for current_angle in float_angles:
             draw_angle(image, current_angle, (0, 255, 0))
         image_status["angles"] = list(float_angles)
