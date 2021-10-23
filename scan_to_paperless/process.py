@@ -476,7 +476,7 @@ def deskew(context: Context) -> None:
 
         for current_angles in angles:
             for current_angle in current_angles:
-                if current_angle is not None:
+                if current_angle is not None and math.isfinite(float(current_angle)):
                     float_angles.add(nice_angle(float(current_angle)))
         for current_angle in float_angles:
             draw_angle(image, current_angle, (0, 255, 0))
