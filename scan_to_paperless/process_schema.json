@@ -20,12 +20,12 @@
         },
         "min_level": {
           "type": "integer",
-          "description": "Min level if no level end no autolovel",
+          "description": "Min level if no level end no auto-level",
           "default": 15
         },
         "max_level": {
           "type": "integer",
-          "description": "Max level if no level end no autolovel",
+          "description": "Max level if no level end no auto-level",
           "default": 15
         },
         "no_crop": {
@@ -36,12 +36,12 @@
         "margin_horizontal": {
           "type": "number",
           "default": 9,
-          "description": "The horizontal margin used on autodetect content [mm]"
+          "description": "The horizontal margin used on auto-detect content [mm]"
         },
         "margin_vertical": {
           "type": "number",
           "default": 6,
-          "description": "The vertical margin used on autodetect content [mm]"
+          "description": "The vertical margin used on auto-detect content [mm]"
         },
         "dpi": {
           "type": "number",
@@ -170,7 +170,7 @@
 
         "type": "object",
         "additionalProperties": false,
-        "description": "Assited split configuration",
+        "description": "Assisted split configuration",
         "properties": {
           "source": {
             "type": "string",
@@ -256,37 +256,38 @@
         "properties": {
           "angle": {
             "type": ["number", "null"],
-            "description": "The used angle to deskex, can be change, restart by deleting one of the generated images"
-          }
-        }
-      }
-    },
-    "images_status": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "angle": {
-            "type": "number",
-            "description": "The measured deskew angle"
+            "description": "The used angle to deskew, can be change, restart by deleting one of the generated images"
           },
-          "average_deviation": {
-            "type": "number",
-            "description": "The measured deskew angle deviation"
-          },
-          "angles": {
-            "type": "array",
-            "description": "The measured possible deskew angles, visible on the generated image",
-            "items": {
-              "type": "number"
-            }
-          },
-          "size": {
-            "type": "array",
-            "description": "The image dimensions",
-            "items": {
-              "type": "number"
+          "status": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "angle": {
+                "type": "number",
+                "description": "The measured deskew angle"
+              },
+              "average_deviation": {
+                "type": "number",
+                "description": "The measured deskew angle deviation"
+              },
+              "average_deviation2": {
+                "type": "number",
+                "description": "The measured deskew angle deviation, corrected"
+              },
+              "angles": {
+                "type": "array",
+                "description": "The measured possible deskew angles, visible on the generated image",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "size": {
+                "type": "array",
+                "description": "The image dimensions",
+                "items": {
+                  "type": "number"
+                }
+              }
             }
           }
         }

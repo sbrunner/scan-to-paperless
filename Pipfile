@@ -4,19 +4,19 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "==1.21.2"
+numpy = "==1.21.3"
 scipy = "==1.7.1"
 scikit-image = "==0.18.3"
-opencv-python-headless = "==4.5.3.56"
-deskew = "==0.10.33"
+opencv-python-headless = "==4.5.4.58"
+deskew = "==0.10.36"
 jsonschema-gentypes = "==0.9.4"
 "ruamel.yaml" = "==0.17.4"
 
 [dev-packages]
-prospector = {extras = ["with_bandit", "with_mypy", "with_pyroma"], version = "==1.5.0.1"}
-flake8 = "==3.8.4"
+prospector = {extras = ["with_bandit", "with_mypy", "with_pyroma"], version = "==1.5.1"}
+flake8 = "==3.9.2"
 pytest = "==6.2.5"
-coverage = "==5.5"
+coverage = "==6.0.2"
 pytest-profiling = "==1.7.0"
 argcomplete = "==1.12.3"
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Get the status of current scan."""
+
 import glob
 import os
 import re
@@ -12,6 +14,7 @@ from scan_to_paperless import CONFIG_PATH, get_config
 
 
 def main() -> None:
+    """Get the status of current scan."""
     config = get_config(CONFIG_PATH)
     for folder in glob.glob(os.path.join(os.path.expanduser(config["scan_folder"]), "*")):
         print(re.sub(r".", "-", folder))
