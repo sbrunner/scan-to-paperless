@@ -8,6 +8,8 @@ updates:
       interval: daily
     ignore:
       - dependency-name: none
+    allow:
+      - dependency-type: all
 
   - package-ecosystem: docker
     directory: '/'
