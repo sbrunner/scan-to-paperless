@@ -49,11 +49,11 @@
         },
         "deskew": {
             "hashes": [
-                "sha256:34da4600b426e317da25d439fceef723e1bd905b90ab295aff5a1b4e2feeb563",
-                "sha256:506f8e6a1e44f989ba4b9cc39ce21aa97f58d9b204c2f9709aad274fbba2bae0"
+                "sha256:168ba1bdfb62579a0b2bc2241f8f3046cc646c8fa38765608baad618432f7655",
+                "sha256:b58111249980ff87a810bd6947aa199fb829105361053cecd79963a7b62a06af"
             ],
             "index": "pypi",
-            "version": "==0.10.36"
+            "version": "==0.10.37"
         },
         "idna": {
             "hashes": [
