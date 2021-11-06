@@ -88,7 +88,7 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0}),
+        ("lines", {"name": "VL1", "type": "line detection", "value": 1893, "vertical": True, "margin": 0}),
         (
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 1616, "vertical": True, "margin": 0},
@@ -112,6 +112,7 @@ def test_assisted_split_full(type_, limit):
             "level": True,
             "tesseract": False,
             "sharpen": True,
+            "num_angles": 179,
         },
         "destination": os.path.join(root_folder, "final.pdf"),
     }
@@ -172,11 +173,7 @@ def test_assisted_split_join_full():
         )
 
     config = {
-        "args": {
-            "assisted_split": True,
-            "level": True,
-            "tesseract": False,
-        },
+        "args": {"assisted_split": True, "level": True, "tesseract": False, "num_angles": 179},
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -281,10 +278,7 @@ def test_full(progress, experimental):
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {
-            "level": True,
-            "tesseract": False,
-        },
+        "args": {"level": True, "tesseract": False, "num_angles": 179},
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
@@ -329,10 +323,7 @@ def test_credit_card_full():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {
-            "level": True,
-            "append_credit_card": True,
-        },
+        "args": {"level": True, "append_credit_card": True, "num_angles": 179},
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -388,7 +379,7 @@ def test_empty():
 
 
 # @pytest.mark.skip(reason='for test')
-@pytest.mark.parametrize("test,args", [("600", {"dpi": 600})])
+@pytest.mark.parametrize("test,args", [("600", {"dpi": 600, "num_angles": 179})])
 def test_custom_process(test, args):
     init_test()
     root_folder = f"/results/600"

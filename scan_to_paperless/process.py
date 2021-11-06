@@ -473,7 +473,9 @@ def deskew(context: Context) -> None:
         grayscale = rgb2gray(image)
         image = cast(NpNdarrayInt, context.image).copy()
 
-        angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
+        angle, angles, average_deviation, _ = determine_skew_dev(
+            grayscale, num_angles=context.config["args"].get("num_angles", 1800)
+        )
         if angle is not None:
             image_status["angle"] = nice_angle(float(angle))
             draw_angle(image, angle, (255, 0, 0))
