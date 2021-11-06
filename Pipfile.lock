@@ -65,11 +65,11 @@
         },
         "imageio": {
             "hashes": [
-                "sha256:a2e90fdd4cabc49e9be376764fd1f64829d249ff98deb32a228457b425e037de",
-                "sha256:eafef00eba2350d10f8d1eb9abdb7ebab07120f2c628c52634e9fc773588b83f"
+                "sha256:469c59fe71c81cdc41c84f842d62dd2739a08fac8cb85f5a518a92a6227e2ed6",
+                "sha256:93ee376a8dc96182ead8d773c3ac2becf79c6f2b93d38f31d7ac036c62a6c72e"
             ],
-            "markers": "python_version >= '3.5'",
-            "version": "==2.10.2"
+            "index": "pypi",
+            "version": "==2.10.3"
         },
         "importlib-resources": {
             "hashes": [
@@ -81,11 +81,11 @@
         },
         "jsonschema": {
             "hashes": [
-                "sha256:2b563117f3659a7f433dffe1371c88f52115b79133493f376f15724b9caa7efa",
-                "sha256:e2d3601321ac74d38214e2853300ae740cd07e53d919a15862b8c71f9d840574"
+                "sha256:2a0f162822a64d95287990481b45d82f096e99721c86534f48201b64ebca6e8c",
+                "sha256:390713469ae64b8a58698bb3cbc3859abe6925b565a973f87323ef21b09a27a8"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==4.2.0"
+            "version": "==4.2.1"
         },
         "jsonschema-gentypes": {
             "hashes": [
