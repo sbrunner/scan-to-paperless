@@ -67,7 +67,7 @@ def main() -> None:
         action="store_true",
         help="Append vertically the credit card",
     )
-    parser.add_argument("--assisted-split", action="store_true", help="Split operation, se help")
+    parser.add_argument("--assisted-split", action="store_true", help="Split operation, see help")
     parser.add_argument(
         "--config",
         action="store_true",
