@@ -73,11 +73,11 @@
         },
         "imageio": {
             "hashes": [
-                "sha256:3b0ce2bdf380c38d2686694870a85e92adc31c736bb8071596325b64d790661b",
-                "sha256:ec90094501fdb1ba3cc256f4cefbcefe0ad63ea9cf360a476383f97666b16c66"
+                "sha256:68457947e29c0341f12ff459d63019e386bf4dadc38c11ffa15941fe6d55f40e",
+                "sha256:f3f6e9a73d62f12348f098364219f4fc64462760bc07abfe16d14db0e4974845"
             ],
-            "markers": "python_version >= '3.5'",
-            "version": "==2.10.4"
+            "index": "pypi",
+            "version": "==2.10.5"
         },
         "importlib-resources": {
             "hashes": [
@@ -190,7 +190,7 @@
                 "sha256:f23fbf70d2e80f4e03a83fc1206a8306d9bc50482fee4239f10676ce7e470c83",
                 "sha256:ff5d9fe518ad2de14ce82ab906b6ab5c2b0c7f4f984400ff8a7a905daa580a0a"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==3.5.0"
         },
         "networkx": {
@@ -742,7 +742,7 @@
                 "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7",
                 "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"
             ],
-            "markers": "python_version < '4' and python_full_version >= '3.6.1'",
+            "markers": "python_version < '4.0' and python_full_version >= '3.6.1'",
             "version": "==5.10.1"
         },
         "lazy-object-proxy": {
@@ -1052,10 +1052,10 @@
         },
         "snowballstemmer": {
             "hashes": [
-                "sha256:b51b447bea85f9968c13b650126a888aabd4cb4463fca868ec596826325dedc2",
-                "sha256:e997baa4f2e9139951b6f4c631bad912dfd3c792467e2f03d7239464af90e914"
+                "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1",
+                "sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a"
             ],
-            "version": "==2.1.0"
+            "version": "==2.2.0"
         },
         "stevedore": {
             "hashes": [
