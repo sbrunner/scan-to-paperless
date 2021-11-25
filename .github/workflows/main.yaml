@@ -39,7 +39,7 @@ jobs:
 
       - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
       - run: docker build --target=tests --tag=tests .
-      - run: docker run --rm tests prospector --output=pylint
+      - run: docker run --rm tests prospector -X --output=pylint
       - name: pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
