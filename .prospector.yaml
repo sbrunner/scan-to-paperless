@@ -31,6 +31,7 @@ pylint:
     - broad-except
   options:
     good-names: x,y
+    py-version: '3.8'
 
 bandit:
   run: true
