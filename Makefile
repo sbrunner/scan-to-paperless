@@ -33,3 +33,7 @@ pytest-last-failed:
 .PHONY: pytest-exitfirst
 pytest-exitfirst:
 	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes --exitfirst'
+
+.PHONY: pytest-failedfirst-exitfirst
+pytest-failedfirst-exitfirst:
+	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes --failed-first --exitfirst'
