@@ -238,7 +238,6 @@ if TYPE_CHECKING:
         def __call__(self, context: Context, source: str, destination: str) -> None:
             """Call the function."""
 
-
 else:
     FunctionWithContextReturnsImage = Any
     FunctionWithContextReturnsNone = Any
@@ -248,7 +247,7 @@ else:
 # Decorate a step of the transform
 class Process:  # pylint: disable=too-few-public-methods
     """
-    Encapulate a transform function.
+    Encapsulate a transform function.
 
     To save the process image when needed.
     """
