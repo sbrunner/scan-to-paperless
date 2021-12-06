@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3092ae03fb3b06a3677e4fefb5d44536dfdf3adb7b34525830ebef68a34de788"
+            "sha256": "5ec8df01a728568d0afc9ff4736bf2b90cb7cd056bea1448b82c13d360ab8790"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -523,7 +523,7 @@
                 "sha256:6d10741ff20b89cd8c6a536ee9dc90d3002dec0226c78fb98605bfb9ef8a7adf",
                 "sha256:d144f85102f999444d06f9c0e8c737fd0194f10f2f7e5fdb77573f6e2fa4fad0"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.6'",
             "version": "==59.5.0"
         },
         "setuptools-scm": {
@@ -874,11 +874,11 @@
                 "with_pyroma"
             ],
             "hashes": [
-                "sha256:423bd504362b2fcdd322f8c79101eb17664174c287dee9ff65288ea9236192d9",
-                "sha256:862cd49c6004a20757ae81531f1b99b484778eec987f88c2bfe83ce9f9a6e293"
+                "sha256:4908034ad9b705942a481b301d9b77664af07b722c53de38c97c8647561f266c",
+                "sha256:8e7fd739d6e907b2875b44291d2c7c7481eca8d187576963dc785e6c053b48d4"
             ],
             "index": "pypi",
-            "version": "==1.5.2"
+            "version": "==1.5.3"
         },
         "py": {
             "hashes": [
@@ -1052,7 +1052,7 @@
                 "sha256:6d10741ff20b89cd8c6a536ee9dc90d3002dec0226c78fb98605bfb9ef8a7adf",
                 "sha256:d144f85102f999444d06f9c0e8c737fd0194f10f2f7e5fdb77573f6e2fa4fad0"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.6'",
             "version": "==59.5.0"
         },
         "six": {
