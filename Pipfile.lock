@@ -73,11 +73,11 @@
         },
         "imageio": {
             "hashes": [
-                "sha256:4acc2a2d0210170ee109c59edc178cee818c87f0a33a2a35116a19e3ac7badc0",
-                "sha256:5b7a55d07de88a2fd70f18a1608ca05ba2b55596a942fb2c390240201009a6c3"
+                "sha256:126f10aa970f54b657bcc52f6481a2e55137fcc0f978bb6e0451bd1e22c54f17",
+                "sha256:bb87b272e1e9b05d242e11f8d88d030aefa68ca95daf3accc986d0b782ae3cd5"
             ],
-            "markers": "python_version >= '3.5'",
-            "version": "==2.13.2"
+            "index": "pypi",
+            "version": "==2.13.3"
         },
         "importlib-resources": {
             "hashes": [
@@ -755,7 +755,7 @@
                 "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7",
                 "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"
             ],
-            "markers": "python_version < '4' and python_full_version >= '3.6.1'",
+            "markers": "python_version < '4.0' and python_full_version >= '3.6.1'",
             "version": "==5.10.1"
         },
         "lazy-object-proxy": {
