@@ -529,6 +529,14 @@
             "markers": "python_version >= '3.7'",
             "version": "==2021.11.2"
         },
+        "tomli": {
+            "hashes": [
+                "sha256:c6ce0015eb38820eaf32b5db832dbc26deb3dd427bd5f6556cf0acac2c214fee",
+                "sha256:f04066f68f5554911363063a30b108d2b5a5b1a010aa8b6132af78489fe3aade"
+            ],
+            "index": "pypi",
+            "version": "==1.2.2"
+        },
         "unidecode": {
             "hashes": [
                 "sha256:215fe33c9d1c889fa823ccb66df91b02524eb8cc8c9c80f9c5b8129754d27829",
