@@ -57,11 +57,11 @@
         },
         "fonttools": {
             "hashes": [
-                "sha256:581a682a7102a41421e7e484303572c565c1b8e52b1cc9fecd3c159dbe9a02f4",
-                "sha256:9934e3587dd5abf4e7f1d7176bcf0373db3f0ed728edf79791a9d2a7e664aac9"
+                "sha256:545c05d0f7903a863c2020e07b8f0a57517f2c40d940bded77076397872d14ca",
+                "sha256:edf251d5d2cc0580d5f72de4621c338d8c66c5f61abb50cf486640f73c8194d5"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==4.28.4"
+            "version": "==4.28.5"
         },
         "idna": {
             "hashes": [
@@ -89,11 +89,11 @@
         },
         "jsonschema": {
             "hashes": [
-                "sha256:0070ca8dd5bf47941d1e9d8bc115a3654b1138cfb8aff44f3e3527276107314f",
-                "sha256:91ffbad994d766041c6003d5f8f475cceb890c30084bd0e64847ccb1c10e48bb"
+                "sha256:8697a10a5a5edc922d2eb8556c7f35e814436f3ed8278ec2f65d40e9312d7c80",
+                "sha256:cca171fb7544de15ccda236bf78d58434d769c9a2ce21d44e0d209e39eeb8876"
             ],
-            "index": "pypi",
-            "version": "==4.3.1"
+            "markers": "python_version >= '3.7'",
+            "version": "==4.3.2"
         },
         "jsonschema-gentypes": {
             "hashes": [
@@ -1041,11 +1041,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:22c7348c6d2976a52632c67f7ab0cdf40147db7789f9aed18734643fe9cf3373",
-                "sha256:4ce92f1e1f8f01233ee9952c04f6b81d1e02939d6e1b488428154974a4d0783e"
+                "sha256:5ec2bbb534ed160b261acbbdd1b463eb3cf52a8d223d96a8ab9981f63798e85c",
+                "sha256:75fd345a47ce3d79595b27bf57e6f49c2ca7904f3c7ce75f8a87012046c86b0b"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==59.6.0"
+            "index": "pypi",
+            "version": "==60.0.0"
         },
         "six": {
             "hashes": [
