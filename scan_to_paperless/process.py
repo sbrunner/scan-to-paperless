@@ -377,6 +377,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     process_count = context.get_process_count()
     contours = find_contours(
         image,
+        context,
         f"{process_count}-crop",
         context.get_px_value("min_box_size_crop", 3),
         context.config["args"].get("min_box_black_crop", 2),
@@ -623,6 +624,7 @@ def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
 
 def find_limit_contour(
     image: NpNdarrayInt,
+    context: Context,
     name: str,
     vertical: bool,
     min_box_size: float,
@@ -633,7 +635,7 @@ def find_limit_contour(
 ) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
     """Find the contour for assisted split."""
     contours = find_contours(
-        image, name, min_box_size, min_box_black, kernel_size, block_size, threshold_value_c
+        image, context, name, min_box_size, min_box_black, kernel_size, block_size, threshold_value_c
     )
     image_size = image.shape[1 if vertical else 0]
 
@@ -660,6 +662,7 @@ def fill_limits(
     peaks, properties = find_lines(image, vertical)
     contours_limits, contours = find_limit_contour(
         image,
+        context,
         f"{context.get_process_count()}-limits",
         vertical,
         context.get_px_value("min_box_size_limit", 10),
@@ -691,6 +694,7 @@ def fill_limits(
 
 def find_contours(
     image: NpNdarrayInt,
+    context: Context,
     name: str,
     min_size: Union[float, int],
     min_black: Union[float, int],
@@ -708,7 +712,15 @@ def find_contours(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
     if os.environ.get("PROGRESS", "FALSE") == "TRUE":
-        cv2.imwrite(os.path.join(name, "threshold.png"), thresh)
+        assert context.root_folder
+        assert context.image_name
+        save_image(
+            thresh,
+            context.root_folder,
+            f"{name}-threshold",
+            context.image_name,
+            True,
+        )
 
     # Assign a rectangle kernel size
     kernel = np.ones((kernel_size, kernel_size), "uint8")
@@ -783,6 +795,7 @@ def transform(
         # Is empty ?
         contours = find_contours(
             context.get_masked(),
+            context,
             f"{context.get_process_count()}-is-empty",
             context.get_px_value("min_box_size_empty", 10),
             context.config["args"].get("min_box_black_crop", 2),

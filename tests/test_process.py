@@ -19,7 +19,7 @@ def test_find_lines():
 
 
 def test_find_limit_contour():
-    limits, _ = process.find_limit_contour(load_image("limit-contour-1.png"), "test", True, 40, 2)
+    limits, _ = process.find_limit_contour(load_image("limit-contour-1.png"), None, "test", True, 40, 2)
     assert limits == [1592]
 
 
