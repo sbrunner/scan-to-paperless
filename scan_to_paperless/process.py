@@ -147,6 +147,14 @@ class Context:  # pylint: disable=too-many-instance-attributes
             * self.config["args"].get("dpi", 300)
         )
 
+    def is_progress(self) -> bool:
+        """Return we want to have the intermediate files."""
+        return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault("progress", False)
+
+    def is_experimental(self) -> bool:
+        """Return we want to run the experimental steps."""
+        return os.environ.get("EXPERIMENTAL", "FALSE") == "TRUE" or self.config.get("experimental", False)
+
 
 def add_intermediate_error(
     config: scan_to_paperless.process_schema.Configuration,
@@ -268,15 +276,11 @@ class Process:  # pylint: disable=too-few-public-methods
                 raise Exception("The root folder is required")
             if context.image_name is None:
                 raise Exception("The image name is required")
-            if self.experimental and os.environ.get("EXPERIMENTAL", "FALSE") != "TRUE":
+            if self.experimental and not context.is_experimental():
                 return
             old_image = context.image.copy() if self.experimental else None
             start_time = time.perf_counter()
-            if (
-                self.experimental
-                and os.environ.get("TEST_EXPERIMENTAL", "FALSE") == "FALSE"
-                or self.ignore_error
-            ):
+            if self.experimental and context.is_experimental() or self.ignore_error:
                 try:
                     new_image = func(context)
                     if new_image is not None and self.ignore_error:
@@ -308,7 +312,7 @@ class Process:  # pylint: disable=too-few-public-methods
                     cv2.imwrite(dest_image, diff)
 
             name = self.name if self.experimental else f"{context.get_process_count()}-{self.name}"
-            if self.experimental or os.environ.get("PROGRESS", "FALSE") == "TRUE":
+            if self.experimental or context.is_progress():
                 dest_folder = os.path.join(context.root_folder, name)
                 if not os.path.exists(dest_folder):
                     os.makedirs(dest_folder)
@@ -392,6 +396,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
         if context.root_folder is not None and context.image_name is not None:
             save_image(
                 image,
+                context,
                 context.root_folder,
                 f"{process_count}-crop",
                 context.image_name,
@@ -499,6 +504,7 @@ def deskew(context: Context) -> None:
         assert context.root_folder
         save_image(
             image,
+            context,
             context.root_folder,
             f"{context.get_process_count()}-skew-angles",
             context.image_name,
@@ -711,11 +717,10 @@ def find_contours(
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
-    if os.environ.get("PROGRESS", "FALSE") == "TRUE":
-        assert context.root_folder
-        assert context.image_name
+    if context.is_progress() and context.root_folder and context.image_name:
         save_image(
             thresh,
+            context,
             context.root_folder,
             f"{name}-threshold",
             context.image_name,
@@ -815,6 +820,7 @@ def transform(
             assert context.image is not None
             source = save_image(
                 context.image,
+                context,
                 root_folder,
                 f"{context.get_process_count()}-assisted-split",
                 context.image_name,
@@ -851,9 +857,9 @@ def transform(
     }
 
 
-def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
+def save(context: Context, root_folder: str, img: str, folder: str, force: bool = False) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
-    if force or os.environ.get("PROGRESS") == "TRUE":
+    if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
             os.makedirs(dest_folder)
@@ -864,10 +870,10 @@ def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
 
 
 def save_image(
-    image: NpNdarrayInt, root_folder: str, folder: str, name: str, force: bool = False
+    image: NpNdarrayInt, context: Context, root_folder: str, folder: str, name: str, force: bool = False
 ) -> Optional[str]:
     """Save an image."""
-    if force or os.environ.get("PROGRESS") == "TRUE":
+    if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
             os.makedirs(dest_folder)
@@ -979,7 +985,7 @@ def split(
                         page = int(destination)
                         page_pos = 0
 
-                    save(root_folder, process_file.name, f"{context.get_process_count()}-split")
+                    save(context, root_folder, process_file.name, f"{context.get_process_count()}-split")
                     margin_horizontal = context.get_px_value("margin_horizontal", 9)
                     margin_vertical = context.get_px_value("margin_vertical", 6)
                     context.image = cv2.imread(process_file.name)
@@ -989,7 +995,7 @@ def split(
                             suffix=".png"
                         )
                         cv2.imwrite(process_file.name, context.image)
-                        save(root_folder, process_file.name, f"{context.get_process_count()}-crop")
+                        save(context, root_folder, process_file.name, f"{context.get_process_count()}-crop")
                     if page not in append:
                         append[page] = []
                     append[page].append({"file": process_file, "pos": page_pos})
@@ -1016,7 +1022,7 @@ def split(
                     process_file.name,
                 ]
             )
-            save(root_folder, process_file.name, f"{process_count}-split")
+            save(context, root_folder, process_file.name, f"{process_count}-split")
             img2 = os.path.join(root_folder, f"image-{page_number}.png")
             call(CONVERT + [process_file.name, img2])
             transformed_images.append(img2)

@@ -135,6 +135,14 @@ Configuration = TypedDict(
         #
         # required
         "args": "Arguments",
+        # Run in progress mode
+        #
+        # default: False
+        "progress": bool,
+        # Run the experimental features
+        #
+        # default: False
+        "experimental": bool,
         # The carried out steps description
         "steps": List["Step"],
         "assisted_split": List["AssistedSplit"],

@@ -6,6 +6,8 @@
   - **Items** *(string)*
 - **`destination`** *(string)*: The destination file name.
 - **`args`**: Refer to *#/definitions/args*.
+- **`progress`** *(boolean)*: Run in progress mode. Default: `False`.
+- **`experimental`** *(boolean)*: Run the experimental features. Default: `False`.
 - **`steps`** *(array)*: The carried out steps description.
   - **Items** *(object)*: Cannot contain additional properties.
     - **`name`** *(string)*: The step name.
