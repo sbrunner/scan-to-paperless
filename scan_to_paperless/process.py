@@ -665,7 +665,6 @@ def fill_limits(
     image: NpNdarrayInt, vertical: bool, context: Context
 ) -> List[scan_to_paperless.process_schema.Limit]:
     """Find the limit for assisted split."""
-    peaks, properties = find_lines(image, vertical)
     contours_limits, contours = find_limit_contour(
         image,
         context,
@@ -677,6 +676,7 @@ def fill_limits(
         context.get_px_value("box_block_size", 1.5),
         context.config["args"].get("box_threshold_value_c", 70),
     )
+    peaks, properties = find_lines(image, vertical)
     for contour_limit in contours:
         draw_rectangle(image, contour_limit)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
