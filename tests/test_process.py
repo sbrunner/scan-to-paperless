@@ -20,9 +20,12 @@ def test_find_lines():
 
 def test_find_limit_contour():
     limits, _ = process.find_limit_contour(
-        load_image("limit-contour-1.png"), process.Context({}, {}), "test", True, 40, 2
+        load_image("limit-contour-1.png"),
+        process.Context({"args": {"min_box_size_empty": 40}}, {}),
+        "test",
+        True,
     )
-    assert limits == [1592]
+    assert limits == [1589]
 
 
 def check_image_file(root_folder, image, name, level=0.9):

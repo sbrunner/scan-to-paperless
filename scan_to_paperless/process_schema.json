@@ -19,12 +19,12 @@
           "default": false
         },
         "min_level": {
-          "type": "integer",
+          "type": "number",
           "description": "Min level if no level end no auto-level",
           "default": 15
         },
         "max_level": {
-          "type": "integer",
+          "type": "number",
           "description": "Max level if no level end no auto-level",
           "default": 15
         },
@@ -78,50 +78,85 @@
           "default": false,
           "description": "Do an assisted split"
         },
+        "num_angles": {
+          "type": "number",
+          "default": 1800,
+          "description": "The number of angle used to detect the image skew"
+        },
         "min_box_size_crop": {
           "type": "number",
           "default": 3,
           "description": "The minimum box size to find the content on witch one we will crop [mm]"
-        },
-        "min_box_size_limit": {
-          "type": "number",
-          "default": 10,
-          "description": "The minimum box size to find the limits based on content [mm]"
-        },
-        "min_box_size_empty": {
-          "type": "number",
-          "default": 10,
-          "description": "The minimum box size to find the content to determine if the page is empty [mm]"
         },
         "min_box_black_crop": {
           "type": "number",
           "default": 2,
           "description": "The minimum black in a box on content find on witch one we will crop [%]"
         },
+        "contour_kernel_size_crop": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on content find on witch one we will crop [mm]"
+        },
+        "threshold_block_size_crop": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on threshold for content find on witch one we will crop [mm]"
+        },
+        "threshold_value_c_crop": {
+          "type": "number",
+          "default": 70,
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop"
+        },
+        "min_box_size_empty": {
+          "type": "number",
+          "default": 10,
+          "description": "The minimum box size to find the content to determine if the page is empty [mm]"
+        },
+        "min_box_black_empty": {
+          "type": "number",
+          "default": 2,
+          "description": "The minimum black in a box on content find if the page is empty [%]"
+        },
+        "contour_kernel_size_empty": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on content find if the page is empty [mm]"
+        },
+        "threshold_block_size_empty": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on threshold for content find if the page is empty [mm]"
+        },
+        "threshold_value_c_empty": {
+          "type": "number",
+          "default": 70,
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty"
+        },
+        "min_box_size_limit": {
+          "type": "number",
+          "default": 3,
+          "description": "The minimum box size to find the limits based on content [mm]"
+        },
         "min_box_black_limit": {
           "type": "number",
           "default": 2,
           "description": "The minimum black in a box on content find the limits based on content [%]"
         },
-        "min_box_black_empty": {
-          "type": "number",
-          "default": 2,
-          "description": "The minimum black in a box on content find to determine if the page is empty [%]"
-        },
-        "box_kernel_size": {
+        "contour_kernel_size_limit": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on content find [mm]"
+          "description": "The block size used in a box on content find the limits based on content [mm]"
         },
-        "box_block_size": {
+        "threshold_block_size_limit": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on threshold for content find [mm]"
+          "description": "The block size used in a box on threshold for content find the limits based on content [mm]"
         },
-        "box_threshold_value_c": {
+        "threshold_value_c_limit": {
           "type": "number",
           "default": 70,
-          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find"
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content"
         }
       }
     }
