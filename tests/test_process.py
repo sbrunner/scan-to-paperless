@@ -118,6 +118,8 @@ def test_assisted_split_full(type_, limit):
             "tesseract": False,
             "sharpen": True,
             "num_angles": 179,
+            "threshold_block_size_crop": 20,
+            "threshold_value_c_crop": 20,
         },
         "destination": os.path.join(root_folder, "final.pdf"),
     }
