@@ -675,9 +675,6 @@ def find_contours(
     image: NpNdarrayInt, context: Context, name: str, prefix: str, default_min_box_size: int = 10
 ) -> List[Tuple[int, int, int, int]]:
     """Find the contours on an image."""
-    min_size = context.get_px_value(f"min_box_size_{prefix}", default_min_box_size)
-    min_black = cast(Dict[str, int], context.config["args"]).setdefault(f"min_box_black_{prefix}", 2)
-    kernel_size = context.get_px_value(f"contour_kernel_size_{prefix}", 1.5)
     block_size = context.get_px_value(f"threshold_block_size_{prefix}", 1.5)
     threshold_value_c = cast(Dict[str, int], context.config["args"]).setdefault(
         f"threshold_value_c_{prefix}", 70
@@ -685,7 +682,6 @@ def find_contours(
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     block_size = int(round(block_size / 2) * 2)
-    kernel_size = int(round(kernel_size / 2))
 
     # Clean the image using otsu method with the inversed binarized image
     thresh = cv2.adaptiveThreshold(
@@ -701,13 +697,13 @@ def find_contours(
             True,
         )
 
-        block_size_list = (block_size, 1.5, 5, 10, 15, 20)
-        threshold_value_c_list = (threshold_value_c, 20, 50, 70, 100, 150)
+        block_size_list = (block_size, 1.5, 5, 10, 15, 20, 50, 100, 200)
+        threshold_value_c_list = (threshold_value_c, 20, 50, 100)
 
         for block_size2 in block_size_list:
             for threshold_value_c2 in threshold_value_c_list:
                 block_size2 = int(round(block_size2 / 2) * 2)
-                thresh = cv2.adaptiveThreshold(
+                thresh2 = cv2.adaptiveThreshold(
                     gray,
                     255,
                     cv2.ADAPTIVE_THRESH_MEAN_C,
@@ -715,16 +711,33 @@ def find_contours(
                     block_size2 + 1,
                     threshold_value_c2,
                 )
+                contours = _find_contours_thresh(image, thresh2, context, prefix, default_min_box_size)
+                thresh2 = cv2.cvtColor(thresh2, cv2.COLOR_GRAY2BGR)
+                if contours:
+                    for contour in contours:
+                        draw_rectangle(thresh2, contour)
                 save_image(
-                    thresh,
+                    thresh2,
                     context,
                     context.root_folder,
                     f"{name}-threshold",
-                    f"box_block_size-{block_size2}-"
-                    f"box_threshold_value_c-{threshold_value_c2}-"
+                    f"block_size_{prefix}-{block_size2}-"
+                    f"value_c_{prefix}-{threshold_value_c2}-"
                     f"{context.image_name}",
                     True,
                 )
+
+    return _find_contours_thresh(image, thresh, context, prefix, default_min_box_size)
+
+
+def _find_contours_thresh(
+    image: NpNdarrayInt, thresh: NpNdarrayInt, context: Context, prefix: str, default_min_box_size: int = 10
+) -> List[Tuple[int, int, int, int]]:
+    min_size = context.get_px_value(f"min_box_size_{prefix}", default_min_box_size)
+    min_black = cast(Dict[str, int], context.config["args"]).setdefault(f"min_box_black_{prefix}", 2)
+    kernel_size = context.get_px_value(f"contour_kernel_size_{prefix}", 1.5)
+
+    kernel_size = int(round(kernel_size / 2))
 
     # Assign a rectangle kernel size
     kernel = np.ones((kernel_size, kernel_size), "uint8")
