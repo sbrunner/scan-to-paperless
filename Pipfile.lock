@@ -76,7 +76,7 @@
                 "sha256:a3a18d5d01732557247fba5658d7f75425e97ce49c8fe2cd81bd348f5c71ffb2",
                 "sha256:c7ec2be58e401b6eaa838f8eaf8368ed54b2de4a1b001fe6551644f1a30a843d"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.5'",
             "version": "==2.13.5"
         },
         "importlib-resources": {
@@ -1041,11 +1041,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:8244876a37456ccbcbe1247b4cba1b015f4e42dfebfadd6a5488bfc12060f21b",
-                "sha256:dae4d7933ca671d51fa44c10b4ef8165319d9be3aa41807dd4c73f1c1ba81dc3"
+                "sha256:a4377723c53721515f72a3dfc1bfacdcd61edfa19a4cccf82e72e4f50d9cecbd",
+                "sha256:ad0ea3d172404abb14d8f7bd7f54f2ccd4ed9dd00c9da0b1398862e69eb22c03"
             ],
-            "markers": "python_version >= '3.7'",
-            "version": "==60.0.4"
+            "index": "pypi",
+            "version": "==60.1.0"
         },
         "six": {
             "hashes": [
