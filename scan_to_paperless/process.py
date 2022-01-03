@@ -65,7 +65,7 @@ def crop_image(  # pylint: disable=too-many-arguments
     background: Union[Tuple[int], Tuple[int, int, int]],
 ) -> NpNdarrayInt:
     """Crop the image."""
-    matrice = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
+    matrice: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         NpNdarrayInt,
         cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background),
@@ -442,7 +442,7 @@ def draw_angle(image: NpNdarrayInt, angle: float, color: Tuple[int, int, int]) -
     sin_a = np.sin(angle_radian) * length
     cos_a = np.cos(angle_radian) * length
     for matrix in ([[0, -1], [-1, 0]], [[1, 0], [0, -1]], [[0, 1], [1, 0]], [[-1, 0], [0, 1]]):
-        diff = np.dot(matrix, [sin_a, cos_a])  # type: ignore
+        diff = np.dot(matrix, [sin_a, cos_a])
         x = diff[0] + width / 2
         y = diff[1] + height / 2
 
@@ -612,8 +612,8 @@ def find_lines(image: NpNdarrayInt, vertical: bool) -> Tuple[NpNdarrayInt, Dict[
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
-    iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))  # type: ignore
-    absdiff = np.abs(np.diff(iszero))  # type: ignore
+    iszero: NpNdarrayInt = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))
+    absdiff = np.abs(np.diff(iszero))
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
     return cast(NpNdarrayInt, ranges)
@@ -740,7 +740,7 @@ def _find_contours_thresh(
     kernel_size = int(round(kernel_size / 2))
 
     # Assign a rectangle kernel size
-    kernel = np.ones((kernel_size, kernel_size), "uint8")
+    kernel: NpNdarrayInt = np.ones((kernel_size, kernel_size), "uint8")
     par_img = cv2.dilate(thresh, kernel, iterations=5)
 
     contours, _ = cv2.findContours(par_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
