@@ -18,7 +18,7 @@ flake8 = "==3.9.2"
 pytest = "==6.2.5"
 coverage = "==6.2"
 pytest-profiling = "==1.7.0"
-argcomplete = "==1.12.3"
+argcomplete = "==2.0.0"
 
 [requires]
 python_version = "3.8"

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7de6fcfe165989bc66358b59fd85bd57804be003385fdf8c2de4156d22248399"
+            "sha256": "d9f10bcd51e6700c6feb0cfee8bd0f57289a2d59f34fe947b8eb21cd7c706495"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -380,7 +380,7 @@
                 "sha256:8e5643905bf20a308e25e4c1dd379117c09000bf8a82ebccc462cfb1b34a16b5",
                 "sha256:f71a09d7feba4a6b64ffd8e9d9bc60f9bf7d7e19fd0e04362acb1cfc2e3d98df"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
             "version": "==2.27.0"
         },
         "ruamel.yaml": {
@@ -526,19 +526,19 @@
     "develop": {
         "argcomplete": {
             "hashes": [
-                "sha256:291f0beca7fd49ce285d2f10e4c1c77e9460cf823eef2de54df0c0fec88b0d81",
-                "sha256:2c7dbffd8c045ea534921e63b0be6fe65e88599990d8dc408ac8c542b72a5445"
+                "sha256:6372ad78c89d662035101418ae253668445b391755cfe94ea52f1b9d22425b20",
+                "sha256:cffa11ea77999bb0dd27bb25ff6dc142a6796142f68d45b1a26b11f58724561e"
             ],
             "index": "pypi",
-            "version": "==1.12.3"
+            "version": "==2.0.0"
         },
         "astroid": {
             "hashes": [
-                "sha256:bfd6c41149d1a368e9b7d3cc90470528e080efdd57fbc0c95426794e0be91c5b",
-                "sha256:f973b3622700431b6e8734ce66f6c18503922a13fb8eb8592e78bd4506823efb"
+                "sha256:72ace9c3333e274e9248168fc4f3e300da8545af1c303bd69197027f49e2bfff",
+                "sha256:aa296702f1a5c3102c860de49473aaa90a7f6d221555d5cf2678940a9be32a4e"
             ],
             "markers": "python_full_version >= '3.6.2'",
-            "version": "==2.9.1"
+            "version": "==2.9.2"
         },
         "attrs": {
             "hashes": [
@@ -983,7 +983,7 @@
                 "sha256:8e5643905bf20a308e25e4c1dd379117c09000bf8a82ebccc462cfb1b34a16b5",
                 "sha256:f71a09d7feba4a6b64ffd8e9d9bc60f9bf7d7e19fd0e04362acb1cfc2e3d98df"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
             "version": "==2.27.0"
         },
         "requirements-detector": {
