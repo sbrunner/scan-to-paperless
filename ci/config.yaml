@@ -3,6 +3,7 @@ checks:
   required_workflows:
     backport.yaml: False
     audit.yaml: False
+    main.yaml: False
 
 publish:
   docker:
