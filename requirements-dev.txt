@@ -89,7 +89,7 @@ pyflakes==2.3.1
     # via
     #   flake8
     #   prospector
-pygments==2.11.1
+pygments==2.11.2
     # via pyroma
 pylint==2.12.2
     # via
@@ -154,11 +154,7 @@ toml==0.10.2
 tomli==2.0.0
     # via mypy
 typing-extensions==4.0.1
-    # via
-    #   astroid
-    #   gitpython
-    #   mypy
-    #   pylint
+    # via mypy
 urllib3==1.26.7
     # via
     #   -c requirements.txt
