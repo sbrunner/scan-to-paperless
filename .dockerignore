@@ -7,4 +7,5 @@
 !setup.py
 !setup.cfg
 !requirements.txt
-!requirements-dev.txt
+!poetry.lock
+!pyproject.toml
