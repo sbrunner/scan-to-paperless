@@ -6,6 +6,5 @@
 !README.md
 !setup.py
 !setup.cfg
-!requirements-install.txt
-!Pipfile
-!Pipfile.lock
+!requirements.txt
+!requirements-dev.txt

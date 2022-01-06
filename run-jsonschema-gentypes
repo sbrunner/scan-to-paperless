@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
-import configparser
 import os
 import subprocess  # nosec
 
+import pkg_resources
+
 
 def main() -> None:
-    pipfile = configparser.ConfigParser()
-    pipfile.read("Pipfile")
-    version = pipfile["packages"]["jsonschema-gentypes"].strip('"=>')
+    with open("requirements.txt", encoding="utf-8") as requirements_txt:
+        requirements = {
+            requirement.key: requirement for requirement in pkg_resources.parse_requirements(requirements_txt)
+        }
+
+    version = requirements["jsonschema-gentypes"].specs[0][1]
     subprocess.check_call(
         [
             "docker",
