@@ -10,13 +10,9 @@ RUN \
     apt clean && \
     rm --recursive --force /var/lib/apt/lists/* /root/.cache /var/cache/*
 
-COPY requirements-install.txt /tmp/
-RUN python3 -m pip install --disable-pip-version-check --no-cache-dir --requirement=/tmp/requirements-install.txt && \
+COPY requirements.txt /tmp/
+RUN python3 -m pip install --disable-pip-version-check --no-cache-dir --requirement=/tmp/requirements.txt && \
     rm --recursive --force /tmp/*
-
-COPY Pipfile Pipfile.lock /tmp/
-RUN cd /tmp && pipenv sync --system --clear && \
-    rm --recursive --force /usr/local/lib/python3.*/dist-packages/tests/ /root/.cache/*
 
 VOLUME /source \
     /destination
@@ -31,9 +27,11 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
     poppler-utils ghostscript graphviz && \
     apt-get clean && \
-    rm --recursive --force /var/lib/apt/lists/* /root/.cache /var/cache/* && \
-    cd /tmp && pipenv sync --system --clear --dev
+    rm --recursive --force /var/lib/apt/lists/* /root/.cache /var/cache/*
 
+COPY requirements-dev.txt /tmp/
+RUN python3 -m pip install --disable-pip-version-check --no-cache-dir --requirement=/tmp/requirements-dev.txt && \
+    rm --recursive --force /tmp/*
 
 FROM base-dist as base
 

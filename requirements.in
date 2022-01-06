@@ -1,0 +1,7 @@
+numpy==1.22.0
+scipy==1.7.3
+scikit-image==0.18.3
+opencv-python-headless==4.5.5.62
+deskew==0.10.39
+jsonschema-gentypes==0.9.4
+ruamel.yaml==0.17.4
