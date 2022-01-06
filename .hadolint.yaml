@@ -1,3 +1,4 @@
 ignored:
-  - DL3027 # warning: Do not use apt as it is meant to be a end-user tool, use apt-get or apt-cache instead
   - DL3003 # warning: Use WORKDIR to switch to a directory
+  - DL3008 # warning: Pin versions in apt get install.
+  - DL3042 # warning: Avoid cache directory with pip install --no-cache-dir <package>
