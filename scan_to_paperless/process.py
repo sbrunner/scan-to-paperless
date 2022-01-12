@@ -21,7 +21,7 @@ import numpy as np
 from deskew import determine_skew_dev
 from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
-from skimage.color import rgb2gray
+from skimage.color import rgb2gray, rgba2rgb
 from skimage.metrics import structural_similarity
 
 import scan_to_paperless.process_schema
@@ -466,7 +466,8 @@ def deskew(context: Context) -> None:
     angle = image_config.setdefault("angle", None)
     if angle is None:
         image = context.get_masked()
-        grayscale = rgb2gray(image)
+        imagergb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image
+        grayscale = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
         image = cast(NpNdarrayInt, context.image).copy()
 
         angle, angles, average_deviation, _ = determine_skew_dev(
@@ -750,7 +751,12 @@ def _find_contours_thresh(
         x, y, width, height = cv2.boundingRect(cnt)
         if width > min_size and height > min_size:
             contour_image = crop_image(image, x, y, width, height, (255, 255, 255))
-            contour_image = rgb2gray(contour_image)
+            imagergb = (
+                rgba2rgb(contour_image)
+                if len(contour_image.shape) == 3 and contour_image.shape[2] == 4
+                else contour_image
+            )
+            contour_image = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
             if (1 - np.mean(contour_image)) * 100 > min_black:
                 result.append(
                     (

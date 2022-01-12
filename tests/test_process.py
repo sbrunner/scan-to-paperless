@@ -93,7 +93,7 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL1", "type": "line detection", "value": 1893, "vertical": True, "margin": 0}),
+        ("lines", {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0}),
         (
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 1616, "vertical": True, "margin": 0},
@@ -118,6 +118,8 @@ def test_assisted_split_full(type_, limit):
             "tesseract": False,
             "sharpen": True,
             "num_angles": 179,
+            "threshold_block_size_crop": 20,
+            "threshold_value_c_crop": 20,
         },
         "destination": os.path.join(root_folder, "final.pdf"),
     }
