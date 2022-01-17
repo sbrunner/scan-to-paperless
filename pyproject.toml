@@ -14,7 +14,7 @@ numpy = "1.22.1"
 scipy = "1.7.3"
 scikit-image = "0.19.1"
 opencv-python-headless = "4.5.5.62"
-deskew = "0.10.39"
+deskew = "0.10.40"
 jsonschema-gentypes = "0.9.4"
 "ruamel.yaml" = "0.17.4"
 
