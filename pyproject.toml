@@ -10,7 +10,7 @@ authors = []
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-numpy = "1.22.0"
+numpy = "1.22.1"
 scipy = "1.7.3"
 scikit-image = "0.19.1"
 opencv-python-headless = "4.5.5.62"
