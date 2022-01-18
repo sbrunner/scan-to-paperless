@@ -19,7 +19,7 @@ jsonschema-gentypes = "0.9.4"
 "ruamel.yaml" = "0.17.4"
 
 [tool.poetry.dev-dependencies]
-prospector = {version = "1.5.3.1", extras = ["with_bandit", "with_mypy", "with_pyroma"]}
+prospector = {version = "1.6.0", extras = ["with_bandit", "with_mypy", "with_pyroma"]}
 pytest = "6.2.5"
 coverage = "6.2"
 pytest-profiling = "1.7.0"
