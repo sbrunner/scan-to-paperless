@@ -10,17 +10,16 @@ authors = []
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-numpy = "1.22.1"
-scipy = "1.7.3"
-scikit-image = "0.19.1"
-opencv-python-headless = "4.5.5.62"
-deskew = "0.10.40"
-jsonschema-gentypes = "0.9.4"
-"ruamel.yaml" = "0.17.4"
+numpy = "1.*"
+scipy = "1.*"
+scikit-image = "0.19.*"
+opencv-python-headless = "4.5.*"
+deskew = "0.10.*"
+jsonschema-gentypes = "0.9.*"
+"ruamel.yaml" = "0.17.*"
 
 [tool.poetry.dev-dependencies]
-prospector = {version = "1.6.0", extras = ["with_bandit", "with_mypy", "with_pyroma"]}
-pytest = "6.2.5"
-coverage = "6.2"
-pytest-profiling = "1.7.0"
-argcomplete = "2.0.0"
+prospector = {version = "1.*", extras = ["with_bandit", "with_mypy", "with_pyroma"]}
+pytest = "6.*"
+coverage = "6.*"
+pytest-profiling = "1.*"
