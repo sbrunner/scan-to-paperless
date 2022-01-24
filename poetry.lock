@@ -177,7 +177,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "imageio"
-version = "2.14.0"
+version = "2.14.1"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "main"
 optional = false
@@ -979,8 +979,8 @@ idna = [
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
 imageio = [
-    {file = "imageio-2.14.0-py3-none-any.whl", hash = "sha256:af6c7c89947ee9d81eab2caee3726f61e1a0d861e87e856904868d0fe7c0aa15"},
-    {file = "imageio-2.14.0.tar.gz", hash = "sha256:1a612b46c24805115701ed7c4e1f2d7feb53bb615d52bfef9713a6836e997bb1"},
+    {file = "imageio-2.14.1-py3-none-any.whl", hash = "sha256:4bc1257abe5d8c9ef89132dccd9d783c1c0bdbbcfb98c0e5fe84e8b7b9ee4975"},
+    {file = "imageio-2.14.1.tar.gz", hash = "sha256:709c18f800981e4286abe4bd86b6c9b5bb6e285b6b933b5ba0962ef8e7994058"},
 ]
 importlib-resources = [
     {file = "importlib_resources-5.4.0-py3-none-any.whl", hash = "sha256:33a95faed5fc19b4bc16b29a6eeae248a3fe69dd55d4d229d2b480e23eeaad45"},
