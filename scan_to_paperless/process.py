@@ -21,7 +21,7 @@ import numpy as np
 from deskew import determine_skew_dev
 from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
-from skimage.color import rgb2gray
+from skimage.color import rgb2gray, rgba2rgb
 from skimage.metrics import structural_similarity
 
 import scan_to_paperless.process_schema
@@ -65,7 +65,7 @@ def crop_image(  # pylint: disable=too-many-arguments
     background: Union[Tuple[int], Tuple[int, int, int]],
 ) -> NpNdarrayInt:
     """Crop the image."""
-    matrice = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
+    matrice: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         NpNdarrayInt,
         cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background),
@@ -141,11 +141,19 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def get_px_value(self, name: str, default: Union[int, float]) -> float:
         """Get the value in px."""
         return (
-            cast(float, self.config["args"].get(name, default))
+            cast(float, cast(Dict[str, Any], self.config["args"]).setdefault(name, default))
             / 10
             / 2.51
-            * self.config["args"].get("dpi", 300)
+            * self.config["args"].setdefault("dpi", 300)
         )
+
+    def is_progress(self) -> bool:
+        """Return we want to have the intermediate files."""
+        return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault("progress", False)
+
+    def is_experimental(self) -> bool:
+        """Return we want to run the experimental steps."""
+        return os.environ.get("EXPERIMENTAL", "FALSE") == "TRUE" or self.config.get("experimental", False)
 
 
 def add_intermediate_error(
@@ -238,7 +246,6 @@ if TYPE_CHECKING:
         def __call__(self, context: Context, source: str, destination: str) -> None:
             """Call the function."""
 
-
 else:
     FunctionWithContextReturnsImage = Any
     FunctionWithContextReturnsNone = Any
@@ -248,7 +255,7 @@ else:
 # Decorate a step of the transform
 class Process:  # pylint: disable=too-few-public-methods
     """
-    Encapulate a transform function.
+    Encapsulate a transform function.
 
     To save the process image when needed.
     """
@@ -269,15 +276,11 @@ class Process:  # pylint: disable=too-few-public-methods
                 raise Exception("The root folder is required")
             if context.image_name is None:
                 raise Exception("The image name is required")
-            if self.experimental and os.environ.get("EXPERIMENTAL", "FALSE") != "TRUE":
+            if self.experimental and not context.is_experimental():
                 return
             old_image = context.image.copy() if self.experimental else None
             start_time = time.perf_counter()
-            if (
-                self.experimental
-                and os.environ.get("TEST_EXPERIMENTAL", "FALSE") == "FALSE"
-                or self.ignore_error
-            ):
+            if self.experimental and context.is_experimental() or self.ignore_error:
                 try:
                     new_image = func(context)
                     if new_image is not None and self.ignore_error:
@@ -309,7 +312,7 @@ class Process:  # pylint: disable=too-few-public-methods
                     cv2.imwrite(dest_image, diff)
 
             name = self.name if self.experimental else f"{context.get_process_count()}-{self.name}"
-            if self.experimental or os.environ.get("PROGRESS", "FALSE") == "TRUE":
+            if self.experimental or context.is_progress():
                 dest_folder = os.path.join(context.root_folder, name)
                 if not os.path.exists(dest_folder):
                     os.makedirs(dest_folder)
@@ -376,15 +379,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     """
     image = context.get_masked()
     process_count = context.get_process_count()
-    contours = find_contours(
-        image,
-        f"{process_count}-crop",
-        context.get_px_value("min_box_size_crop", 3),
-        context.config["args"].get("min_box_black_crop", 2),
-        context.get_px_value("box_kernel_size", 1.5),
-        context.get_px_value("box_block_size", 1.5),
-        context.config["args"].get("box_threshold_value_c", 70),
-    )
+    contours = find_contours(image, context, f"{process_count}-crop", "crop", 3)
 
     if contours:
         for contour in contours:
@@ -392,6 +387,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
         if context.root_folder is not None and context.image_name is not None:
             save_image(
                 image,
+                context,
                 context.root_folder,
                 f"{process_count}-crop",
                 context.image_name,
@@ -407,10 +403,10 @@ def level(context: Context) -> NpNdarrayInt:
     """Do the level on an image."""
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
-    if context.config["args"].get("auto_level"):
+    if context.config["args"].setdefault("auto_level", False):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
         return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
-    level_ = context.config["args"].get("level")
+    level_ = context.config["args"].setdefault("level", False)
     min_p100 = 0.0
     max_p100 = 100.0
     if level_ is True:
@@ -420,8 +416,8 @@ def level(context: Context) -> NpNdarrayInt:
         min_p100 = 0.0 + level_
         max_p100 = 100.0 - level_
     if level_ is not False:
-        min_p100 = context.config["args"].get("min_level", min_p100)
-        max_p100 = context.config["args"].get("max_level", max_p100)
+        min_p100 = context.config["args"].setdefault("min_level", min_p100)
+        max_p100 = context.config["args"].setdefault("max_level", max_p100)
 
     min_ = min_p100 / 100.0 * 255.0
     max_ = max_p100 / 100.0 * 255.0
@@ -446,7 +442,7 @@ def draw_angle(image: NpNdarrayInt, angle: float, color: Tuple[int, int, int]) -
     sin_a = np.sin(angle_radian) * length
     cos_a = np.cos(angle_radian) * length
     for matrix in ([[0, -1], [-1, 0]], [[1, 0], [0, -1]], [[0, 1], [1, 0]], [[-1, 0], [0, 1]]):
-        diff = np.dot(matrix, [sin_a, cos_a])  # type: ignore
+        diff = np.dot(matrix, [sin_a, cos_a])
         x = diff[0] + width / 2
         y = diff[1] + height / 2
 
@@ -470,10 +466,13 @@ def deskew(context: Context) -> None:
     angle = image_config.setdefault("angle", None)
     if angle is None:
         image = context.get_masked()
-        grayscale = rgb2gray(image)
+        imagergb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image
+        grayscale = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
         image = cast(NpNdarrayInt, context.image).copy()
 
-        angle, angles, average_deviation, _ = determine_skew_dev(grayscale)
+        angle, angles, average_deviation, _ = determine_skew_dev(
+            grayscale, num_angles=context.config["args"].setdefault("num_angles", 1800)
+        )
         if angle is not None:
             image_status["angle"] = nice_angle(float(angle))
             draw_angle(image, angle, (255, 0, 0))
@@ -497,6 +496,7 @@ def deskew(context: Context) -> None:
         assert context.root_folder
         save_image(
             image,
+            context,
             context.root_folder,
             f"{context.get_process_count()}-skew-angles",
             context.image_name,
@@ -511,7 +511,7 @@ def deskew(context: Context) -> None:
 def docrop(context: Context) -> None:
     """Crop an image."""
     # Margin in mm
-    if context.config["args"].get("no_crop", False):
+    if context.config["args"].setdefault("no_crop", False):
         return
     margin_horizontal = context.get_px_value("margin_horizontal", 9)
     margin_vertical = context.get_px_value("margin_vertical", 6)
@@ -521,7 +521,7 @@ def docrop(context: Context) -> None:
 @Process("sharpen")
 def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
-    if context.config["args"].get("sharpen", False) is False:
+    if context.config["args"].setdefault("sharpen", False) is False:
         return None
     if context.image is None:
         raise Exception("The image is required")
@@ -533,7 +533,7 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
 @external
 def dither(context: Context, source: str, destination: str) -> None:
     """Dither an image."""
-    if context.config["args"].get("dither", False) is False:
+    if context.config["args"].setdefault("dither", False) is False:
         return
     call(CONVERT + ["+dither", source, destination])
 
@@ -613,27 +613,18 @@ def find_lines(image: NpNdarrayInt, vertical: bool) -> Tuple[NpNdarrayInt, Dict[
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
-    iszero = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))  # type: ignore
-    absdiff = np.abs(np.diff(iszero))  # type: ignore
+    iszero: NpNdarrayInt = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))
+    absdiff = np.abs(np.diff(iszero))
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
     return cast(NpNdarrayInt, ranges)
 
 
 def find_limit_contour(
-    image: NpNdarrayInt,
-    name: str,
-    vertical: bool,
-    min_box_size: float,
-    min_box_black: Union[int, float],
-    kernel_size: Union[float, int] = 16,
-    block_size: Union[float, int] = 16,
-    threshold_value_c: Union[float, int] = 100,
+    image: NpNdarrayInt, context: Context, name: str, vertical: bool
 ) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
     """Find the contour for assisted split."""
-    contours = find_contours(
-        image, name, min_box_size, min_box_black, kernel_size, block_size, threshold_value_c
-    )
+    contours = find_contours(image, context, name, "limit")
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -656,17 +647,10 @@ def fill_limits(
     image: NpNdarrayInt, vertical: bool, context: Context
 ) -> List[scan_to_paperless.process_schema.Limit]:
     """Find the limit for assisted split."""
-    peaks, properties = find_lines(image, vertical)
     contours_limits, contours = find_limit_contour(
-        image,
-        f"{context.get_process_count()}-limits",
-        vertical,
-        context.get_px_value("min_box_size_limit", 10),
-        context.config["args"].get("min_box_black_limit", 2),
-        context.get_px_value("box_kernel_size", 1.5),
-        context.get_px_value("box_block_size", 1.5),
-        context.config["args"].get("box_threshold_value_c", 70),
+        image, context, f"{context.get_process_count()}-limits", vertical
     )
+    peaks, properties = find_lines(image, vertical)
     for contour_limit in contours:
         draw_rectangle(image, contour_limit)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
@@ -689,28 +673,75 @@ def fill_limits(
 
 
 def find_contours(
-    image: NpNdarrayInt,
-    name: str,
-    min_size: Union[float, int],
-    min_black: Union[float, int],
-    kernel_size: Union[float, int] = 16,
-    block_size: Union[float, int] = 16,
-    threshold_value_c: Union[float, int] = 100,
+    image: NpNdarrayInt, context: Context, name: str, prefix: str, default_min_box_size: int = 10
 ) -> List[Tuple[int, int, int, int]]:
     """Find the contours on an image."""
+    block_size = context.get_px_value(f"threshold_block_size_{prefix}", 1.5)
+    threshold_value_c = cast(Dict[str, int], context.config["args"]).setdefault(
+        f"threshold_value_c_{prefix}", 70
+    )
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     block_size = int(round(block_size / 2) * 2)
-    kernel_size = int(round(kernel_size / 2))
 
     # Clean the image using otsu method with the inversed binarized image
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
-    if os.environ.get("PROGRESS", "FALSE") == "TRUE":
-        cv2.imwrite(os.path.join(name, "threshold.png"), thresh)
+    if context.is_progress() and context.root_folder and context.image_name:
+        save_image(
+            thresh,
+            context,
+            context.root_folder,
+            f"{name}-threshold",
+            context.image_name,
+            True,
+        )
+
+        block_size_list = (block_size, 1.5, 5, 10, 15, 20, 50, 100, 200)
+        threshold_value_c_list = (threshold_value_c, 20, 50, 100)
+
+        for block_size2 in block_size_list:
+            for threshold_value_c2 in threshold_value_c_list:
+                block_size2 = int(round(block_size2 / 2) * 2)
+                thresh2 = cv2.adaptiveThreshold(
+                    gray,
+                    255,
+                    cv2.ADAPTIVE_THRESH_MEAN_C,
+                    cv2.THRESH_BINARY_INV,
+                    block_size2 + 1,
+                    threshold_value_c2,
+                )
+                contours = _find_contours_thresh(image, thresh2, context, prefix, default_min_box_size)
+                thresh2 = cv2.cvtColor(thresh2, cv2.COLOR_GRAY2BGR)
+                if contours:
+                    for contour in contours:
+                        draw_rectangle(thresh2, contour)
+                save_image(
+                    thresh2,
+                    context,
+                    context.root_folder,
+                    f"{name}-threshold",
+                    f"block_size_{prefix}-{block_size2}-"
+                    f"value_c_{prefix}-{threshold_value_c2}-"
+                    f"{context.image_name}",
+                    True,
+                )
+
+    return _find_contours_thresh(image, thresh, context, prefix, default_min_box_size)
+
+
+def _find_contours_thresh(
+    image: NpNdarrayInt, thresh: NpNdarrayInt, context: Context, prefix: str, default_min_box_size: int = 10
+) -> List[Tuple[int, int, int, int]]:
+    min_size = context.get_px_value(f"min_box_size_{prefix}", default_min_box_size)
+    min_black = cast(Dict[str, int], context.config["args"]).setdefault(f"min_box_black_{prefix}", 2)
+    kernel_size = context.get_px_value(f"contour_kernel_size_{prefix}", 1.5)
+
+    kernel_size = int(round(kernel_size / 2))
 
     # Assign a rectangle kernel size
-    kernel = np.ones((kernel_size, kernel_size), "uint8")
+    kernel: NpNdarrayInt = np.ones((kernel_size, kernel_size), "uint8")
     par_img = cv2.dilate(thresh, kernel, iterations=5)
 
     contours, _ = cv2.findContours(par_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -720,7 +751,12 @@ def find_contours(
         x, y, width, height = cv2.boundingRect(cnt)
         if width > min_size and height > min_size:
             contour_image = crop_image(image, x, y, width, height, (255, 255, 255))
-            contour_image = rgb2gray(contour_image)
+            imagergb = (
+                rgba2rgb(contour_image)
+                if len(contour_image.shape) == 3 and contour_image.shape[2] == 4
+                else contour_image
+            )
+            contour_image = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
             if (1 - np.mean(contour_image)) * 100 > min_black:
                 result.append(
                     (
@@ -755,7 +791,7 @@ def transform(
     images = []
     process_count = 0
 
-    if config["args"].get("assisted_split", False):
+    if config["args"].setdefault("assisted_split", False):
         config["assisted_split"] = []
 
     for index, img in enumerate(step["sources"]):
@@ -781,13 +817,7 @@ def transform(
 
         # Is empty ?
         contours = find_contours(
-            context.get_masked(),
-            f"{context.get_process_count()}-is-empty",
-            context.get_px_value("min_box_size_empty", 10),
-            context.config["args"].get("min_box_black_crop", 2),
-            context.get_px_value("box_kernel_size", 1.5),
-            context.get_px_value("box_block_size", 1.5),
-            context.config["args"].get("box_threshold_value_c", 70),
+            context.get_masked(), context, f"{context.get_process_count()}-is-empty", "empty"
         )
         if not contours:
             print(f"Ignore image with no content: {img}")
@@ -795,12 +825,13 @@ def transform(
 
         tesseract(context)
 
-        if config["args"].get("assisted_split", False):
+        if config["args"].setdefault("assisted_split", False):
             assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}
             name = os.path.join(root_folder, context.image_name)
             assert context.image is not None
             source = save_image(
                 context.image,
+                context,
                 root_folder,
                 f"{context.get_process_count()}-assisted-split",
                 context.image_name,
@@ -832,14 +863,14 @@ def transform(
 
     return {
         "sources": images,
-        "name": "split" if config["args"].get("assisted_split", False) else "finalise",
+        "name": "split" if config["args"].setdefault("assisted_split", False) else "finalise",
         "process_count": process_count,
     }
 
 
-def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
+def save(context: Context, root_folder: str, img: str, folder: str, force: bool = False) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
-    if force or os.environ.get("PROGRESS") == "TRUE":
+    if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
             os.makedirs(dest_folder)
@@ -850,10 +881,10 @@ def save(root_folder: str, img: str, folder: str, force: bool = False) -> str:
 
 
 def save_image(
-    image: NpNdarrayInt, root_folder: str, folder: str, name: str, force: bool = False
+    image: NpNdarrayInt, context: Context, root_folder: str, folder: str, name: str, force: bool = False
 ) -> Optional[str]:
     """Save an image."""
-    if force or os.environ.get("PROGRESS") == "TRUE":
+    if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
             os.makedirs(dest_folder)
@@ -965,17 +996,17 @@ def split(
                         page = int(destination)
                         page_pos = 0
 
-                    save(root_folder, process_file.name, f"{context.get_process_count()}-split")
+                    save(context, root_folder, process_file.name, f"{context.get_process_count()}-split")
                     margin_horizontal = context.get_px_value("margin_horizontal", 9)
                     margin_vertical = context.get_px_value("margin_vertical", 6)
                     context.image = cv2.imread(process_file.name)
-                    if not context.config["args"].get("no_crop", False):
+                    if not context.config["args"].setdefault("no_crop", False):
                         crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png"
                         )
                         cv2.imwrite(process_file.name, context.image)
-                        save(root_folder, process_file.name, f"{context.get_process_count()}-crop")
+                        save(context, root_folder, process_file.name, f"{context.get_process_count()}-crop")
                     if page not in append:
                         append[page] = []
                     append[page].append({"file": process_file, "pos": page_pos})
@@ -1002,7 +1033,7 @@ def split(
                     process_file.name,
                 ]
             )
-            save(root_folder, process_file.name, f"{process_count}-split")
+            save(context, root_folder, process_file.name, f"{process_count}-split")
             img2 = os.path.join(root_folder, f"image-{page_number}.png")
             call(CONVERT + [process_file.name, img2])
             transformed_images.append(img2)
@@ -1028,7 +1059,7 @@ def finalize(
 
     images = step["sources"]
 
-    if config["args"].get("append_credit_card", False):
+    if config["args"].setdefault("append_credit_card", False):
         images2 = []
         for img in images:
             if os.path.exists(img):
@@ -1047,13 +1078,13 @@ def finalize(
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
             file_name = os.path.join(root_folder, f"{name}.pdf")
-            if config["args"].get("tesseract", True):
+            if config["args"].setdefault("tesseract", True):
                 with open(file_name, "w", encoding="utf8") as output_file:
                     process = run(
                         [
                             "tesseract",
                             "-l",
-                            config["args"].get("tesseract_lang", "fra+eng"),
+                            config["args"].setdefault("tesseract_lang", "fra+eng"),
                             img,
                             "stdout",
                             "pdf",

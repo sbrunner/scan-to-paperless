@@ -1,1 +1,1 @@
-argcomplete
+poetry==1.1.12

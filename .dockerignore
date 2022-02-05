@@ -6,6 +6,6 @@
 !README.md
 !setup.py
 !setup.cfg
-!requirements-install.txt
-!Pipfile
-!Pipfile.lock
+!requirements.txt
+!poetry.lock
+!pyproject.toml

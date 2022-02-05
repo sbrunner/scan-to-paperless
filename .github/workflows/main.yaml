@@ -9,6 +9,27 @@ env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
 
 jobs:
+  dependabot-metadata:
+    name: Dependabot metadata
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v1.1.1
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+      - name: A comma-separated list of all package names updated
+        run: echo ${{ steps.dependabot-metadata.outputs.dependency-names }}
+      - name: The type of dependency has determined this PR to be
+        run: echo ${{ steps.dependabot-metadata.outputs.dependency-type }}
+      - name: The highest semver change being made by this PR
+        run: echo ${{ steps.dependabot-metadata.outputs.update-type }}
+      - name: A JSON string containing the full information about each updated Dependency
+        run: echo ${{ steps.dependabot-metadata.outputs.updated-dependencies-json }}
+
   build:
     name: Continuous integration
     runs-on: ubuntu-20.04
@@ -30,15 +51,13 @@ jobs:
         run: c2cciutils-checks
 
       # the if the generated files are up to date
-      - run: ./run-jsonschema-gentypes
-      - run: jsonschema2md scan_to_paperless/config_schema.json config.md
-      - run: jsonschema2md scan_to_paperless/process_schema.json process.md
+      - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
         if: failure()
 
-      - run: docker build --target=base --tag=sbrunner/scan-to-paperless .
-      - run: docker build --target=tests --tag=tests .
+      - run: make build
+      - run: make build-tests
       - run: docker run --rm tests prospector --output=pylint
       - name: pytest
         run: >
@@ -64,7 +83,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 5
 
-      - run: docker build --target=all --tag=sbrunner/scan-to-paperless:latest-all .
+      - run: make build-all
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
 
       - name: Init pypi

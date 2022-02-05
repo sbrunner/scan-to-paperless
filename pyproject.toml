@@ -1,3 +1,25 @@
 [tool.black]
 line-length = 110
 target-version = ['py38']
+
+[tool.poetry]
+name = 'scan-to-paperless'
+version = '0.0.0'
+description = 'Not used'
+authors = []
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+numpy = "1.*"
+scipy = "1.*"
+scikit-image = "0.19.*"
+opencv-python-headless = "4.5.*"
+deskew = "0.10.*"
+jsonschema-gentypes = "0.9.*"
+"ruamel.yaml" = "0.17.*"
+
+[tool.poetry.dev-dependencies]
+prospector = {version = "1.*", extras = ["with_bandit", "with_mypy", "with_pyroma"]}
+pytest = "7.*"
+coverage = "6.*"
+pytest-profiling = "1.*"

@@ -6,6 +6,8 @@
   - **Items** *(string)*
 - **`destination`** *(string)*: The destination file name.
 - **`args`**: Refer to *#/definitions/args*.
+- **`progress`** *(boolean)*: Run in progress mode. Default: `False`.
+- **`experimental`** *(boolean)*: Run the experimental features. Default: `False`.
 - **`steps`** *(array)*: The carried out steps description.
   - **Items** *(object)*: Cannot contain additional properties.
     - **`name`** *(string)*: The step name.
@@ -38,8 +40,8 @@
 - **`args`** *(object)*
   - **`level`** *(['boolean', 'integer'])*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%.
   - **`auto_level`** *(boolean)*: If no level specified, do auto level. Default: `False`.
-  - **`min_level`** *(integer)*: Min level if no level end no auto-level. Default: `15`.
-  - **`max_level`** *(integer)*: Max level if no level end no auto-level. Default: `15`.
+  - **`min_level`** *(number)*: Min level if no level end no auto-level. Default: `15`.
+  - **`max_level`** *(number)*: Max level if no level end no auto-level. Default: `15`.
   - **`no_crop`** *(boolean)*: Don't do any crop. Default: `False`.
   - **`margin_horizontal`** *(number)*: The horizontal margin used on auto-detect content [mm]. Default: `9`.
   - **`margin_vertical`** *(number)*: The vertical margin used on auto-detect content [mm]. Default: `6`.
@@ -50,12 +52,19 @@
   - **`tesseract_lang`** *(string)*: The used language for tesseract. Default: `fra+eng`.
   - **`append_credit_card`** *(boolean)*: Do an assisted split. Default: `False`.
   - **`assisted_split`** *(boolean)*: Do an assisted split. Default: `False`.
+  - **`num_angles`** *(number)*: The number of angle used to detect the image skew. Default: `1800`.
   - **`min_box_size_crop`** *(number)*: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
-  - **`min_box_size_limit`** *(number)*: The minimum box size to find the limits based on content [mm]. Default: `10`.
-  - **`min_box_size_empty`** *(number)*: The minimum box size to find the content to determine if the page is empty [mm]. Default: `10`.
   - **`min_box_black_crop`** *(number)*: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
+  - **`contour_kernel_size_crop`** *(number)*: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.
+  - **`threshold_block_size_crop`** *(number)*: The block size used in a box on threshold for content find on witch one we will crop [mm]. Default: `1.5`.
+  - **`threshold_value_c_crop`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
+  - **`min_box_size_empty`** *(number)*: The minimum box size to find the content to determine if the page is empty [mm]. Default: `10`.
+  - **`min_box_black_empty`** *(number)*: The minimum black in a box on content find if the page is empty [%]. Default: `2`.
+  - **`contour_kernel_size_empty`** *(number)*: The block size used in a box on content find if the page is empty [mm]. Default: `1.5`.
+  - **`threshold_block_size_empty`** *(number)*: The block size used in a box on threshold for content find if the page is empty [mm]. Default: `1.5`.
+  - **`threshold_value_c_empty`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty. Default: `70`.
+  - **`min_box_size_limit`** *(number)*: The minimum box size to find the limits based on content [mm]. Default: `3`.
   - **`min_box_black_limit`** *(number)*: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
-  - **`min_box_black_empty`** *(number)*: The minimum black in a box on content find to determine if the page is empty [%]. Default: `2`.
-  - **`box_kernel_size`** *(number)*: The block size used in a box on content find [mm]. Default: `1.5`.
-  - **`box_block_size`** *(number)*: The block size used in a box on threshold for content find [mm]. Default: `1.5`.
-  - **`box_threshold_value_c`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find. Default: `70`.
+  - **`contour_kernel_size_limit`** *(number)*: The block size used in a box on content find the limits based on content [mm]. Default: `1.5`.
+  - **`threshold_block_size_limit`** *(number)*: The block size used in a box on threshold for content find the limits based on content [mm]. Default: `1.5`.
+  - **`threshold_value_c_limit`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content. Default: `70`.

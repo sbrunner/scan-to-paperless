@@ -13,11 +13,11 @@ Arguments = TypedDict(
         # Min level if no level end no auto-level
         #
         # default: 15
-        "min_level": int,
+        "min_level": Union[int, float],
         # Max level if no level end no auto-level
         #
         # default: 15
-        "max_level": int,
+        "max_level": Union[int, float],
         # Don't do any crop
         #
         # default: False
@@ -58,42 +58,70 @@ Arguments = TypedDict(
         #
         # default: False
         "assisted_split": bool,
+        # The number of angle used to detect the image skew
+        #
+        # default: 1800
+        "num_angles": Union[int, float],
         # The minimum box size to find the content on witch one we will crop [mm]
         #
         # default: 3
         "min_box_size_crop": Union[int, float],
-        # The minimum box size to find the limits based on content [mm]
-        #
-        # default: 10
-        "min_box_size_limit": Union[int, float],
-        # The minimum box size to find the content to determine if the page is empty [mm]
-        #
-        # default: 10
-        "min_box_size_empty": Union[int, float],
         # The minimum black in a box on content find on witch one we will crop [%]
         #
         # default: 2
         "min_box_black_crop": Union[int, float],
+        # The block size used in a box on content find on witch one we will crop [mm]
+        #
+        # default: 1.5
+        "contour_kernel_size_crop": Union[int, float],
+        # The block size used in a box on threshold for content find on witch one we will crop [mm]
+        #
+        # default: 1.5
+        "threshold_block_size_crop": Union[int, float],
+        # A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop
+        #
+        # default: 70
+        "threshold_value_c_crop": Union[int, float],
+        # The minimum box size to find the content to determine if the page is empty [mm]
+        #
+        # default: 10
+        "min_box_size_empty": Union[int, float],
+        # The minimum black in a box on content find if the page is empty [%]
+        #
+        # default: 2
+        "min_box_black_empty": Union[int, float],
+        # The block size used in a box on content find if the page is empty [mm]
+        #
+        # default: 1.5
+        "contour_kernel_size_empty": Union[int, float],
+        # The block size used in a box on threshold for content find if the page is empty [mm]
+        #
+        # default: 1.5
+        "threshold_block_size_empty": Union[int, float],
+        # A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty
+        #
+        # default: 70
+        "threshold_value_c_empty": Union[int, float],
+        # The minimum box size to find the limits based on content [mm]
+        #
+        # default: 3
+        "min_box_size_limit": Union[int, float],
         # The minimum black in a box on content find the limits based on content [%]
         #
         # default: 2
         "min_box_black_limit": Union[int, float],
-        # The minimum black in a box on content find to determine if the page is empty [%]
-        #
-        # default: 2
-        "min_box_black_empty": Union[int, float],
-        # The block size used in a box on content find [mm]
+        # The block size used in a box on content find the limits based on content [mm]
         #
         # default: 1.5
-        "box_kernel_size": Union[int, float],
-        # The block size used in a box on threshold for content find [mm]
+        "contour_kernel_size_limit": Union[int, float],
+        # The block size used in a box on threshold for content find the limits based on content [mm]
         #
         # default: 1.5
-        "box_block_size": Union[int, float],
-        # A variable used on threshold, should be low on low contrast image, used in a box on content find
+        "threshold_block_size_limit": Union[int, float],
+        # A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content
         #
         # default: 70
-        "box_threshold_value_c": Union[int, float],
+        "threshold_value_c_limit": Union[int, float],
     },
     total=False,
 )
@@ -135,6 +163,14 @@ Configuration = TypedDict(
         #
         # required
         "args": "Arguments",
+        # Run in progress mode
+        #
+        # default: False
+        "progress": bool,
+        # Run the experimental features
+        #
+        # default: False
+        "experimental": bool,
         # The carried out steps description
         "steps": List["Step"],
         "assisted_split": List["AssistedSplit"],
