@@ -15,7 +15,7 @@ scipy = "1.*"
 scikit-image = "0.19.*"
 opencv-python-headless = "4.5.*"
 deskew = "0.10.*"
-jsonschema-gentypes = "0.9.*"
+jsonschema-gentypes = "1.0.*"
 "ruamel.yaml" = "0.17.*"
 
 [tool.poetry.dev-dependencies]
