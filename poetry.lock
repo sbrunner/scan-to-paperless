@@ -261,7 +261,7 @@ format_nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jsonschema-gentypes"
-version = "0.9.4"
+version = "1.0.0"
 description = "Tool to generate Python types based on TypedDict from a JSON Schema"
 category = "main"
 optional = false
@@ -868,7 +868,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "357fea2ad6e1abe82921db05929170238c08dccf9b0a294247e655622c227ceb"
+content-hash = "334c7439f40382f2f966bdd4106407ae816e5b94fc3cdfeedb7a1bc730e77238"
 
 [metadata.files]
 astroid = [
@@ -998,7 +998,7 @@ jsonschema = [
     {file = "jsonschema-4.4.0.tar.gz", hash = "sha256:636694eb41b3535ed608fe04129f26542b59ed99808b4f688aa32dcf55317a83"},
 ]
 jsonschema-gentypes = [
-    {file = "jsonschema_gentypes-0.9.4-py3-none-any.whl", hash = "sha256:0c550c05bf3b9c52a82ddf2b27be985997a4be9bd7c51781aeb5b1880aa210ee"},
+    {file = "jsonschema_gentypes-1.0.0-py3-none-any.whl", hash = "sha256:2b1f46852b7cb65246817f2274abbc161423bb51e1b3a25bde40da67ef33add0"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.7.1.tar.gz", hash = "sha256:d609c75b986def706743cdebe5e47553f4a5a1da9c5ff66d76013ef396b5a8a4"},
