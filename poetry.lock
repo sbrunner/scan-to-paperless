@@ -796,7 +796,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.2.2"
+version = "2022.2.9"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -1442,8 +1442,8 @@ stevedore = [
     {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
 ]
 tifffile = [
-    {file = "tifffile-2022.2.2-py3-none-any.whl", hash = "sha256:6c2e603246ed9978888df6b3e1b9170acf862b32dde0cb7189140e32dd2cdea4"},
-    {file = "tifffile-2022.2.2.tar.gz", hash = "sha256:c4ff0ed150803c1dc2ab4b762049c43ea649202b33194309499e1edfee9523b9"},
+    {file = "tifffile-2022.2.9-py3-none-any.whl", hash = "sha256:cf6c32777e1ff6249e9227196535c5ab8531ec520744cf2a62789535d4aec417"},
+    {file = "tifffile-2022.2.9.tar.gz", hash = "sha256:7eda74117643681bb2caa695b48f39e2243b4887f7cf991d5adffd813e5c8373"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
