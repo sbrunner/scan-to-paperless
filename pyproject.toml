@@ -14,7 +14,7 @@ numpy = "1.*"
 scipy = "1.*"
 scikit-image = "0.19.*"
 opencv-python-headless = "4.5.*"
-deskew = "0.10.*"
+deskew = "1.0.*"
 jsonschema-gentypes = "1.0.*"
 "ruamel.yaml" = "0.17.*"
 
