@@ -417,7 +417,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prospector"
-version = "1.6.0"
+version = "1.7.4"
 description = ""
 category = "dev"
 optional = false
@@ -431,7 +431,7 @@ mypy = {version = ">=0.600", optional = true, markers = "extra == \"with_mypy\" 
 pep8-naming = ">=0.3.3,<=0.10.0"
 pycodestyle = ">=2.6.0,<2.9.0"
 pydocstyle = ">=2.0.0"
-pyflakes = ">=2.2.0,<2.4.0"
+pyflakes = ">=2.2.0,<3"
 pylint = ">=2.8.3"
 pylint-celery = "0.3"
 pylint-django = ">=2.5,<2.6"
@@ -1161,8 +1161,8 @@ pluggy = [
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
 prospector = [
-    {file = "prospector-1.6.0-py3-none-any.whl", hash = "sha256:fd5a2872b26ee07babc15b826c1ff4a717282a3dbb744591a59625a2c11a0468"},
-    {file = "prospector-1.6.0.tar.gz", hash = "sha256:1ca0da95a2d1a151ae578f02d6fc78300a9150af8f2c2c201097213016cc92ee"},
+    {file = "prospector-1.7.4-py3-none-any.whl", hash = "sha256:1002046d6966262ee798980b16796ab5f675b2bceef0773ee86d8138c9284075"},
+    {file = "prospector-1.7.4.tar.gz", hash = "sha256:a02053b00fb5970e424598c91a02c6d515b5ceec72ea1bf4f26831514bedfaff"},
 ]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
