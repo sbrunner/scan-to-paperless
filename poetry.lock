@@ -92,7 +92,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "deskew"
-version = "1.0.1"
+version = "1.0.2"
 description = "Skew detection and correction in images containing text"
 category = "main"
 optional = false
@@ -943,8 +943,8 @@ coverage = [
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
 deskew = [
-    {file = "deskew-1.0.1-py2.py3-none-any.whl", hash = "sha256:80e23997c4faeea15c89a1d3d5721ed2b44147d9bceb540521683187e534c59f"},
-    {file = "deskew-1.0.1.tar.gz", hash = "sha256:cdd2826b788cd3a3e0a6422d55018ebea798b4da51104b158afe1b92c6a8409c"},
+    {file = "deskew-1.0.2-py2.py3-none-any.whl", hash = "sha256:fd658021e10ed824219cfcec18fa3621bdb1eb11d3aa566439c05aea1037d36d"},
+    {file = "deskew-1.0.2.tar.gz", hash = "sha256:efa73dc742e0f93026bbe9b9d05502597765bb3370dd0431353ac28029ec618a"},
 ]
 docutils = [
     {file = "docutils-0.18.1-py2.py3-none-any.whl", hash = "sha256:23010f129180089fbcd3bc08cfefccb3b890b0050e1ca00c867036e9d161b98c"},
