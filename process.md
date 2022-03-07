@@ -35,6 +35,16 @@
     - **`traceback`** *(array)*
       - **Items** *(string)*
 - **`images_config`** *(object)*: Can contain additional properties.
+  - **Additional Properties** *(object)*: Cannot contain additional properties.
+    - **`angle`** *(['number', 'null'])*: The used angle to deskew, can be change, restart by deleting one of the generated images.
+    - **`status`** *(object)*: Cannot contain additional properties.
+      - **`angle`** *(number)*: The measured deskew angle.
+      - **`average_deviation`** *(number)*: The measured deskew angle deviation.
+      - **`average_deviation2`** *(number)*: The measured deskew angle deviation, corrected.
+      - **`angles`** *(array)*: The measured possible deskew angles, visible on the generated image.
+        - **Items** *(number)*
+      - **`size`** *(array)*: The image dimensions.
+        - **Items** *(number)*
 ## Definitions
 
 - **`args`** *(object)*
