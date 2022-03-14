@@ -1,3 +1,3 @@
-c2cciutils==1.2.dev20220309162621
+c2cciutils==1.2.dev20220314081244
 jsonschema2md==0.4.0
 jsonschema-gentypes==0.9.4
