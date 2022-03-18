@@ -19,3 +19,4 @@ publish:
     repository:
       github:
         versions: []
+    dispatch: false
