@@ -594,16 +594,19 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyroma"
-version = "3.2"
+version = "3.3"
 description = "Test your project's packaging friendliness"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = "*"
 
 [package.dependencies]
 docutils = "*"
 pygments = "*"
 requests = "*"
+
+[package.extras]
+test = ["pytest", "pytest-cov", "setuptools (>=60)"]
 
 [[package]]
 name = "pyrsistent"
@@ -1231,8 +1234,8 @@ pyparsing = [
     {file = "pyparsing-3.0.7.tar.gz", hash = "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"},
 ]
 pyroma = [
-    {file = "pyroma-3.2-py3-none-any.whl", hash = "sha256:0fba67322913026091590e68e0d9e0d4fbd6420fcf34d315b2ad6985ab104d65"},
-    {file = "pyroma-3.2.tar.gz", hash = "sha256:f8c181e0d5d292f11791afc18f7d0218a83c85cf64d6f8fb1571ce9d29a24e4a"},
+    {file = "pyroma-3.3-py2.py3-none-any.whl", hash = "sha256:4729cb7020201793f050ac446d1e9e6e4ed10a55a9f4c59034b89d334de66428"},
+    {file = "pyroma-3.3.tar.gz", hash = "sha256:78df2f1617ced9a9a1d114918fc4650ad0e3892d238017dee842ed859967b0fe"},
 ]
 pyrsistent = [
     {file = "pyrsistent-0.18.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:df46c854f490f81210870e509818b729db4488e1f30f2a1ce1698b2295a878d1"},
