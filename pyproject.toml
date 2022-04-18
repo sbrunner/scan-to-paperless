@@ -1,12 +1,43 @@
 [tool.black]
 line-length = 110
-target-version = ['py38']
+target-version = ["py38"]
+
+[tool.mypy]
+python_version = 3.8
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+strict = true
+plugins = "numpy.typing.mypy_plugin"
+
+[tool.pytest.ini_options]
+pytest_plugins = ["pytest_profiling"]
 
 [tool.poetry]
-name = 'scan-to-paperless'
-version = '0.0.0'
-description = 'Not used'
-authors = []
+name = "scan-to-paperless"
+version = "1.12.0"
+description = "Tool to scan and process documents to paperless"
+readme = "README.md"
+keywords = ["scan", "paperless"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Typing :: Typed",
+]
+authors = ["Stéphane Brunner <stephane.brunner@gmail.com>"]
+homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
+repository = "https://github.com/sbrunner/scan-to-paperless"
+
+[tool.poetry.scripts]
+scan = "scan_to_paperless.scan:main"
+scan-process-status = "scan_to_paperless.scan_process_status:main"
+scan-process = "scan_to_paperless.process:main"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
@@ -19,8 +50,19 @@ jsonschema-gentypes = "1.0.0"
 "ruamel.yaml" = "0.17.21"
 
 [tool.poetry.dev-dependencies]
-prospector = {version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"]}
+prospector = { version = "1.7.7", extras = [
+    "with_bandit",
+    "with_mypy",
+    "with_pyroma"
+] }
 pytest = "7.1.2"
 coverage = "6.3.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-plugin-tweak-dependencies-version"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry-plugin-tweak-dependencies-version]
+default = "present"
