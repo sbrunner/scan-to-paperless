@@ -69,14 +69,14 @@ jobs:
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
           coverage report &&
           coverage html --directory=/results/coverage'
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: results
           path: results
           if-no-files-found: ignore
           retention-days: 5
         if: failure()
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Test report
           path: results/test-reports
