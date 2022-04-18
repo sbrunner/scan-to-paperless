@@ -18,3 +18,4 @@ jobs:
         uses: ridedott/merge-me-action@master
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHORS: renovate
