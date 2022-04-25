@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Set, Tuple, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -28,7 +28,7 @@ import scan_to_paperless.process_schema
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
-    CompletedProcess = subprocess.CompletedProcess[str]  # pylint: disable=unsubscriptable-object
+    CompletedProcess = subprocess.CompletedProcess[str]
 else:
     NpNdarrayInt = np.ndarray
     CompletedProcess = subprocess.CompletedProcess
@@ -225,31 +225,25 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> Tuple[float, NpNda
     return score, diff
 
 
-if TYPE_CHECKING:
-    from typing_extensions import Protocol
+class FunctionWithContextReturnsImage(Protocol):
+    """Function with context and returns an image."""
 
-    class FunctionWithContextReturnsImage(Protocol):
-        """Function with context and returns an image."""
+    def __call__(self, context: Context) -> Optional[NpNdarrayInt]:
+        """Call the function."""
 
-        def __call__(self, context: Context) -> Optional[NpNdarrayInt]:
-            """Call the function."""
 
-    class FunctionWithContextReturnsNone(Protocol):
-        """Function with context and no return."""
+class FunctionWithContextReturnsNone(Protocol):
+    """Function with context and no return."""
 
-        def __call__(self, context: Context) -> None:
-            """Call the function."""
+    def __call__(self, context: Context) -> None:
+        """Call the function."""
 
-    class ExternalFunction(Protocol):
-        """Function that call an external tool."""
 
-        def __call__(self, context: Context, source: str, destination: str) -> None:
-            """Call the function."""
+class ExternalFunction(Protocol):
+    """Function that call an external tool."""
 
-else:
-    FunctionWithContextReturnsImage = Any
-    FunctionWithContextReturnsNone = Any
-    ExternalFunction = Any
+    def __call__(self, context: Context, source: str, destination: str) -> None:
+        """Call the function."""
 
 
 # Decorate a step of the transform

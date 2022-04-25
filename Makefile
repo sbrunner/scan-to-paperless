@@ -20,7 +20,7 @@ build-tests:
 
 .PHONY: prospector
 prospector: build-test
-	docker run --rm tests prospector --output=pylint
+	docker run --rm tests prospector -X --output=pylint
 
 .PHONY: pytest
 pytest: build-test

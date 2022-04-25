@@ -37,7 +37,6 @@ jobs:
 
       - run: make build
       - run: make build-tests
-      - run: docker run --rm tests prospector --output=pylint
       - name: Init Docker volumes
         run: |
           docker run --rm --detach --name volumes --volume=tests:/tests --volume=results:/results alpine tail -f /dev/null

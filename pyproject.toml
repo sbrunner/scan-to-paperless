@@ -9,7 +9,7 @@ description = 'Not used'
 authors = []
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.10,<3.11"
 numpy = "1.22.*"
 scipy = "1.8.*"
 scikit-image = "0.19.*"
