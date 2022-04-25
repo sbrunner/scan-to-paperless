@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base-all
+FROM ubuntu:22.04 as base-all
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update
