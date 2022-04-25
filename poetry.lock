@@ -1,6 +1,6 @@
 [[package]]
 name = "astroid"
-version = "2.11.2"
+version = "2.11.3"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
@@ -92,7 +92,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "deskew"
-version = "1.0.6"
+version = "1.0.8"
 description = "Skew detection and correction in images containing text"
 category = "main"
 optional = false
@@ -193,7 +193,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "imageio"
-version = "2.17.0"
+version = "2.18.0"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "main"
 optional = false
@@ -510,22 +510,22 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pygments"
-version = "2.11.2"
+version = "2.12.0"
 description = "Pygments is a syntax highlighting package written in Python."
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [[package]]
 name = "pylint"
-version = "2.13.5"
+version = "2.13.7"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.6.2"
 
 [package.dependencies]
-astroid = ">=2.11.2,<=2.12.0-dev0"
+astroid = ">=2.11.3,<=2.12.0-dev0"
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 dill = ">=0.2"
 isort = ">=4.2.5,<6"
@@ -625,7 +625,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "pytest"
-version = "7.1.1"
+version = "7.1.2"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
@@ -814,7 +814,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.4.8"
+version = "2022.4.22"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -898,8 +898,8 @@ content-hash = "6ce44ffb3abd698fb8fca734f341e9072e38fd9bb355ed9dbd97d17add81cbd1
 
 [metadata.files]
 astroid = [
-    {file = "astroid-2.11.2-py3-none-any.whl", hash = "sha256:cc8cc0d2d916c42d0a7c476c57550a4557a083081976bf42a73414322a6411d9"},
-    {file = "astroid-2.11.2.tar.gz", hash = "sha256:8d0a30fe6481ce919f56690076eafbb2fb649142a89dc874f1ec0e7a011492d0"},
+    {file = "astroid-2.11.3-py3-none-any.whl", hash = "sha256:f1af57483cd17e963b2eddce8361e00fc593d1520fe19948488e94ff6476bd71"},
+    {file = "astroid-2.11.3.tar.gz", hash = "sha256:4e5ba10571e197785e312966ea5efb2f5783176d4c1a73fa922d474ae2be59f7"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -969,8 +969,8 @@ coverage = [
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
 deskew = [
-    {file = "deskew-1.0.6-py2.py3-none-any.whl", hash = "sha256:1e5c0b75215b6b78f29cb22ac52d38493f87b2d9a2287e47e492f5c72f735b7f"},
-    {file = "deskew-1.0.6.tar.gz", hash = "sha256:06b3725bf2be2361eebee5fa04d3f97c722664aa776edebbc852c12aae306746"},
+    {file = "deskew-1.0.8-py2.py3-none-any.whl", hash = "sha256:a07105d0f888bcc3c6e2cb55616352c1be8b91eec1f4df54143e5a6db45a690c"},
+    {file = "deskew-1.0.8.tar.gz", hash = "sha256:7f12c64628065716a23e8e094ac18590a8c3e94afcd70903eeda120ce2dc44ab"},
 ]
 dill = [
     {file = "dill-0.3.4-py2.py3-none-any.whl", hash = "sha256:7e40e4a70304fd9ceab3535d36e58791d9c4a776b38ec7f7ec9afc8d3dca4d4f"},
@@ -1008,8 +1008,8 @@ idna = [
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
 imageio = [
-    {file = "imageio-2.17.0-py3-none-any.whl", hash = "sha256:6b81600e20d90dcfba752c341f86188d09db75b7945ad15dec11ba1af0d40c26"},
-    {file = "imageio-2.17.0.tar.gz", hash = "sha256:b21f009e52eb22b02b839f3bf2ae5374aaf0886317313c1358c6014e5383b539"},
+    {file = "imageio-2.18.0-py3-none-any.whl", hash = "sha256:a922cb37011d69702edbb4f68b0475d8f7242337e7995a42b7c32ec9931ddd46"},
+    {file = "imageio-2.18.0.tar.gz", hash = "sha256:090898c48532631ab11c74ae743e64c24dabda45c16db46f7e3bec9e2d8f422f"},
 ]
 importlib-resources = [
     {file = "importlib_resources-5.7.1-py3-none-any.whl", hash = "sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8"},
@@ -1218,12 +1218,12 @@ pyflakes = [
     {file = "pyflakes-2.4.0.tar.gz", hash = "sha256:05a85c2872edf37a4ed30b0cce2f6093e1d0581f8c19d7393122da7e25b2b24c"},
 ]
 pygments = [
-    {file = "Pygments-2.11.2-py3-none-any.whl", hash = "sha256:44238f1b60a76d78fc8ca0528ee429702aae011c265fe6a8dd8b63049ae41c65"},
-    {file = "Pygments-2.11.2.tar.gz", hash = "sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a"},
+    {file = "Pygments-2.12.0-py3-none-any.whl", hash = "sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519"},
+    {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
 pylint = [
-    {file = "pylint-2.13.5-py3-none-any.whl", hash = "sha256:c149694cfdeaee1aa2465e6eaab84c87a881a7d55e6e93e09466be7164764d1e"},
-    {file = "pylint-2.13.5.tar.gz", hash = "sha256:dab221658368c7a05242e673c275c488670144123f4bd262b2777249c1c0de9b"},
+    {file = "pylint-2.13.7-py3-none-any.whl", hash = "sha256:13ddbbd8872c804574149e81197c28877eba75224ba6b76cd8652fc31df55c1c"},
+    {file = "pylint-2.13.7.tar.gz", hash = "sha256:911d3a97c808f7554643bcc5416028cfdc42eae34ed129b150741888c688d5d5"},
 ]
 pylint-celery = [
     {file = "pylint-celery-0.3.tar.gz", hash = "sha256:41e32094e7408d15c044178ea828dd524beedbdbe6f83f712c5e35bde1de4beb"},
@@ -1271,8 +1271,8 @@ pyrsistent = [
     {file = "pyrsistent-0.18.1.tar.gz", hash = "sha256:d4d61f8b993a7255ba714df3aca52700f8125289f84f704cf80916517c46eb96"},
 ]
 pytest = [
-    {file = "pytest-7.1.1-py3-none-any.whl", hash = "sha256:92f723789a8fdd7180b6b06483874feca4c48a5c76968e03bb3e7f806a1869ea"},
-    {file = "pytest-7.1.1.tar.gz", hash = "sha256:841132caef6b1ad17a9afde46dc4f6cfa59a05f9555aae5151f73bdf2820ca63"},
+    {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
+    {file = "pytest-7.1.2.tar.gz", hash = "sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45"},
 ]
 pytest-profiling = [
     {file = "pytest-profiling-1.7.0.tar.gz", hash = "sha256:93938f147662225d2b8bd5af89587b979652426a8a6ffd7e73ec4a23e24b7f29"},
@@ -1459,8 +1459,8 @@ stevedore = [
     {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
 ]
 tifffile = [
-    {file = "tifffile-2022.4.8-py3-none-any.whl", hash = "sha256:00795738af6ebaf98da456eca2c637febde4fd467477c4ef2e09482883d44aed"},
-    {file = "tifffile-2022.4.8.tar.gz", hash = "sha256:d4a4057e5cb7afe6e24cf7bde42a163970b593afe44c17249894ede755cf3faa"},
+    {file = "tifffile-2022.4.22-py3-none-any.whl", hash = "sha256:2a18ba74173074121e118ad9cd06fb030ac8354abd1d94adddf0b3ce614b0438"},
+    {file = "tifffile-2022.4.22.tar.gz", hash = "sha256:2b8003c834883103131bd3e97388091b59a3a2344e9d8e1ed48aebeb64f86763"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
