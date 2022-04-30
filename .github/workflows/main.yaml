@@ -46,7 +46,7 @@ jobs:
 
       - run: make build
       - run: make build-tests
-      - run: docker run --rm tests prospector -X --output=pylint
+      - run: docker run --rm tests prospector --die-on-tool-error --output=pylint
       - name: pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/

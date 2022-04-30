@@ -4,7 +4,6 @@
 
 - **`images`** _(array)_: The images.
   - **Items** _(string)_
-- **`destination`** _(string)_: The destination file name.
 - **`args`**: Refer to _#/definitions/args_.
 - **`progress`** _(boolean)_: Run in progress mode. Default: `False`.
 - **`experimental`** _(boolean)_: Run the experimental features. Default: `False`.

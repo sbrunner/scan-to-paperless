@@ -170,10 +170,6 @@ Configuration = TypedDict(
         #
         # required
         "images": List[str],
-        # The destination file name
-        #
-        # required
-        "destination": str,
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         #

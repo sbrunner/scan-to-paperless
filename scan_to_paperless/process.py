@@ -25,6 +25,7 @@ from skimage.color import rgb2gray, rgba2rgb
 from skimage.metrics import structural_similarity
 
 import scan_to_paperless.process_schema
+from scan_to_paperless import code
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
@@ -1058,7 +1059,9 @@ def finalize(
 
     convert in one pdf and copy with the right name in the consume folder
     """
-    destination = config["destination"]
+    destination = os.path.join(
+        os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), f"{os.path.basename(root_folder)}.pdf"
+    )
 
     if os.path.exists(destination):
         return
@@ -1136,6 +1139,25 @@ def finalize(
     call(["cp", one_pdf, destination])
 
 
+def process_code() -> None:
+    """Detect ad add a page with the QR codes."""
+    for pdf_filename in glob.glob(os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), "*.pdf")):
+        destination_filename = os.path.join(
+            os.environ.get("SCAN_FINAL_FOLDER", "/final"), os.path.basename(pdf_filename)
+        )
+
+        if os.path.exists(destination_filename):
+            continue
+
+        code.add_codes(
+            pdf_filename,
+            destination_filename,
+            font_size=int(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
+            margin_top=int(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
+            margin_left=int(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
+        )
+
+
 def is_sources_present(images: List[str], root_folder: str) -> bool:
     """Are sources present for the next step."""
     for img in images:
@@ -1156,15 +1178,16 @@ def save_config(config: scan_to_paperless.process_schema.Configuration, config_f
 
 def main() -> None:
     """Process the scanned documents."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--folder", default="/source", help="The folder to be processed")
-    args = parser.parse_args()
+    parser = argparse.ArgumentParser("Process the scanned documents.")
+    parser.parse_args()
 
     print("Welcome to scanned images document to paperless.")
     print_waiting = True
     while True:
         dirty = False
-        for config_file_name in glob.glob(os.path.join(args.folder, "*/config.yaml")):
+        for config_file_name in glob.glob(
+            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
+        ):
             if not os.path.exists(config_file_name):
                 continue
 
@@ -1271,6 +1294,8 @@ def main() -> None:
                     yaml.default_flow_style = False
                     with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                         yaml.dump(out, error_file)
+        if not dirty:
+            process_code()
 
         sys.stdout.flush()
         if not dirty:
