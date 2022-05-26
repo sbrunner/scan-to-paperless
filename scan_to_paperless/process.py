@@ -607,7 +607,7 @@ def find_lines(image: NpNdarrayInt, vertical: bool) -> Tuple[NpNdarrayInt, Dict[
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
-    iszero: NpNdarrayInt = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))
+    iszero: NpNdarrayInt = np.concatenate([[0], np.equal(values, 0).view(np.int8), [0]])
     absdiff = np.abs(np.diff(iszero))
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
@@ -797,7 +797,7 @@ def transform(
         image_config = images_config.setdefault(context.image_name, {})
         image_status = image_config.setdefault("status", {})
         assert context.image is not None
-        image_status["size"] = context.image.shape[:2][::-1]
+        image_status["size"] = list(context.image.shape[:2][::-1])
         mask_file = os.path.join(os.path.dirname(root_folder), "mask.png")
         if os.path.exists(mask_file):
             context.mask = cv2.imread(mask_file)
