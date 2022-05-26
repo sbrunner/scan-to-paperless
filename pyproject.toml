@@ -23,4 +23,4 @@ prospector = {version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyr
 pytest = "7.1.2"
 coverage = "6.3.0"
 pytest-profiling = "1.7.0"
-pyroma = "3.3"
+pyroma = "4.0"
