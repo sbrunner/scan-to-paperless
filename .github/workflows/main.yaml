@@ -7,7 +7,6 @@ on:
 
 env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
-  DOCKER_BUILDKIT: '1'
 
 jobs:
   dependabot-metadata:
