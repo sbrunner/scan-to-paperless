@@ -81,14 +81,5 @@ jobs:
           echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
           pip install --user wheel twine
 
-      - name: Bump version
-        run: |
-          python3 -m pip install --user bump-anything
-          bump minor
-          git add setup.py
-          git commit --allow-empty -m "[skip ci] Bump Version"
-          git push
-        if: github.ref == 'refs/heads/master'
-
       - name: Publish
         run: c2cciutils-publish --group=docker --type=rebuild --branch=${{ matrix.branch }}
