@@ -103,8 +103,8 @@ jobs:
       - name: Bump version
         run: |
           python3 -m pip install --user bump-anything
-          bump minor
-          git add setup.py
+          bump minor pyproject.toml
+          git add pyproject.toml
           git commit --allow-empty -m "[skip ci] Bump Version"
           git push
         if: github.ref == 'refs/heads/master'

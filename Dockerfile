@@ -53,7 +53,7 @@ RUN --mount=type=cache,target=/root/.cache \
 FROM base-dist as base
 
 COPY scan_to_paperless scan_to_paperless/
-COPY setup.py README.md ./
+COPY pyproject.toml README.md ./
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable .
 
