@@ -1,25 +1,25 @@
-# Scan and prepare your document for [Paperless](https://github.com/jonaswinkler/paperless-ng)
+# Scan and prepare your document for [Paperless](https://github.com/paperless-ngx/paperless-ngx)
 
 The main goal of this project is to have some productive process from the document scanning to
-[Paperless](https://github.com/jonaswinkler/paperless-ng).
-For that we need to prepare the documents some tools that need many resources, then the idea to to do it
-in the background and ideally on an other host like a NAS.
-A consecence of that it's a not easy to put it in place bet the you will be relay productive.
-The interface between the user and the process is the `scan` command to do the initial scan, and the filesystem
+[Paperless](https://github.com/paperless-ngx/paperless-ngx).
+For that we need to prepare the documents some tools that need many resources, then the idea to do it
+in the background and ideally on another host like a NAS.
+A consequence of that it's a not easy to put it in place, but then you will be really productive.
+The interface between the user and the process is the `scan` command to do the initial scan, and the file system
 to verify that the result is OK (and do some advance operations describe below) and validate it.
 
 ## Features
 
 - Scan the images optionally by using the Automatic Document Feeder
-- Easily scan double sided images using the Automatic Document Feeder
+- Easily scan double-sided images using the Automatic Document Feeder
 - Change the images levels
 - Deskew the images
 - Crop the images
 - Sharpen the images (disable by default)
 - Dither the images (disable by default)
-- Autorotate the images by using tesseract (To have the text on the right side)
-- Assisted split, used to split a prospectus page in more pages (Requires to modify the yaml...)
-- Append credit cart, used to have the too faces of a credit cart on the same page
+- Auto rotate the images by using tesseract (To have the text on the right side)
+- Assisted split, used to split a prospectus page in more pages (Requires to modify the YAML...)
+- Append credit cart, used to have the two faces of a credit cart on the same page
 - Be able to copy the OCR result from the PDF
 
 ## Requirements
@@ -27,9 +27,9 @@ to verify that the result is OK (and do some advance operations describe below) 
 On the desktop:
 
 - [Python](https://www.python.org/) >= 3.6
-- The [scanimage](http://www.sane-project.org/) command, on Windows it should be able to use an other command
+- The [scanimage](http://www.sane-project.org/) command, on Windows it should be able to use another command,
   but it's never be tested.
-  This command yould be an adapter that interpret the following arguments:
+  This command would be an adapter that interpret the following arguments:
   `--batch`, `--source=ADF`, `--batch-prompt`, `--batch-start`, `--batch-increment`, `--batch-count`.
 
 On the NAS:
@@ -65,9 +65,9 @@ default_args:
   level:
   # If no level specified, do auto level
   auto_level: False
-  # min level if no level end no autolovel
+  # min level if no level end no auto level
   min_level: 15
-  # max level if no level end no autolovel
+  # max level if no level end no auto level
   max_level: 95
 
   ## Crop
@@ -114,9 +114,9 @@ docker rm scan-to-paperless
 
 ### Repertory link
 
-You should find a way to synchronise or using sharing to link the scan folder on your desktop and on your nas.
+You should find a way to synchronize or using sharing to link the scan folder on your desktop and on your NAS.
 
-You should also link the consume folder to `paperless-ng` probabls just by using the same folder.
+You should also link the consume folder to `paperless-ngx` probably just by using the same folder.
 
 ## Usage
 
@@ -133,14 +133,14 @@ You should also link the consume folder to `paperless-ng` probabls just by using
 6. If your happy with that remove the `REMOVE_TO_CONTINUE` file.
    (To restart the process remove one of the generated images, to cancel the job just remove the folder).
 
-7. The process will continue his job and import the document in `paperless-ng`.
+7. The process will continue his job and import the document in `paperless-ngx`.
 
 ## Job config file
 
-In the `config.yaml` file present in the document folder, you can find sone information generated during
-the processing and some of the can be modified.
+In the `config.yaml` file present in the document folder, you can find some information generated during
+the processing and some can be modified.
 
-E.g. you can modify an image angle to fix the deskew, then remove a generated image for torce to regenerate
+E.g. you can modify an image angle to fix the skew, then remove a generated image for force to regenerate
 the images.
 
 [Full job config documentation](./process.md)
@@ -152,7 +152,7 @@ the images.
 If your scanner add some margin around the scanned image it will relay case some issue the deskew and the
 content detection.
 
-To solve that you can add a black and white image namev `mask.png` in the root folder and draw in black the
+To solve that you can add a black and white image named `mask.png` in the root folder and draw in black the
 part that should not be taken in account.
 
 ### Double sized scanning
@@ -196,8 +196,8 @@ assisted_split:
 
 ```
 
-Edit your config file, you should have one more destination then the limits.
-If you put destinatination like that: 2.1, it mean that it will be the first part of the page 2 and the 2.2 will be the second part.
+Edit your config file, you should have one more destination than the limits.
+If you put destination like that: 2.1, it means that it will be the first part of the page 2 and the 2.2 will be the second part.
 
 3. Delete the file `REMOVE_TO_CONTINUE`.
 

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base-all
+FROM ubuntu:22.04 as base-all
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
-    python3 -m pip install --disable-pip-version-check --requirement=/tmp/requirements.txt
+    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/tmp/requirements.txt
 
 VOLUME /source \
     /destination
@@ -48,14 +48,14 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
-    python3 -m pip install --disable-pip-version-check --requirement=/tmp/requirements-dev.txt
+    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/tmp/requirements-dev.txt
 
 FROM base-dist as base
 
 COPY scan_to_paperless scan_to_paperless/
-COPY setup.py README.md ./
+COPY pyproject.toml README.md ./
 RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install --editable .
+    python3 -m pip install --disable-pip-version-check --no-deps --editable .
 
 CMD ["scan-process"]
 
@@ -64,7 +64,7 @@ FROM tests-dist as tests
 
 COPY . ./
 RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install --editable .
+    python3 -m pip install --disable-pip-version-check --no-deps --editable .
 
 
 FROM base as all

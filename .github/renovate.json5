@@ -1,0 +1,30 @@
+{
+    separateMajorMinor: true,
+    extends: ['config:base', 'schedule:earlyMondays'],
+    baseBranches: ['master', 'test'],
+    lockFileMaintenance: { enabled: true, automerge: true },
+    packageRules: [
+        /** Automerge the patch, the minor and the dev dependency */
+        {
+            matchDepTypes: ['devDependencies'],
+            automerge: true,
+        },
+        /** Group the patch and the minor */
+        {
+            matchUpdateTypes: ['patch'],
+            groupName: 'all patch versions',
+            automerge: true,
+        },
+        {
+            matchUpdateTypes: ['minor'],
+            groupName: 'all minor versions',
+            automerge: true,
+        },
+        /** Accept only the patch on the stabilization branches */
+        {
+            matchBaseBranches: ['master'],
+            matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
+            enabled: false,
+        },
+    ],
+}

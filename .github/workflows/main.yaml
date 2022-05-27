@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.1.1
+        uses: dependabot/fetch-metadata@v1.3.1
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
       - name: A comma-separated list of all package names updated
@@ -37,9 +37,9 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: env.HAS_SECRETS != 'HAS_SECRETS'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.TOKEN }}
         if: env.HAS_SECRETS == 'HAS_SECRETS'
@@ -58,7 +58,7 @@ jobs:
 
       - run: make build
       - run: make build-tests
-      - run: docker run --rm tests prospector --output=pylint
+      - run: docker run --rm tests prospector -X --output=pylint
       - name: pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
@@ -69,14 +69,14 @@ jobs:
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
           coverage report &&
           coverage html --directory=/results/coverage'
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: results
           path: results
           if-no-files-found: ignore
           retention-days: 5
         if: failure()
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Test report
           path: results/test-reports
@@ -103,8 +103,8 @@ jobs:
       - name: Bump version
         run: |
           python3 -m pip install --user bump-anything
-          bump minor
-          git add setup.py
+          bump minor pyproject.toml
+          git add pyproject.toml
           git commit --allow-empty -m "[skip ci] Bump Version"
           git push
         if: github.ref == 'refs/heads/master'

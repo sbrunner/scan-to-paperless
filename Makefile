@@ -19,8 +19,8 @@ build-tests:
 	docker build --target=tests --tag=tests .
 
 .PHONY: prospector
-prospector: build-test
-	docker run --rm tests prospector --output=pylint
+prospector: build-tests
+	docker run --rm tests prospector -X --output=pylint
 
 .PHONY: pytest
 pytest: build-test

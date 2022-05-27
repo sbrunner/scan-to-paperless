@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Set, Tuple, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -28,7 +28,7 @@ import scan_to_paperless.process_schema
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
-    CompletedProcess = subprocess.CompletedProcess[str]  # pylint: disable=unsubscriptable-object
+    CompletedProcess = subprocess.CompletedProcess[str]
 else:
     NpNdarrayInt = np.ndarray
     CompletedProcess = subprocess.CompletedProcess
@@ -225,31 +225,25 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> Tuple[float, NpNda
     return score, diff
 
 
-if TYPE_CHECKING:
-    from typing_extensions import Protocol
+class FunctionWithContextReturnsImage(Protocol):
+    """Function with context and returns an image."""
 
-    class FunctionWithContextReturnsImage(Protocol):
-        """Function with context and returns an image."""
+    def __call__(self, context: Context) -> Optional[NpNdarrayInt]:
+        """Call the function."""
 
-        def __call__(self, context: Context) -> Optional[NpNdarrayInt]:
-            """Call the function."""
 
-    class FunctionWithContextReturnsNone(Protocol):
-        """Function with context and no return."""
+class FunctionWithContextReturnsNone(Protocol):
+    """Function with context and no return."""
 
-        def __call__(self, context: Context) -> None:
-            """Call the function."""
+    def __call__(self, context: Context) -> None:
+        """Call the function."""
 
-    class ExternalFunction(Protocol):
-        """Function that call an external tool."""
 
-        def __call__(self, context: Context, source: str, destination: str) -> None:
-            """Call the function."""
+class ExternalFunction(Protocol):
+    """Function that call an external tool."""
 
-else:
-    FunctionWithContextReturnsImage = Any
-    FunctionWithContextReturnsNone = Any
-    ExternalFunction = Any
+    def __call__(self, context: Context, source: str, destination: str) -> None:
+        """Call the function."""
 
 
 # Decorate a step of the transform
@@ -613,7 +607,7 @@ def find_lines(image: NpNdarrayInt, vertical: bool) -> Tuple[NpNdarrayInt, Dict[
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
-    iszero: NpNdarrayInt = np.concatenate(([0], np.equal(values, 0).view(np.int8), [0]))
+    iszero: NpNdarrayInt = np.concatenate([[0], np.equal(values, 0).view(np.int8), [0]])
     absdiff = np.abs(np.diff(iszero))
     # Runs start and end where absdiff is 1.
     ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
@@ -803,7 +797,7 @@ def transform(
         image_config = images_config.setdefault(context.image_name, {})
         image_status = image_config.setdefault("status", {})
         assert context.image is not None
-        image_status["size"] = context.image.shape[:2][::-1]
+        image_status["size"] = list(context.image.shape[:2][::-1])
         mask_file = os.path.join(os.path.dirname(root_folder), "mask.png")
         if os.path.exists(mask_file):
             context.mask = cv2.imread(mask_file)
