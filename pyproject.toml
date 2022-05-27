@@ -9,7 +9,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_return_any = true
 strict = true
-plugins = "numpy.typing.mypy_plugin"
+plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.pytest.ini_options]
 pytest_plugins = ["pytest_profiling"]
@@ -40,7 +40,7 @@ scan-process-status = "scan_to_paperless.scan_process_status:main"
 scan-process = "scan_to_paperless.process:main"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.11"
+python = ">=3.8,<3.11"
 numpy = "1.22.4"
 scipy = "1.8.1"
 scikit-image = "0.19.2"
