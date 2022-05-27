@@ -106,8 +106,7 @@ jobs:
 
       - name: Bump version
         run: |
-          python3 -m pip install --user bump-anything
-          bump minor pyproject.toml
+          poetry version patch
           git add pyproject.toml
           git commit --allow-empty -m "[skip ci] Bump Version"
           git push
