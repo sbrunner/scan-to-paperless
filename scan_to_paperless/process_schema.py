@@ -61,7 +61,7 @@ Arguments = TypedDict(
         # The number of angle used to detect the image skew
         #
         # default: 1800
-        "num_angles": Union[int, float],
+        "num_angles": int,
         # The minimum box size to find the content on witch one we will crop [mm]
         #
         # default: 3

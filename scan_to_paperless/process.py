@@ -425,7 +425,7 @@ def level(context: Context) -> NpNdarrayInt:
     return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
 
-def draw_angle(image: NpNdarrayInt, angle: float, color: Tuple[int, int, int]) -> None:
+def draw_angle(image: NpNdarrayInt, angle: np.float64, color: Tuple[int, int, int]) -> None:
     """Draw an angle on the image (as a line passed at the center of the image)."""
     angle = angle % 90
     height, width = image.shape[:2]
@@ -445,7 +445,7 @@ def draw_angle(image: NpNdarrayInt, angle: float, color: Tuple[int, int, int]) -
             cv2.putText(image, str(angle), (int(x), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color)
 
 
-def nice_angle(angle: float) -> float:
+def nice_angle(angle: np.float64) -> np.float64:
     """Fix the angle to be between -45° and 45°."""
     return ((angle + 45) % 90) - 45
 
@@ -464,28 +464,29 @@ def deskew(context: Context) -> None:
         grayscale = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
         image = cast(NpNdarrayInt, context.image).copy()
 
-        angle, angles, average_deviation, _ = determine_skew_dev(
+        skew_angle, angles, average_deviation, _ = determine_skew_dev(
             grayscale, num_angles=context.config["args"].setdefault("num_angles", 1800)
         )
-        if angle is not None:
-            image_status["angle"] = nice_angle(float(angle))
-            draw_angle(image, angle, (255, 0, 0))
+        if skew_angle is not None:
+            image_status["angle"] = float(nice_angle(skew_angle))
+            draw_angle(image, skew_angle, (255, 0, 0))
+            angle = float(skew_angle)
 
-        float_angles: Set[float] = set()
-        average_deviation_float = float(average_deviation)
-        image_status["average_deviation"] = average_deviation_float
+        float_angles: Set[np.float64] = set()
+        average_deviation_float = average_deviation
+        image_status["average_deviation"] = float(average_deviation_float)
         average_deviation2 = nice_angle(average_deviation_float - 45)
-        image_status["average_deviation2"] = average_deviation2
+        image_status["average_deviation2"] = float(average_deviation2)
         if math.isfinite(average_deviation2):
             float_angles.add(average_deviation2)
 
         for current_angles in angles:
             for current_angle in current_angles:
                 if current_angle is not None and math.isfinite(float(current_angle)):
-                    float_angles.add(nice_angle(float(current_angle)))
+                    float_angles.add(nice_angle(current_angle))
         for current_angle in float_angles:
             draw_angle(image, current_angle, (0, 255, 0))
-        image_status["angles"] = list(float_angles)
+        image_status["angles"] = [float(a) for a in float_angles]
 
         assert context.root_folder
         save_image(

@@ -62,7 +62,7 @@
   - **`tesseract_lang`** *(string)*: The used language for tesseract. Default: `fra+eng`.
   - **`append_credit_card`** *(boolean)*: Do an assisted split. Default: `False`.
   - **`assisted_split`** *(boolean)*: Do an assisted split. Default: `False`.
-  - **`num_angles`** *(number)*: The number of angle used to detect the image skew. Default: `1800`.
+  - **`num_angles`** *(integer)*: The number of angle used to detect the image skew. Default: `1800`.
   - **`min_box_size_crop`** *(number)*: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
   - **`min_box_black_crop`** *(number)*: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
   - **`contour_kernel_size_crop`** *(number)*: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.

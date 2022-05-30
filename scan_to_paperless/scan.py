@@ -9,7 +9,7 @@ import subprocess  # nosec
 import sys
 from typing import Any, List, Optional, cast
 
-import argcomplete  # pylint: disable=import-error
+import argcomplete
 import numpy as np
 from ruamel.yaml.main import YAML
 from skimage import io

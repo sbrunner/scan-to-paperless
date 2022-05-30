@@ -79,7 +79,7 @@
           "description": "Do an assisted split"
         },
         "num_angles": {
-          "type": "number",
+          "type": "integer",
           "default": 1800,
           "description": "The number of angle used to detect the image skew"
         },
