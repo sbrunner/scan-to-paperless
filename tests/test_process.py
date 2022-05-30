@@ -285,7 +285,7 @@ def test_full(progress, experimental):
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True, "tesseract": False, "num_angles": 179},
+        "args": {"level": True, "tesseract": False},
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}

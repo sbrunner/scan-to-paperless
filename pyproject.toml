@@ -16,7 +16,7 @@ pytest_plugins = ["pytest_profiling"]
 
 [tool.poetry]
 name = "scan-to-paperless"
-version = "1.22.0"
+version = "1.23.0"
 description = "Tool to scan and process documents to paperless"
 readme = "README.md"
 keywords = ["scan", "paperless"]
@@ -45,9 +45,10 @@ numpy = "1.22.4"
 scipy = "1.8.1"
 scikit-image = "0.19.2"
 opencv-python-headless = "4.5.5.64"
-deskew = "1.0.19"
+deskew = "1.0.21"
 jsonschema-gentypes = "1.0.0"
 "ruamel.yaml" = "0.17.21"
+argcomplete = "2.0.0"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.7.7", extras = [
@@ -59,6 +60,7 @@ pytest = "7.1.2"
 coverage = "6.3.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
+typing-extensions = "4.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-plugin-tweak-dependencies-version"]
