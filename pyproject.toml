@@ -48,6 +48,7 @@ opencv-python-headless = "4.5.5.64"
 deskew = "1.0.21"
 jsonschema-gentypes = "1.0.0"
 "ruamel.yaml" = "0.17.21"
+argcomplete = "2.0.0"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.7.7", extras = [
@@ -59,6 +60,7 @@ pytest = "7.1.2"
 coverage = "6.3.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
+typing-extensions = "4.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-plugin-tweak-dependencies-version"]
