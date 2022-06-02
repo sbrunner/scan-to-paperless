@@ -1,7 +1,8 @@
 FROM ubuntu:22.04 as base-all
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
-    apt-get update
+    apt-get update \
+    && apt-get upgrade --yes
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN --mount=type=cache,target=/var/lib/apt/lists \
