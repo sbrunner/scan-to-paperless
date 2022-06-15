@@ -98,9 +98,10 @@ Otherwise use:
 
 ```bash
 docker run --name=scan-to-paperless --restart=unless-stopped --detatch \
-    --volume=<scan_folder>:/source \
-    --volume=<consume_folder>:/destination \
-    sbrunner/scan-to-paperless
+  --volume= \
+  --volume= \
+  sbrunner/scan-to-paperless < scan_folder > :/source \
+  < consume_folder > :/destination
 ```
 
 You can set the environment variable `PROGRESS` to `TRUE` to get all the intermediate images.
