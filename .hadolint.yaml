@@ -1,4 +1,4 @@
 ignored:
-  - DL3003 # warning: Use WORKDIR to switch to a directory
-  - DL3008 # warning: Pin versions in apt get install.
-  - DL3042 # warning: Avoid cache directory with pip install --no-cache-dir <package>
+  - DL3003 # Use WORKDIR to switch to a directory
+  - DL3008 # Pin versions in apt get install.
+  - DL3042 # Avoid use of cache directory with pip. Use `pip install --no-cache-dir <package>`

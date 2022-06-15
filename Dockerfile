@@ -13,12 +13,12 @@ FROM base-all as poetry
 WORKDIR /tmp
 COPY requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install --disable-pip-version-check --requirement=requirements.txt && \
-    rm requirements.txt
+    python3 -m pip install --disable-pip-version-check --requirement=requirements.txt \
+    && rm requirements.txt
 
 COPY poetry.lock pyproject.toml ./
-RUN poetry export --output=requirements.txt && \
-    poetry export --dev --output=requirements-dev.txt
+RUN poetry export --output=requirements.txt \
+    && poetry export --dev --output=requirements-dev.txt
 
 FROM base-all as base-dist
 
@@ -59,13 +59,11 @@ RUN --mount=type=cache,target=/root/.cache \
 
 CMD ["scan-process"]
 
-
 FROM tests-dist as tests
 
 COPY . ./
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable .
-
 
 FROM base as all
 
