@@ -11,7 +11,7 @@ test = ["coverage", "flake8", "pexpect", "wheel"]
 
 [[package]]
 name = "astroid"
-version = "2.11.5"
+version = "2.11.6"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
@@ -85,7 +85,7 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "certifi"
-version = "2022.5.18.1"
+version = "2022.6.15"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -104,7 +104,7 @@ unicode_backport = ["unicodedata2"]
 
 [[package]]
 name = "colorama"
-version = "0.4.4"
+version = "0.4.5"
 description = "Cross-platform colored terminal text."
 category = "dev"
 optional = false
@@ -253,7 +253,7 @@ tifffile = ["tifffile"]
 
 [[package]]
 name = "importlib-resources"
-version = "5.7.1"
+version = "5.8.0"
 description = "Read resources from Python packages"
 category = "main"
 optional = false
@@ -363,7 +363,7 @@ python-versions = "*"
 
 [[package]]
 name = "networkx"
-version = "2.8.3"
+version = "2.8.4"
 description = "Python package for creating and manipulating graphs and networks"
 category = "main"
 optional = false
@@ -372,7 +372,7 @@ python-versions = ">=3.8"
 [package.extras]
 default = ["numpy (>=1.19)", "scipy (>=1.8)", "matplotlib (>=3.4)", "pandas (>=1.3)"]
 developer = ["pre-commit (>=2.19)", "mypy (>=0.960)"]
-doc = ["sphinx (>=4.5)", "pydata-sphinx-theme (>=0.8.1)", "sphinx-gallery (>=0.10)", "numpydoc (>=1.3)", "pillow (>=9.1)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
+doc = ["sphinx (>=5)", "pydata-sphinx-theme (>=0.9)", "sphinx-gallery (>=0.10)", "numpydoc (>=1.4)", "pillow (>=9.1)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
 extra = ["lxml (>=4.6)", "pygraphviz (>=1.9)", "pydot (>=1.4.2)", "sympy (>=1.10)"]
 test = ["pytest (>=7.1)", "pytest-cov (>=3.0)", "codecov (>=2.1)"]
 
@@ -561,15 +561,15 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pylint"
-version = "2.14.1"
+version = "2.14.3"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 
 [package.dependencies]
-astroid = ">=2.11.5,<=2.12.0-dev0"
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
+astroid = ">=2.11.6,<=2.12.0-dev0"
+colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = ">=0.2"
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
@@ -956,8 +956,8 @@ argcomplete = [
     {file = "argcomplete-2.0.0.tar.gz", hash = "sha256:6372ad78c89d662035101418ae253668445b391755cfe94ea52f1b9d22425b20"},
 ]
 astroid = [
-    {file = "astroid-2.11.5-py3-none-any.whl", hash = "sha256:14ffbb4f6aa2cf474a0834014005487f7ecd8924996083ab411e7fa0b508ce0b"},
-    {file = "astroid-2.11.5.tar.gz", hash = "sha256:f4e4ec5294c4b07ac38bab9ca5ddd3914d4bf46f9006eb5c0ae755755061044e"},
+    {file = "astroid-2.11.6-py3-none-any.whl", hash = "sha256:ba33a82a9a9c06a5ceed98180c5aab16e29c285b828d94696bf32d6015ea82a9"},
+    {file = "astroid-2.11.6.tar.gz", hash = "sha256:4f933d0bf5e408b03a6feb5d23793740c27e07340605f236496cd6ce552043d6"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -976,16 +976,16 @@ build = [
     {file = "build-0.8.0.tar.gz", hash = "sha256:887a6d471c901b1a6e6574ebaeeebb45e5269a79d095fe9a8f88d6614ed2e5f0"},
 ]
 certifi = [
-    {file = "certifi-2022.5.18.1-py3-none-any.whl", hash = "sha256:f1d53542ee8cbedbe2118b5686372fb33c297fcd6379b050cca0ef13a597382a"},
-    {file = "certifi-2022.5.18.1.tar.gz", hash = "sha256:9c5705e395cd70084351dd8ad5c41e65655e08ce46f2ec9cf6c2c08390f71eb7"},
+    {file = "certifi-2022.6.15-py3-none-any.whl", hash = "sha256:fe86415d55e84719d75f8b69414f6438ac3547d2078ab91b67e779ef69378412"},
+    {file = "certifi-2022.6.15.tar.gz", hash = "sha256:84c85a9078b11105f04f3036a9482ae10e4621616db313fe045dd24743a0820d"},
 ]
 charset-normalizer = [
     {file = "charset-normalizer-2.0.12.tar.gz", hash = "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597"},
     {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
 ]
 colorama = [
-    {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
-    {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+    {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
+    {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
 ]
 coverage = [
     {file = "coverage-6.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e8071e7d9ba9f457fc674afc3de054450be2c9b195c470147fbbc082468d8ff7"},
@@ -1073,8 +1073,8 @@ imageio = [
     {file = "imageio-2.19.3.tar.gz", hash = "sha256:0c9df80e42f2ee68bea92001e7fcf612aa149910efe040eb757f5ce323250ae1"},
 ]
 importlib-resources = [
-    {file = "importlib_resources-5.7.1-py3-none-any.whl", hash = "sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8"},
-    {file = "importlib_resources-5.7.1.tar.gz", hash = "sha256:b6062987dfc51f0fcb809187cffbd60f35df7acb4589091f154214af6d0d49d3"},
+    {file = "importlib_resources-5.8.0-py3-none-any.whl", hash = "sha256:7952325ffd516c05a8ad0858c74dff2c3343f136fe66a6002b2623dd1d43f223"},
+    {file = "importlib_resources-5.8.0.tar.gz", hash = "sha256:568c9f16cb204f9decc8d6d24a572eeea27dacbb4cee9e6b03a8025736769751"},
 ]
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
@@ -1164,8 +1164,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 networkx = [
-    {file = "networkx-2.8.3-py3-none-any.whl", hash = "sha256:f151edac6f9b0cf11fecce93e236ac22b499bb9ff8d6f8393b9fef5ad09506cc"},
-    {file = "networkx-2.8.3.tar.gz", hash = "sha256:67fab04a955a73eb660fe7bf281b6fa71a003bc6e23a92d2f6227654c5223dbe"},
+    {file = "networkx-2.8.4-py3-none-any.whl", hash = "sha256:6933b9b3174a0bdf03c911bb4a1ee43a86ce3edeb813e37e1d4c553b3f4a2c4f"},
+    {file = "networkx-2.8.4.tar.gz", hash = "sha256:5e53f027c0d567cf1f884dbb283224df525644e43afd1145d64c9d88a3584762"},
 ]
 numpy = [
     {file = "numpy-1.22.4-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:ba9ead61dfb5d971d77b6c131a9dbee62294a932bf6a356e48c75ae684e635b3"},
@@ -1289,8 +1289,8 @@ pygments = [
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
 pylint = [
-    {file = "pylint-2.14.1-py3-none-any.whl", hash = "sha256:bb71e6d169506de585edea997e48d9ff20c0dc0e2fbc1d166bad6b640120326b"},
-    {file = "pylint-2.14.1.tar.gz", hash = "sha256:549261e0762c3466cc001024c4419c08252cb8c8d40f5c2c6966fea690e7fe2a"},
+    {file = "pylint-2.14.3-py3-none-any.whl", hash = "sha256:6757a027e15816be23625b079ebc45464e4c9d9dde0c826d18beee53fe22a2e7"},
+    {file = "pylint-2.14.3.tar.gz", hash = "sha256:4e1378f815c63e7e44590d0d339ed6435f5281d0a0cc357d29a86ea0365ef868"},
 ]
 pylint-celery = [
     {file = "pylint-celery-0.3.tar.gz", hash = "sha256:41e32094e7408d15c044178ea828dd524beedbdbe6f83f712c5e35bde1de4beb"},
