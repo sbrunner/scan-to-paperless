@@ -1,10 +1,10 @@
 FROM ubuntu:22.04 as base-all
+SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update \
     && apt-get upgrade --yes
 
-ENV DEBIAN_FRONTEND=noninteractive
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get install --assume-yes --no-install-recommends python3-pip
@@ -57,7 +57,7 @@ COPY scan_to_paperless scan_to_paperless/
 COPY pyproject.toml README.md ./
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable . \
-    && pip freeze --all >/requirements.txt
+    && pip freeze --all > /requirements.txt
 
 CMD ["scan-process"]
 
