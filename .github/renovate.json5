@@ -20,6 +20,10 @@
             groupName: 'all minor versions',
             automerge: true,
         },
+        {
+            matchPackage: ['scikit-image'],
+            groupName: 'scikit-image',
+        },
         /** Accept only the patch on the stabilization branches */
         {
             matchBaseBranches: ['master'],
