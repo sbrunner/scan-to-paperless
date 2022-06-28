@@ -21,7 +21,7 @@
             automerge: true,
         },
         {
-            matchPackage: ['scikit-image'],
+            matchPackagePatterns: ['scikit-image'],
             groupName: 'scikit-image',
         },
         /** Accept only the patch on the stabilization branches */
