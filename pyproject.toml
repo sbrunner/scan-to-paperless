@@ -57,7 +57,7 @@ prospector = { version = "1.7.7", extras = [
     "with_pyroma"
 ] }
 pytest = "7.1.2"
-coverage = "6.3.0"
+coverage = "6.4.1"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
 typing-extensions = "4.2.0"
