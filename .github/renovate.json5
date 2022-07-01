@@ -30,5 +30,11 @@
             matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
             enabled: false,
         },
+        /** No c2cciutils on mastr branch */
+        {
+            matchBaseBranches: ['master'],
+            matchPackagePatterns: ['c2cciutils'],
+            enabled: false,
+        },
     ],
 }
