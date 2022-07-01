@@ -123,11 +123,11 @@ toml = ["tomli"]
 
 [[package]]
 name = "deskew"
-version = "1.0.24"
+version = "1.0.26"
 description = "Skew detection and correction in images containing text"
 category = "main"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 numpy = "*"
@@ -948,7 +948,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "bc8df1865edbe0abb52ad1c4138548e8c8b6f4403cf3abf9f55065f93049e43b"
+content-hash = "9aba74a7a7e3d1905787d7ab31a24f2701d94fb41a53b7200061a2b7c70a96be"
 
 [metadata.files]
 argcomplete = [
@@ -1031,7 +1031,7 @@ coverage = [
     {file = "coverage-6.3.tar.gz", hash = "sha256:987a84ff98a309994ca77ed3cc4b92424f824278e48e4bf7d1bb79a63cfe2099"},
 ]
 deskew = [
-    {file = "deskew-1.0.24-py3-none-any.whl", hash = "sha256:8ee2ed3df1e133d433c99f5e5c0e4bc83fadeee6761a26b0919ef83908085503"},
+    {file = "deskew-1.0.26-py3-none-any.whl", hash = "sha256:d0c7b3c03bd2f380e34709d79b68b00963bd4ffc48f74cdec0de07900e432086"},
 ]
 dill = [
     {file = "dill-0.3.5.1-py2.py3-none-any.whl", hash = "sha256:33501d03270bbe410c72639b350e941882a8b0fd55357580fbc873fba0c59302"},
