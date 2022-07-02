@@ -157,6 +157,26 @@
           "type": "number",
           "default": 70,
           "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content"
+        },
+        "colors": {
+          "type": "integer",
+          "default": 0,
+          "description": "The number of colors in the png"
+        },
+        "run_optipng": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run the optipng optimizer"
+        },
+        "run_exiftool": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run the exiftool optimizer"
+        },
+        "run_ps2pdf": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the ps2pdf optimizer (=> JPEG)"
         }
       }
     }

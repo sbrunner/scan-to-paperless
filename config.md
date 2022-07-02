@@ -33,3 +33,7 @@
   - **`box_kernel_size`** *(number)*: The block size used in a box on content find [mm]. Default: `1.5`.
   - **`box_block_size`** *(number)*: The block size used in a box on threshold for content find [mm]. Default: `1.5`.
   - **`box_threshold_value_c`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find. Default: `70`.
+  - **`colors`** *(integer)*: The number of colors in the png. Default: `0`.
+  - **`run_optipng`** *(boolean)*: Run the optipng optimizer. Default: `True`.
+  - **`run_exiftool`** *(boolean)*: Run the exiftool optimizer. Default: `True`.
+  - **`run_ps2pdf`** *(boolean)*: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
