@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get install --assume-yes --no-install-recommends \
     graphicsmagick pdftk-java \
     tesseract-ocr tesseract-ocr-fra tesseract-ocr-deu tesseract-ocr-eng \
-    libimage-exiftool-perl software-properties-common ghostscript
+    libimage-exiftool-perl software-properties-common ghostscript optipng
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/tmp \

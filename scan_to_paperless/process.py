@@ -856,6 +856,17 @@ def transform(
             images.append(img2)
         process_count = context.process_count
 
+    if config["args"].setdefault("colors", 0):
+        for image in images:
+            call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
+
+    if config["args"].setdefault("run_optipng", True):
+        for image in images:
+            call(["optipng", image])
+
+    step["sources"] = images
+    step["process_count"] = process_count + 1
+
     return {
         "sources": images,
         "name": "split" if config["args"].setdefault("assisted_split", False) else "finalise",
@@ -1092,14 +1103,18 @@ def finalize(
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
 
-    intermediate_file = os.path.join(root_folder, "intermediate.pdf")
-    call(["pdftk"] + pdf + ["output", intermediate_file, "compress"])
+    one_pdf = os.path.join(root_folder, "intermediate.pdf")
+    call(["pdftk"] + pdf + ["output", one_pdf, "compress"])
 
-    exiftool_cmd = ["exiftool", "-overwrite_original_in_place"]
-    exiftool_cmd.append(intermediate_file)
-    call(exiftool_cmd)
+    if config["args"].setdefault("run_exiftool", True):
+        call(["exiftool", "-overwrite_original_in_place", one_pdf])
 
-    call(["ps2pdf", intermediate_file, destination])
+    if config["args"].setdefault("run_ps2pdf", False):
+        intermediate_file = os.path.join(root_folder, "intermediate-ps2pdf.pdf")
+        call(["ps2pdf", one_pdf, intermediate_file])
+        one_pdf = intermediate_file
+
+    call(["cp", one_pdf, destination])
 
 
 def is_sources_present(images: List[str], root_folder: str) -> bool:

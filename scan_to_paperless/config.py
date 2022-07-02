@@ -90,6 +90,22 @@ Arguments = TypedDict(
         #
         # default: 70
         "box_threshold_value_c": Union[int, float],
+        # The number of colors in the png
+        #
+        # default: 0
+        "colors": int,
+        # Run the optipng optimizer
+        #
+        # default: True
+        "run_optipng": bool,
+        # Run the exiftool optimizer
+        #
+        # default: True
+        "run_exiftool": bool,
+        # Run the ps2pdf optimizer (=> JPEG)
+        #
+        # default: False
+        "run_ps2pdf": bool,
     },
     total=False,
 )
