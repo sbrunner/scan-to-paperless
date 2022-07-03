@@ -2,83 +2,84 @@
 
 ## Properties
 
-- **`images`** *(array)*: The images.
-  - **Items** *(string)*
-- **`destination`** *(string)*: The destination file name.
-- **`args`**: Refer to *#/definitions/args*.
-- **`progress`** *(boolean)*: Run in progress mode. Default: `False`.
-- **`experimental`** *(boolean)*: Run the experimental features. Default: `False`.
-- **`steps`** *(array)*: The carried out steps description.
-  - **Items** *(object)*: Cannot contain additional properties.
-    - **`name`** *(string)*: The step name.
-    - **`sources`** *(array)*: The images obtain after the current step.
-      - **Items** *(string)*
-    - **`process_count`** *(integer)*: The step number.
-- **`assisted_split`** *(array)*
-  - **Items** *(object)*: Assisted split configuration. Cannot contain additional properties.
-    - **`source`** *(string)*
-    - **`destinations`** *(array)*
-      - **Items** *(['integer', 'string'])*
-    - **`image`** *(string)*
-    - **`limits`** *(array)*: The (proposed) limits to do the assisted split, You should keep only the right one.
-      - **Items** *(object)*: Cannot contain additional properties.
-        - **`name`** *(string)*: The name visible on the generated image.
-        - **`type`** *(string)*: The kind of split.
-        - **`value`** *(integer)*: The split position.
-        - **`vertical`** *(boolean)*: Is vertical?
-        - **`margin`** *(integer)*: The margin around the split, can be used to remove a fold.
-- **`transformed_images`** *(array)*: The transformed image, if removed the jobs will rag again from start.
-  - **Items** *(string)*
-- **`intermediate_error`** *(array)*: The ignored errors.
-  - **Items** *(object)*: Cannot contain additional properties.
-    - **`error`** *(string)*
-    - **`traceback`** *(array)*
-      - **Items** *(string)*
-- **`images_config`** *(object)*: Can contain additional properties.
-  - **Additional Properties** *(object)*: Cannot contain additional properties.
-    - **`angle`** *(['number', 'null'])*: The used angle to deskew, can be change, restart by deleting one of the generated images.
-    - **`status`** *(object)*: Cannot contain additional properties.
-      - **`angle`** *(number)*: The measured deskew angle.
-      - **`average_deviation`** *(number)*: The measured deskew angle deviation.
-      - **`average_deviation2`** *(number)*: The measured deskew angle deviation, corrected.
-      - **`angles`** *(array)*: The measured possible deskew angles, visible on the generated image.
-        - **Items** *(number)*
-      - **`size`** *(array)*: The image dimensions.
-        - **Items** *(number)*
+- **`images`** _(array)_: The images.
+  - **Items** _(string)_
+- **`destination`** _(string)_: The destination file name.
+- **`args`**: Refer to _#/definitions/args_.
+- **`progress`** _(boolean)_: Run in progress mode. Default: `False`.
+- **`experimental`** _(boolean)_: Run the experimental features. Default: `False`.
+- **`steps`** _(array)_: The carried out steps description.
+  - **Items** _(object)_: Cannot contain additional properties.
+    - **`name`** _(string)_: The step name.
+    - **`sources`** _(array)_: The images obtain after the current step.
+      - **Items** _(string)_
+    - **`process_count`** _(integer)_: The step number.
+- **`assisted_split`** _(array)_
+  - **Items** _(object)_: Assisted split configuration. Cannot contain additional properties.
+    - **`source`** _(string)_
+    - **`destinations`** _(array)_
+      - **Items** _(['integer', 'string'])_
+    - **`image`** _(string)_
+    - **`limits`** _(array)_: The (proposed) limits to do the assisted split, You should keep only the right one.
+      - **Items** _(object)_: Cannot contain additional properties.
+        - **`name`** _(string)_: The name visible on the generated image.
+        - **`type`** _(string)_: The kind of split.
+        - **`value`** _(integer)_: The split position.
+        - **`vertical`** _(boolean)_: Is vertical?
+        - **`margin`** _(integer)_: The margin around the split, can be used to remove a fold.
+- **`transformed_images`** _(array)_: The transformed image, if removed the jobs will rag again from start.
+  - **Items** _(string)_
+- **`intermediate_error`** _(array)_: The ignored errors.
+  - **Items** _(object)_: Cannot contain additional properties.
+    - **`error`** _(string)_
+    - **`traceback`** _(array)_
+      - **Items** _(string)_
+- **`images_config`** _(object)_: Can contain additional properties.
+  - **Additional Properties** _(object)_: Cannot contain additional properties.
+    - **`angle`** _(['number', 'null'])_: The used angle to deskew, can be change, restart by deleting one of the generated images.
+    - **`status`** _(object)_: Cannot contain additional properties.
+      - **`angle`** _(number)_: The measured deskew angle.
+      - **`average_deviation`** _(number)_: The measured deskew angle deviation.
+      - **`average_deviation2`** _(number)_: The measured deskew angle deviation, corrected.
+      - **`angles`** _(array)_: The measured possible deskew angles, visible on the generated image.
+        - **Items** _(number)_
+      - **`size`** _(array)_: The image dimensions.
+        - **Items** _(number)_
+
 ## Definitions
 
-- **`args`** *(object)*
-  - **`level`** *(['boolean', 'integer'])*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%.
-  - **`auto_level`** *(boolean)*: If no level specified, do auto level. Default: `False`.
-  - **`min_level`** *(number)*: Min level if no level end no auto-level. Default: `15`.
-  - **`max_level`** *(number)*: Max level if no level end no auto-level. Default: `15`.
-  - **`no_crop`** *(boolean)*: Don't do any crop. Default: `False`.
-  - **`margin_horizontal`** *(number)*: The horizontal margin used on auto-detect content [mm]. Default: `9`.
-  - **`margin_vertical`** *(number)*: The vertical margin used on auto-detect content [mm]. Default: `6`.
-  - **`dpi`** *(number)*: The DPI used to convert the mm to pixel. Default: `300`.
-  - **`sharpen`** *(boolean)*: Do the sharpen. Default: `False`.
-  - **`dither`** *(boolean)*: Do the dither. Default: `False`.
-  - **`tesseract`** *(boolean)*: Use tesseract to to an OCR on the document. Default: `False`.
-  - **`tesseract_lang`** *(string)*: The used language for tesseract. Default: `fra+eng`.
-  - **`append_credit_card`** *(boolean)*: Do an assisted split. Default: `False`.
-  - **`assisted_split`** *(boolean)*: Do an assisted split. Default: `False`.
-  - **`num_angles`** *(integer)*: The number of angle used to detect the image skew. Default: `1800`.
-  - **`min_box_size_crop`** *(number)*: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
-  - **`min_box_black_crop`** *(number)*: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
-  - **`contour_kernel_size_crop`** *(number)*: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.
-  - **`threshold_block_size_crop`** *(number)*: The block size used in a box on threshold for content find on witch one we will crop [mm]. Default: `1.5`.
-  - **`threshold_value_c_crop`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
-  - **`min_box_size_empty`** *(number)*: The minimum box size to find the content to determine if the page is empty [mm]. Default: `10`.
-  - **`min_box_black_empty`** *(number)*: The minimum black in a box on content find if the page is empty [%]. Default: `2`.
-  - **`contour_kernel_size_empty`** *(number)*: The block size used in a box on content find if the page is empty [mm]. Default: `1.5`.
-  - **`threshold_block_size_empty`** *(number)*: The block size used in a box on threshold for content find if the page is empty [mm]. Default: `1.5`.
-  - **`threshold_value_c_empty`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty. Default: `70`.
-  - **`min_box_size_limit`** *(number)*: The minimum box size to find the limits based on content [mm]. Default: `3`.
-  - **`min_box_black_limit`** *(number)*: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
-  - **`contour_kernel_size_limit`** *(number)*: The block size used in a box on content find the limits based on content [mm]. Default: `1.5`.
-  - **`threshold_block_size_limit`** *(number)*: The block size used in a box on threshold for content find the limits based on content [mm]. Default: `1.5`.
-  - **`threshold_value_c_limit`** *(number)*: A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content. Default: `70`.
-  - **`colors`** *(integer)*: The number of colors in the png. Default: `0`.
-  - **`run_optipng`** *(boolean)*: Run the optipng optimizer. Default: `True`.
-  - **`run_exiftool`** *(boolean)*: Run the exiftool optimizer. Default: `True`.
-  - **`run_ps2pdf`** *(boolean)*: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
+- **`args`** _(object)_
+  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%.
+  - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `False`.
+  - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `15`.
+  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `15`.
+  - **`no_crop`** _(boolean)_: Don't do any crop. Default: `False`.
+  - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
+  - **`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
+  - **`dpi`** _(number)_: The DPI used to convert the mm to pixel. Default: `300`.
+  - **`sharpen`** _(boolean)_: Do the sharpen. Default: `False`.
+  - **`dither`** _(boolean)_: Do the dither. Default: `False`.
+  - **`tesseract`** _(boolean)_: Use tesseract to to an OCR on the document. Default: `False`.
+  - **`tesseract_lang`** _(string)_: The used language for tesseract. Default: `fra+eng`.
+  - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `False`.
+  - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `False`.
+  - **`num_angles`** _(integer)_: The number of angle used to detect the image skew. Default: `1800`.
+  - **`min_box_size_crop`** _(number)_: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
+  - **`min_box_black_crop`** _(number)_: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
+  - **`contour_kernel_size_crop`** _(number)_: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.
+  - **`threshold_block_size_crop`** _(number)_: The block size used in a box on threshold for content find on witch one we will crop [mm]. Default: `1.5`.
+  - **`threshold_value_c_crop`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
+  - **`min_box_size_empty`** _(number)_: The minimum box size to find the content to determine if the page is empty [mm]. Default: `10`.
+  - **`min_box_black_empty`** _(number)_: The minimum black in a box on content find if the page is empty [%]. Default: `2`.
+  - **`contour_kernel_size_empty`** _(number)_: The block size used in a box on content find if the page is empty [mm]. Default: `1.5`.
+  - **`threshold_block_size_empty`** _(number)_: The block size used in a box on threshold for content find if the page is empty [mm]. Default: `1.5`.
+  - **`threshold_value_c_empty`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty. Default: `70`.
+  - **`min_box_size_limit`** _(number)_: The minimum box size to find the limits based on content [mm]. Default: `3`.
+  - **`min_box_black_limit`** _(number)_: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
+  - **`contour_kernel_size_limit`** _(number)_: The block size used in a box on content find the limits based on content [mm]. Default: `1.5`.
+  - **`threshold_block_size_limit`** _(number)_: The block size used in a box on threshold for content find the limits based on content [mm]. Default: `1.5`.
+  - **`threshold_value_c_limit`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content. Default: `70`.
+  - **`colors`** _(integer)_: The number of colors in the png. Default: `0`.
+  - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `True`.
+  - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `True`.
+  - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.

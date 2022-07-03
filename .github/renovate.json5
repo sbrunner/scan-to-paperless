@@ -1,40 +1,43 @@
 {
-    separateMajorMinor: true,
-    extends: ['config:base', 'schedule:earlyMondays'],
-    baseBranches: ['master', 'test'],
-    lockFileMaintenance: { enabled: true, automerge: true },
-    packageRules: [
-        /** Automerge the patch, the minor and the dev dependency */
-        {
-            matchDepTypes: ['devDependencies'],
-            automerge: true,
-        },
-        /** Group the patch and the minor */
-        {
-            matchUpdateTypes: ['patch'],
-            groupName: 'all patch versions',
-            automerge: true,
-        },
-        {
-            matchUpdateTypes: ['minor'],
-            groupName: 'all minor versions',
-            automerge: true,
-        },
-        {
-            matchPackagePatterns: ['scikit-image'],
-            groupName: 'scikit-image',
-        },
-        /** Accept only the patch on the stabilization branches */
-        {
-            matchBaseBranches: ['master'],
-            matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
-            enabled: false,
-        },
-        /** No c2cciutils on mastr branch */
-        {
-            matchBaseBranches: ['master'],
-            matchPackagePatterns: ['c2cciutils'],
-            enabled: false,
-        },
-    ],
+  extends: ['config:base'],
+  timezone: 'Europe/Zurich',
+  schedule: 'before 1am on Monday',
+  labels: ['dependencies'],
+  separateMajorMinor: true,
+  separateMinorPatch: true,
+  lockFileMaintenance: { enabled: true, automerge: true },
+  packageRules: [
+    /** Automerge the patch, the minor and the dev dependency */
+    {
+      matchDepTypes: ['devDependencies'],
+      automerge: true,
+    },
+    /** Group the patch and the minor */
+    {
+      matchUpdateTypes: ['patch'],
+      groupName: 'all patch versions',
+      automerge: true,
+    },
+    {
+      matchUpdateTypes: ['minor'],
+      groupName: 'all minor versions',
+      automerge: true,
+    },
+    {
+      matchPackagePatterns: ['scikit-image'],
+      groupName: 'scikit-image',
+    },
+    /** Accept only the patch on the stabilization branches */
+    {
+      matchBaseBranches: ['master'],
+      matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
+      enabled: false,
+    },
+    /** No c2cciutils on mastr branch */
+    {
+      matchBaseBranches: ['master'],
+      matchPackagePatterns: ['c2cciutils'],
+      enabled: false,
+    },
+  ],
 }
