@@ -1103,15 +1103,34 @@ def finalize(
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
 
+    progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
+    if progress:
+        for pdf_file in pdf:
+            basename = os.path.basename(pdf_file).split(".")
+            call(
+                [
+                    "cp",
+                    pdf_file,
+                    os.path.join(root_folder, f"{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
+                ]
+            )
+
     one_pdf = os.path.join(root_folder, "intermediate.pdf")
     call(["pdftk"] + pdf + ["output", one_pdf, "compress"])
+    if progress:
+        call(["cp", one_pdf, os.path.join(root_folder, "pdftk.pdf")])
 
     if config["args"].setdefault("run_exiftool", True):
         call(["exiftool", "-overwrite_original_in_place", one_pdf])
+        if progress:
+            call(["cp", one_pdf, os.path.join(root_folder, "exiftool.pdf")])
 
     if config["args"].setdefault("run_ps2pdf", False):
         intermediate_file = os.path.join(root_folder, "intermediate-ps2pdf.pdf")
         call(["ps2pdf", one_pdf, intermediate_file])
+        if progress:
+            call(["cp", intermediate_file, os.path.join(root_folder, "ps2pdf.pdf")])
+
         one_pdf = intermediate_file
 
     call(["cp", one_pdf, destination])
