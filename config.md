@@ -4,10 +4,17 @@
 
 - **`scan_folder`** _(string)_: This should be shared with the process container in 'source'.
 - **`scanimage`** _(string)_: The scanimage command. Default: `scanimage`.
-- **`scanimage_arguments`** _(array)_: Default: `['--format=png', '--mode=color', '--resolution=300']`.
+- **`scanimage_arguments`** _(array)_: The scanimage arguments. Default: `['--format=png', '--mode=color', '--resolution=300']`.
   - **Items** _(string)_
+- **`extension`** _(string)_: The extension of generate image (png or tiff). Default: `png`.
 - **`default_args`**: Refer to _#/definitions/args_.
 - **`viewer`** _(string)_: The command used to start the viewer. Default: `eog`.
+- **`modes`** _(object)_: Customize the modes. Can contain additional properties.
+  - **Additional Properties** _(object)_
+    - **`scanimage_arguments`** _(array)_: Additional scanimage arguments.
+      - **Items** _(string)_
+    - **`auto_bash`** _(boolean)_: Run the ADF in tow step odd and even, needed for scanner that don't support double face.
+    - **`rotate_even`** _(boolean)_: Rotate the even pages, to use in conjunction with auto_bash.
 
 ## Definitions
 

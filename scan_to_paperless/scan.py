@@ -12,6 +12,7 @@ from typing import Any, List, Optional, cast
 import argcomplete
 import numpy as np
 import pyperclip
+import tifffile
 from ruamel.yaml.main import YAML
 from skimage import io
 
@@ -156,15 +157,19 @@ def main() -> None:
     try:
         scanimage: List[str] = [config.get("scanimage", "scanimage")]
         scanimage += config.get("scanimage_arguments", ["--format=png", "--mode=color", "--resolution=300"])
-        scanimage += [f"--batch={root_folder}/image-%d.png"]
-        if args.mode in ("adf", "double"):
-            scanimage += ["--source=ADF"]
-        if args.mode == "multi":
-            scanimage += ["--batch-prompt"]
-        if args.mode == "one":
-            scanimage += ["--batch-count=1"]
+        scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', 'png')}"]
+        mode_config = config.get("modes", {}).get(args.mode, {})
+        if "scanimage_arguments" in mode_config:
+            scanimage += mode_config["scanimage_arguments"]
+        else:
+            if args.mode in ("adf", "double"):
+                scanimage += ["--source=ADF Duplex"]
+            if args.mode == "multi":
+                scanimage += ["--batch-prompt"]
+            if args.mode == "one":
+                scanimage += ["--batch-count=1"]
 
-        if args.mode == "double":
+        if mode_config.get("auto_bash", args.mode == "double"):
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
             input("Put your document in the automatic document feeder for the other side, and press enter.")
@@ -176,12 +181,14 @@ def main() -> None:
                     f"--batch-count={len(odd)}",
                 ]
             )
-            for img in os.listdir(root_folder):
-                if img not in odd:
-                    path = os.path.join(root_folder, img)
-                    image = io.imread(path)
-                    image = np.rot90(image, 2)
-                    io.imsave(path, image.astype(np.uint8))
+            if mode_config.get("rotate_even", args.mode == "double"):
+                for img in os.listdir(root_folder):
+                    if img not in odd:
+                        path = os.path.join(root_folder, img)
+                        print(path)
+                        image = io.imread(path)
+                        image = np.rot90(image, 2)
+                        io.imsave(path, image.astype(np.uint8))
         else:
             call(scanimage)
 
@@ -198,7 +205,15 @@ def main() -> None:
         print(exception)
         sys.exit(1)
 
-    print(root_folder)
+    if config.get("extension", "png") != "png":
+        for img in os.listdir(root_folder):
+            if not img.startswith("image-"):
+                continue
+            if "dpi" not in args_ and config["extension"] in ("tiff", "tif"):
+                with tifffile.TiffFile(os.path.join(root_folder, img)) as tiff:
+                    args_["dpi"] = tiff.pages[0].tags["XResolution"].value[0]
+
+    print(base_folder)
     subprocess.call([config.get("viewer", "eog"), root_folder])  # nosec
 
     images = []
@@ -207,7 +222,7 @@ def main() -> None:
             continue
         images.append(os.path.join("source", img))
 
-    regex = re.compile(r"^source\/image\-([0-9]+)\.png$")
+    regex = re.compile(rf"^source\/image\-([0-9]+)\.{config.get('extension', 'png')}$")
 
     def image_match(image_name: str) -> int:
         match = regex.match(image_name)
