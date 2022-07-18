@@ -192,7 +192,13 @@ def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     sys.stdout.flush()
-    subprocess.check_call(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)  # nosec
+    kwargs.setdefault("check", True)
+    subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+        cmd,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        **kwargs,
+    )
 
 
 def run(cmd: Union[str, List[str]], **kwargs: Any) -> CompletedProcess:
@@ -863,7 +869,7 @@ def transform(
 
     if config["args"].setdefault("run_optipng", True):
         for image in images:
-            call(["optipng", image])
+            call(["optipng", image], check=False)
 
     step["sources"] = images
     step["process_count"] = process_count + 1

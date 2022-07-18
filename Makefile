@@ -23,6 +23,10 @@ build-tests:
 prospector: build-tests
 	docker run --rm tests prospector --die-on-tool-error --output=pylint
 
+.PHONY: prospector-fast
+prospector-fast:
+	docker run --rm  --volume=$$(pwd):/opt/ tests prospector --die-on-tool-error --output=pylint
+
 .PHONY: pytest
 pytest: build-tests
 	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes'
