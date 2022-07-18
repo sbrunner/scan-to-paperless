@@ -21,6 +21,7 @@ to verify that the result is OK (and do some advance operations describe below) 
 - Assisted split, used to split a prospectus page in more pages (Requires to modify the YAML...)
 - Append credit cart, used to have the two faces of a credit cart on the same page
 - Be able to copy the OCR result from the PDF
+- Scan the QR code and Bar code and add a new page with the values
 
 ## Requirements
 
@@ -205,3 +206,17 @@ If you put destination like that: 2.1, it means that it will be the first part o
 4. After the process do his first pass you will have the final generated images.
 
 5. If it's OK delete the file `REMOVE_TO_CONTINUE`.
+
+## Server configuration
+
+Environment variable:
+
+- `SCAN_SOURCE_FOLDER`: The main input folder for the scan process.
+- `SCAN_CODES_FOLDER`: The input folder for the codes (QR code ad Barcode) detection and add a new page.
+- `SCAN_FINAL_FOLDER`: The final folder for the scan process.
+- `SCAN_CODES_FONT_SIZE`: The used font size of code number.
+- `SCAN_CODES_MARGIN_TOP`: The top margin of code number.
+- `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.
+- `TIME`: Print the elapsed time.
+- `PROGRESS`: Save some intermediate files, don't clean the folder at the end.
+- `EXPERIMENTAL`: Activate some experimental features.

@@ -21,10 +21,10 @@ build-tests:
 
 .PHONY: prospector
 prospector: build-tests
-	docker run --rm tests prospector -X --output=pylint
+	docker run --rm tests prospector --die-on-tool-error --output=pylint
 
 .PHONY: pytest
-pytest: build-test
+pytest: build-tests
 	docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless tests bash -c 'cd /tests && pytest --durations=0 --verbose --color=yes'
 
 .PHONY: pytest-last-failed

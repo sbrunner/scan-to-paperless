@@ -187,10 +187,6 @@
       "items": { "type": "string" },
       "description": "The images"
     },
-    "destination": {
-      "type": "string",
-      "description": "The destination file name"
-    },
     "args": {
       "$ref": "#/definitions/args"
     },
@@ -359,5 +355,5 @@
       }
     }
   },
-  "required": ["images", "destination", "args"]
+  "required": ["images", "args"]
 }

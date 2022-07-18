@@ -122,8 +122,6 @@ def main() -> None:
         rand_int = str(random.randint(0, 999999))  # nosec
         base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
 
-    destination = f"/destination/{rand_int}.pdf"
-
     root_folder = os.path.join(base_folder, "source")
     os.makedirs(root_folder)
 
@@ -192,7 +190,6 @@ def main() -> None:
     if images:
         process_config = {
             "images": images,
-            "destination": destination,
             "args": args_,
         }
         yaml = YAML(typ="safe")

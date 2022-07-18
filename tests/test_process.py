@@ -2,11 +2,12 @@ import json
 import os.path
 import re
 import shutil
+import subprocess
 
 import cv2
 import pytest
 
-from scan_to_paperless import process
+from scan_to_paperless import code, process
 
 
 def load_image(image_name):
@@ -30,6 +31,7 @@ def test_find_limit_contour():
 
 def check_image_file(root_folder, image, name, level=0.9):
     result = cv2.imread(image)
+    subprocess.run(["ls", "-l", image])
     assert result is not None, "Wrong image: " + image
     check_image(root_folder, result, name, level)
 
@@ -86,6 +88,7 @@ def init_test():
     os.environ["TIME"] = "TRUE"
     os.environ["EXPERIMENTAL"] = "FALSE"
     os.environ["TEST_EXPERIMENTAL"] = "FALSE"
+    os.environ["SCAN_CODES_FOLDER"] = "/results"
     shutil.copyfile(os.path.join(os.path.dirname(__file__), "mask.png"), "/results/mask.png")
 
 
@@ -121,7 +124,6 @@ def test_assisted_split_full(type_, limit):
             "threshold_block_size_crop": 20,
             "threshold_value_c_crop": 20,
         },
-        "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
         "sources": ["image-1.png"],
@@ -147,7 +149,9 @@ def test_assisted_split_full(type_, limit):
     check_image_file(root_folder, step["sources"][0], f"assisted-split-{type_}-3")
     check_image_file(root_folder, step["sources"][1], f"assisted-split-{type_}-4")
     process.finalize(config, step, root_folder)
-    pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
+    pdfinfo = process.output(
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+    ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
@@ -156,12 +160,16 @@ def test_assisted_split_full(type_, limit):
         [
             "gm",
             "convert",
-            os.path.join(root_folder, "final.pdf"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
-            os.path.join(root_folder, "final.png"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
-    check_image_file(root_folder, os.path.join(root_folder, "final.png"), f"assisted-split-{type_}-5")
+    check_image_file(
+        root_folder,
+        os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
+        f"assisted-split-{type_}-5",
+    )
     shutil.rmtree(root_folder)
 
 
@@ -207,7 +215,9 @@ def test_assisted_split_join_full():
     check_image_file(root_folder, step["sources"][0], "assisted-split-join-1")
 
     process.finalize(config, step, root_folder)
-    pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
+    pdfinfo = process.output(
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+    ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
@@ -216,12 +226,14 @@ def test_assisted_split_join_full():
         [
             "gm",
             "convert",
-            os.path.join(root_folder, "final.pdf"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
-            os.path.join(root_folder, "final.png"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
-    check_image_file(root_folder, os.path.join(root_folder, "final.png"), "assisted-split-join-2")
+    check_image_file(
+        root_folder, os.path.join("/results", f"{os.path.basename(root_folder)}.png"), "assisted-split-join-2"
+    )
     shutil.rmtree(root_folder)
 
 
@@ -286,7 +298,6 @@ def test_full(progress, experimental):
         os.makedirs(root_folder)
     config = {
         "args": {"level": True, "tesseract": False},
-        "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
@@ -304,7 +315,9 @@ def test_full(progress, experimental):
 
     assert step["name"] == "finalise"
     process.finalize(config, step, root_folder)
-    pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
+    pdfinfo = process.output(
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+    ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
@@ -313,12 +326,12 @@ def test_full(progress, experimental):
         [
             "gm",
             "convert",
-            os.path.join(root_folder, "final.pdf"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
-            os.path.join(root_folder, "final.png"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
-    check_image_file(root_folder, os.path.join(root_folder, "final.png"), "all-2")
+    check_image_file(root_folder, os.path.join("/results", f"{os.path.basename(root_folder)}.png"), "all-2")
     shutil.rmtree(root_folder)
 
 
@@ -331,7 +344,6 @@ def test_credit_card_full():
         os.makedirs(root_folder)
     config = {
         "args": {"level": True, "append_credit_card": True, "num_angles": 179},
-        "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
         "sources": [
@@ -343,7 +355,9 @@ def test_credit_card_full():
     assert len(step["sources"]) == 2
     assert step["name"] == "finalise"
     process.finalize(config, step, root_folder)
-    pdfinfo = process.output(["pdfinfo", os.path.join(root_folder, "final.pdf")]).split("\n")
+    pdfinfo = process.output(
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+    ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])
@@ -352,12 +366,14 @@ def test_credit_card_full():
         [
             "gm",
             "convert",
-            os.path.join(root_folder, "final.pdf"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
-            os.path.join(root_folder, "final.png"),
+            os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
-    check_image_file(root_folder, os.path.join(root_folder, "final.png"), "credit-card-1")
+    check_image_file(
+        root_folder, os.path.join("/results", f"{os.path.basename(root_folder)}.png"), "credit-card-1"
+    )
     shutil.rmtree(root_folder)
 
 
@@ -369,10 +385,7 @@ def test_empty():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {
-            "level": True,
-        },
-        "destination": os.path.join(root_folder, "final.pdf"),
+        "args": {"level": True},
     }
     step = {
         "sources": [
@@ -400,3 +413,32 @@ def test_custom_process(test, args):
     assert len(step["sources"]) == 1
     check_image_file(root_folder, step["sources"][0], test)
     shutil.rmtree(root_folder)
+
+
+def test_qrcode():
+    code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/tmp/qrcode.pdf")
+    subprocess.run(
+        [
+            "gm",
+            "convert",
+            "-density",
+            "150",
+            "/tmp/qrcode.pdf[0]",
+            "/tmp/qrcode-0.png",
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "gm",
+            "convert",
+            "-density",
+            "150",
+            "/tmp/qrcode.pdf[1]",
+            "/tmp/qrcode-1.png",
+        ],
+        check=True,
+    )
+    root_folder = f"/results/qrcode"
+    check_image_file(root_folder, "/tmp/qrcode-0.png", "qrcode-0")
+    check_image_file(root_folder, "/tmp/qrcode-1.png", "qrcode-1")
