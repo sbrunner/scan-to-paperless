@@ -42,16 +42,16 @@ add-codes-page = "scan_to_paperless.qrcode:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-numpy = "1.22.4"
+numpy = "1.23.1"
 scipy = "1.8.1"
 scikit-image = "0.19.3"
-opencv-contrib-python-headless = "4.5.5.64"
-deskew = "1.0.26"
-jsonschema-gentypes = "1.0.0"
+opencv-contrib-python-headless = "4.6.0.66"
+deskew = "1.1.0"
+jsonschema-gentypes = "1.2.1"
 "ruamel.yaml" = "0.17.21"
 argcomplete = "2.0.0"
 Pillow = "9.2.0"
-PyPDF2 = "2.5.0"
+PyPDF2 = "2.6.0"
 pyzbar = "0.1.9"
 reportlab = "3.6.11"
 weasyprint = "56.0"
@@ -62,7 +62,7 @@ prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_py
 pytest = "7.1.2"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
-typing-extensions = "4.2.0"
+typing-extensions = "4.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-plugin-tweak-dependencies-version"]
