@@ -60,7 +60,6 @@ cffi = "1.15.1"
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 pytest = "7.1.2"
-coverage = "6.3.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
 typing-extensions = "4.2.0"
