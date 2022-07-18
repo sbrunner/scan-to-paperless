@@ -96,7 +96,7 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0}),
+        ("lines", {"name": "VL0", "type": "line detection", "value": 1878, "vertical": True, "margin": 0}),
         (
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 1582, "vertical": True, "margin": 0},
@@ -140,7 +140,7 @@ def test_assisted_split_full(type_, limit):
     print(json.dumps(limits))
     assert not [item for item in limits if item["name"] == "C"], "We shouldn't have center limit"
     limits = [item for item in limits if item["name"] == limit["name"]]
-    assert limits == [limit]
+    assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
     check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
     step = process.split(config, step, root_folder)
@@ -173,7 +173,7 @@ def test_assisted_split_full(type_, limit):
     shutil.rmtree(root_folder)
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 def test_assisted_split_join_full():
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
