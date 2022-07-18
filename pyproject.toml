@@ -42,7 +42,7 @@ add-codes-page = "scan_to_paperless.qrcode:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-numpy = "1.22.4"
+numpy = "1.23.1"
 scipy = "1.8.1"
 scikit-image = "0.19.3"
 opencv-contrib-python-headless = "4.5.5.64"
