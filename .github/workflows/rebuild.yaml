@@ -47,10 +47,8 @@ jobs:
           --volume=results:/results --volume=tests:/tests
           tests bash -c '
           cd /tests &&
-          coverage run --source=scan_to_paperless --module pytest --durations=0 --verbose --color=yes
-          --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
-          coverage report &&
-          coverage html --directory=/results/coverage'
+          pytest --durations=0 --verbose --color=yes
+          --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
       - name: Extract data from Docker volumes
         run: |
           docker cp volumes:/results/ ./
