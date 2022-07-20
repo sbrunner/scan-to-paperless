@@ -1158,9 +1158,12 @@ def process_code() -> None:
         code.add_codes(
             pdf_filename,
             destination_filename,
-            font_size=int(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
-            margin_top=int(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
-            margin_left=int(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
+            dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
+            pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
+            font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
+            font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
+            margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
+            margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
         )
 
 

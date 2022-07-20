@@ -38,7 +38,7 @@ repository = "https://github.com/sbrunner/scan-to-paperless"
 scan = "scan_to_paperless.scan:main"
 scan-process-status = "scan_to_paperless.scan_process_status:main"
 scan-process = "scan_to_paperless.process:main"
-add-codes-page = "scan_to_paperless.qrcode:main"
+add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"

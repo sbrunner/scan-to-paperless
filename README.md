@@ -214,6 +214,9 @@ Environment variable:
 - `SCAN_SOURCE_FOLDER`: The main input folder for the scan process.
 - `SCAN_CODES_FOLDER`: The input folder for the codes (QR code ad Barcode) detection and add a new page.
 - `SCAN_FINAL_FOLDER`: The final folder for the scan process.
+- `SCAN_CODES_DPI`: The used DPI to decode the codes.
+- `SCAN_CODES_PDF_DPI`: The used PDF DPI to create the codes document.
+- `SCAN_CODES_FONT_NAME`: The used font of code number.
 - `SCAN_CODES_FONT_SIZE`: The used font size of code number.
 - `SCAN_CODES_MARGIN_TOP`: The top margin of code number.
 - `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.

@@ -415,7 +415,7 @@ def test_custom_process(test, args):
     shutil.rmtree(root_folder)
 
 
-def test_qrcode():
+def test_qr_code():
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/tmp/qrcode.pdf")
     subprocess.run(
         [
@@ -442,3 +442,34 @@ def test_qrcode():
     root_folder = f"/results/qrcode"
     check_image_file(root_folder, "/tmp/qrcode-0.png", "qrcode-0")
     check_image_file(root_folder, "/tmp/qrcode-1.png", "qrcode-1")
+
+
+def test_qr_bill():
+    code.add_codes(
+        os.path.join(os.path.dirname(__file__), "qrbill.pdf"), "/tmp/qrbill.pdf", font_size=60, margin_left=15
+    )
+    subprocess.run(
+        [
+            "gm",
+            "convert",
+            "-density",
+            "150",
+            "/tmp/qrbill.pdf[0]",
+            "/tmp/qrbill-0.png",
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "gm",
+            "convert",
+            "-density",
+            "150",
+            "/tmp/qrbill.pdf[1]",
+            "/tmp/qrbill-1.png",
+        ],
+        check=True,
+    )
+    root_folder = f"/results/qrcode"
+    check_image_file(root_folder, "/tmp/qrbill-0.png", "qrbill-0")
+    check_image_file(root_folder, "/tmp/qrbill-1.png", "qrbill-1")
