@@ -1202,8 +1202,8 @@ def process_code() -> None:
                 margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
                 margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
             )
-        except Exception as e:
-            LOG_.exception(f"Error while processing {pdf_filename}: {e}")
+        except Exception as exception:
+            LOG_.exception("Error while processing %s: %s", pdf_filename, str(exception))
 
 
 def is_sources_present(images: List[str], root_folder: str) -> bool:
