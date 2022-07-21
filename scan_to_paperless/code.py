@@ -294,9 +294,7 @@ def add_codes(
             )
 
             if metadata:
-                with tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1, tempfile.NamedTemporaryFile(
-                    suffix=".pdf"
-                ) as temp:
+                with tempfile.NamedTemporaryFile(suffix=".pdf") as temp:
                     subprocess.run(["cp", output_filename, temp.name], check=True)  # nosec
                     with pikepdf.open(temp.name) as pdf:
                         with pdf.open_metadata() as meta:
