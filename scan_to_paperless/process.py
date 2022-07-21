@@ -1185,7 +1185,7 @@ def process_code() -> None:
     """Detect ad add a page with the QR codes."""
     for pdf_filename in glob.glob(os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), "*.pdf")):
         destination_filename = os.path.join(
-            os.environ.get("SCAN_FINAL_FOLDER", "/final"), os.path.basename(pdf_filename)
+            os.environ.get("SCAN_FINAL_FOLDER", "/destination"), os.path.basename(pdf_filename)
         )
 
         if os.path.exists(destination_filename):
