@@ -5,6 +5,7 @@ import shutil
 import subprocess
 
 import cv2
+import pikepdf
 import pytest
 
 from scan_to_paperless import code, process
@@ -416,14 +417,14 @@ def test_custom_process(test, args):
 
 
 def test_qr_code():
-    code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/tmp/qrcode.pdf")
+    code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/results/qrcode.pdf")
     subprocess.run(
         [
             "gm",
             "convert",
             "-density",
             "150",
-            "/tmp/qrcode.pdf[0]",
+            "/results/qrcode.pdf[0]",
             "/tmp/qrcode-0.png",
         ],
         check=True,
@@ -434,7 +435,7 @@ def test_qr_code():
             "convert",
             "-density",
             "150",
-            "/tmp/qrcode.pdf[1]",
+            "/results/qrcode.pdf[1]",
             "/tmp/qrcode-1.png",
         ],
         check=True,
@@ -446,15 +447,29 @@ def test_qr_code():
 
 def test_qr_bill():
     code.add_codes(
-        os.path.join(os.path.dirname(__file__), "qrbill.pdf"), "/tmp/qrbill.pdf", font_size=60, margin_left=15
+        os.path.join(os.path.dirname(__file__), "qrbill.pdf"),
+        "/results/qrbill.pdf",
+        font_size=60,
+        margin_left=15,
     )
+
+    with pikepdf.open("/results/qrbill.pdf") as pdf:
+        with pdf.open_metadata() as meta:
+            for k, v in {
+                "{http://ns.adobe.com/pdf/1.3/}Title": "qrbill",
+                "{http://ns.adobe.com/pdf/1.3/}CreationDate": "D:20220720213803",
+                "{http://ns.adobe.com/pdf/1.3/}ModDate": "D:20220720213803",
+                "{http://ns.adobe.com/pdf/1.3/}Producer": "pikepdf 5.4.0",
+            }.items():
+                assert meta[k] == v
+
     subprocess.run(
         [
             "gm",
             "convert",
             "-density",
             "150",
-            "/tmp/qrbill.pdf[0]",
+            "/results/qrbill.pdf[0]",
             "/tmp/qrbill-0.png",
         ],
         check=True,
@@ -465,7 +480,7 @@ def test_qr_bill():
             "convert",
             "-density",
             "150",
-            "/tmp/qrbill.pdf[1]",
+            "/results/qrbill.pdf[1]",
             "/tmp/qrbill-1.png",
         ],
         check=True,

@@ -18,6 +18,7 @@ from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Set, 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 import numpy as np
+import pikepdf
 from deskew import determine_skew_dev
 from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
@@ -1112,6 +1113,14 @@ def finalize(
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
 
+    producer = None
+    creator = None
+    if pdf:
+        with pikepdf.open(pdf[0]) as pdf_:
+            with pdf_.open_metadata() as meta:
+                producer = meta.get("{http://ns.adobe.com/pdf/1.3/}Producer")
+                creator = meta.get("{http://ns.adobe.com/pdf/1.3/}Creator")
+
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
         for pdf_file in pdf:
@@ -1143,6 +1152,15 @@ def finalize(
         one_pdf = intermediate_file
 
     call(["cp", one_pdf, destination])
+
+    if producer or creator:
+        with pikepdf.open(destination) as pdf_:
+            with pdf_.open_metadata() as meta:
+                if producer:
+                    meta["{http://ns.adobe.com/pdf/1.3/}Producer"] = producer
+                if creator:
+                    meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = creator
+            pdf_.save(destination)
 
 
 def process_code() -> None:
