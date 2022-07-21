@@ -11,6 +11,7 @@ import tempfile
 from typing import List, Optional, Set, Tuple, TypedDict
 
 import cv2
+import pikepdf
 from PIL import Image
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from pyzbar import pyzbar
@@ -184,6 +185,7 @@ def add_codes(
 
     with open(input_filename, "rb") as input_file:
         existing_pdf = PdfFileReader(input_file)
+        metadata = {**existing_pdf.metadata}  # type: ignore
         output_pdf = PdfFileWriter()
         for index, page in enumerate(existing_pdf.pages):
             # Get the QR code from the page
@@ -287,6 +289,19 @@ def add_codes(
             subprocess.run(  # nosec
                 ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True
             )
+
+            if metadata:
+                with tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1, tempfile.NamedTemporaryFile(
+                    suffix=".pdf"
+                ) as temp:
+                    subprocess.run(["cp", output_filename, temp.name], check=True)  # nosec
+                    with pikepdf.open(temp.name) as pdf:
+                        with pdf.open_metadata() as meta:
+                            for key, value in metadata.items():
+                                if key.startswith("/"):
+                                    key = "{http://ns.adobe.com/pdf/1.3/}" + key[1:]
+                                meta[key] = value
+                        pdf.save(output_filename)
 
 
 def main() -> None:

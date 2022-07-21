@@ -56,6 +56,7 @@ pyzbar = "0.1.9"
 reportlab = "3.6.11"
 weasyprint = "56.0"
 cffi = "1.15.1"
+pikepdf = "5.4.0"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
