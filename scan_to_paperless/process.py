@@ -868,7 +868,7 @@ def transform(
         for image in images:
             call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
 
-    if config["args"].setdefault("run_optipng", True):
+    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault("run_optipng", True):
         for image in images:
             call(["optipng", image], check=False)
 
@@ -1093,6 +1093,20 @@ def finalize(
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
+            if config["args"].setdefault("jpeg", False):
+                subprocess.run(  # nosec
+                    [
+                        "gm",
+                        "convert",
+                        img,
+                        "-quality",
+                        str(config["args"].setdefault("jpeg_quality", 90)),
+                        f"{name}.jpeg",
+                    ],
+                    check=True,
+                )
+                img = f"{name}.jpeg"
+
             file_name = os.path.join(root_folder, f"{name}.pdf")
             if config["args"].setdefault("tesseract", True):
                 with open(file_name, "w", encoding="utf8") as output_file:
@@ -1161,6 +1175,8 @@ def finalize(
                 if creator:
                     meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = creator
             pdf_.save(destination)
+        if progress:
+            call(["cp", intermediate_file, os.path.join(root_folder, "pikepdf.pdf")])
 
 
 def process_code() -> None:

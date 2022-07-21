@@ -82,3 +82,5 @@
   - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `True`.
   - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `True`.
   - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
+  - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.
+  - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.
