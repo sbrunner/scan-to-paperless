@@ -4,6 +4,7 @@
 
 import argparse
 import glob
+import logging
 import math
 import os
 import re
@@ -37,6 +38,7 @@ else:
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
+LOG_ = logging.getLogger(__name__)
 
 
 def rotate_image(
@@ -1189,16 +1191,19 @@ def process_code() -> None:
         if os.path.exists(destination_filename):
             continue
 
-        code.add_codes(
-            pdf_filename,
-            destination_filename,
-            dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
-            pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
-            font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
-            font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
-            margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
-            margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
-        )
+        try:
+            code.add_codes(
+                pdf_filename,
+                destination_filename,
+                dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
+                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
+                font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
+                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
+                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
+                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
+            )
+        except Exception as e:
+            LOG_.exception(f"Error while processing {pdf_filename}: {e}")
 
 
 def is_sources_present(images: List[str], root_folder: str) -> bool:
