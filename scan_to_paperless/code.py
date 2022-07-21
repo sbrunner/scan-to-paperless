@@ -189,70 +189,73 @@ def add_codes(
         output_pdf = PdfFileWriter()
         for index, page in enumerate(existing_pdf.pages):
             # Get the QR code from the page
-            image = f"img-{index}.png"
-            subprocess.run(  # nosec
-                [
-                    "gm",
-                    "convert",
-                    "-density",
-                    str(dpi),
-                    f"{input_filename}[{index}]",
-                    image,
-                ],
-                check=True,
-            )
-            img0 = Image.open(image)
-
-            codes: List[_PageCode] = []
-            codes += _get_codes_with_z_bar(image, 0, img0.width, img0.height, all_codes, added_codes)
-            for angle in range(-10, 11, 2):
+            with tempfile.NamedTemporaryFile(suffix=f"-{index}.png") as image_file:
+                image = image_file.name
                 subprocess.run(  # nosec
                     [
                         "gm",
                         "convert",
                         "-density",
                         str(dpi),
-                        "-rotate",
-                        str(angle),
                         f"{input_filename}[{index}]",
                         image,
                     ],
                     check=True,
                 )
-                codes += _get_codes_with_z_bar(image, angle, img0.width, img0.height, all_codes, added_codes)
-            # codes += _get_codes_with_open_cv(image, 0, img0.width,  img0.height, all_codes, added_codes)
+                img0 = Image.open(image)
 
-            if codes:
-                packet = io.BytesIO()
-                can = canvas.Canvas(
-                    packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False
-                )
-                for code in codes:
-                    can.setFillColor(Color(1, 1, 1, alpha=0.7))
-                    path = can.beginPath()
-                    path.moveTo(code["rect"][0][0] / dpi * pdf_dpi, code["rect"][0][1] / dpi * pdf_dpi)
-                    for point in code["rect"][1:]:
-                        path.lineTo(point[0] / dpi * pdf_dpi, point[1] / dpi * pdf_dpi)
-                    path.close()
-                    can.drawPath(path, stroke=0, fill=1)
-
-                    can.setFillColorRGB(0, 0, 0)
-                    can.setFont(font_name, font_size)
-                    can.drawString(
-                        min((p[0] for p in code["rect"])) / dpi * pdf_dpi + margin_left,
-                        min((p[1] for p in code["rect"])) / dpi * pdf_dpi + font_size + 0 + margin_top,
-                        str(code["pos"]),
+                codes: List[_PageCode] = []
+                codes += _get_codes_with_z_bar(image, 0, img0.width, img0.height, all_codes, added_codes)
+                for angle in range(-10, 11, 2):
+                    subprocess.run(  # nosec
+                        [
+                            "gm",
+                            "convert",
+                            "-density",
+                            str(dpi),
+                            "-rotate",
+                            str(angle),
+                            f"{input_filename}[{index}]",
+                            image,
+                        ],
+                        check=True,
                     )
+                    codes += _get_codes_with_z_bar(
+                        image, angle, img0.width, img0.height, all_codes, added_codes
+                    )
+                # codes += _get_codes_with_open_cv(image, 0, img0.width,  img0.height, all_codes, added_codes)
 
-                can.save()
-                # move to the beginning of the StringIO buffer
-                packet.seek(0)
+                if codes:
+                    packet = io.BytesIO()
+                    can = canvas.Canvas(
+                        packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False
+                    )
+                    for code in codes:
+                        can.setFillColor(Color(1, 1, 1, alpha=0.7))
+                        path = can.beginPath()
+                        path.moveTo(code["rect"][0][0] / dpi * pdf_dpi, code["rect"][0][1] / dpi * pdf_dpi)
+                        for point in code["rect"][1:]:
+                            path.lineTo(point[0] / dpi * pdf_dpi, point[1] / dpi * pdf_dpi)
+                        path.close()
+                        can.drawPath(path, stroke=0, fill=1)
 
-                # Create a new PDF with Reportlab
-                new_pdf = PdfFileReader(packet)
+                        can.setFillColorRGB(0, 0, 0)
+                        can.setFont(font_name, font_size)
+                        can.drawString(
+                            min((p[0] for p in code["rect"])) / dpi * pdf_dpi + margin_left,
+                            min((p[1] for p in code["rect"])) / dpi * pdf_dpi + font_size + 0 + margin_top,
+                            str(code["pos"]),
+                        )
 
-                page.mergePage(new_pdf.getPage(0))
-            output_pdf.addPage(page)
+                    can.save()
+                    # move to the beginning of the StringIO buffer
+                    packet.seek(0)
+
+                    # Create a new PDF with Reportlab
+                    new_pdf = PdfFileReader(packet)
+
+                    page.mergePage(new_pdf.getPage(0))
+                output_pdf.addPage(page)
 
         with tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1, tempfile.NamedTemporaryFile(
             suffix=".pdf"
