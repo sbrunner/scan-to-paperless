@@ -138,6 +138,14 @@ Arguments = TypedDict(
         #
         # default: False
         "run_ps2pdf": bool,
+        # Convert images to JPEG
+        #
+        # default: False
+        "jpeg": bool,
+        # The JPEG quality
+        #
+        # default: 90
+        "jpeg_quality": int,
     },
     total=False,
 )

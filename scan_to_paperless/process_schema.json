@@ -177,6 +177,16 @@
           "type": "boolean",
           "default": false,
           "description": "Run the ps2pdf optimizer (=> JPEG)"
+        },
+        "jpeg": {
+          "type": "boolean",
+          "default": false,
+          "description": "Convert images to JPEG"
+        },
+        "jpeg_quality": {
+          "type": "integer",
+          "default": 90,
+          "description": "The JPEG quality"
         }
       }
     }
