@@ -1115,6 +1115,8 @@ def finalize(
                     process = run(
                         [
                             "tesseract",
+                            "--dpi",
+                            str(config["args"].setdefault("dpi", 300)),
                             "-l",
                             config["args"].setdefault("tesseract_lang", "fra+eng"),
                             img,
