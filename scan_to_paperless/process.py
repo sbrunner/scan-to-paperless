@@ -1146,31 +1146,31 @@ def finalize(
                 [
                     "cp",
                     pdf_file,
-                    os.path.join(root_folder, f"{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
+                    os.path.join(root_folder, f"1-{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
                 ]
             )
 
     one_pdf = os.path.join(root_folder, "intermediate.pdf")
     call(["pdftk"] + pdf + ["output", one_pdf, "compress"])
     if progress:
-        call(["cp", one_pdf, os.path.join(root_folder, "pdftk.pdf")])
+        call(["cp", one_pdf, os.path.join(root_folder, "2-pdftk.pdf")])
 
     if config["args"].setdefault("run_exiftool", True):
         call(["exiftool", "-overwrite_original_in_place", one_pdf])
         if progress:
-            call(["cp", one_pdf, os.path.join(root_folder, "exiftool.pdf")])
+            call(["cp", one_pdf, os.path.join(root_folder, "3-exiftool.pdf")])
 
     if config["args"].setdefault("run_ps2pdf", False):
         intermediate_file = os.path.join(root_folder, "intermediate-ps2pdf.pdf")
         call(["ps2pdf", one_pdf, intermediate_file])
         if progress:
-            call(["cp", intermediate_file, os.path.join(root_folder, "ps2pdf.pdf")])
+            call(["cp", intermediate_file, os.path.join(root_folder, "4-ps2pdf.pdf")])
 
         one_pdf = intermediate_file
 
     call(["cp", one_pdf, destination])
 
-    with pikepdf.open(destination) as pdf_:
+    with pikepdf.open(destination, allow_overwriting_input=True) as pdf_:
         with pdf_.open_metadata() as meta:
             date = datetime.datetime.fromtimestamp(os.path.getmtime("/opt/scan_to_paperless"))
             str_date = datetime.datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
@@ -1180,7 +1180,7 @@ def finalize(
             )
         pdf_.save(destination)
     if progress:
-        call(["cp", intermediate_file, os.path.join(root_folder, "pikepdf.pdf")])
+        call(["cp", destination, os.path.join(root_folder, "5-pikepdf.pdf")])
 
 
 def process_code() -> None:
