@@ -188,6 +188,7 @@ def add_codes(
         metadata = {**existing_pdf.metadata}  # type: ignore
         output_pdf = PdfFileWriter()
         for index, page in enumerate(existing_pdf.pages):
+            _LOG.info("Processing page %s", index + 1)
             # Get the QR code from the page
             with tempfile.NamedTemporaryFile(suffix=f"-{index}.png") as image_file:
                 image = image_file.name
@@ -257,52 +258,57 @@ def add_codes(
                     page.mergePage(new_pdf.getPage(0))
                 output_pdf.addPage(page)
 
-        with tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1, tempfile.NamedTemporaryFile(
-            suffix=".pdf"
-        ) as dest_2:
-            # Finally, write "output" to a real file
+        if all_codes:
+            _LOG.info("%s codes found, create the additional page", len(all_codes))
+            with tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1, tempfile.NamedTemporaryFile(
+                suffix=".pdf"
+            ) as dest_2:
+                # Finally, write "output" to a real file
 
-            with open(dest_1.name, "wb") as output_stream:
-                output_pdf.write(output_stream)
+                with open(dest_1.name, "wb") as output_stream:
+                    output_pdf.write(output_stream)
 
-            for code_ in all_codes:
-                code_["data"] = code_["data"].replace("\n", "<br />")
-            sections = [
-                f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data']}</p>" for code_ in all_codes
-            ]
+                for code_ in all_codes:
+                    code_["data"] = code_["data"].replace("\n", "<br />")
+                sections = [
+                    f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data']}</p>" for code_ in all_codes
+                ]
 
-            html = HTML(
-                string=f"""<html>
-            <head>
-                <meta charset="utf-8">
-            </head>
-            <body>
-                <section id="heading">
-                    <h4>QRCode and Barcode</h4>
-                </section>
-                {'<hr />'.join(sections)}
-            </body>
-            </html>"""
-            )
+                html = HTML(
+                    string=f"""<html>
+                <head>
+                    <meta charset="utf-8">
+                </head>
+                <body>
+                    <section id="heading">
+                        <h4>QRCode and Barcode</h4>
+                    </section>
+                    {'<hr />'.join(sections)}
+                </body>
+                </html>"""
+                )
 
-            css = CSS(string="@page { size: A4; margin: 2cm } P { font-size: 5pt; font-family: 'sans'; }")
+                css = CSS(string="@page { size: A4; margin: 2cm } P { font-size: 5pt; font-family: 'sans'; }")
 
-            html.write_pdf(dest_2.name, stylesheets=[css])
+                html.write_pdf(dest_2.name, stylesheets=[css])
 
-            subprocess.run(  # nosec
-                ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True
-            )
+                subprocess.run(  # nosec
+                    ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True
+                )
 
-            if metadata:
-                with tempfile.NamedTemporaryFile(suffix=".pdf") as temp:
-                    subprocess.run(["cp", output_filename, temp.name], check=True)  # nosec
-                    with pikepdf.open(temp.name) as pdf:
-                        with pdf.open_metadata() as meta:
-                            for key, value in metadata.items():
-                                if key.startswith("/"):
-                                    key = "{http://ns.adobe.com/pdf/1.3/}" + key[1:]
-                                meta[key] = value
-                        pdf.save(output_filename)
+                if metadata:
+                    with tempfile.NamedTemporaryFile(suffix=".pdf") as temp:
+                        subprocess.run(["cp", output_filename, temp.name], check=True)  # nosec
+                        with pikepdf.open(temp.name) as pdf:
+                            with pdf.open_metadata() as meta:
+                                for key, value in metadata.items():
+                                    if key.startswith("/"):
+                                        key = "{http://ns.adobe.com/pdf/1.3/}" + key[1:]
+                                    meta[key] = value
+                            pdf.save(output_filename)
+        else:
+            _LOG.info("No codes found, copy the input file")
+            subprocess.run(["cp", input_filename, output_filename], check=True)  # nosec
 
 
 def main() -> None:

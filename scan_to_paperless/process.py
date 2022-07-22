@@ -38,7 +38,7 @@ else:
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
-LOG_ = logging.getLogger(__name__)
+_LOG = logging.getLogger(__name__)
 
 
 def rotate_image(
@@ -1192,6 +1192,7 @@ def process_code() -> None:
             continue
 
         try:
+            _LOG.info("Processing codes for %s", pdf_filename)
             code.add_codes(
                 pdf_filename,
                 destination_filename,
@@ -1202,8 +1203,13 @@ def process_code() -> None:
                 margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
                 margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
             )
+            if os.path.exists(destination_filename):
+                # Remove the source file on success
+                os.remove(pdf_filename)
+            _LOG.info("Down processing codes for %s", pdf_filename)
+
         except Exception as exception:
-            LOG_.exception("Error while processing %s: %s", pdf_filename, str(exception))
+            _LOG.exception("Error while processing %s: %s", pdf_filename, str(exception))
 
 
 def is_sources_present(images: List[str], root_folder: str) -> bool:
