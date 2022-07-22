@@ -40,7 +40,7 @@ def _point(point: Tuple[int, int], deg_angle: float, width: int, height: int) ->
     diff_x = 0.0
     diff_y = 0.0
     if deg_angle < 0:
-        diff_y = width * math.sin(angle)
+        diff_y = width * math.sin(-angle)
     else:
         diff_x = height * math.sin(angle)
     x = point[0] - diff_x
