@@ -1307,7 +1307,7 @@ def main() -> None:
                         print("Split")
                         next_step = split(config, step, root_folder)
                     elif step["name"] == "finalise":
-                        print("Finalise")
+                        print("Finalize")
                         finalize(config, step, root_folder)
                         done = True
 
