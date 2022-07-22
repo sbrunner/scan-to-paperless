@@ -297,15 +297,13 @@ def add_codes(
                 )
 
                 if metadata:
-                    with tempfile.NamedTemporaryFile(suffix=".pdf") as temp:
-                        subprocess.run(["cp", output_filename, temp.name], check=True)  # nosec
-                        with pikepdf.open(temp.name) as pdf:
-                            with pdf.open_metadata() as meta:
-                                for key, value in metadata.items():
-                                    if key.startswith("/"):
-                                        key = "{http://ns.adobe.com/pdf/1.3/}" + key[1:]
-                                    meta[key] = value
-                            pdf.save(output_filename)
+                    with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
+                        with pdf.open_metadata() as meta:
+                            for key, value in metadata.items():
+                                if key.startswith("/"):
+                                    key = "{http://ns.adobe.com/pdf/1.3/}" + key[1:]
+                                meta[key] = value
+                        pdf.save(output_filename)
         else:
             _LOG.info("No codes found, copy the input file")
             subprocess.run(["cp", input_filename, output_filename], check=True)  # nosec

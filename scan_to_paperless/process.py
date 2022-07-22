@@ -3,6 +3,7 @@
 """Process the scanned documents."""
 
 import argparse
+import datetime
 import glob
 import logging
 import math
@@ -1115,6 +1116,8 @@ def finalize(
                     process = run(
                         [
                             "tesseract",
+                            "--dpi",
+                            str(config["args"].setdefault("dpi", 300)),
                             "-l",
                             config["args"].setdefault("tesseract_lang", "fra+eng"),
                             img,
@@ -1130,12 +1133,10 @@ def finalize(
             pdf.append(file_name)
 
     producer = None
-    creator = None
     if pdf:
         with pikepdf.open(pdf[0]) as pdf_:
             with pdf_.open_metadata() as meta:
                 producer = meta.get("{http://ns.adobe.com/pdf/1.3/}Producer")
-                creator = meta.get("{http://ns.adobe.com/pdf/1.3/}Creator")
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
@@ -1145,40 +1146,41 @@ def finalize(
                 [
                     "cp",
                     pdf_file,
-                    os.path.join(root_folder, f"{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
+                    os.path.join(root_folder, f"1-{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
                 ]
             )
 
     one_pdf = os.path.join(root_folder, "intermediate.pdf")
     call(["pdftk"] + pdf + ["output", one_pdf, "compress"])
     if progress:
-        call(["cp", one_pdf, os.path.join(root_folder, "pdftk.pdf")])
+        call(["cp", one_pdf, os.path.join(root_folder, "2-pdftk.pdf")])
 
     if config["args"].setdefault("run_exiftool", True):
         call(["exiftool", "-overwrite_original_in_place", one_pdf])
         if progress:
-            call(["cp", one_pdf, os.path.join(root_folder, "exiftool.pdf")])
+            call(["cp", one_pdf, os.path.join(root_folder, "3-exiftool.pdf")])
 
     if config["args"].setdefault("run_ps2pdf", False):
         intermediate_file = os.path.join(root_folder, "intermediate-ps2pdf.pdf")
         call(["ps2pdf", one_pdf, intermediate_file])
         if progress:
-            call(["cp", intermediate_file, os.path.join(root_folder, "ps2pdf.pdf")])
+            call(["cp", intermediate_file, os.path.join(root_folder, "4-ps2pdf.pdf")])
 
         one_pdf = intermediate_file
 
     call(["cp", one_pdf, destination])
 
-    if producer or creator:
-        with pikepdf.open(destination) as pdf_:
-            with pdf_.open_metadata() as meta:
-                if producer:
-                    meta["{http://ns.adobe.com/pdf/1.3/}Producer"] = producer
-                if creator:
-                    meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = creator
-            pdf_.save(destination)
-        if progress:
-            call(["cp", intermediate_file, os.path.join(root_folder, "pikepdf.pdf")])
+    with pikepdf.open(destination, allow_overwriting_input=True) as pdf_:
+        with pdf_.open_metadata() as meta:
+            date = datetime.datetime.fromtimestamp(os.path.getmtime("/opt/scan_to_paperless"))
+            str_date = datetime.datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+            paperless_meta = f"Scan to Paperless {str_date}"
+            meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = (
+                f"{paperless_meta}, {producer}" if producer else paperless_meta
+            )
+        pdf_.save(destination)
+    if progress:
+        call(["cp", destination, os.path.join(root_folder, "5-pikepdf.pdf")])
 
 
 def process_code() -> None:
@@ -1305,7 +1307,7 @@ def main() -> None:
                         print("Split")
                         next_step = split(config, step, root_folder)
                     elif step["name"] == "finalise":
-                        print("Finalise")
+                        print("Finalize")
                         finalize(config, step, root_folder)
                         done = True
 
