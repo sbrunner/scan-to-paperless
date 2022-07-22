@@ -93,7 +93,7 @@ def init_test():
     shutil.copyfile(os.path.join(os.path.dirname(__file__), "mask.png"), "/results/mask.png")
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize(
     "type_,limit",
     [
@@ -238,7 +238,7 @@ def test_assisted_split_join_full():
     shutil.rmtree(root_folder)
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 def test_assisted_split_booth():
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
@@ -287,7 +287,7 @@ def test_assisted_split_booth():
     shutil.rmtree(root_folder)
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize("progress", ["FALSE", "TRUE"])
 @pytest.mark.parametrize("experimental", ["FALSE", "TRUE"])
 def test_full(progress, experimental):
@@ -336,7 +336,7 @@ def test_full(progress, experimental):
     shutil.rmtree(root_folder)
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 def test_credit_card_full():
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
@@ -378,7 +378,7 @@ def test_credit_card_full():
     shutil.rmtree(root_folder)
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 def test_empty():
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
@@ -399,7 +399,7 @@ def test_empty():
     shutil.rmtree(root_folder)
 
 
-# @pytest.mark.skip(reason='for test')
+# @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize("test,args", [("600", {"dpi": 600, "num_angles": 179})])
 def test_custom_process(test, args):
     init_test()
@@ -416,6 +416,7 @@ def test_custom_process(test, args):
     shutil.rmtree(root_folder)
 
 
+# @pytest.mark.skip(reason="for test")
 def test_qr_code():
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/results/qrcode.pdf")
     subprocess.run(
@@ -445,6 +446,7 @@ def test_qr_code():
     check_image_file(root_folder, "/tmp/qrcode-1.png", "qrcode-1")
 
 
+# @pytest.mark.skip(reason="for test")
 def test_qr_bill():
     code.add_codes(
         os.path.join(os.path.dirname(__file__), "qrbill.pdf"),
@@ -454,14 +456,13 @@ def test_qr_bill():
     )
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
-        with pdf.open_metadata() as meta:
-            for k, v in {
-                "{http://ns.adobe.com/pdf/1.3/}Title": "qrbill",
-                "{http://ns.adobe.com/pdf/1.3/}CreationDate": "D:20220720213803",
-                "{http://ns.adobe.com/pdf/1.3/}ModDate": "D:20220720213803",
-                "{http://ns.adobe.com/pdf/1.3/}Producer": "pikepdf 5.4.0",
-            }.items():
-                assert meta[k] == v
+        for k, v in {
+            "/Title": "qrbill",
+            "/CreationDate": "D:20220720213803",
+            "/ModDate": "D:20220720213803",
+            "/Producer": "GraphicsMagick 1.3.38 2022-03-26 Q16 http://www.GraphicsMagick.org/",
+        }.items():
+            assert pdf.docinfo[k] == pikepdf.objects.String(v)
 
     subprocess.run(
         [
