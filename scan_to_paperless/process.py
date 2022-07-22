@@ -3,6 +3,7 @@
 """Process the scanned documents."""
 
 import argparse
+import datetime
 import glob
 import logging
 import math
@@ -1132,12 +1133,10 @@ def finalize(
             pdf.append(file_name)
 
     producer = None
-    creator = None
     if pdf:
         with pikepdf.open(pdf[0]) as pdf_:
             with pdf_.open_metadata() as meta:
                 producer = meta.get("{http://ns.adobe.com/pdf/1.3/}Producer")
-                creator = meta.get("{http://ns.adobe.com/pdf/1.3/}Creator")
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
@@ -1171,16 +1170,17 @@ def finalize(
 
     call(["cp", one_pdf, destination])
 
-    if producer or creator:
-        with pikepdf.open(destination) as pdf_:
-            with pdf_.open_metadata() as meta:
-                if producer:
-                    meta["{http://ns.adobe.com/pdf/1.3/}Producer"] = producer
-                if creator:
-                    meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = creator
-            pdf_.save(destination)
-        if progress:
-            call(["cp", intermediate_file, os.path.join(root_folder, "pikepdf.pdf")])
+    with pikepdf.open(destination) as pdf_:
+        with pdf_.open_metadata() as meta:
+            date = datetime.datetime.fromtimestamp(os.path.getmtime("/opt/scan_to_paperless"))
+            str_date = datetime.datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+            paperless_meta = f"Scan to Paperless {str_date}"
+            meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = (
+                f"{paperless_meta}, {producer}" if producer else paperless_meta
+            )
+        pdf_.save(destination)
+    if progress:
+        call(["cp", intermediate_file, os.path.join(root_folder, "pikepdf.pdf")])
 
 
 def process_code() -> None:
