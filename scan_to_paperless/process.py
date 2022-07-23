@@ -5,6 +5,7 @@
 import argparse
 import datetime
 import glob
+import json
 import logging
 import math
 import os
@@ -1135,8 +1136,7 @@ def finalize(
     producer = None
     if pdf:
         with pikepdf.open(pdf[0]) as pdf_:
-            with pdf_.open_metadata() as meta:
-                producer = meta.get("{http://ns.adobe.com/pdf/1.3/}Producer")
+            producer = json.loads(pdf_.docinfo.get("/Producer").to_json())  # type: ignore
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
@@ -1171,13 +1171,12 @@ def finalize(
     call(["cp", one_pdf, destination])
 
     with pikepdf.open(destination, allow_overwriting_input=True) as pdf_:
-        with pdf_.open_metadata() as meta:
-            date = datetime.datetime.fromtimestamp(os.path.getmtime("/opt/scan_to_paperless"))
-            str_date = datetime.datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
-            paperless_meta = f"Scan to Paperless {str_date}"
-            meta["{http://ns.adobe.com/pdf/1.3/}Creator"] = (
-                f"{paperless_meta}, {producer}" if producer else paperless_meta
-            )
+        date = datetime.datetime.fromtimestamp(os.path.getmtime("/opt/scan_to_paperless"))
+        str_date = datetime.datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+        scan_to_paperless_meta = f"Scan to Paperless {str_date}"
+        pdf_.docinfo["/Creator"] = (
+            f"{scan_to_paperless_meta}, {producer}" if producer else scan_to_paperless_meta
+        )
         pdf_.save(destination)
     if progress:
         call(["cp", destination, os.path.join(root_folder, "5-pikepdf.pdf")])

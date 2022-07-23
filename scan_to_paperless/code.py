@@ -298,11 +298,8 @@ def add_codes(
 
                 if metadata:
                     with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
-                        with pdf.open_metadata() as meta:
-                            for key, value in metadata.items():
-                                if key.startswith("/"):
-                                    key = "{http://ns.adobe.com/pdf/1.3/}" + key[1:]
-                                meta[key] = value
+                        for key, value in metadata.items():
+                            pdf.docinfo[key] = value
                         pdf.save(output_filename)
         else:
             _LOG.info("No codes found, copy the input file")
