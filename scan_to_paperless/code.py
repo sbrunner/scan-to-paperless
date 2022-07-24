@@ -269,7 +269,9 @@ def add_codes(
                     output_pdf.write(output_stream)
 
                 for code_ in all_codes:
-                    code_["data"] = code_["data"].replace("\n", "<br />")
+                    data = code_["data"].split('\n')
+                    data = [d if d else "|" for d in data]
+                    code_["data"] = "<br />".join(data)
                 sections = [
                     f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data']}</p>" for code_ in all_codes
                 ]
@@ -281,7 +283,7 @@ def add_codes(
                 </head>
                 <body>
                     <section id="heading">
-                        <h4>QRCode and Barcode</h4>
+                        <h4>QR code and Barcode</h4>
                     </section>
                     {'<hr />'.join(sections)}
                 </body>
