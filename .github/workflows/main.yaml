@@ -53,7 +53,7 @@ jobs:
           --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
           tests bash -c '
           cd /tests &&
-          pytest --durations=0 --verbose --color=yes
+          pytest --durations=0 -vv --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
       - uses: actions/upload-artifact@v3
         with:

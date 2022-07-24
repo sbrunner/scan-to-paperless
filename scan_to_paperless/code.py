@@ -269,11 +269,13 @@ def add_codes(
                     output_pdf.write(output_stream)
 
                 for code_ in all_codes:
-                    data = code_["data"].split('\n')
+                    data = code_["data"].split("\n")
                     data = [d if d else "|" for d in data]
-                    code_["data"] = "<br />".join(data)
+                    code_["data_formated"] = "<br />".join(data)  # type: ignore
                 sections = [
-                    f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data']}</p>" for code_ in all_codes
+                    f"<h2>{code_['type']} [{code_['pos']}]</h2>"
+                    f"<p>{code_['data_formated']}</p>"  # type: ignore
+                    for code_ in all_codes
                 ]
 
                 html = HTML(
@@ -290,7 +292,7 @@ def add_codes(
                 </html>"""
                 )
 
-                css = CSS(string="@page { size: A4; margin: 2cm } P { font-size: 5pt; font-family: 'sans'; }")
+                css = CSS(string="@page { size: A4; margin: 2cm } P { font-size: 5pt; font-family: sans; }")
 
                 html.write_pdf(dest_2.name, stylesheets=[css])
 
@@ -300,8 +302,24 @@ def add_codes(
 
                 if metadata:
                     with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
+                        with pdf.open_metadata() as meta:
+                            formatted_codes = "\n-\n".join(
+                                [
+                                    f"{code_['type']} [{code_['pos']}]\n{code_['data']}"
+                                    for code_ in all_codes
+                                ]
+                            )
+                            if meta.get("{http://purl.org/dc/elements/1.1/}description"):
+                                meta["{http://purl.org/dc/elements/1.1/}description"] += (
+                                    "\n-\n" + formatted_codes
+                                )
+                            else:
+                                meta["{http://purl.org/dc/elements/1.1/}description"] = formatted_codes
                         for key, value in metadata.items():
                             pdf.docinfo[key] = value
+                        pdf.docinfo["/Codes"] = "\n-\n".join(
+                            [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes]
+                        )
                         pdf.save(output_filename)
         else:
             _LOG.info("No codes found, copy the input file")
