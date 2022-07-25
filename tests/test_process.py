@@ -463,6 +463,45 @@ def test_qr_bill():
             "/Producer": "GraphicsMagick 1.3.38 2022-03-26 Q16 http://www.GraphicsMagick.org/",
         }.items():
             assert pdf.docinfo[k] == pikepdf.objects.String(v)
+        with pdf.open_metadata() as meta:
+            assert (
+                meta.get("{http://purl.org/dc/elements/1.1/}description")
+                == """QR code [0]
+SPC
+0200
+1
+CH3908704016075473007
+K
+Robert Schneider AG
+Rue du Lac 1268
+2501 Biel
+
+
+CH
+
+
+
+
+
+
+
+5923.50
+CHF
+K
+Pia-Maria Rutschmann-Schnyder
+Grosse Marktgasse 28
+9400 Rorschach
+
+
+CH
+SCOR
+RF9720200227JS
+20200227JS- - """
+                + """
+EPD
+
+"""
+            )
 
     subprocess.run(
         [
