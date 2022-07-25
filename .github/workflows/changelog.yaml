@@ -38,7 +38,7 @@ jobs:
         id: changelog
         uses: heinrichreimer/github-changelog-generator-action@v2.3
         with:
-          token: ${{ secrets.GOPASS_CI_GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           configureSections: ${{ steps.config.outputs.config }}
           cacheFile: .github/changelog-generator-cache
 
