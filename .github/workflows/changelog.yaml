@@ -9,9 +9,9 @@ on:
 
 jobs:
   changelog:
-    name: Chanegelog Generator
+    name: Changelog Generator
     runs-on: ubuntu-20.04
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v3
@@ -19,17 +19,28 @@ jobs:
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d%H%M%S")"
+      - uses: actions/cache@v3
+        with:
+          path: |
+            .github/changelog-generator-cache
+          key: changelog-${{ steps.get-date.outputs.date }}
+          restore-keys: |
+            changelog-
+
       - name: Get config
         id: config
         run: echo ::set-output name=config::$(python -c 'print(__import__("json").dumps(__import__("yaml").load(open(".github/changelog-config.yaml"))))')
-
       - name: Generate changelog
         id: changelog
         uses: heinrichreimer/github-changelog-generator-action@v2.3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GOPASS_CI_GITHUB_TOKEN }}
           configureSections: ${{ steps.config.outputs.config }}
-          cacheFile: github-changelog-generator-action.cache
+          cacheFile: .github/changelog-generator-cache
 
       - run: c2cciutils-checks --fix --check=prettier
       - run: git add CHANGELOG.md
