@@ -647,7 +647,7 @@
 - Create experimental Docker image [\#7](https://github.com/sbrunner/scan-to-paperless/pull/7) ([sbrunner](https://github.com/sbrunner))
 - Deploy Docker image [\#6](https://github.com/sbrunner/scan-to-paperless/pull/6) ([sbrunner](https://github.com/sbrunner))
 - Add coverage [\#4](https://github.com/sbrunner/scan-to-paperless/pull/4) ([sbrunner](https://github.com/sbrunner))
-- Add progress and experimetal tests [\#3](https://github.com/sbrunner/scan-to-paperless/pull/3) ([sbrunner](https://github.com/sbrunner))
+- Add progress and experimental tests [\#3](https://github.com/sbrunner/scan-to-paperless/pull/3) ([sbrunner](https://github.com/sbrunner))
 - Test split join [\#2](https://github.com/sbrunner/scan-to-paperless/pull/2) ([sbrunner](https://github.com/sbrunner))
 - Fix assisted split, Add test infrastructure, some refactor. [\#1](https://github.com/sbrunner/scan-to-paperless/pull/1) ([sbrunner](https://github.com/sbrunner))
 
