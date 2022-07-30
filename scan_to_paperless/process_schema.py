@@ -130,6 +130,12 @@ Arguments = TypedDict(
         #
         # default: True
         "run_optipng": bool,
+        # Run the pngquant optimizer
+        #
+        # default: False
+        "run_pngquant": bool,
+        # The pngquant options
+        "pngquant_options": List[str],
         # Run the exiftool optimizer
         #
         # default: True

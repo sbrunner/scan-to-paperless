@@ -872,7 +872,22 @@ def transform(
         for image in images:
             call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
 
-    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault("run_optipng", True):
+    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault("run_pngquant", False):
+        for image in images:
+            with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
+                call(
+                    ["pngquant", f"--output={temp_file.name}"]
+                    + config["args"].setdefault(
+                        "pngquant_options", ["--skip-if-larger", "--speed=1", "--strip", "--quality=0-64"]
+                    )
+                    + ["--", image],
+                    check=False,
+                )
+                call(["mv", temp_file.name, image])
+
+    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault(
+        "run_optipng", not config["args"]["run_pngquant"]
+    ):
         for image in images:
             call(["optipng", image], check=False)
 

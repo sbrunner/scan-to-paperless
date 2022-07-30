@@ -80,6 +80,9 @@
   - **`threshold_value_c_limit`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content. Default: `70`.
   - **`colors`** _(integer)_: The number of colors in the png. Default: `0`.
   - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `True`.
+  - **`run_pngquant`** _(boolean)_: Run the pngquant optimizer. Default: `False`.
+  - **`pngquant_options`** _(array)_: The pngquant options.
+    - **Items** _(string)_
   - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `True`.
   - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
   - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.

@@ -168,6 +168,16 @@
           "default": true,
           "description": "Run the optipng optimizer"
         },
+        "run_pngquant": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the pngquant optimizer"
+        },
+        "pngquant_options": {
+          "type": "array",
+          "description": "The pngquant options",
+          "items": { "type": "string" }
+        },
         "run_exiftool": {
           "type": "boolean",
           "default": true,
