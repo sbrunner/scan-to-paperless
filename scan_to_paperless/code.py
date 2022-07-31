@@ -90,7 +90,7 @@ def _get_codes_with_open_cv(
                     pos = len(all_codes)
                     all_codes.append(
                         {
-                            "type": "QRCode",
+                            "type": "QR code",
                             "pos": pos,
                             "data": data,
                         }
@@ -126,6 +126,47 @@ def _get_codes_with_open_cv(
                         )
         except Exception:
             _LOG.warning("Open CV barcode decoder not available")
+
+    return codes
+
+
+def _get_codes_with_open_cv_we_chat(
+    image: str,
+    alpha: float,
+    width: int,
+    height: int,
+    all_codes: Optional[List[_Code]] = None,
+    added_codes: Optional[Set[str]] = None,
+) -> List[_PageCode]:
+    if added_codes is None:
+        added_codes = set()
+    if all_codes is None:
+        all_codes = []
+    codes: List[_PageCode] = []
+
+    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+    if decoded_image is not None:
+        detector = cv2.wechat_qrcode_WeChatQRCode()
+        retval, points = detector.detectAndDecode(decoded_image)
+        print(retval)
+        for index, data in enumerate(retval):
+            bbox = points[index]
+            if bbox is not None and len(data) > 0 and data not in added_codes:
+                added_codes.add(data)
+                pos = len(all_codes)
+                all_codes.append(
+                    {
+                        "type": "QR code",
+                        "pos": pos,
+                        "data": data,
+                    }
+                )
+                codes.append(
+                    {
+                        "pos": pos,
+                        "rect": [_point(p, alpha, width, height) for p in bbox],
+                    }
+                )
 
     return codes
 
@@ -206,25 +247,29 @@ def add_codes(
                 img0 = Image.open(image)
 
                 codes: List[_PageCode] = []
-                codes += _get_codes_with_z_bar(image, 0, img0.width, img0.height, all_codes, added_codes)
-                for angle in range(-10, 11, 2):
-                    subprocess.run(  # nosec
-                        [
-                            "gm",
-                            "convert",
-                            "-density",
-                            str(dpi),
-                            "-rotate",
-                            str(angle),
-                            f"{input_filename}[{index}]",
-                            image,
-                        ],
-                        check=True,
-                    )
-                    codes += _get_codes_with_z_bar(
-                        image, angle, img0.width, img0.height, all_codes, added_codes
-                    )
-                # codes += _get_codes_with_open_cv(image, 0, img0.width,  img0.height, all_codes, added_codes)
+                codes += _get_codes_with_open_cv_we_chat(
+                    image, 0, img0.width, img0.height, all_codes, added_codes
+                )
+                # codes += _get_codes_with_open_cv(
+                #   image, 0, img0.width, img0.height, index, all_codes, added_codes)
+                # codes += _get_codes_with_z_bar(image, 0, img0.width, img0.height, all_codes, added_codes)
+                # for angle in range(-10, 11, 2):
+                #     subprocess.run(  # nosec
+                #         [
+                #             "gm",
+                #             "convert",
+                #             "-density",
+                #             str(dpi),
+                #             "-rotate",
+                #             str(angle),
+                #             f"{input_filename}[{index}]",
+                #             image,
+                #         ],
+                #         check=True,
+                #     )
+                #     codes += _get_codes_with_z_bar(
+                #         image, angle, img0.width, img0.height, all_codes, added_codes
+                #     )
 
                 if codes:
                     packet = io.BytesIO()
@@ -304,10 +349,7 @@ def add_codes(
                     with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
                         with pdf.open_metadata() as meta:
                             formatted_codes = "\n-\n".join(
-                                [
-                                    f"{code_['type']} [{code_['pos']}]\n{code_['data']}"
-                                    for code_ in all_codes
-                                ]
+                                [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes]
                             )
                             if meta.get("{http://purl.org/dc/elements/1.1/}description"):
                                 meta["{http://purl.org/dc/elements/1.1/}description"] += (
