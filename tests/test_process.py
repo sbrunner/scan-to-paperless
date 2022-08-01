@@ -442,8 +442,8 @@ def test_qr_code():
         check=True,
     )
     root_folder = f"/results/qrcode"
-    check_image_file(root_folder, "/tmp/qrcode-0.png", "qrcode-0")
-    check_image_file(root_folder, "/tmp/qrcode-1.png", "qrcode-1")
+    check_image_file(root_folder, "/tmp/qrcode-0.png", "qrcode-0", level=1)
+    check_image_file(root_folder, "/tmp/qrcode-1.png", "qrcode-1", level=1)
 
 
 # @pytest.mark.skip(reason="for test")
@@ -526,5 +526,5 @@ EPD
         check=True,
     )
     root_folder = f"/results/qrcode"
-    check_image_file(root_folder, "/tmp/qrbill-0.png", "qrbill-0")
-    check_image_file(root_folder, "/tmp/qrbill-1.png", "qrbill-1")
+    check_image_file(root_folder, "/tmp/qrbill-0.png", "qrbill-0", level=1)
+    check_image_file(root_folder, "/tmp/qrbill-1.png", "qrbill-1", level=1)
