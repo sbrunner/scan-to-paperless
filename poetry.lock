@@ -1075,7 +1075,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.7.28"
+version = "2022.7.31"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -2117,8 +2117,8 @@ stevedore = [
     {file = "stevedore-4.0.0.tar.gz", hash = "sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786"},
 ]
 tifffile = [
-    {file = "tifffile-2022.7.28-py3-none-any.whl", hash = "sha256:a3bc9d5dcf2a89b9340ec3a623912da30b53b94877c1ba1f5bdc39d9e401fefb"},
-    {file = "tifffile-2022.7.28.tar.gz", hash = "sha256:61e3638e35156751dbc3cdbd0e4cf1166b90597d5d1972d03945a96570f1ad81"},
+    {file = "tifffile-2022.7.31-py3-none-any.whl", hash = "sha256:7e6f58aceb5e1d8c47c859e384b318b2f391b56d4dcd59550d6b46fe465cce0d"},
+    {file = "tifffile-2022.7.31.tar.gz", hash = "sha256:47940a048f31fb440434ad3782ee105205b097ac44dbd0b06a498e2b52b92f88"},
 ]
 tinycss2 = [
     {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
