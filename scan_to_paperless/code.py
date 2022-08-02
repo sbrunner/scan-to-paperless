@@ -12,6 +12,7 @@ from typing import List, Optional, Set, Tuple, TypedDict
 
 import cv2
 import pikepdf
+import zxingcpp
 from PIL import Image
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from pyzbar import pyzbar
@@ -138,6 +139,8 @@ def _get_codes_with_open_cv_we_chat(
     all_codes: Optional[List[_Code]] = None,
     added_codes: Optional[Set[str]] = None,
 ) -> List[_PageCode]:
+    del alpha, width, height
+
     if added_codes is None:
         added_codes = set()
     if all_codes is None:
@@ -148,7 +151,6 @@ def _get_codes_with_open_cv_we_chat(
     if decoded_image is not None:
         detector = cv2.wechat_qrcode_WeChatQRCode()
         retval, points = detector.detectAndDecode(decoded_image)
-        print(retval)
         for index, data in enumerate(retval):
             bbox = points[index]
             if bbox is not None and len(data) > 0 and data not in added_codes:
@@ -161,10 +163,56 @@ def _get_codes_with_open_cv_we_chat(
                         "data": data,
                     }
                 )
+                # In current version of wechat_qrcode, the bounding box are not correct
+                # codes.append(
+                #     {
+                #         "pos": pos,
+                #         "rect": [_point(p, alpha, width, height) for p in bbox],
+                #     }
+                # )
+
+    return codes
+
+
+def _get_codes_with_zxing(
+    image: str,
+    alpha: float,
+    width: int,
+    height: int,
+    all_codes: Optional[List[_Code]] = None,
+    added_codes: Optional[Set[str]] = None,
+) -> List[_PageCode]:
+    if added_codes is None:
+        added_codes = set()
+    if all_codes is None:
+        all_codes = []
+    codes: List[_PageCode] = []
+
+    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+    if decoded_image is not None:
+        for result in zxingcpp.read_barcodes(decoded_image):  # pylint: disable=c-extension-no-member
+            if result.text not in added_codes:
+                added_codes.add(result.text)
+                pos = len(all_codes)
+                all_codes.append(
+                    {
+                        "type": "QR code" if result.format.name == "QRCode" else result.format.name,
+                        "pos": pos,
+                        "data": result.text,
+                    }
+                )
                 codes.append(
                     {
                         "pos": pos,
-                        "rect": [_point(p, alpha, width, height) for p in bbox],
+                        "rect": [
+                            _point(p, alpha, width, height)
+                            for p in [
+                                (result.position.top_left.x, result.position.top_left.y),
+                                (result.position.top_right.x, result.position.top_right.y),
+                                (result.position.bottom_right.x, result.position.bottom_right.y),
+                                (result.position.bottom_left.x, result.position.bottom_left.y),
+                            ]
+                        ],
                     }
                 )
 
@@ -247,6 +295,9 @@ def add_codes(
                 img0 = Image.open(image)
 
                 codes: List[_PageCode] = []
+                codes += _get_codes_with_zxing(
+                    image, 0, img0.width, img0.height, all_codes, added_codes
+                )
                 codes += _get_codes_with_open_cv_we_chat(
                     image, 0, img0.width, img0.height, all_codes, added_codes
                 )

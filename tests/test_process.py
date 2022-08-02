@@ -426,7 +426,7 @@ def test_qr_code():
             "-density",
             "150",
             "/results/qrcode.pdf[0]",
-            "/tmp/qrcode-0.png",
+            "/results/qrcode-0.png",
         ],
         check=True,
     )
@@ -437,13 +437,13 @@ def test_qr_code():
             "-density",
             "150",
             "/results/qrcode.pdf[1]",
-            "/tmp/qrcode-1.png",
+            "/results/qrcode-1.png",
         ],
         check=True,
     )
     root_folder = f"/results/qrcode"
-    check_image_file(root_folder, "/tmp/qrcode-0.png", "qrcode-0", level=1)
-    check_image_file(root_folder, "/tmp/qrcode-1.png", "qrcode-1", level=1)
+    check_image_file(root_folder, "/results/qrcode-0.png", "qrcode-0", level=0.99999)
+    check_image_file(root_folder, "/results/qrcode-1.png", "qrcode-1", level=0.99999)
 
 
 # @pytest.mark.skip(reason="for test")
@@ -510,7 +510,7 @@ EPD
             "-density",
             "150",
             "/results/qrbill.pdf[0]",
-            "/tmp/qrbill-0.png",
+            "/results/qrbill-0.png",
         ],
         check=True,
     )
@@ -521,10 +521,10 @@ EPD
             "-density",
             "150",
             "/results/qrbill.pdf[1]",
-            "/tmp/qrbill-1.png",
+            "/results/qrbill-1.png",
         ],
         check=True,
     )
     root_folder = f"/results/qrcode"
-    check_image_file(root_folder, "/tmp/qrbill-0.png", "qrbill-0", level=1)
-    check_image_file(root_folder, "/tmp/qrbill-1.png", "qrbill-1", level=1)
+    check_image_file(root_folder, "/results/qrbill-0.png", "qrbill-0", level=0.99999)
+    check_image_file(root_folder, "/results/qrbill-1.png", "qrbill-1", level=0.99999)
