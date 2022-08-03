@@ -823,6 +823,14 @@ typing-extensions = {version = "*", markers = "python_version < \"3.10\""}
 crypto = ["pycryptodome"]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pyphen"
 version = "0.12.0"
 description = "Pure Python module to hyphenate text"
@@ -1075,7 +1083,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.7.28"
+version = "2022.8.3"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -1222,7 +1230,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "82be745efa12a9f6e8b8a8acd869d526515b7fd2a6a10c6ee894ce8725ad7ae1"
+content-hash = "820dace8cce046eb3b24dff8400777af2508656844affc1c737df65a2ff88092"
 
 [metadata.files]
 argcomplete = [
@@ -1865,6 +1873,9 @@ pypdf2 = [
     {file = "PyPDF2-2.6.0-py3-none-any.whl", hash = "sha256:2b1a869f239e6d538bc8ce49d92ddde74f5c9323e795adb48a2cb5dfa4832709"},
     {file = "PyPDF2-2.6.0.tar.gz", hash = "sha256:f52b8af09290cce07750b34e8a7bde501526b59dd1cb4c0a1f21e96ee402c750"},
 ]
+pyperclip = [
+    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
+]
 pyphen = [
     {file = "pyphen-0.12.0-py3-none-any.whl", hash = "sha256:459020cd320eb200c0c5ba46b98b2278fd34c5546f520fdcd2ce5f8d733eb994"},
     {file = "pyphen-0.12.0.tar.gz", hash = "sha256:b7d3dfc24b6f2178cdb2b1757ace0bd5d222de3e62c28d22ac578c5f22a13e9b"},
@@ -2128,8 +2139,8 @@ stevedore = [
     {file = "stevedore-4.0.0.tar.gz", hash = "sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786"},
 ]
 tifffile = [
-    {file = "tifffile-2022.7.28-py3-none-any.whl", hash = "sha256:a3bc9d5dcf2a89b9340ec3a623912da30b53b94877c1ba1f5bdc39d9e401fefb"},
-    {file = "tifffile-2022.7.28.tar.gz", hash = "sha256:61e3638e35156751dbc3cdbd0e4cf1166b90597d5d1972d03945a96570f1ad81"},
+    {file = "tifffile-2022.8.3-py3-none-any.whl", hash = "sha256:9ac1b07b2b920e1f3512f686adf514ef6b040a4a5e667beac771ae6a401eb913"},
+    {file = "tifffile-2022.8.3.tar.gz", hash = "sha256:27bf927b0432fa064bed2426f8bf1778250288a1fc3badb7f4e36ece2e9a6240"},
 ]
 tinycss2 = [
     {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
