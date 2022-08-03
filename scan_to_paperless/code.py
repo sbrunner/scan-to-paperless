@@ -295,9 +295,7 @@ def add_codes(
                 img0 = Image.open(image)
 
                 codes: List[_PageCode] = []
-                codes += _get_codes_with_zxing(
-                    image, 0, img0.width, img0.height, all_codes, added_codes
-                )
+                codes += _get_codes_with_zxing(image, 0, img0.width, img0.height, all_codes, added_codes)
                 codes += _get_codes_with_open_cv_we_chat(
                     image, 0, img0.width, img0.height, all_codes, added_codes
                 )
@@ -365,12 +363,14 @@ def add_codes(
                     output_pdf.write(output_stream)
 
                 for code_ in all_codes:
-                    data = code_["data"].split("\n")
+                    data = code_["data"].split("\r\n")
+                    if len(data) == 1:
+                        data = data[0].split("\n")
                     data = [d if d else "|" for d in data]
-                    code_["data_formated"] = "<br />".join(data)  # type: ignore
+                    code_["data_formatted"] = "<br />".join(data)  # type: ignore
                 sections = [
                     f"<h2>{code_['type']} [{code_['pos']}]</h2>"
-                    f"<p>{code_['data_formated']}</p>"  # type: ignore
+                    f"<p>{code_['data_formatted']}</p>"  # type: ignore
                     for code_ in all_codes
                 ]
 
@@ -381,14 +381,14 @@ def add_codes(
                 </head>
                 <body>
                     <section id="heading">
-                        <h4>QR code and Barcode</h4>
+                        <p>QR code and Barcode</p>
                     </section>
                     {'<hr />'.join(sections)}
                 </body>
                 </html>"""
                 )
 
-                css = CSS(string="@page { size: A4; margin: 2cm } P { font-size: 5pt; font-family: sans; }")
+                css = CSS(string="@page { size: A4; margin: 1.5cm } p { font-size: 5pt; font-family: sans; }")
 
                 html.write_pdf(dest_2.name, stylesheets=[css])
 
