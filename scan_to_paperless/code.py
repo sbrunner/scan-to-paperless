@@ -150,26 +150,29 @@ def _get_codes_with_open_cv_we_chat(
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
         detector = cv2.wechat_qrcode_WeChatQRCode()
-        retval, points = detector.detectAndDecode(decoded_image)
-        for index, data in enumerate(retval):
-            bbox = points[index]
-            if bbox is not None and len(data) > 0 and data not in added_codes:
-                added_codes.add(data)
-                pos = len(all_codes)
-                all_codes.append(
-                    {
-                        "type": "QR code",
-                        "pos": pos,
-                        "data": data,
-                    }
-                )
-                # In current version of wechat_qrcode, the bounding box are not correct
-                # codes.append(
-                #     {
-                #         "pos": pos,
-                #         "rect": [_point(p, alpha, width, height) for p in bbox],
-                #     }
-                # )
+        try:
+            retval, points = detector.detectAndDecode(decoded_image)
+            for index, data in enumerate(retval):
+                bbox = points[index]
+                if bbox is not None and len(data) > 0 and data not in added_codes:
+                    added_codes.add(data)
+                    pos = len(all_codes)
+                    all_codes.append(
+                        {
+                            "type": "QR code",
+                            "pos": pos,
+                            "data": data,
+                        }
+                    )
+                    # In current version of wechat_qrcode, the bounding box are not correct
+                    # codes.append(
+                    #     {
+                    #         "pos": pos,
+                    #         "rect": [_point(p, alpha, width, height) for p in bbox],
+                    #     }
+                    # )
+        except UnicodeDecodeError as exception:
+            _LOG.warning("Open CV wechat QR code decoder error: %s", str(exception))
 
     return codes
 
