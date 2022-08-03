@@ -11,6 +11,7 @@ from typing import Any, List, Optional, cast
 
 import argcomplete
 import numpy as np
+import pyperclip
 from ruamel.yaml.main import YAML
 from skimage import io
 
@@ -42,6 +43,15 @@ def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> b
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
+
+
+def convert_clipboard() -> None:
+    """Convert clipboard code from the PDF."""
+    original = pyperclip.paste()
+    new = "\n".join(["" if e == "|" else e for e in original.split("\n")])
+    if new != original:
+        pyperclip.copy(new)
+        print(new)
 
 
 def main() -> None:
@@ -76,9 +86,16 @@ def main() -> None:
     parser.add_argument(
         "--set-config",
         nargs=2,
+        metavar=("KEY", "VALUE"),
         action="append",
         default=[],
         help="Set a configuration option",
+    )
+    parser.add_argument(
+        "--convert-clipboard",
+        action="store_true",
+        help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
+        "see requirement: https://pypi.org/project/pyperclip/",
     )
 
     argcomplete.autocomplete(parser)
@@ -93,6 +110,17 @@ def main() -> None:
         print("Config from file: " + config_filename)
         yaml.dump(config, sys.stdout)
         sys.exit()
+
+    if args.convert_clipboard:
+        print("Wait for clipboard content to be converted, press Ctrl+C to stop")
+        convert_clipboard()
+        try:
+            while True:
+                pyperclip.waitForNewPaste()
+                convert_clipboard()
+        except KeyboardInterrupt:
+            print()
+            sys.exit()
 
     dirty = False
     for conf in args.set_config:
