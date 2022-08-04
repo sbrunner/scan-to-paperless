@@ -83,7 +83,7 @@
   - **`run_pngquant`** _(boolean)_: Run the pngquant optimizer. Default: `False`.
   - **`pngquant_options`** _(array)_: The pngquant options.
     - **Items** _(string)_
-  - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `True`.
+  - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `False`.
   - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
   - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.
   - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.

@@ -1170,7 +1170,7 @@ def finalize(
     if progress:
         call(["cp", one_pdf, os.path.join(root_folder, "2-pdftk.pdf")])
 
-    if config["args"].setdefault("run_exiftool", True):
+    if config["args"].setdefault("run_exiftool", False):
         call(["exiftool", "-overwrite_original_in_place", one_pdf])
         if progress:
             call(["cp", one_pdf, os.path.join(root_folder, "3-exiftool.pdf")])

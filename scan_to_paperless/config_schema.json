@@ -20,12 +20,12 @@
           "default": false
         },
         "min_level": {
-          "type": "integer",
+          "type": "number",
           "description": "Min level if no level end no auto-level",
           "default": 15
         },
         "max_level": {
-          "type": "integer",
+          "type": "number",
           "description": "Max level if no level end no auto-level",
           "default": 15
         },
@@ -69,55 +69,95 @@
           "default": "fra+eng",
           "description": "The used language for tesseract"
         },
+        "append_credit_card": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do an assisted split"
+        },
         "assisted_split": {
           "type": "boolean",
           "default": false,
-          "description": "Do en assisted split"
+          "description": "Do an assisted split"
+        },
+        "num_angles": {
+          "type": "integer",
+          "default": 1800,
+          "description": "The number of angle used to detect the image skew"
         },
         "min_box_size_crop": {
           "type": "number",
           "default": 3,
           "description": "The minimum box size to find the content on witch one we will crop [mm]"
         },
-        "min_box_size_limit": {
+        "min_box_black_crop": {
           "type": "number",
-          "default": 10,
-          "description": "The minimum box size to find the limits based on content [mm]"
+          "default": 2,
+          "description": "The minimum black in a box on content find on witch one we will crop [%]"
+        },
+        "contour_kernel_size_crop": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on content find on witch one we will crop [mm]"
+        },
+        "threshold_block_size_crop": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on threshold for content find on witch one we will crop [mm]"
+        },
+        "threshold_value_c_crop": {
+          "type": "number",
+          "default": 70,
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop"
         },
         "min_box_size_empty": {
           "type": "number",
           "default": 10,
           "description": "The minimum box size to find the content to determine if the page is empty [mm]"
         },
-        "min_box_black_crop": {
+        "min_box_black_empty": {
           "type": "number",
           "default": 2,
-          "description": "The minimum black in a box on content find on witch one we will crop [%]"
+          "description": "The minimum black in a box on content find if the page is empty [%]"
+        },
+        "contour_kernel_size_empty": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on content find if the page is empty [mm]"
+        },
+        "threshold_block_size_empty": {
+          "type": "number",
+          "default": 1.5,
+          "description": "The block size used in a box on threshold for content find if the page is empty [mm]"
+        },
+        "threshold_value_c_empty": {
+          "type": "number",
+          "default": 70,
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty"
+        },
+        "min_box_size_limit": {
+          "type": "number",
+          "default": 3,
+          "description": "The minimum box size to find the limits based on content [mm]"
         },
         "min_box_black_limit": {
           "type": "number",
           "default": 2,
           "description": "The minimum black in a box on content find the limits based on content [%]"
         },
-        "min_box_black_empty": {
-          "type": "number",
-          "default": 2,
-          "description": "The minimum black in a box on content find to determine if the page is empty [%]"
-        },
-        "box_kernel_size": {
+        "contour_kernel_size_limit": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on content find [mm]"
+          "description": "The block size used in a box on content find the limits based on content [mm]"
         },
-        "box_block_size": {
+        "threshold_block_size_limit": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on threshold for content find [mm]"
+          "description": "The block size used in a box on threshold for content find the limits based on content [mm]"
         },
-        "box_threshold_value_c": {
+        "threshold_value_c_limit": {
           "type": "number",
           "default": 70,
-          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find"
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content"
         },
         "colors": {
           "type": "integer",
@@ -129,15 +169,35 @@
           "default": true,
           "description": "Run the optipng optimizer"
         },
+        "run_pngquant": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the pngquant optimizer"
+        },
+        "pngquant_options": {
+          "type": "array",
+          "description": "The pngquant options",
+          "items": { "type": "string" }
+        },
         "run_exiftool": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Run the exiftool optimizer"
         },
         "run_ps2pdf": {
           "type": "boolean",
           "default": false,
           "description": "Run the ps2pdf optimizer (=> JPEG)"
+        },
+        "jpeg": {
+          "type": "boolean",
+          "default": false,
+          "description": "Convert images to JPEG"
+        },
+        "jpeg_quality": {
+          "type": "integer",
+          "default": 90,
+          "description": "The JPEG quality"
         }
       }
     }
