@@ -180,7 +180,7 @@
         },
         "run_exiftool": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Run the exiftool optimizer"
         },
         "run_ps2pdf": {

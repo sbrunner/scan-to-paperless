@@ -138,7 +138,7 @@ Arguments = TypedDict(
         "pngquant_options": List[str],
         # Run the exiftool optimizer
         #
-        # default: True
+        # default: False
         "run_exiftool": bool,
         # Run the ps2pdf optimizer (=> JPEG)
         #
