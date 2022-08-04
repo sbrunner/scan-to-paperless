@@ -8,7 +8,7 @@ import os
 import random
 import subprocess  # nosec
 import tempfile
-from typing import List, Optional, Set, Tuple, TypedDict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 import cv2
 import pikepdf
@@ -28,6 +28,11 @@ class _Code(TypedDict):
     pos: int
     type: str
     data: str
+
+
+class _AllCodes(TypedDict):
+    pages: Set[int]
+    pos: int
 
 
 class _PageCode(TypedDict):
@@ -55,15 +60,15 @@ def _point(point: Tuple[int, int], deg_angle: float, width: int, height: int) ->
 def _get_codes_with_open_cv(
     image: str,
     alpha: float,
+    page: int,
     width: int,
     height: int,
-    page_index: int,
     all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Set[str]] = None,
+    added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
 
     if added_codes is None:
-        added_codes = set()
+        added_codes = {}
     if all_codes is None:
         all_codes = []
     codes: List[_PageCode] = []
@@ -80,15 +85,15 @@ def _get_codes_with_open_cv(
                 for img_index, img in enumerate(straight_qr_code):
                     dest_filename = os.path.join(
                         base_path,
-                        f"{filename}-qrcode-{page_index}-{suffix}-{img_index}.png",
+                        f"{filename}-qrcode-{page}-{suffix}-{img_index}.png",
                     )
                     cv2.imwrite(dest_filename, img)
 
             for index, data in enumerate(decoded_info):
                 bbox = points[index]
                 if bbox is not None and len(data) > 0 and data not in added_codes:
-                    added_codes.add(data)
                     pos = len(all_codes)
+                    added_codes[data] = {"pages": set(), "pos": pos}
                     all_codes.append(
                         {
                             "type": "QR code",
@@ -96,9 +101,11 @@ def _get_codes_with_open_cv(
                             "data": data,
                         }
                     )
+                if page not in added_codes[data]["pages"]:
+                    added_codes[data]["pages"].add(page)
                     codes.append(
                         {
-                            "pos": pos,
+                            "pos": added_codes[data]["pos"],
                             "rect": [_point(p, alpha, width, height) for p in bbox],
                         }
                     )
@@ -110,8 +117,8 @@ def _get_codes_with_open_cv(
                     bbox = points[index]
                     type_ = decoded_type[index]
                     if bbox is not None and len(data) > 0 and data not in added_codes:
-                        added_codes.add(data)
                         pos = len(all_codes)
+                        added_codes[data] = {"pages": set(), "pos": pos}
                         all_codes.append(
                             {
                                 "type": type_[0] + type_[1:].lower(),
@@ -119,9 +126,11 @@ def _get_codes_with_open_cv(
                                 "data": data,
                             }
                         )
+                    if page not in added_codes[data]["pages"]:
+                        added_codes[data]["pages"].add(page)
                         codes.append(
                             {
-                                "pos": pos,
+                                "pos": added_codes[data]["pos"],
                                 "rect": [_point(p, alpha, width, height) for p in bbox],
                             }
                         )
@@ -134,15 +143,16 @@ def _get_codes_with_open_cv(
 def _get_codes_with_open_cv_we_chat(
     image: str,
     alpha: float,
+    page: int,
     width: int,
     height: int,
     all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Set[str]] = None,
+    added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
-    del alpha, width, height
+    del alpha, width, height, page
 
     if added_codes is None:
-        added_codes = set()
+        added_codes = {}
     if all_codes is None:
         all_codes = []
     codes: List[_PageCode] = []
@@ -155,8 +165,8 @@ def _get_codes_with_open_cv_we_chat(
             for index, data in enumerate(retval):
                 bbox = points[index]
                 if bbox is not None and len(data) > 0 and data not in added_codes:
-                    added_codes.add(data)
                     pos = len(all_codes)
+                    added_codes[data] = {"pages": set(), "pos": pos}
                     all_codes.append(
                         {
                             "type": "QR code",
@@ -164,13 +174,15 @@ def _get_codes_with_open_cv_we_chat(
                             "data": data,
                         }
                     )
-                    # In current version of wechat_qrcode, the bounding box are not correct
-                    # codes.append(
-                    #     {
-                    #         "pos": pos,
-                    #         "rect": [_point(p, alpha, width, height) for p in bbox],
-                    #     }
-                    # )
+                # In current version of wechat_qrcode, the bounding box are not correct
+                # if page not in added_codes[data]['pages']:
+                #     added_codes[data]['pages'].add(page)
+                #     codes.append(
+                #         {
+                #             "pos": added_codes[data]['pos'],
+                #             "rect": [_point(p, alpha, width, height) for p in bbox],
+                #         }
+                #     )
         except UnicodeDecodeError as exception:
             _LOG.warning("Open CV wechat QR code decoder error: %s", str(exception))
 
@@ -180,13 +192,14 @@ def _get_codes_with_open_cv_we_chat(
 def _get_codes_with_zxing(
     image: str,
     alpha: float,
+    page: int,
     width: int,
     height: int,
     all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Set[str]] = None,
+    added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
     if added_codes is None:
-        added_codes = set()
+        added_codes = {}
     if all_codes is None:
         all_codes = []
     codes: List[_PageCode] = []
@@ -195,8 +208,8 @@ def _get_codes_with_zxing(
     if decoded_image is not None:
         for result in zxingcpp.read_barcodes(decoded_image):  # pylint: disable=c-extension-no-member
             if result.text not in added_codes:
-                added_codes.add(result.text)
                 pos = len(all_codes)
+                added_codes[result.text] = {"pages": set(), "pos": pos}
                 all_codes.append(
                     {
                         "type": "QR code" if result.format.name == "QRCode" else result.format.name,
@@ -204,9 +217,11 @@ def _get_codes_with_zxing(
                         "data": result.text,
                     }
                 )
+            if page not in added_codes[result.text]["pages"]:
+                added_codes[result.text]["pages"].add(page)
                 codes.append(
                     {
-                        "pos": pos,
+                        "pos": added_codes[result.text]["pos"],
                         "rect": [
                             _point(p, alpha, width, height)
                             for p in [
@@ -225,14 +240,15 @@ def _get_codes_with_zxing(
 def _get_codes_with_z_bar(
     image: str,
     alpha: float,
+    page: int,
     width: int,
     height: int,
     all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Set[str]] = None,
+    added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
 
     if added_codes is None:
-        added_codes = set()
+        added_codes = {}
     if all_codes is None:
         all_codes = []
     codes: List[_PageCode] = []
@@ -240,8 +256,8 @@ def _get_codes_with_z_bar(
     img = Image.open(image)
     for output in pyzbar.decode(img):
         if output.data.decode().replace("\\n", "\n") not in added_codes:
-            added_codes.add(output.data.decode().replace("\\n", "\n"))
             pos = len(all_codes)
+            added_codes[output.data.decode().replace("\\n", "\n")] = {"pages": set(), "pos": pos}
             all_codes.append(
                 {
                     "type": "QR code"
@@ -251,9 +267,11 @@ def _get_codes_with_z_bar(
                     "data": output.data.decode().replace("\\n", "\n"),
                 }
             )
+        if page not in added_codes[output.data.decode().replace("\\n", "\n")]["pages"]:
+            added_codes[output.data.decode().replace("\\n", "\n")]["pages"].add(page)
             codes.append(
                 {
-                    "pos": pos,
+                    "pos": added_codes[output.data.decode().replace("\\n", "\n")]["pos"],
                     "rect": [_point((p.x, p.y), alpha, width, height) for p in output.polygon],
                 }
             )
@@ -272,8 +290,10 @@ def add_codes(
     margin_top: float = 0,
 ) -> None:
     """Add the QRCode and the BarCodes to a PDF in an additional page."""
+    # Codes information to create the new page
     all_codes: List[_Code] = []
-    added_codes: Set[str] = set()
+    # Codes information about the already found codes
+    added_codes: Dict[str, _AllCodes] = {}
 
     with open(input_filename, "rb") as input_file:
         existing_pdf = PdfFileReader(input_file)
@@ -297,14 +317,18 @@ def add_codes(
                 )
                 img0 = Image.open(image)
 
+                # Codes information to add the mask and number on the page
                 codes: List[_PageCode] = []
-                codes += _get_codes_with_zxing(image, 0, img0.width, img0.height, all_codes, added_codes)
+                codes += _get_codes_with_zxing(
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                )
                 codes += _get_codes_with_open_cv_we_chat(
-                    image, 0, img0.width, img0.height, all_codes, added_codes
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes
                 )
                 # codes += _get_codes_with_open_cv(
-                #   image, 0, img0.width, img0.height, index, all_codes, added_codes)
-                # codes += _get_codes_with_z_bar(image, 0, img0.width, img0.height, all_codes, added_codes)
+                #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
+                # codes += _get_codes_with_z_bar(
+                #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
                 # for angle in range(-10, 11, 2):
                 #     subprocess.run(  # nosec
                 #         [
@@ -320,7 +344,7 @@ def add_codes(
                 #         check=True,
                 #     )
                 #     codes += _get_codes_with_z_bar(
-                #         image, angle, img0.width, img0.height, all_codes, added_codes
+                #         image, angle, page, img0.width, img0.height, all_codes, added_codes
                 #     )
 
                 if codes:
