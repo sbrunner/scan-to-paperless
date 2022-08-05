@@ -419,31 +419,21 @@ def test_custom_process(test, args):
 # @pytest.mark.skip(reason="for test")
 def test_qr_code():
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/results/qrcode.pdf")
-    subprocess.run(
-        [
-            "gm",
-            "convert",
-            "-density",
-            "150",
-            "/results/qrcode.pdf[0]",
-            "/results/qrcode-0.png",
-        ],
-        check=True,
-    )
-    subprocess.run(
-        [
-            "gm",
-            "convert",
-            "-density",
-            "150",
-            "/results/qrcode.pdf[1]",
-            "/results/qrcode-1.png",
-        ],
-        check=True,
-    )
     root_folder = f"/results/qrcode"
-    check_image_file(root_folder, "/results/qrcode-0.png", "qrcode-0", level=0.99999)
-    check_image_file(root_folder, "/results/qrcode-1.png", "qrcode-1", level=0.99999)
+    for page in range(2):
+        subprocess.run(
+            [
+                "gm",
+                "convert",
+                "-density",
+                "150",
+                f"/results/qrcode.pdf[{page}]",
+                f"/results/qrcode-{page}.png",
+            ],
+            check=True,
+        )
+    for page in range(2):
+        check_image_file(root_folder, f"/results/qrcode-{page}.png", f"qrcode-{page}", level=0.99999)
 
 
 # @pytest.mark.skip(reason="for test")
@@ -503,28 +493,40 @@ EPD
 """
             )
 
-    subprocess.run(
-        [
-            "gm",
-            "convert",
-            "-density",
-            "150",
-            "/results/qrbill.pdf[0]",
-            "/results/qrbill-0.png",
-        ],
-        check=True,
-    )
-    subprocess.run(
-        [
-            "gm",
-            "convert",
-            "-density",
-            "150",
-            "/results/qrbill.pdf[1]",
-            "/results/qrbill-1.png",
-        ],
-        check=True,
-    )
     root_folder = f"/results/qrcode"
-    check_image_file(root_folder, "/results/qrbill-0.png", "qrbill-0", level=0.99999)
-    check_image_file(root_folder, "/results/qrbill-1.png", "qrbill-1", level=0.99999)
+    for page in range(2):
+        subprocess.run(
+            [
+                "gm",
+                "convert",
+                "-density",
+                "150",
+                f"/results/qrbill.pdf[{page}]",
+                f"/results/qrbill-{page}.png",
+            ],
+            check=True,
+        )
+    for page in range(2):
+        check_image_file(root_folder, f"/results/qrbill-{page}.png", f"qrbill-{page}", level=0.99999)
+
+
+# @pytest.mark.skip(reason="for test")
+def test_multi_code():
+    code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill-multi.pdf"), "/results/qrbill-multi.pdf")
+    root_folder = f"/results/qrcode"
+    for page in range(3):
+        subprocess.run(
+            [
+                "gm",
+                "convert",
+                "-density",
+                "150",
+                f"/results/qrbill-multi.pdf[{page}]",
+                f"/results/qrbill-multi-{page}.png",
+            ],
+            check=True,
+        )
+    for page in range(3):
+        check_image_file(
+            root_folder, f"/results/qrbill-multi-{page}.png", f"qrbill-multi-{page}", level=0.99999
+        )
