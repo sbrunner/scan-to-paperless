@@ -93,7 +93,7 @@ def _add_code(
     ]
     for found in filtered_founds:
         bbox = found["geometry"]
-        assert bbox
+        assert bbox is not None
         added_codes[data]["pages"].add(page)
         codes.append(
             {
@@ -103,7 +103,66 @@ def _add_code(
         )
 
 
-def _get_codes_with_open_cv(
+def _get_bar_codes_with_open_cv(
+    image: str,
+    alpha: float,
+    page: int,
+    width: int,
+    height: int,
+    all_codes: Optional[List[_Code]] = None,
+    added_codes: Optional[Dict[str, _AllCodes]] = None,
+) -> List[_PageCode]:
+
+    if added_codes is None:
+        added_codes = {}
+    if all_codes is None:
+        all_codes = []
+    codes: List[_PageCode] = []
+
+    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+    if decoded_image is not None:
+        try:
+            detector = cv2.barcode.BarcodeDetector()
+            retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)
+            if retval:
+                if os.environ.get("PROGRESS", "FALSE") == "TRUE":
+                    base_path = os.path.dirname(image)
+                    filename = ".".join(os.path.basename(image).split(".")[:-1])
+                    suffix = random.randint(0, 1000)  # nosec
+                    for bbox_index, bbox in enumerate(points):
+                        dest_filename = os.path.join(
+                            base_path,
+                            f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
+                        )
+                        bbox_x = [p[0] for p in bbox]
+                        bbox_y = [p[1] for p in bbox]
+                        cv2.imwrite(
+                            dest_filename,
+                            decoded_image[
+                                int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
+                                int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                            ],
+                        )
+                founds: List[_FoundCode] = []
+                for index, data in enumerate(decoded_info):
+                    bbox = points[index]
+                    type_ = decoded_type[index]
+                    founds.append(
+                        {
+                            "data": data,
+                            "type": type_[0] + type_[1:].lower(),
+                            "geometry": bbox,
+                        }
+                    )
+
+                _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
+        except Exception:
+            _LOG.warning("Open CV barcode decoder not available")
+
+    return codes
+
+
+def _get_qr_codes_with_open_cv(
     image: str,
     alpha: float,
     page: int,
@@ -131,40 +190,57 @@ def _get_codes_with_open_cv(
                 for img_index, img in enumerate(straight_qr_code):
                     dest_filename = os.path.join(
                         base_path,
-                        f"{filename}-qrcode-{page}-{suffix}-{img_index}.png",
+                        f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png",
                     )
                     cv2.imwrite(dest_filename, img)
+                for bbox_index, bbox in enumerate(points):
+                    dest_filename = os.path.join(
+                        base_path,
+                        f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
+                    )
+                    bbox_x = [p[0] for p in bbox]
+                    bbox_y = [p[1] for p in bbox]
+                    cv2.imwrite(
+                        dest_filename,
+                        decoded_image[
+                            int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
+                            int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                        ],
+                    )
 
             founds: List[_FoundCode] = []
             for index, data in enumerate(decoded_info):
-                founds.append(
-                    {
-                        "data": data,
-                        "type": "QR code",
-                        "geometry": points[index],
-                    }
-                )
-            _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
-
-        try:
-            detector = cv2.barcode.BarcodeDetector()
-            retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)
-            if retval:
-                founds = []
-                for index, data in enumerate(decoded_info):
+                if points[index] is not None and not data:
                     bbox = points[index]
-                    type_ = decoded_type[index]
+                    detector = cv2.wechat_qrcode_WeChatQRCode()
+                    try:
+                        bbox_x = [p[0] for p in bbox]
+                        bbox_y = [p[1] for p in bbox]
+                        retval, _ = detector.detectAndDecode(
+                            decoded_image[
+                                int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
+                                int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                            ]
+                        )
+                        for data in retval:
+                            founds.append(
+                                {
+                                    "data": data,
+                                    "type": "QR code",
+                                    "geometry": points[index],
+                                }
+                            )
+                    except UnicodeDecodeError as exception:
+                        _LOG.warning("Open CV wechat QR code decoder error: %s", str(exception))
+                else:
                     founds.append(
                         {
                             "data": data,
-                            "type": type_[0] + type_[1:].lower(),
-                            "geometry": bbox,
+                            "type": "QR code",
+                            "geometry": points[index],
                         }
                     )
-
-                _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
-        except Exception:
-            _LOG.warning("Open CV barcode decoder not available")
+            _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
     return codes
 
@@ -319,11 +395,15 @@ def add_codes(
                 codes += _get_codes_with_zxing(
                     image, 0, index, img0.width, img0.height, all_codes, added_codes
                 )
+                codes += _get_bar_codes_with_open_cv(
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                )
+                codes += _get_qr_codes_with_open_cv(
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                )
                 codes += _get_codes_with_open_cv_we_chat(
                     image, 0, index, img0.width, img0.height, all_codes, added_codes
                 )
-                # codes += _get_codes_with_open_cv(
-                #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
                 # codes += _get_codes_with_z_bar(
                 #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
                 # for angle in range(-10, 11, 2):
