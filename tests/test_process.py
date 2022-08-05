@@ -417,8 +417,9 @@ def test_custom_process(test, args):
 
 
 # @pytest.mark.skip(reason="for test")
-def test_qr_code():
-    code.add_codes(os.path.join(os.path.dirname(__file__), "qrcode.pdf"), "/results/qrcode.pdf")
+@pytest.mark.parametrize("name", ["qrcode", "qrbill", "qrbill2"])
+def test_qr_code(name):
+    code.add_codes(os.path.join(os.path.dirname(__file__), f"{name}.pdf"), f"/results/{name}.pdf")
     root_folder = f"/results/qrcode"
     for page in range(2):
         subprocess.run(
@@ -427,23 +428,18 @@ def test_qr_code():
                 "convert",
                 "-density",
                 "150",
-                f"/results/qrcode.pdf[{page}]",
-                f"/results/qrcode-{page}.png",
+                f"/results/{name}.pdf[{page}]",
+                f"/results/{name}-{page}.png",
             ],
             check=True,
         )
     for page in range(2):
-        check_image_file(root_folder, f"/results/qrcode-{page}.png", f"qrcode-{page}", level=0.99999)
+        check_image_file(root_folder, f"/results/{name}-{page}.png", f"{name}-{page}", level=0.99999)
 
 
 # @pytest.mark.skip(reason="for test")
-def test_qr_bill():
-    code.add_codes(
-        os.path.join(os.path.dirname(__file__), "qrbill.pdf"),
-        "/results/qrbill.pdf",
-        font_size=60,
-        margin_left=15,
-    )
+def test_qr_code_metadata():
+    code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill.pdf"), "/results/qrbill.pdf")
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
         for k, v in {
@@ -492,22 +488,6 @@ EPD
 
 """
             )
-
-    root_folder = f"/results/qrcode"
-    for page in range(2):
-        subprocess.run(
-            [
-                "gm",
-                "convert",
-                "-density",
-                "150",
-                f"/results/qrbill.pdf[{page}]",
-                f"/results/qrbill-{page}.png",
-            ],
-            check=True,
-        )
-    for page in range(2):
-        check_image_file(root_folder, f"/results/qrbill-{page}.png", f"qrbill-{page}", level=0.99999)
 
 
 # @pytest.mark.skip(reason="for test")
