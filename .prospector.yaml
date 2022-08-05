@@ -10,6 +10,7 @@ ignore-paths:
 pycodestyle:
   disable:
     - E203 # whitespace before ':'
+    - E501 # line too long, redundant with Black
 
 pydocstyle:
   disable:

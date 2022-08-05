@@ -8,7 +8,7 @@ import os
 import random
 import subprocess  # nosec
 import tempfile
-from typing import Dict, List, Optional, Set, Tuple, TypedDict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict, Union
 
 import cv2
 import pikepdf
@@ -24,6 +24,12 @@ _LOG = logging.getLogger(__name__)
 Image.MAX_IMAGE_PIXELS = 500000000
 
 
+class _FoundCode(TypedDict):
+    data: str
+    type: str
+    geometry: Optional[List[Tuple[float, float]]]
+
+
 class _Code(TypedDict):
     pos: int
     type: str
@@ -37,10 +43,12 @@ class _AllCodes(TypedDict):
 
 class _PageCode(TypedDict):
     pos: int
-    rect: List[Tuple[float, float]]
+    geometry: List[Tuple[Union[int, float], Union[int, float]]]
 
 
-def _point(point: Tuple[int, int], deg_angle: float, width: int, height: int) -> Tuple[float, float]:
+def _point(
+    point: Tuple[Union[int, float], Union[int, float]], deg_angle: float, width: int, height: int
+) -> Tuple[float, float]:
     assert -90 <= deg_angle <= 90
     angle = math.radians(deg_angle)
     diff_x = 0.0
@@ -65,26 +73,32 @@ def _add_code(
     all_codes: List[_Code],
     added_codes: Dict[str, _AllCodes],
     codes: List[_PageCode],
-    data: str,
-    type_: str,
-    bbox: Optional[List[Tuple[int, int]]] = None,
+    founds: List[_FoundCode],
 ) -> None:
-    if data not in added_codes:
-        pos = len(all_codes)
-        added_codes[data] = {"pages": set(), "pos": pos}
-        all_codes.append(
-            {
-                "type": type_,
-                "pos": pos,
-                "data": data,
-            }
-        )
-    if bbox is not None and page not in added_codes[data]["pages"]:
+    for found in founds:
+        data = found["data"]
+        if data not in added_codes:
+            pos = len(all_codes)
+            added_codes[data] = {"pages": set(), "pos": pos}
+            all_codes.append(
+                {
+                    "type": found["type"],
+                    "pos": pos,
+                    "data": data,
+                }
+            )
+
+    filtered_founds = [
+        f for f in founds if f["geometry"] is not None and page not in added_codes[f["data"]]["pages"]
+    ]
+    for found in filtered_founds:
+        bbox = found["geometry"]
+        assert bbox
         added_codes[data]["pages"].add(page)
         codes.append(
             {
-                "pos": added_codes[data]["pos"],
-                "rect": [_point(p, alpha, width, height) for p in bbox],
+                "pos": added_codes[found["data"]]["pos"],
+                "geometry": [_point(p, alpha, width, height) for p in bbox],
             }
         )
 
@@ -121,33 +135,34 @@ def _get_codes_with_open_cv(
                     )
                     cv2.imwrite(dest_filename, img)
 
+            founds: List[_FoundCode] = []
             for index, data in enumerate(decoded_info):
-                bbox = points[index]
-                if bbox is not None and len(data) > 0:
-                    _add_code(
-                        alpha, width, height, page, all_codes, added_codes, codes, data, "QR code", bbox
-                    )
+                founds.append(
+                    {
+                        "data": data,
+                        "type": "QR code",
+                        "geometry": points[index],
+                    }
+                )
+            _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
         try:
             detector = cv2.barcode.BarcodeDetector()
             retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)
             if retval:
+                founds = []
                 for index, data in enumerate(decoded_info):
                     bbox = points[index]
                     type_ = decoded_type[index]
-                    if bbox is not None and len(data) > 0:
-                        _add_code(
-                            alpha,
-                            width,
-                            height,
-                            page,
-                            all_codes,
-                            added_codes,
-                            codes,
-                            data,
-                            type_[0] + type_[1:].lower(),
-                            bbox,
-                        )
+                    founds.append(
+                        {
+                            "data": data,
+                            "type": type_[0] + type_[1:].lower(),
+                            "geometry": bbox,
+                        }
+                    )
+
+                _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
         except Exception:
             _LOG.warning("Open CV barcode decoder not available")
 
@@ -174,11 +189,19 @@ def _get_codes_with_open_cv_we_chat(
         detector = cv2.wechat_qrcode_WeChatQRCode()
         try:
             retval, points = detector.detectAndDecode(decoded_image)
+            del points
+            founds: List[_FoundCode] = []
             for index, data in enumerate(retval):
-                bbox = points[index]
-                if bbox is not None and len(data) > 0:
-                    # In current version of wechat_qrcode, the bounding box are not correct
-                    _add_code(alpha, width, height, page, all_codes, added_codes, codes, data, "QR code")
+                del index
+                founds.append(
+                    {
+                        "data": data,
+                        "type": "QR code",
+                        # In current version of wechat_qrcode, the bounding box are not correct
+                        "geometry": None,
+                    }
+                )
+            _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
         except UnicodeDecodeError as exception:
             _LOG.warning("Open CV wechat QR code decoder error: %s", str(exception))
 
@@ -202,24 +225,22 @@ def _get_codes_with_zxing(
 
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
+        founds: List[_FoundCode] = []
         for result in zxingcpp.read_barcodes(decoded_image):  # pylint: disable=c-extension-no-member
-            _add_code(
-                alpha,
-                width,
-                height,
-                page,
-                all_codes,
-                added_codes,
-                codes,
-                result.text,
-                "QR code" if result.format.name == "QRCode" else result.format.name,
-                [
-                    (result.position.top_left.x, result.position.top_left.y),
-                    (result.position.top_right.x, result.position.top_right.y),
-                    (result.position.bottom_right.x, result.position.bottom_right.y),
-                    (result.position.bottom_left.x, result.position.bottom_left.y),
-                ],
+            founds.append(
+                {
+                    "data": result.text,
+                    "type": "QR code" if result.format.name == "QRCode" else result.format.name,
+                    "geometry": [
+                        (result.position.top_left.x, result.position.top_left.y),
+                        (result.position.top_right.x, result.position.top_right.y),
+                        (result.position.bottom_right.x, result.position.bottom_right.y),
+                        (result.position.bottom_left.x, result.position.bottom_left.y),
+                    ],
+                }
             )
+
+        _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
     return codes
 
@@ -241,19 +262,16 @@ def _get_codes_with_z_bar(
     codes: List[_PageCode] = []
 
     img = Image.open(image)
+    founds: List[_FoundCode] = []
     for output in pyzbar.decode(img):
-        _add_code(
-            alpha,
-            width,
-            height,
-            page,
-            all_codes,
-            added_codes,
-            codes,
-            output.data.decode().replace("\\n", "\n"),
-            "QR code" if output.type == "QRCODE" else output.type[0] + output.type[1:].lower(),
-            output.polygon,
+        founds.append(
+            {
+                "data": output.data.decode().replace("\\n", "\n"),
+                "type": "QR code" if output.type == "QRCODE" else output.type[0] + output.type[1:].lower(),
+                "geometry": output.polygon,
+            }
         )
+    _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
     return codes
 
@@ -334,8 +352,10 @@ def add_codes(
                     for code in codes:
                         can.setFillColor(Color(1, 1, 1, alpha=0.7))
                         path = can.beginPath()
-                        path.moveTo(code["rect"][0][0] / dpi * pdf_dpi, code["rect"][0][1] / dpi * pdf_dpi)
-                        for point in code["rect"][1:]:
+                        path.moveTo(
+                            code["geometry"][0][0] / dpi * pdf_dpi, code["geometry"][0][1] / dpi * pdf_dpi
+                        )
+                        for point in code["geometry"][1:]:
                             path.lineTo(point[0] / dpi * pdf_dpi, point[1] / dpi * pdf_dpi)
                         path.close()
                         can.drawPath(path, stroke=0, fill=1)
@@ -343,13 +363,16 @@ def add_codes(
                         can.setFillColorRGB(0, 0, 0)
                         can.setFont(font_name, font_size)
                         can.drawString(
-                            min((p[0] for p in code["rect"])) / dpi * pdf_dpi + margin_left,
-                            min((p[1] for p in code["rect"])) / dpi * pdf_dpi + font_size + 0 + margin_top,
+                            min((p[0] for p in code["geometry"])) / dpi * pdf_dpi + margin_left,
+                            min((p[1] for p in code["geometry"])) / dpi * pdf_dpi
+                            + font_size
+                            + 0
+                            + margin_top,
                             str(code["pos"]),
                         )
 
                     can.save()
-                    # move to the beginning of the StringIO buffer
+                    # Move to the beginning of the StringIO buffer
                     packet.seek(0)
 
                     # Create a new PDF with Reportlab
