@@ -315,7 +315,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "imageio"
-version = "2.20.0"
+version = "2.21.0"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "main"
 optional = false
@@ -381,7 +381,7 @@ plugins = ["setuptools"]
 
 [[package]]
 name = "jsonschema"
-version = "4.9.0"
+version = "4.9.1"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -1083,7 +1083,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.7.28"
+version = "2022.8.3"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -1486,8 +1486,8 @@ idna = [
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
 imageio = [
-    {file = "imageio-2.20.0-py3-none-any.whl", hash = "sha256:069c59c24e6730ec99322490ac06cbed741d52b8699df52c3b4da4841423e15f"},
-    {file = "imageio-2.20.0.tar.gz", hash = "sha256:27746c891cb62d6aeda20d362a8aba75994493cd4d7043ba8c96892fbaecdba0"},
+    {file = "imageio-2.21.0-py3-none-any.whl", hash = "sha256:8a4d1f222c8c7d4cd37889defdf46a8cc9fb8a50e2a5450207ac7b00e6b6a7f7"},
+    {file = "imageio-2.21.0.tar.gz", hash = "sha256:a5d19c3c787d5b4920356d85999a24fcff32be8941950dc2409ec1513993952d"},
 ]
 importlib-resources = [
     {file = "importlib_resources-5.9.0-py3-none-any.whl", hash = "sha256:f78a8df21a79bcc30cfd400bdc38f314333de7c0fb619763f6b9dabab8268bb7"},
@@ -1502,8 +1502,8 @@ isort = [
     {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.9.0-py3-none-any.whl", hash = "sha256:5d0be0cd1b670438b71c3d3145b2abba1f9d197e3e91adc4c4bae4c0e114e252"},
-    {file = "jsonschema-4.9.0.tar.gz", hash = "sha256:df10e65c8f3687a48e93d0d348ce0ce5f897b5a28e9bbcbbe8f7c7eaf019e850"},
+    {file = "jsonschema-4.9.1-py3-none-any.whl", hash = "sha256:8ebad55894c002585271af2d327d99339ef566fb085d9129b69e2623867c4106"},
+    {file = "jsonschema-4.9.1.tar.gz", hash = "sha256:408c4c8ed0dede3b268f7a441784f74206380b04f93eb2d537c7befb3df3099f"},
 ]
 jsonschema-gentypes = [
     {file = "jsonschema_gentypes-1.2.1-py3-none-any.whl", hash = "sha256:16c68a74f4c1390e1aff33ce0d85c188ca73a43a17abe267d7291343761614e1"},
@@ -2139,8 +2139,8 @@ stevedore = [
     {file = "stevedore-4.0.0.tar.gz", hash = "sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786"},
 ]
 tifffile = [
-    {file = "tifffile-2022.7.28-py3-none-any.whl", hash = "sha256:a3bc9d5dcf2a89b9340ec3a623912da30b53b94877c1ba1f5bdc39d9e401fefb"},
-    {file = "tifffile-2022.7.28.tar.gz", hash = "sha256:61e3638e35156751dbc3cdbd0e4cf1166b90597d5d1972d03945a96570f1ad81"},
+    {file = "tifffile-2022.8.3-py3-none-any.whl", hash = "sha256:9ac1b07b2b920e1f3512f686adf514ef6b040a4a5e667beac771ae6a401eb913"},
+    {file = "tifffile-2022.8.3.tar.gz", hash = "sha256:27bf927b0432fa064bed2426f8bf1778250288a1fc3badb7f4e36ece2e9a6240"},
 ]
 tinycss2 = [
     {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
