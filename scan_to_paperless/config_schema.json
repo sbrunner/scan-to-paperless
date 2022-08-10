@@ -198,6 +198,48 @@
           "type": "integer",
           "default": 90,
           "description": "The JPEG quality"
+        },
+        "auto_mask": {
+          "type": "object",
+          "description": "The auto mask configuration",
+          "properties": {
+            "lower_hsv_color": {
+              "type": "array",
+              "description": "The lower color in HSV representation",
+              "default": [0, 0, 108],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "upper_hsv_color": {
+              "type": "array",
+              "description": "The upper color in HSV representation",
+              "default": [255, 10, 148],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "de_noise_size": {
+              "type": "integer",
+              "description": "The size of the artifact that will be de noise",
+              "default": 20
+            },
+            "de_noise_level": {
+              "type": "integer",
+              "description": "The threshold level used in de noise on the blurry image",
+              "default": 220
+            },
+            "buffer_size": {
+              "type": "integer",
+              "description": "The size of the buffer add on the mask",
+              "default": 100
+            },
+            "buffer_level": {
+              "type": "integer",
+              "description": "The threshold level used in buffer on the blurry image",
+              "default": 20
+            }
+          }
         }
       }
     }

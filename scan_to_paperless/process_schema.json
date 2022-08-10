@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "definitions": {
     "args": {
+      "Editor note": "The properties of this object should be modified in the config_schema.json file",
       "type": "object",
       "title": "Arguments",
       "properties": {
@@ -176,7 +177,9 @@
         "pngquant_options": {
           "type": "array",
           "description": "The pngquant options",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "run_exiftool": {
           "type": "boolean",
@@ -197,6 +200,48 @@
           "type": "integer",
           "default": 90,
           "description": "The JPEG quality"
+        },
+        "auto_mask": {
+          "type": "object",
+          "description": "The auto mask configuration",
+          "properties": {
+            "lower_hsv_color": {
+              "type": "array",
+              "description": "The lower color in HSV representation",
+              "default": [0, 0, 108],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "upper_hsv_color": {
+              "type": "array",
+              "description": "The upper color in HSV representation",
+              "default": [255, 10, 148],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "de_noise_size": {
+              "type": "integer",
+              "description": "The size of the artifact that will be de noise",
+              "default": 20
+            },
+            "de_noise_level": {
+              "type": "integer",
+              "description": "The threshold level used in de noise on the blurry image",
+              "default": 220
+            },
+            "buffer_size": {
+              "type": "integer",
+              "description": "The size of the buffer add on the mask",
+              "default": 100
+            },
+            "buffer_level": {
+              "type": "integer",
+              "description": "The threshold level used in buffer on the blurry image",
+              "default": 20
+            }
+          }
         }
       }
     }
@@ -204,7 +249,9 @@
   "properties": {
     "images": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "The images"
     },
     "args": {
@@ -235,7 +282,9 @@
           "sources": {
             "type": "array",
             "description": "The images obtain after the current step",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "process_count": {
             "type": "integer",
@@ -248,7 +297,6 @@
       "type": "array",
       "items": {
         "title": "Assisted split",
-
         "type": "object",
         "additionalProperties": false,
         "description": "Assisted split configuration",

@@ -16,11 +16,13 @@ def load_image(image_name):
     return cv2.imread(os.path.join(os.path.dirname(__file__), image_name))
 
 
+# @pytest.mark.skip(reason="for test")
 def test_find_lines():
     peaks, _ = process.find_lines(load_image("limit-lines-1.png"), True)
     assert 2844 in peaks
 
 
+# @pytest.mark.skip(reason="for test")
 def test_find_limit_contour():
     limits, _ = process.find_limit_contour(
         load_image("limit-contour-1.png"),
@@ -41,21 +43,28 @@ def check_image_file(root_folder, image, name, level=0.9):
 def check_image(root_folder, image, name, level=0.9):
     assert image is not None, "Image required"
     expected_name = os.path.join(os.path.dirname(__file__), f"{name}.expected.png")
+    result_name = os.path.join(root_folder, f"{name}.result.png")
+    diff_name = os.path.join(root_folder, f"{name}.diff.png")
     # Set to True to regenerate images
     if False:
         cv2.imwrite(expected_name, image)
         return
+    if not os.path.exists(expected_name):
+        cv2.imwrite(expected_name, image)
+        assert not os.path.isfile(expected_name), "Expected image not found: " + expected_name
     expected = cv2.imread(expected_name)
-    cv2.imwrite(os.path.join(root_folder, f"{name}.result.png"), image)
     assert expected is not None, "Wrong image: " + expected_name
     score, diff = process.image_diff(expected, image)
-    if diff is not None:
-        cv2.imwrite(os.path.join(root_folder, f"{name}.diff.png"), diff)
-    assert (
-        score > level
-    ), f"{root_folder}/{name}.result.png != {expected_name} => {root_folder}/{name}.diff.png ({score} > {level})"
+    if diff is None:
+        cv2.imwrite(result_name, image)
+        assert diff is not None, "No diff generated"
+    if score > level:
+        cv2.imwrite(result_name, image)
+        cv2.imwrite(diff_name, diff)
+        assert score > level, f"{result_name} != {expected_name} => {diff_name} ({score} > {level})"
 
 
+# @pytest.mark.skip(reason="for test")
 def test_crop():
     image = load_image("image-1.png")
     root_folder = "/results/crop"
@@ -70,6 +79,7 @@ def test_crop():
     shutil.rmtree(root_folder)
 
 
+# @pytest.mark.skip(reason="for test")
 def test_rotate():
     image = load_image("image-1.png")
     root_folder = "/results/rotate"
@@ -538,3 +548,11 @@ def test_tiff():
     step = process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
     assert list(glob.glob(f"{root_folder}/**/*.tiff")) == ["/results/tiff/source/image-1.tiff"]
+
+
+# @pytest.mark.skip(reason="for test")
+def test_auto_mask():
+    context = process.Context({"args": {"auto_mask": {}}}, {})
+    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
+    context.init_mask()
+    check_image("/results/auto_mask", context.mask, "auto_mask")
