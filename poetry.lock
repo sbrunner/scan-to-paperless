@@ -839,8 +839,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-doc = ["sphinx", "sphinx-rtd-theme"]
-test = ["pytest", "pytest-cov", "pytest-flake8", "pytest-isort", "coverage"]
+test = ["coverage", "pytest-isort", "pytest-flake8", "pytest-cov", "pytest"]
+doc = ["sphinx-rtd-theme", "sphinx"]
 
 [[package]]
 name = "pyroma"
@@ -1083,7 +1083,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.8.3"
+version = "2022.8.8"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -1230,7 +1230,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "820dace8cce046eb3b24dff8400777af2508656844affc1c737df65a2ff88092"
+content-hash = "6f35721aeab9405b93a05fb48e5e505345f1c335e9fc6705440db88957f36d63"
 
 [metadata.files]
 argcomplete = [
@@ -2139,8 +2139,8 @@ stevedore = [
     {file = "stevedore-4.0.0.tar.gz", hash = "sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786"},
 ]
 tifffile = [
-    {file = "tifffile-2022.8.3-py3-none-any.whl", hash = "sha256:9ac1b07b2b920e1f3512f686adf514ef6b040a4a5e667beac771ae6a401eb913"},
-    {file = "tifffile-2022.8.3.tar.gz", hash = "sha256:27bf927b0432fa064bed2426f8bf1778250288a1fc3badb7f4e36ece2e9a6240"},
+    {file = "tifffile-2022.8.8-py3-none-any.whl", hash = "sha256:dfb88106f42883a97b8f76c9ea2dddfd513a896ece4b3558e8c3cf3c10ca9b8a"},
+    {file = "tifffile-2022.8.8.tar.gz", hash = "sha256:594498345c43a4bb2abb67f0e71c17708059a8f5f5ef1ca70a3416d549c78952"},
 ]
 tinycss2 = [
     {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
