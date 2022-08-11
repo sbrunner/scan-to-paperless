@@ -802,7 +802,8 @@ def transform(
         config["assisted_split"] = []
 
     for index, img in enumerate(step["sources"]):
-        context = Context(config, step, config_file_name, root_folder, os.path.basename(img))
+        image_name = f"{os.path.basename(img).rsplit('.')[0]}.png"
+        context = Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
             raise Exception("Image name is required")
         context.image = cv2.imread(os.path.join(root_folder, img))
