@@ -1327,6 +1327,9 @@ def main() -> None:
                 continue
 
             try:
+                rerun = False
+                if "steps" not in config:
+                    rerun = True
                 while config.get("steps") and not is_sources_present(
                     config["steps"][-1]["sources"], root_folder
                 ):
@@ -1337,6 +1340,7 @@ def main() -> None:
                     print(config_file_name)
                     print("Rerun step")
                     print_waiting = True
+                    rerun = True
 
                 if "steps" not in config or not config["steps"]:
                     step: scan_to_paperless.process_schema.Step = {
@@ -1347,9 +1351,9 @@ def main() -> None:
                 step = config["steps"][-1]
 
                 if is_sources_present(step["sources"], root_folder):
-                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
+                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
                         continue
-                    if os.path.exists(os.path.join(root_folder, "DONE")):
+                    if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
                         continue
 
                     print(config_file_name)
