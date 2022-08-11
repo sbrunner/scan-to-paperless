@@ -58,3 +58,12 @@
   - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
   - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.
   - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.
+  - **`auto_mask`** _(object)_: The auto mask configuration.
+    - **`lower_hsv_color`** _(array)_: The lower color in HSV representation. Default: `[0, 0, 108]`.
+      - **Items** _(integer)_
+    - **`upper_hsv_color`** _(array)_: The upper color in HSV representation. Default: `[255, 10, 148]`.
+      - **Items** _(integer)_
+    - **`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `20`.
+    - **`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
+    - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `100`.
+    - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.

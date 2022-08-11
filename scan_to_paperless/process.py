@@ -102,13 +102,57 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def init_mask(self) -> None:
         """Init the mask."""
-        if self.image is None:
-            raise Exception("The image is None")
-        if self.mask is None:
-            raise Exception("The mask is None")
-        self.mask_ready = cv2.resize(
-            cv2.cvtColor(self.mask, cv2.COLOR_BGR2GRAY), (self.image.shape[1], self.image.shape[0])
-        )
+        if "auto_mask" in self.config["args"]:
+            auto_mask_config = self.config["args"]["auto_mask"]
+            hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+
+            lower_val = np.array(auto_mask_config.get("lower_hsv_color", [0, 0, 108]))
+            upper_val = np.array(auto_mask_config.get("upper_hsv_color", [255, 10, 148]))
+            mask = cv2.inRange(hsv, lower_val, upper_val)
+            de_noise_size = auto_mask_config.get("de_noise_size", 20)
+            mask = cv2.copyMakeBorder(
+                mask,
+                de_noise_size,
+                de_noise_size,
+                de_noise_size,
+                de_noise_size,
+                cv2.BORDER_CONSTANT,
+                value=255,
+            )
+
+            blur = cv2.blur(
+                mask,
+                (de_noise_size, de_noise_size),
+            )
+            _, thresh1 = cv2.threshold(
+                blur, auto_mask_config.get("de_noise_level", 220), 255, cv2.THRESH_BINARY
+            )
+
+            blur = cv2.blur(
+                thresh1,
+                (
+                    auto_mask_config.get("buffer_size", 100),
+                    auto_mask_config.get("buffer_size", 100),
+                ),
+            )
+            _, mask = cv2.threshold(blur, auto_mask_config.get("buffer_level", 20), 255, cv2.THRESH_BINARY)
+            self.mask = 255 - mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
+            if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
+                cv2.imwrite(os.path.join(self.root_folder, "mask.png"), self.mask)
+        elif self.root_folder:
+            mask_file = os.path.join(self.root_folder, "mask.png")
+            if not os.path.exists(mask_file):
+                base_folder = os.path.dirname(self.root_folder)
+                assert base_folder
+                mask_file = os.path.join(base_folder, "mask.png")
+                if not os.path.exists(mask_file):
+                    return
+
+            self.mask = cv2.imread(mask_file)
+
+        if self.image is not None and self.mask is not None:
+            maskbw = self.mask if len(self.mask.shape) == 2 else cv2.cvtColor(self.mask, cv2.COLOR_BGR2GRAY)
+            self.mask_ready = cv2.resize(maskbw, (self.image.shape[1], self.image.shape[0]))
 
     def get_process_count(self) -> int:
         """Get the step number."""
@@ -230,9 +274,11 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> Tuple[float, NpNda
     height = max(image1.shape[0], image2.shape[0])
     image1 = cv2.resize(image1, (width, height))
     image2 = cv2.resize(image2, (width, height))
-    score, diff = structural_similarity(
-        cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY), cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY), full=True
-    )
+
+    image1 = image1 if len(image1.shape) == 2 else cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    image2 = image2 if len(image2.shape) == 2 else cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+
+    score, diff = structural_similarity(image1, image2, full=True)
     diff = (255 - diff * 255).astype("uint8")
     return score, diff
 
@@ -812,10 +858,7 @@ def transform(
         image_status = image_config.setdefault("status", {})
         assert context.image is not None
         image_status["size"] = list(context.image.shape[:2][::-1])
-        mask_file = os.path.join(os.path.dirname(root_folder), "mask.png")
-        if os.path.exists(mask_file):
-            context.mask = cv2.imread(mask_file)
-            context.init_mask()
+        context.init_mask()
         level(context)
         deskew(context)
         docrop(context)

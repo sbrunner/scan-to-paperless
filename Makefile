@@ -2,6 +2,7 @@ export DOCKER_BUILDKIT=1
 
 .PHONY: jsonschema
 jsonschema:
+	ci/schema-copy
 	jsonschema2md scan_to_paperless/config_schema.json config.md
 	jsonschema2md scan_to_paperless/process_schema.json process.md
 	c2cciutils-checks --fix --check=prettier
