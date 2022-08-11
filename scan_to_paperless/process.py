@@ -188,6 +188,27 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
             final_mask = cv2.bitwise_not(mask)
 
+            blur = cv2.blur(
+                thresh1,
+                (
+                    auto_mask_config.get("buffer_size", 100),
+                    auto_mask_config.get("buffer_size", 100),
+                ),
+            )
+            _, mask = cv2.threshold(blur, auto_mask_config.get("buffer_level", 20), 255, cv2.THRESH_BINARY)
+
+            mask_file = os.path.join(self.root_folder, "mask.png")
+            if not os.path.exists(mask_file):
+                base_folder = os.path.dirname(self.root_folder)
+                assert base_folder
+                mask_file = os.path.join(base_folder, "mask.png")
+                if not os.path.exists(mask_file):
+                    mask_file = None
+            if mask_file:
+                mask = mask + (255 - cv2.cvtColor(cv2.imread(mask_file), cv2.COLOR_BGR2GRAY))
+
+            self.mask = 255 - mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
+
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder:
