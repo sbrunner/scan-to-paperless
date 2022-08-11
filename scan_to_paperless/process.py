@@ -912,11 +912,22 @@ def transform(
             images.append(img2)
         process_count = context.process_count
 
+    progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
+
+    count = context.get_process_count()
+    for image in images:
+        if progress:
+            _save_progress(context.root_folder, count, "finalize", os.path.basename(image), image)
+
     if config["args"].setdefault("colors", 0):
+        count = context.get_process_count()
         for image in images:
             call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
+            if progress:
+                _save_progress(context.root_folder, count, "colors", os.path.basename(image), image)
 
     if not config["args"].setdefault("jpeg", False) and config["args"].setdefault("run_pngquant", False):
+        count = context.get_process_count()
         for image in images:
             with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
                 call(
@@ -928,12 +939,17 @@ def transform(
                     check=False,
                 )
                 call(["cp", temp_file.name, image])
+            if progress:
+                _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
 
     if not config["args"].setdefault("jpeg", False) and config["args"].setdefault(
         "run_optipng", not config["args"]["run_pngquant"]
     ):
+        count = context.get_process_count()
         for image in images:
             call(["optipng", image], check=False)
+            if progress:
+                _save_progress(context.root_folder, count, "optipng", os.path.basename(image), image)
 
     step["sources"] = images
     step["process_count"] = process_count + 1
@@ -943,6 +959,19 @@ def transform(
         "name": "split" if config["args"].setdefault("assisted_split", False) else "finalise",
         "process_count": process_count,
     }
+
+
+def _save_progress(root_folder: Optional[str], count: int, name: str, image_name: str, image: str) -> None:
+    assert root_folder
+    name = f"{count}-{name}"
+    dest_folder = os.path.join(root_folder, name)
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
+    dest_image = os.path.join(dest_folder, image_name)
+    try:
+        call(["cp", image, dest_image])
+    except Exception as exception:
+        print(exception)
 
 
 def save(context: Context, root_folder: str, img: str, folder: str, force: bool = False) -> str:
