@@ -1,3 +1,4 @@
+import glob
 import json
 import os.path
 import re
@@ -510,3 +511,30 @@ def test_multi_code():
         check_image_file(
             root_folder, f"/results/qrbill-multi-{page}.png", f"qrbill-multi-{page}", level=0.99999
         )
+
+
+# @pytest.mark.skip(reason="for test")
+def test_tiff():
+    init_test()
+    os.environ["PROGRESS"] = "TRUE"
+    root_folder = "/results/tiff"
+    source_folder = os.path.join(root_folder, "source")
+    if not os.path.exists(source_folder):
+        os.makedirs(source_folder)
+
+    shutil.copyfile(
+        os.path.join(os.path.dirname(__file__), "image-1.tiff"),
+        os.path.join(source_folder, "image-1.tiff"),
+    )
+
+    config = {
+        "args": {},
+        "destination": os.path.join(root_folder, "final.pdf"),
+    }
+    step = {
+        "sources": ["source/image-1.tiff"],
+    }
+    config_file_name = os.path.join(root_folder, "config.yaml")
+    step = process.transform(config, step, config_file_name, root_folder)
+    assert step["sources"] == ["/results/tiff/image-1.png"]
+    assert list(glob.glob(f"{root_folder}/**/*.tiff")) == ["/results/tiff/source/image-1.tiff"]
