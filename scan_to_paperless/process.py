@@ -927,7 +927,7 @@ def transform(
                     + ["--", image],
                     check=False,
                 )
-                call(["mv", temp_file.name, image])
+                call(["cp", temp_file.name, image])
 
     if not config["args"].setdefault("jpeg", False) and config["args"].setdefault(
         "run_optipng", not config["args"]["run_pngquant"]
