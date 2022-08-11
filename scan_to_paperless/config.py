@@ -1,4 +1,4 @@
-from typing import List, TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 # Arguments
 Arguments = TypedDict(
@@ -162,27 +162,45 @@ Configuration = TypedDict(
     "Configuration",
     {
         # This should be shared with the process container in 'source'.
-        #
-        # required
         "scan_folder": str,
         # The scanimage command
         #
         # default: scanimage
         "scanimage": str,
+        # The scanimage arguments
+        #
         # default:
         #   - --format=png
         #   - --mode=color
         #   - --resolution=300
         "scanimage_arguments": List[str],
+        # The extension of generate image (png or tiff)
+        #
+        # default: png
+        "extension": str,
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-        #
-        # required
         "default_args": "Arguments",
         # The command used to start the viewer
         #
         # default: eog
         "viewer": str,
+        # Customize the modes
+        "modes": Dict[str, "_ConfigurationModesAdditionalproperties"],
+    },
+    total=False,
+)
+
+
+_ConfigurationModesAdditionalproperties = TypedDict(
+    "_ConfigurationModesAdditionalproperties",
+    {
+        # Additional scanimage arguments
+        "scanimage_arguments": List[str],
+        # Run the ADF in tow step odd and even, needed for scanner that don't support double face
+        "auto_bash": bool,
+        # Rotate the even pages, to use in conjunction with auto_bash
+        "rotate_even": bool,
     },
     total=False,
 )

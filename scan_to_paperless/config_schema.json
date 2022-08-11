@@ -214,8 +214,14 @@
     },
     "scanimage_arguments": {
       "type": "array",
+      "description": "The scanimage arguments",
       "default": ["--format=png", "--mode=color", "--resolution=300"],
       "items": { "type": "string" }
+    },
+    "extension": {
+      "type": "string",
+      "description": "The extension of generate image (png or tiff)",
+      "default": "png"
     },
     "default_args": {
       "$ref": "#/definitions/args"
@@ -224,7 +230,28 @@
       "type": "string",
       "description": "The command used to start the viewer",
       "default": "eog"
+    },
+    "modes": {
+      "type": "object",
+      "description": "Customize the modes",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "scanimage_arguments": {
+            "description": "Additional scanimage arguments",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "auto_bash": {
+            "type": "boolean",
+            "description": "Run the ADF in tow step odd and even, needed for scanner that don't support double face"
+          },
+          "rotate_even": {
+            "type": "boolean",
+            "description": "Rotate the even pages, to use in conjunction with auto_bash"
+          }
+        }
+      }
     }
-  },
-  "required": ["scan_folder", "default_args"]
+  }
 }
