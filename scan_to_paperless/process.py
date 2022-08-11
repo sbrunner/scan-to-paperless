@@ -136,7 +136,25 @@ class Context:  # pylint: disable=too-many-instance-attributes
                 ),
             )
             _, mask = cv2.threshold(blur, auto_mask_config.get("buffer_level", 20), 255, cv2.THRESH_BINARY)
-            self.mask = 255 - mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
+
+            mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
+
+            if self.root_folder:
+                mask_file: Optional[str] = os.path.join(self.root_folder, "mask.png")
+                assert mask_file
+                if not os.path.exists(mask_file):
+                    base_folder = os.path.dirname(self.root_folder)
+                    assert base_folder
+                    mask_file = os.path.join(base_folder, "mask.png")
+                    if not os.path.exists(mask_file):
+                        mask_file = None
+                if mask_file:
+                    mask = cv2.add(
+                        mask, cv2.bitwise_not(cv2.cvtColor(cv2.imread(mask_file), cv2.COLOR_BGR2GRAY))
+                    )
+
+            self.mask = cv2.bitwise_not(mask)
+
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 cv2.imwrite(os.path.join(self.root_folder, "mask.png"), self.mask)
         elif self.root_folder:
