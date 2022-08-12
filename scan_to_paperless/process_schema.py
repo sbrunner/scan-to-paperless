@@ -139,6 +139,7 @@ Arguments = TypedDict(
         # The pngquant options
         #
         # default:
+        #   - --force
         #   - --skip-if-larger
         #   - --speed=1
         #   - --strip

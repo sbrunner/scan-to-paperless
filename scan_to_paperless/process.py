@@ -933,12 +933,14 @@ def transform(
                 call(
                     ["pngquant", f"--output={temp_file.name}"]
                     + config["args"].setdefault(
-                        "pngquant_options", ["--skip-if-larger", "--speed=1", "--strip", "--quality=0-64"]
+                        "pngquant_options",
+                        ["--force", "--skip-if-larger", "--speed=1", "--strip", "--quality=0-64"],
                     )
                     + ["--", image],
                     check=False,
                 )
-                call(["cp", temp_file.name, image])
+                if os.path.getsize(temp_file.name) > 0:
+                    call(["cp", temp_file.name, image])
             if progress:
                 _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
 
