@@ -548,3 +548,12 @@ def test_auto_mask():
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
     check_image("/results/auto_mask", context.mask, "auto_mask")
+
+
+# @pytest.mark.skip(reason="for test")
+def test_auto_mask_combine():
+    context = process.Context({"args": {"auto_mask": {}}}, {})
+    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
+    context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
+    context.init_mask()
+    check_image("/results/auto_mask_combine", context.mask, "auto_mask_combine")
