@@ -177,7 +177,7 @@
         "pngquant_options": {
           "type": "array",
           "description": "The pngquant options",
-          "default": ["--force", "--skip-if-larger", "--speed=1", "--strip", "--quality=0-64"],
+          "default": ["--force", "--speed=1", "--strip", "--quality=0-32"],
           "items": {
             "type": "string"
           }

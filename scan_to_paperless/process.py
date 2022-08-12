@@ -924,7 +924,7 @@ def transform(
                     ["pngquant", f"--output={temp_file.name}"]
                     + config["args"].setdefault(
                         "pngquant_options",
-                        ["--force", "--skip-if-larger", "--speed=1", "--strip", "--quality=0-64"],
+                        ["--force", "--speed=1", "--strip", "--quality=0-32"],
                     )
                     + ["--", image],
                     check=False,
