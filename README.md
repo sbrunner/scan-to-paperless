@@ -222,4 +222,3 @@ Environment variable:
 - `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.
 - `TIME`: Print the elapsed time.
 - `PROGRESS`: Save some intermediate files, don't clean the folder at the end.
-- `EXPERIMENTAL`: Activate some experimental features.

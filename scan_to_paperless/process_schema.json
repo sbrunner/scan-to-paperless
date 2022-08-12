@@ -263,11 +263,6 @@
       "description": "Run in progress mode",
       "default": false
     },
-    "experimental": {
-      "type": "boolean",
-      "description": "Run the experimental features",
-      "default": false
-    },
     "steps": {
       "type": "array",
       "description": "The carried out steps description",

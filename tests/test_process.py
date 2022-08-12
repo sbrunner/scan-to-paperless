@@ -98,8 +98,6 @@ def test_rotate():
 def init_test():
     os.environ["PROGRESS"] = "FALSE"
     os.environ["TIME"] = "TRUE"
-    os.environ["EXPERIMENTAL"] = "FALSE"
-    os.environ["TEST_EXPERIMENTAL"] = "FALSE"
     os.environ["SCAN_CODES_FOLDER"] = "/results"
     shutil.copyfile(os.path.join(os.path.dirname(__file__), "mask.png"), "/results/mask.png")
 
@@ -300,12 +298,10 @@ def test_assisted_split_booth():
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize("progress", ["FALSE", "TRUE"])
-@pytest.mark.parametrize("experimental", ["FALSE", "TRUE"])
-def test_full(progress, experimental):
+def test_full(progress):
     init_test()
     os.environ["PROGRESS"] = progress
-    os.environ["EXPERIMENTAL"] = experimental
-    root_folder = f"/results/full-{progress}-{experimental}"
+    root_folder = f"/results/full-{progress}"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
@@ -320,10 +316,6 @@ def test_full(progress, experimental):
         assert os.path.exists(os.path.join(root_folder, "0-level/all-1.png"))
     else:
         assert not os.path.exists(os.path.join(root_folder, "0-level"))
-    if experimental == "TRUE":
-        assert os.path.exists(os.path.join(root_folder, "tesseract/all-1.png"))
-    else:
-        assert not os.path.exists(os.path.join(root_folder, "tesseract"))
 
     assert step["name"] == "finalise"
     process.finalize(config, step, root_folder)
