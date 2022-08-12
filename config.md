@@ -52,7 +52,7 @@
   - **`colors`** _(integer)_: The number of colors in the png. Default: `0`.
   - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `True`.
   - **`run_pngquant`** _(boolean)_: Run the pngquant optimizer. Default: `False`.
-  - **`pngquant_options`** _(array)_: The pngquant options. Default: `['--skip-if-larger', '--speed=1', '--strip', '--quality=0-64']`.
+  - **`pngquant_options`** _(array)_: The pngquant options. Default: `['--force', '--skip-if-larger', '--speed=1', '--strip', '--quality=0-64']`.
     - **Items** _(string)_
   - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `False`.
   - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
