@@ -201,10 +201,6 @@ class Context:  # pylint: disable=too-many-instance-attributes
         """Return we want to have the intermediate files."""
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault("progress", False)
 
-    def is_experimental(self) -> bool:
-        """Return we want to run the experimental steps."""
-        return os.environ.get("EXPERIMENTAL", "FALSE") == "TRUE" or self.config.get("experimental", False)
-
 
 def add_intermediate_error(
     config: scan_to_paperless.process_schema.Configuration,
@@ -312,9 +308,8 @@ class Process:  # pylint: disable=too-few-public-methods
     To save the process image when needed.
     """
 
-    def __init__(self, name: str, experimental: bool = False, ignore_error: bool = False) -> None:
+    def __init__(self, name: str, ignore_error: bool = False) -> None:
         """Initialize."""
-        self.experimental = experimental
         self.name = name
         self.ignore_error = ignore_error
 
@@ -328,11 +323,8 @@ class Process:  # pylint: disable=too-few-public-methods
                 raise Exception("The root folder is required")
             if context.image_name is None:
                 raise Exception("The image name is required")
-            if self.experimental and not context.is_experimental():
-                return
-            old_image = context.image.copy() if self.experimental else None
             start_time = time.perf_counter()
-            if self.experimental and context.is_experimental() or self.ignore_error:
+            if self.ignore_error:
                 try:
                     new_image = func(context)
                     if new_image is not None and self.ignore_error:
@@ -352,19 +344,9 @@ class Process:  # pylint: disable=too-few-public-methods
             elapsed_time = time.perf_counter() - start_time
             if os.environ.get("TIME", "FALSE") == "TRUE":
                 print(f"Elapsed time in {self.name}: {int(round(elapsed_time))}s.")
-            if self.experimental and context.image is not None:
-                assert context.image is not None
-                assert old_image is not None
-                score, diff = image_diff(old_image, context.image)
-                if diff is not None and score < 1.0:
-                    dest_folder = os.path.join(context.root_folder, self.name)
-                    if not os.path.exists(dest_folder):
-                        os.makedirs(dest_folder)
-                    dest_image = os.path.join(dest_folder, context.image_name)
-                    cv2.imwrite(dest_image, diff)
 
-            name = self.name if self.experimental else f"{context.get_process_count()}-{self.name}"
-            if self.experimental or context.is_progress():
+            name = f"{context.get_process_count()}-{self.name}"
+            if context.is_progress():
                 dest_folder = os.path.join(context.root_folder, name)
                 if not os.path.exists(dest_folder):
                     os.makedirs(dest_folder)
@@ -591,7 +573,7 @@ def dither(context: Context, source: str, destination: str) -> None:
     call(CONVERT + ["+dither", source, destination])
 
 
-@Process("autorotate", False, True)
+@Process("autorotate", True)
 def autorotate(context: Context) -> None:
     """
     Auto rotate an image.
@@ -823,14 +805,6 @@ def _find_contours_thresh(
     return result
 
 
-@Process("tesseract", True)
-@external
-def tesseract(context: Context, source: str, destination: str) -> None:
-    """Run tesseract on an image."""
-    del context
-    call(f"tesseract -l fra+eng {source} stdout pdf > {destination}", shell=True)  # nosec
-
-
 def transform(
     config: scan_to_paperless.process_schema.Configuration,
     step: scan_to_paperless.process_schema.Step,
@@ -873,8 +847,6 @@ def transform(
         if not contours:
             print(f"Ignore image with no content: {img}")
             continue
-
-        tesseract(context)
 
         if config["args"].setdefault("assisted_split", False):
             assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}

@@ -6,7 +6,6 @@
   - **Items** _(string)_
 - **`args`**: Refer to _#/definitions/args_.
 - **`progress`** _(boolean)_: Run in progress mode. Default: `False`.
-- **`experimental`** _(boolean)_: Run the experimental features. Default: `False`.
 - **`steps`** _(array)_: The carried out steps description.
   - **Items** _(object)_: Cannot contain additional properties.
     - **`name`** _(string)_: The step name.
