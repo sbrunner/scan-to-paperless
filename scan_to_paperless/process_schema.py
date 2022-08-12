@@ -140,10 +140,9 @@ Arguments = TypedDict(
         #
         # default:
         #   - --force
-        #   - --skip-if-larger
         #   - --speed=1
         #   - --strip
-        #   - --quality=0-64
+        #   - --quality=0-32
         "pngquant_options": List[str],
         # Run the exiftool optimizer
         #
