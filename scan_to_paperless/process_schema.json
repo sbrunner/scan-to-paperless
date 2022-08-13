@@ -136,11 +136,6 @@
           "default": false,
           "description": "Do an assisted split"
         },
-        "num_angles": {
-          "type": "integer",
-          "default": 1800,
-          "description": "The number of angle used to detect the image skew"
-        },
         "min_box_size_crop": {
           "type": "number",
           "default": 3,
@@ -274,6 +269,21 @@
         "auto_cut": {
           "description": "The auto mask configuration, the mask is used to definitively mask the source image",
           "$ref": "#/definitions/auto_mask"
+        },
+        "deskew_min_angle": {
+          "type": "number",
+          "default": -10,
+          "description": "The minimum angle to detect the image skew [degree]"
+        },
+        "deskew_max_angle": {
+          "type": "number",
+          "default": 10,
+          "description": "The maximum angle to detect the image skew [degree]"
+        },
+        "deskew_angle_derivation": {
+          "type": "number",
+          "default": 0.1,
+          "description": "The step of angle to detect the image skew [degree]"
         }
       }
     }

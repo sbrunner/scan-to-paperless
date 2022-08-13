@@ -58,10 +58,6 @@ Arguments = TypedDict(
         #
         # default: False
         "assisted_split": bool,
-        # The number of angle used to detect the image skew
-        #
-        # default: 1800
-        "num_angles": int,
         # The minimum box size to find the content on witch one we will crop [mm]
         #
         # default: 3
@@ -171,6 +167,18 @@ Arguments = TypedDict(
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         "auto_cut": "AutoMask",
+        # The minimum angle to detect the image skew [degree]
+        #
+        # default: -10
+        "deskew_min_angle": Union[int, float],
+        # The maximum angle to detect the image skew [degree]
+        #
+        # default: 10
+        "deskew_max_angle": Union[int, float],
+        # The step of angle to detect the image skew [degree]
+        #
+        # default: 0.1
+        "deskew_angle_derivation": Union[int, float],
     },
     total=False,
 )
