@@ -66,7 +66,12 @@ def main() -> None:
         choices=("adf", "one", "multi", "double"),
         default="adf",
         help="The scan mode: 'adf': use Auto Document Feeder (Default), "
-        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF",
+        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF, "
+        "the default used configuration is, "
+        "adf: {scanimage_arguments: [--source=ADF]}, "
+        "multi: {scanimage_arguments: [--batch-prompt]}, "
+        "one: {scanimage_arguments: [--batch-count=1]}, "
+        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}"
     )
     parser.add_argument(
         "--preset",
