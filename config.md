@@ -45,7 +45,6 @@
   - **`tesseract_lang`** _(string)_: The used language for tesseract. Default: `fra+eng`.
   - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `False`.
   - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `False`.
-  - **`num_angles`** _(integer)_: The number of angle used to detect the image skew. Default: `1800`.
   - **`min_box_size_crop`** _(number)_: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
   - **`min_box_black_crop`** _(number)_: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
   - **`contour_kernel_size_crop`** _(number)_: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.
@@ -74,3 +73,6 @@
     - **Items** _(integer)_
   - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and deskew calculation. Refer to _#/definitions/auto_mask_.
   - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _#/definitions/auto_mask_.
+  - **`deskew_min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-10`.
+  - **`deskew_max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `10`.
+  - **`deskew_angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.

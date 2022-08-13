@@ -577,7 +577,10 @@ def deskew(context: Context) -> None:
         image = cast(NpNdarrayInt, context.image).copy()
 
         skew_angle, angles, average_deviation, _ = determine_skew_dev(
-            grayscale, num_angles=context.config["args"].setdefault("num_angles", 1800)
+            grayscale,
+            min_angle=np.deg2rad(context.config["args"].setdefault("deskew_min_angle", -10)),
+            max_angle=np.deg2rad(context.config["args"].setdefault("deskew_max_angle", 10)),
+            min_deviation=np.deg2rad(context.config["args"].setdefault("deskew_angle_derivation", 0.1)),
         )
         if skew_angle is not None:
             image_status["angle"] = float(nice_angle(skew_angle))

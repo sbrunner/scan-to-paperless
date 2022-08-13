@@ -105,10 +105,10 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL0", "type": "line detection", "value": 1878, "vertical": True, "margin": 0}),
+        ("lines", {"name": "VL0", "type": "line detection", "value": 1031, "vertical": True, "margin": 0}),
         (
             "contour",
-            {"name": "VC0", "type": "contour detection", "value": 1582, "vertical": True, "margin": 0},
+            {"name": "VC0", "type": "contour detection", "value": 1584, "vertical": True, "margin": 0},
         ),
     ],
 )
