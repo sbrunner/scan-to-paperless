@@ -274,6 +274,41 @@
     }
   },
   "properties": {
+    "extends": {
+      "type": "string",
+      "description": "The configuration to extends"
+    },
+    "merge_strategies": {
+      "type": "object",
+      "title": "Merge strategies",
+      "description": "The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies",
+      "properties": {
+        "list": {
+          "type": "array",
+          "description": "The merge strategy to use on list",
+          "default": ["override"],
+          "items": { "type": "string" }
+        },
+        "dict": {
+          "type": "array",
+          "description": "The merge strategy to use on dict",
+          "default": ["merge"],
+          "items": { "type": "string" }
+        },
+        "fallback": {
+          "type": "array",
+          "description": "The fallback merge strategy",
+          "default": ["override"],
+          "items": { "type": "string" }
+        },
+        "type_conflict": {
+          "type": "array",
+          "description": "The type_conflict merge strategy",
+          "default": ["override"],
+          "items": { "type": "string" }
+        }
+      }
+    },
     "scan_folder": {
       "type": "string",
       "description": "This should be shared with the process container in 'source'."
