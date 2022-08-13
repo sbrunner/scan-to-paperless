@@ -231,6 +231,11 @@ AutoMask = TypedDict(
 Configuration = TypedDict(
     "Configuration",
     {
+        # The configuration to extends
+        "extends": str,
+        # WARNING: The required are not correctly taken in account,
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+        "merge_strategies": "MergeStrategies",
         # This should be shared with the process container in 'source'.
         "scan_folder": str,
         # The scanimage command
@@ -257,6 +262,37 @@ Configuration = TypedDict(
         "viewer": str,
         # Customize the modes
         "modes": Dict[str, "_ConfigurationModesAdditionalproperties"],
+    },
+    total=False,
+)
+
+
+# Merge strategies
+#
+# The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies
+MergeStrategies = TypedDict(
+    "MergeStrategies",
+    {
+        # The merge strategy to use on list
+        #
+        # default:
+        #   - override
+        "list": List[str],
+        # The merge strategy to use on dict
+        #
+        # default:
+        #   - merge
+        "dict": List[str],
+        # The fallback merge strategy
+        #
+        # default:
+        #   - override
+        "fallback": List[str],
+        # The type_conflict merge strategy
+        #
+        # default:
+        #   - override
+        "type_conflict": List[str],
     },
     total=False,
 )

@@ -2,6 +2,16 @@
 
 ## Properties
 
+- **`extends`** _(string)_: The configuration to extends.
+- **`merge_strategies`** _(object)_: The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies.
+  - **`list`** _(array)_: The merge strategy to use on list. Default: `['override']`.
+    - **Items** _(string)_
+  - **`dict`** _(array)_: The merge strategy to use on dict. Default: `['merge']`.
+    - **Items** _(string)_
+  - **`fallback`** _(array)_: The fallback merge strategy. Default: `['override']`.
+    - **Items** _(string)_
+  - **`type_conflict`** _(array)_: The type_conflict merge strategy. Default: `['override']`.
+    - **Items** _(string)_
 - **`scan_folder`** _(string)_: This should be shared with the process container in 'source'.
 - **`scanimage`** _(string)_: The scanimage command. Default: `scanimage`.
 - **`scanimage_arguments`** _(array)_: The scanimage arguments. Default: `['--format=png', '--mode=color', '--resolution=300']`.
