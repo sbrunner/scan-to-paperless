@@ -161,9 +161,19 @@ Arguments = TypedDict(
         #
         # default: 90
         "jpeg_quality": int,
+        # The background color
+        #
+        # default:
+        #   - 255
+        #   - 255
+        #   - 255
+        "background_color": List[int],
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-        "auto_mask": "_ArgumentsAutoMask",
+        "auto_mask": "AutoMask",
+        # WARNING: The required are not correctly taken in account,
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+        "auto_cut": "AutoMask",
     },
     total=False,
 )
@@ -183,6 +193,59 @@ AssistedSplit = TypedDict(
         "image": str,
         # The (proposed) limits to do the assisted split, You should keep only the right one
         "limits": List["Limit"],
+    },
+    total=False,
+)
+
+
+# Auto mask
+#
+# The auto mask configuration, the mask is used to mask the image on crop and deskew calculation
+#
+# Editor note: The properties of this object should be modified in the config_schema.json file
+AutoMask = TypedDict(
+    "AutoMask",
+    {
+        # The lower color in HSV representation
+        #
+        # default:
+        #   - 0
+        #   - 0
+        #   - 250
+        "lower_hsv_color": List[int],
+        # The upper color in HSV representation
+        #
+        # default:
+        #   - 255
+        #   - 10
+        #   - 255
+        "upper_hsv_color": List[int],
+        # Apply a morphology operation to remove noise
+        #
+        # default: True
+        "de_noise_morphology": bool,
+        # Inverse the mask
+        #
+        # default: False
+        "inverse_mask": bool,
+        # The size of the artifact that will be de noise
+        #
+        # default: 20
+        "de_noise_size": int,
+        # The threshold level used in de noise on the blurry image
+        #
+        # default: 220
+        "de_noise_level": int,
+        # The size of the buffer add on the mask
+        #
+        # default: 50 an case of mask, 20 in case of cut
+        "buffer_size": int,
+        # The threshold level used in buffer on the blurry image
+        #
+        # default: 20
+        "buffer_level": int,
+        # An image file used to add on the mask
+        "additional_filename": str,
     },
     total=False,
 )
@@ -258,45 +321,6 @@ Step = TypedDict(
         "sources": List[str],
         # The step number
         "process_count": int,
-    },
-    total=False,
-)
-
-
-# The auto mask configuration
-_ArgumentsAutoMask = TypedDict(
-    "_ArgumentsAutoMask",
-    {
-        # The lower color in HSV representation
-        #
-        # default:
-        #   - 0
-        #   - 0
-        #   - 108
-        "lower_hsv_color": List[int],
-        # The upper color in HSV representation
-        #
-        # default:
-        #   - 255
-        #   - 10
-        #   - 148
-        "upper_hsv_color": List[int],
-        # The size of the artifact that will be de noise
-        #
-        # default: 20
-        "de_noise_size": int,
-        # The threshold level used in de noise on the blurry image
-        #
-        # default: 220
-        "de_noise_level": int,
-        # The size of the buffer add on the mask
-        #
-        # default: 100
-        "buffer_size": int,
-        # The threshold level used in buffer on the blurry image
-        #
-        # default: 20
-        "buffer_level": int,
     },
     total=False,
 )
