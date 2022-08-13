@@ -5,6 +5,63 @@
   "title": "Configuration",
   "additionalProperties": false,
   "definitions": {
+    "auto_mask": {
+      "Editor note": "The properties of this object should be modified in the config_schema.json file",
+      "type": "object",
+      "title": "Auto mask",
+      "properties": {
+        "lower_hsv_color": {
+          "type": "array",
+          "description": "The lower color in HSV representation",
+          "default": [0, 0, 250],
+          "items": {
+            "type": "integer"
+          }
+        },
+        "upper_hsv_color": {
+          "type": "array",
+          "description": "The upper color in HSV representation",
+          "default": [255, 10, 255],
+          "items": {
+            "type": "integer"
+          }
+        },
+        "de_noise_morphology": {
+          "type": "boolean",
+          "description": "Apply a morphology operation to remove noise",
+          "default": true
+        },
+        "inverse_mask": {
+          "type": "boolean",
+          "description": "Inverse the mask",
+          "default": false
+        },
+        "de_noise_size": {
+          "type": "integer",
+          "description": "The size of the artifact that will be de noise",
+          "default": 20
+        },
+        "de_noise_level": {
+          "type": "integer",
+          "description": "The threshold level used in de noise on the blurry image",
+          "default": 220
+        },
+        "buffer_size": {
+          "type": "integer",
+          "description": "The size of the buffer add on the mask",
+          "default": "50 an case of mask, 20 in case of cut"
+        },
+        "buffer_level": {
+          "type": "integer",
+          "description": "The threshold level used in buffer on the blurry image",
+          "default": 20
+        },
+        "additional_filename": {
+          "type": "string",
+          "description": "An image file used to add on the mask"
+        }
+      }
+    },
     "args": {
       "Editor note": "The properties of this object should be modified in the config_schema.json file",
       "type": "object",
@@ -202,47 +259,21 @@
           "default": 90,
           "description": "The JPEG quality"
         },
-        "auto_mask": {
-          "type": "object",
-          "description": "The auto mask configuration",
-          "properties": {
-            "lower_hsv_color": {
-              "type": "array",
-              "description": "The lower color in HSV representation",
-              "default": [0, 0, 108],
-              "items": {
-                "type": "integer"
-              }
-            },
-            "upper_hsv_color": {
-              "type": "array",
-              "description": "The upper color in HSV representation",
-              "default": [255, 10, 148],
-              "items": {
-                "type": "integer"
-              }
-            },
-            "de_noise_size": {
-              "type": "integer",
-              "description": "The size of the artifact that will be de noise",
-              "default": 20
-            },
-            "de_noise_level": {
-              "type": "integer",
-              "description": "The threshold level used in de noise on the blurry image",
-              "default": 220
-            },
-            "buffer_size": {
-              "type": "integer",
-              "description": "The size of the buffer add on the mask",
-              "default": 100
-            },
-            "buffer_level": {
-              "type": "integer",
-              "description": "The threshold level used in buffer on the blurry image",
-              "default": 20
-            }
+        "background_color": {
+          "type": "array",
+          "default": [255, 255, 255],
+          "description": "The background color",
+          "items": {
+            "type": "integer"
           }
+        },
+        "auto_mask": {
+          "description": "The auto mask configuration, the mask is used to mask the image on crop and deskew calculation",
+          "$ref": "#/definitions/auto_mask"
+        },
+        "auto_cut": {
+          "description": "The auto mask configuration, the mask is used to definitively mask the source image",
+          "$ref": "#/definitions/auto_mask"
         }
       }
     }

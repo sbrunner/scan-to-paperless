@@ -10,6 +10,9 @@ def _main() -> None:
         process_schema = json.load(process_schema_file)
 
     process_schema["definitions"]["args"]["properties"] = config_schema["definitions"]["args"]["properties"]
+    process_schema["definitions"]["auto_mask"]["properties"] = config_schema["definitions"]["auto_mask"][
+        "properties"
+    ]
     with open("scan_to_paperless/process_schema.json", "w", encoding="utf-8") as process_schema_file:
         json.dump(process_schema, process_schema_file, indent=2)
 

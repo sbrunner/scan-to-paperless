@@ -97,80 +97,115 @@ class Context:  # pylint: disable=too-many-instance-attributes
         self.image_name = image_name
         self.image: Optional[NpNdarrayInt] = None
         self.mask: Optional[NpNdarrayInt] = None
-        self.mask_ready: Optional[NpNdarrayInt] = None
         self.process_count = self.step.get("process_count", 0)
 
-    def init_mask(self) -> None:
+    def _get_mask(
+        self,
+        auto_mask_config: Optional[scan_to_paperless.process_schema.AutoMask],
+        config_section: str,
+        default_file_name: str,
+        default_buffer_size: int,
+    ) -> Optional[NpNdarrayInt]:
         """Init the mask."""
-        if "auto_mask" in self.config["args"]:
-            auto_mask_config = self.config["args"]["auto_mask"]
+        if auto_mask_config is not None:
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
-            lower_val = np.array(auto_mask_config.get("lower_hsv_color", [0, 0, 108]))
-            upper_val = np.array(auto_mask_config.get("upper_hsv_color", [255, 10, 148]))
+            lower_val = np.array(auto_mask_config.setdefault("lower_hsv_color", [0, 0, 250]))
+            upper_val = np.array(auto_mask_config.setdefault("upper_hsv_color", [255, 10, 255]))
             mask = cv2.inRange(hsv, lower_val, upper_val)
-            de_noise_size = auto_mask_config.get("de_noise_size", 20)
+
+            de_noise_size = auto_mask_config.setdefault("de_noise_size", 20)
             mask = cv2.copyMakeBorder(
                 mask,
                 de_noise_size,
                 de_noise_size,
                 de_noise_size,
                 de_noise_size,
-                cv2.BORDER_CONSTANT,
-                value=255,
+                cv2.BORDER_REPLICATE,
             )
+            if auto_mask_config.get("de_noise_morphology", True):
+                mask = cv2.morphologyEx(
+                    mask,
+                    cv2.MORPH_CLOSE,
+                    cv2.getStructuringElement(cv2.MORPH_RECT, (de_noise_size, de_noise_size)),
+                )
+            else:
+                blur = cv2.blur(
+                    mask,
+                    (de_noise_size, de_noise_size),
+                )
+                _, mask = cv2.threshold(
+                    blur, auto_mask_config.setdefault("de_noise_level", 220), 255, cv2.THRESH_BINARY
+                )
 
-            blur = cv2.blur(
-                mask,
-                (de_noise_size, de_noise_size),
-            )
-            _, thresh1 = cv2.threshold(
-                blur, auto_mask_config.get("de_noise_level", 220), 255, cv2.THRESH_BINARY
-            )
+            inverse_mask = auto_mask_config.get("inverse_mask", False)
+            if not inverse_mask:
+                mask = cv2.bitwise_not(mask)
 
-            blur = cv2.blur(
-                thresh1,
-                (
-                    auto_mask_config.get("buffer_size", 100),
-                    auto_mask_config.get("buffer_size", 100),
-                ),
+            buffer_size = auto_mask_config.setdefault("buffer_size", default_buffer_size)
+            blur = cv2.blur(mask, (buffer_size, buffer_size))
+            _, mask = cv2.threshold(
+                blur,
+                auto_mask_config.setdefault("buffer_level", 20),
+                255,
+                cv2.THRESH_BINARY,
             )
-            _, mask = cv2.threshold(blur, auto_mask_config.get("buffer_level", 20), 255, cv2.THRESH_BINARY)
 
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
             if self.root_folder:
-                mask_file: Optional[str] = os.path.join(self.root_folder, "mask.png")
+                mask_file: Optional[str] = os.path.join(self.root_folder, default_file_name)
                 assert mask_file
                 if not os.path.exists(mask_file):
                     base_folder = os.path.dirname(self.root_folder)
                     assert base_folder
-                    mask_file = os.path.join(base_folder, "mask.png")
+                    mask_file = os.path.join(base_folder, default_file_name)
                     if not os.path.exists(mask_file):
                         mask_file = None
+                mask_file = (
+                    auto_mask_config.setdefault("additional_filename", mask_file)
+                    if mask_file
+                    else auto_mask_config.get("additional_filename")
+                )
                 if mask_file:
                     mask = cv2.add(
                         mask, cv2.bitwise_not(cv2.cvtColor(cv2.imread(mask_file), cv2.COLOR_BGR2GRAY))
                     )
 
-            self.mask = cv2.bitwise_not(mask)
+            final_mask = cv2.bitwise_not(mask)
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
-                cv2.imwrite(os.path.join(self.root_folder, "mask.png"), self.mask)
+                self.save_progress_images(config_section, final_mask)
         elif self.root_folder:
-            mask_file = os.path.join(self.root_folder, "mask.png")
+            mask_file = os.path.join(self.root_folder, default_file_name)
             if not os.path.exists(mask_file):
                 base_folder = os.path.dirname(self.root_folder)
                 assert base_folder
-                mask_file = os.path.join(base_folder, "mask.png")
+                mask_file = os.path.join(base_folder, default_file_name)
                 if not os.path.exists(mask_file):
-                    return
+                    return None
 
-            self.mask = cv2.imread(mask_file)
+            final_mask = cv2.imread(mask_file)
 
-        if self.image is not None and self.mask is not None:
-            maskbw = self.mask if len(self.mask.shape) == 2 else cv2.cvtColor(self.mask, cv2.COLOR_BGR2GRAY)
-            self.mask_ready = cv2.resize(maskbw, (self.image.shape[1], self.image.shape[0]))
+        maskbw = final_mask if len(final_mask.shape) == 2 else cv2.cvtColor(final_mask, cv2.COLOR_BGR2GRAY)
+        if self.image is not None and final_mask is not None:
+            return cast(NpNdarrayInt, cv2.resize(maskbw, (self.image.shape[1], self.image.shape[0])))
+        return cast(NpNdarrayInt, maskbw)
+
+    def init_mask(self) -> None:
+        """Init the mask image used to mask the image on the crop and deskew calculation."""
+        self.mask = self._get_mask(self.config["args"].get("auto_mask"), "auto_mask", "mask.png", 50)
+
+    def get_background_color(self) -> Tuple[int, int, int]:
+        """Get the background color."""
+        return cast(Tuple[int, int, int], self.config["args"].setdefault("background_color", [255, 255, 255]))
+
+    def do_initial_cut(self) -> None:
+        """Definitively mask the original image."""
+        if "auto_cut" in self.config["args"]:
+            assert self.image is not None
+            mask = self._get_mask(self.config["args"].get("auto_cut"), "auto_cut", "cut.png", 20)
+            self.image[mask == 0] = self.get_background_color()
 
     def get_process_count(self) -> int:
         """Get the step number."""
@@ -183,28 +218,28 @@ class Context:  # pylint: disable=too-many-instance-attributes
         """Get the mask."""
         if self.image is None:
             raise Exception("The image is None")
-        if self.mask_ready is None:
+        if self.mask is None:
             return self.image.copy()
 
         image = self.image.copy()
-        image[self.mask_ready == 0] = (255, 255, 255)
+        image[self.mask == 0] = self.get_background_color()
         return image
 
     def crop(self, x: int, y: int, width: int, height: int) -> None:
         """Crop the image."""
         if self.image is None:
             raise Exception("The image is None")
-        self.image = crop_image(self.image, x, y, width, height, (255, 255, 255))
-        if self.mask_ready is not None:
-            self.mask_ready = crop_image(self.mask_ready, x, y, width, height, (0,))
+        self.image = crop_image(self.image, x, y, width, height, self.get_background_color())
+        if self.mask is not None:
+            self.mask = crop_image(self.mask, x, y, width, height, (0,))
 
     def rotate(self, angle: float) -> None:
         """Rotate the image."""
         if self.image is None:
             raise Exception("The image is None")
-        self.image = rotate_image(self.image, angle, (255, 255, 255))
-        if self.mask_ready is not None:
-            self.mask_ready = rotate_image(self.mask_ready, angle, 0)
+        self.image = rotate_image(self.image, angle, self.get_background_color())
+        if self.mask is not None:
+            self.mask = rotate_image(self.mask, angle, 0)
 
     def get_px_value(self, name: str, default: Union[int, float]) -> float:
         """Get the value in px."""
@@ -218,6 +253,45 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault("progress", False)
+
+    def save_progress_images(
+        self,
+        name: str,
+        image: Optional[NpNdarrayInt] = None,
+        image_prefix: str = "",
+        process_count: Optional[int] = None,
+        force: bool = False,
+    ) -> Optional[str]:
+        """Save the intermediate images."""
+        if process_count is None:
+            process_count = self.get_process_count()
+        if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
+            name = f"{process_count}-{name}" if self.is_progress() else name
+            dest_folder = os.path.join(self.root_folder, name)
+            if not os.path.exists(dest_folder):
+                os.makedirs(dest_folder)
+            dest_image = os.path.join(dest_folder, image_prefix + self.image_name)
+            if image is not None:
+                try:
+                    cv2.imwrite(dest_image, image)
+                    return dest_image
+                except Exception as exception:
+                    print(exception)
+            else:
+                try:
+                    cv2.imwrite(dest_image, self.image)
+                except Exception as exception:
+                    print(exception)
+                dest_image = os.path.join(dest_folder, "mask-" + self.image_name)
+                try:
+                    dest_image = os.path.join(dest_folder, "masked-" + self.image_name)
+                except Exception as exception:
+                    print(exception)
+                try:
+                    cv2.imwrite(dest_image, self.get_masked())
+                except Exception as exception:
+                    print(exception)
+        return None
 
 
 def add_intermediate_error(
@@ -363,25 +437,7 @@ class Process:  # pylint: disable=too-few-public-methods
             if os.environ.get("TIME", "FALSE") == "TRUE":
                 print(f"Elapsed time in {self.name}: {int(round(elapsed_time))}s.")
 
-            name = f"{context.get_process_count()}-{self.name}"
-            if context.is_progress():
-                dest_folder = os.path.join(context.root_folder, name)
-                if not os.path.exists(dest_folder):
-                    os.makedirs(dest_folder)
-                dest_image = os.path.join(dest_folder, context.image_name)
-                try:
-                    cv2.imwrite(dest_image, context.image)
-                except Exception as exception:
-                    print(exception)
-                dest_image = os.path.join(dest_folder, "mask-" + context.image_name)
-                try:
-                    dest_image = os.path.join(dest_folder, "masked-" + context.image_name)
-                except Exception as exception:
-                    print(exception)
-                try:
-                    cv2.imwrite(dest_image, context.get_masked())
-                except Exception as exception:
-                    print(exception)
+            context.save_progress_images(self.name)
 
         return wrapper
 
@@ -431,20 +487,12 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     """
     image = context.get_masked()
     process_count = context.get_process_count()
-    contours = find_contours(image, context, f"{process_count}-crop", "crop", 3)
+    contours = find_contours(image, context, process_count, "crop", "crop", 3)
 
     if contours:
         for contour in contours:
             draw_rectangle(image, contour)
-        if context.root_folder is not None and context.image_name is not None:
-            save_image(
-                image,
-                context,
-                context.root_folder,
-                f"{process_count}-crop",
-                context.image_name,
-                True,
-            )
+        context.save_progress_images("crop", image, process_count=process_count, force=True)
 
         x, y, width, height = get_contour_to_crop(contours, margin_horizontal, margin_vertical)
         context.crop(x, y, width, height)
@@ -481,6 +529,12 @@ def level(context: Context) -> NpNdarrayInt:
     values = (chanel_y - min_) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
     return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+
+
+@Process("cut")
+def cut(context: Context) -> None:
+    """Mask the image with the cut mask."""
+    context.do_initial_cut()
 
 
 def draw_angle(image: NpNdarrayInt, angle: np.float64, color: Tuple[int, int, int]) -> None:
@@ -547,14 +601,7 @@ def deskew(context: Context) -> None:
         image_status["angles"] = [float(a) for a in float_angles]
 
         assert context.root_folder
-        save_image(
-            image,
-            context,
-            context.root_folder,
-            f"{context.get_process_count()}-skew-angles",
-            context.image_name,
-            True,
-        )
+        context.save_progress_images("skew-angles", image, force=True)
 
     if angle:
         context.rotate(angle)
@@ -674,10 +721,10 @@ def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
 
 
 def find_limit_contour(
-    image: NpNdarrayInt, context: Context, name: str, vertical: bool
+    image: NpNdarrayInt, context: Context, vertical: bool
 ) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
     """Find the contour for assisted split."""
-    contours = find_contours(image, context, name, "limit")
+    contours = find_contours(image, context, context.get_process_count(), "limits", "limit")
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -700,9 +747,7 @@ def fill_limits(
     image: NpNdarrayInt, vertical: bool, context: Context
 ) -> List[scan_to_paperless.process_schema.Limit]:
     """Find the limit for assisted split."""
-    contours_limits, contours = find_limit_contour(
-        image, context, f"{context.get_process_count()}-limits", vertical
-    )
+    contours_limits, contours = find_limit_contour(image, context, vertical)
     peaks, properties = find_lines(image, vertical)
     for contour_limit in contours:
         draw_rectangle(image, contour_limit)
@@ -726,7 +771,12 @@ def fill_limits(
 
 
 def find_contours(
-    image: NpNdarrayInt, context: Context, name: str, prefix: str, default_min_box_size: int = 10
+    image: NpNdarrayInt,
+    context: Context,
+    progress_count: int,
+    name: str,
+    prefix: str,
+    default_min_box_size: int = 10,
 ) -> List[Tuple[int, int, int, int]]:
     """Find the contours on an image."""
     block_size = context.get_px_value(f"threshold_block_size_{prefix}", 1.5)
@@ -742,14 +792,7 @@ def find_contours(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
     if context.is_progress() and context.root_folder and context.image_name:
-        save_image(
-            thresh,
-            context,
-            context.root_folder,
-            f"{name}-threshold",
-            context.image_name,
-            True,
-        )
+        context.save_progress_images("threshold", thresh)
 
         block_size_list = (block_size, 1.5, 5, 10, 15, 20, 50, 100, 200)
         threshold_value_c_list = (threshold_value_c, 20, 50, 100)
@@ -770,15 +813,12 @@ def find_contours(
                 if contours:
                     for contour in contours:
                         draw_rectangle(thresh2, contour)
-                save_image(
-                    thresh2,
-                    context,
-                    context.root_folder,
+
+                context.save_progress_images(
                     f"{name}-threshold",
-                    f"block_size_{prefix}-{block_size2}-"
-                    f"value_c_{prefix}-{threshold_value_c2}-"
-                    f"{context.image_name}",
-                    True,
+                    thresh2,
+                    f"block_size_{prefix}-{block_size2}-value_c_{prefix}-{threshold_value_c2}-",
+                    progress_count,
                 )
 
     return _find_contours_thresh(image, thresh, context, prefix, default_min_box_size)
@@ -803,7 +843,7 @@ def _find_contours_thresh(
     for cnt in contours:
         x, y, width, height = cv2.boundingRect(cnt)
         if width > min_size and height > min_size:
-            contour_image = crop_image(image, x, y, width, height, (255, 255, 255))
+            contour_image = crop_image(image, x, y, width, height, context.get_background_color())
             imagergb = (
                 rgba2rgb(contour_image)
                 if len(contour_image.shape) == 3 and contour_image.shape[2] == 4
@@ -852,6 +892,7 @@ def transform(
         image_status["size"] = list(context.image.shape[:2][::-1])
         context.init_mask()
         level(context)
+        cut(context)
         deskew(context)
         docrop(context)
         sharpen(context)
@@ -860,7 +901,7 @@ def transform(
 
         # Is empty ?
         contours = find_contours(
-            context.get_masked(), context, f"{context.get_process_count()}-is-empty", "empty"
+            context.get_masked(), context, context.get_process_count(), "is-empty", "empty"
         )
         if not contours:
             print(f"Ignore image with no content: {img}")
@@ -869,15 +910,7 @@ def transform(
         if config["args"].setdefault("assisted_split", False):
             assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}
             name = os.path.join(root_folder, context.image_name)
-            assert context.image is not None
-            source = save_image(
-                context.image,
-                context,
-                root_folder,
-                f"{context.get_process_count()}-assisted-split",
-                context.image_name,
-                True,
-            )
+            source = context.save_progress_images("assisted-split", context.image, force=True)
             assert source
             assisted_split["source"] = source
 
@@ -978,20 +1011,6 @@ def save(context: Context, root_folder: str, img: str, folder: str, force: bool 
     return img
 
 
-def save_image(
-    image: NpNdarrayInt, context: Context, root_folder: str, folder: str, name: str, force: bool = False
-) -> Optional[str]:
-    """Save an image."""
-    if force or context.is_progress():
-        dest_folder = os.path.join(root_folder, folder)
-        if not os.path.exists(dest_folder):
-            os.makedirs(dest_folder)
-        dest_file = os.path.join(dest_folder, name)
-        cv2.imwrite(dest_file, image)
-        return dest_file
-    return None
-
-
 class Item(TypedDict, total=False):
     """
     Image content and position.
@@ -1036,8 +1055,8 @@ def split(
     append: Dict[Union[str, int], List[Item]] = {}
     transformed_images = []
     for assisted_split in config["assisted_split"]:
-        context = Context(config, step)
         img = assisted_split["source"]
+        context = Context(config, step)
         width, height = (
             int(e) for e in output(CONVERT + [img, "-format", "%w %h", "info:-"]).strip().split(" ")
         )

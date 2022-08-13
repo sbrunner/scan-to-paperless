@@ -27,7 +27,6 @@ def test_find_limit_contour():
     limits, _ = process.find_limit_contour(
         load_image("limit-contour-1.png"),
         process.Context({"args": {"min_box_size_empty": 40}}, {}),
-        "test",
         True,
     )
     assert limits == [1589]
@@ -555,5 +554,14 @@ def test_auto_mask_combine():
     context = process.Context({"args": {"auto_mask": {}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
+    context.image_name = "image.png"
     context.init_mask()
     check_image("/results/auto_mask_combine", context.mask, "auto_mask_combine")
+
+
+# @pytest.mark.skip(reason="for test")
+def test_auto_cut():
+    context = process.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
+    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
+    context.do_initial_cut()
+    check_image("/results/auto_cut", context.image, "auto_cut")
