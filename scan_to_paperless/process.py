@@ -175,7 +175,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
             final_mask = cv2.bitwise_not(mask)
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
-                self.save_progress_images(config_section, final_mask)
+                self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder:
             mask_file = os.path.join(self.root_folder, default_file_name)
             if not os.path.exists(mask_file):
@@ -979,8 +979,28 @@ def transform(
             if progress:
                 _save_progress(context.root_folder, count, "optipng", os.path.basename(image), image)
 
-    step["sources"] = images
-    step["process_count"] = process_count + 1
+    if config["args"].setdefault("jpeg", False):
+        count = context.get_process_count()
+        new_images = []
+        for img in images:
+            name = os.path.splitext(os.path.basename(img))[0]
+            jpeg_img = f"{name}.jpeg"
+            subprocess.run(  # nosec
+                [
+                    "gm",
+                    "convert",
+                    img,
+                    "-quality",
+                    str(config["args"].setdefault("jpeg_quality", 90)),
+                    jpeg_img,
+                ],
+                check=True,
+            )
+            new_images.append(jpeg_img)
+            if progress:
+                _save_progress(context.root_folder, count, "to-jpeg", os.path.basename(image), image)
+
+        images = new_images
 
     return {
         "sources": images,
@@ -1199,20 +1219,6 @@ def finalize(
     for img in images:
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
-            if config["args"].setdefault("jpeg", False):
-                subprocess.run(  # nosec
-                    [
-                        "gm",
-                        "convert",
-                        img,
-                        "-quality",
-                        str(config["args"].setdefault("jpeg_quality", 90)),
-                        f"{name}.jpeg",
-                    ],
-                    check=True,
-                )
-                img = f"{name}.jpeg"
-
             file_name = os.path.join(root_folder, f"{name}.pdf")
             if config["args"].setdefault("tesseract", True):
                 with open(file_name, "w", encoding="utf8") as output_file:
