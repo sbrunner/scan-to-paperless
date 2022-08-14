@@ -542,11 +542,31 @@ def test_tiff():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_mask():
-    context = process.Context({"args": {"auto_mask": {}}}, {})
+@pytest.mark.parametrize(
+    "name,config",
+    [
+        ("default", {}),
+        (
+            "inverse",
+            {"lower_hsv_color": [0, 0, 108], "upper_hsv_color": [255, 10, 148], "inverse_mask": True},
+        ),
+        ("no-morphology", {"de_noise_morphology": False}),
+        (
+            "inverse-no-morphology",
+            {
+                "lower_hsv_color": [0, 0, 108],
+                "upper_hsv_color": [255, 10, 148],
+                "inverse_mask": True,
+                "de_noise_morphology": False,
+            },
+        ),
+    ],
+)
+def test_auto_mask(config, name):
+    context = process.Context({"args": {"auto_mask": config}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
-    check_image("/results/auto_mask", context.mask, "auto_mask")
+    check_image("/results/auto_mask", context.mask, f"auto_mask-{name}")
 
 
 # @pytest.mark.skip(reason="for test")
