@@ -43,6 +43,9 @@ ENV LANG=C.UTF-8
 
 WORKDIR /opt
 
+ARG VERSION
+ENV VERSION=$VERSION
+
 FROM base-dist as tests-dist
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \

@@ -304,7 +304,7 @@ def test_full(progress):
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True, "tesseract": False},
+        "args": {"level": True},
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
@@ -318,9 +318,17 @@ def test_full(progress):
 
     assert step["name"] == "finalise"
     process.finalize(config, step, root_folder)
-    pdfinfo = process.output(
-        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
-    ).split("\n")
+
+    pdf_filename = os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")
+
+    creator_re = re.compile(
+        r"^Scan to Paperless [0-9]+.[0-9]+.[0-9]+\+[0-9]+, Tesseract [0-9]+.[0-9]+.[0-9]+$"
+    )
+    with pikepdf.open(pdf_filename) as pdf_:
+        with pdf_.open_metadata() as meta:
+            assert creator_re.match(meta["{http://purl.org/dc/elements/1.1/}creator"])
+
+    pdfinfo = process.output(["pdfinfo", pdf_filename]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
     pdfinfo = dict([e.groups() for e in pdfinfo if e is not None])

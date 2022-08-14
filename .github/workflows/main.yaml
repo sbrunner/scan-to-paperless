@@ -26,6 +26,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.TOKEN }}
+          fetch-depth: 0
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
@@ -46,12 +47,12 @@ jobs:
 
       - run: make build
       - run: make build-tests
-      - run: docker run --rm tests prospector --die-on-tool-error --output=pylint
+      - run: make prospector
       - name: pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
-          tests bash -c '
+          sbrunner/scan-to-paperless-tests bash -c '
           cd /tests &&
           pytest --durations=0 -vv --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
