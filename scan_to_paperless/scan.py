@@ -240,7 +240,7 @@ def main() -> None:
             "images": images,
             "args": args_,
         }
-        yaml = YAML(typ="safe")
+        yaml = YAML()
         yaml.default_flow_style = False
         with open(
             os.path.join(os.path.dirname(root_folder), "config.yaml"), "w", encoding="utf-8"
