@@ -1357,10 +1357,128 @@ def save_config(config: scan_to_paperless.process_schema.Configuration, config_f
     os.rename(config_file_name + "_", config_file_name)
 
 
+def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = True) -> Tuple[bool, bool]:
+    """Propcess one document."""
+    if not os.path.exists(config_file_name):
+        return dirty, print_waiting
+
+    root_folder = os.path.dirname(config_file_name)
+
+    if os.path.exists(os.path.join(root_folder, "error.yaml")):
+        return dirty, print_waiting
+
+    yaml = YAML()
+    yaml.default_flow_style = False
+    with open(config_file_name, encoding="utf-8") as config_file:
+        config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
+    if config is None:
+        print(config_file_name)
+        print("Empty config")
+        print_waiting = True
+        return dirty, print_waiting
+
+    if not is_sources_present(config["images"], root_folder):
+        print(config_file_name)
+        print("Missing images")
+        print_waiting = True
+        return dirty, print_waiting
+
+    try:
+        rerun = False
+        if "steps" not in config:
+            rerun = True
+        while config.get("steps") and not is_sources_present(config["steps"][-1]["sources"], root_folder):
+            config["steps"] = config["steps"][:-1]
+            save_config(config, config_file_name)
+            if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
+                os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
+            print(config_file_name)
+            print("Rerun step")
+            print_waiting = True
+            rerun = True
+
+        if "steps" not in config or not config["steps"]:
+            step: scan_to_paperless.process_schema.Step = {
+                "sources": config["images"],
+                "name": "transform",
+            }
+            config["steps"] = [step]
+        step = config["steps"][-1]
+
+        if is_sources_present(step["sources"], root_folder):
+            if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
+                return dirty, print_waiting
+            if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
+                return dirty, print_waiting
+
+            print(config_file_name)
+            print_waiting = True
+            dirty = True
+
+            done = False
+            next_step = None
+            if step["name"] == "transform":
+                print("Transform")
+                next_step = transform(config, step, config_file_name, root_folder)
+            elif step["name"] == "split":
+                print("Split")
+                next_step = split(config, step, root_folder)
+            elif step["name"] == "finalise":
+                print("Finalize")
+                finalize(config, step, root_folder)
+                done = True
+
+            if done and os.environ.get("PROGRESS", "FALSE") != "TRUE":
+                shutil.rmtree(root_folder)
+            else:
+                if next_step is not None:
+                    config["steps"].append(next_step)
+                save_config(config, config_file_name)
+                with open(
+                    os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"),
+                    "w",
+                    encoding="utf-8",
+                ):
+                    pass
+    except Exception as exception:
+        print(exception)
+        trace = traceback.format_exc()
+        print(trace)
+        print_waiting = True
+
+        out = {"error": str(exception), "traceback": trace.split("\n")}
+        for attribute in ("returncode", "cmd"):
+            if hasattr(exception, attribute):
+                out[attribute] = getattr(exception, attribute)
+        for attribute in ("output", "stdout", "stderr"):
+            if hasattr(exception, attribute):
+                if getattr(exception, attribute):
+                    out[attribute] = getattr(exception, attribute).decode()
+
+        yaml = YAML(typ="safe")
+        yaml.default_flow_style = False
+        try:
+            with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
+                yaml.dump(out, error_file)
+        except Exception as exception2:
+            print(exception2)
+            print(traceback.format_exc())
+            yaml = YAML()
+            yaml.default_flow_style = False
+            with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
+                yaml.dump(out, error_file)
+    return dirty, print_waiting
+
+
 def main() -> None:
     """Process the scanned documents."""
     parser = argparse.ArgumentParser("Process the scanned documents.")
-    parser.parse_args()
+    parser.add_argument("config", help="The config file to process.")
+    args = parser.parse_args()
+
+    if args.config:
+        _process(args.config)
+        sys.exit()
 
     print("Welcome to scanned images document to paperless.")
     print_waiting = True
@@ -1369,116 +1487,7 @@ def main() -> None:
         for config_file_name in glob.glob(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
         ):
-            if not os.path.exists(config_file_name):
-                continue
-
-            root_folder = os.path.dirname(config_file_name)
-
-            if os.path.exists(os.path.join(root_folder, "error.yaml")):
-                continue
-
-            yaml = YAML()
-            yaml.default_flow_style = False
-            with open(config_file_name, encoding="utf-8") as config_file:
-                config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
-            if config is None:
-                print(config_file_name)
-                print("Empty config")
-                print_waiting = True
-                continue
-
-            if not is_sources_present(config["images"], root_folder):
-                print(config_file_name)
-                print("Missing images")
-                print_waiting = True
-                continue
-
-            try:
-                rerun = False
-                if "steps" not in config:
-                    rerun = True
-                while config.get("steps") and not is_sources_present(
-                    config["steps"][-1]["sources"], root_folder
-                ):
-                    config["steps"] = config["steps"][:-1]
-                    save_config(config, config_file_name)
-                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
-                        os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
-                    print(config_file_name)
-                    print("Rerun step")
-                    print_waiting = True
-                    rerun = True
-
-                if "steps" not in config or not config["steps"]:
-                    step: scan_to_paperless.process_schema.Step = {
-                        "sources": config["images"],
-                        "name": "transform",
-                    }
-                    config["steps"] = [step]
-                step = config["steps"][-1]
-
-                if is_sources_present(step["sources"], root_folder):
-                    if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
-                        continue
-                    if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
-                        continue
-
-                    print(config_file_name)
-                    print_waiting = True
-                    dirty = True
-
-                    done = False
-                    next_step = None
-                    if step["name"] == "transform":
-                        print("Transform")
-                        next_step = transform(config, step, config_file_name, root_folder)
-                    elif step["name"] == "split":
-                        print("Split")
-                        next_step = split(config, step, root_folder)
-                    elif step["name"] == "finalise":
-                        print("Finalize")
-                        finalize(config, step, root_folder)
-                        done = True
-
-                    if done and os.environ.get("PROGRESS", "FALSE") != "TRUE":
-                        shutil.rmtree(root_folder)
-                    else:
-                        if next_step is not None:
-                            config["steps"].append(next_step)
-                        save_config(config, config_file_name)
-                        with open(
-                            os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"),
-                            "w",
-                            encoding="utf-8",
-                        ):
-                            pass
-            except Exception as exception:
-                print(exception)
-                trace = traceback.format_exc()
-                print(trace)
-                print_waiting = True
-
-                out = {"error": str(exception), "traceback": trace.split("\n")}
-                for attribute in ("returncode", "cmd"):
-                    if hasattr(exception, attribute):
-                        out[attribute] = getattr(exception, attribute)
-                for attribute in ("output", "stdout", "stderr"):
-                    if hasattr(exception, attribute):
-                        if getattr(exception, attribute):
-                            out[attribute] = getattr(exception, attribute).decode()
-
-                yaml = YAML(typ="safe")
-                yaml.default_flow_style = False
-                try:
-                    with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
-                        yaml.dump(out, error_file)
-                except Exception as exception2:
-                    print(exception2)
-                    print(traceback.format_exc())
-                    yaml = YAML()
-                    yaml.default_flow_style = False
-                    with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
-                        yaml.dump(out, error_file)
+            dirty, print_waiting = _process(config_file_name, dirty, print_waiting)
         if not dirty:
             process_code()
 
