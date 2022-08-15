@@ -530,7 +530,19 @@ def level(context: Context) -> NpNdarrayInt:
     return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
 
-@Process("cut")
+@Process("color-cut")
+def color_cut(context: Context) -> None:
+    """Set the near white to white and near black to black."""
+    assert context.image is not None
+    grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
+
+    white_mask = cv2.inRange(grayscale, context.config["args"].setdefault("cut_white", 250), 255)
+    black_mask = cv2.inRange(grayscale, context.config["args"].setdefault("cut_black", 0), 0)
+    context.image[white_mask == 0] = (255, 255, 255)
+    context.image[black_mask == 0] = (0, 0, 0)
+
+
+@Process("mask-cut")
 def cut(context: Context) -> None:
     """Mask the image with the cut mask."""
     context.do_initial_cut()
