@@ -1272,37 +1272,40 @@ def finalize(
                 ]
             )
 
-    one_pdf = os.path.join(root_folder, "intermediate.pdf")
-    call(["pdftk"] + pdf + ["output", one_pdf, "compress"])
-    if progress:
-        call(["cp", one_pdf, os.path.join(root_folder, "2-pdftk.pdf")])
-
-    if config["args"].setdefault("run_exiftool", False):
-        call(["exiftool", "-overwrite_original_in_place", one_pdf])
+    count = 1
+    with tempfile.NamedTemporaryFile(suffix=".png") as temporary_pdf:
+        call(["pdftk"] + pdf + ["output", temporary_pdf.name, "compress"])
         if progress:
-            call(["cp", one_pdf, os.path.join(root_folder, "3-exiftool.pdf")])
+            call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pdftk.pdf")])
+            count += 1
 
-    if config["args"].setdefault("run_ps2pdf", False):
-        intermediate_file = os.path.join(root_folder, "intermediate-ps2pdf.pdf")
-        call(["ps2pdf", one_pdf, intermediate_file])
+        if config["args"].setdefault("run_exiftool", False):
+            call(["exiftool", "-overwrite_original_in_place", temporary_pdf.name])
+            if progress:
+                call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-exiftool.pdf")])
+                count += 1
+
+        if config["args"].setdefault("run_ps2pdf", False):
+            with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
+                call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
+                if progress:
+                    call(["cp", temporary_ps2pdf.name, f"{count}-ps2pdf.pdf"])
+                    count += 1
+                call(["cp", temporary_ps2pdf.name, temporary_pdf.name])
+
+        with pikepdf.open(temporary_pdf.name, allow_overwriting_input=True) as pdf_:
+            scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
+            with pdf_.open_metadata() as meta:
+                meta["{http://purl.org/dc/elements/1.1/}creator"] = (
+                    f"{scan_to_paperless_meta}, {tesseract_producer}"
+                    if tesseract_producer
+                    else scan_to_paperless_meta
+                )
+            pdf_.save(temporary_pdf.name)
         if progress:
-            call(["cp", intermediate_file, os.path.join(root_folder, "4-ps2pdf.pdf")])
-
-        one_pdf = intermediate_file
-
-    call(["cp", one_pdf, destination])
-
-    with pikepdf.open(destination, allow_overwriting_input=True) as pdf_:
-        scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
-        with pdf_.open_metadata() as meta:
-            meta["{http://purl.org/dc/elements/1.1/}creator"] = (
-                f"{scan_to_paperless_meta}, {tesseract_producer}"
-                if tesseract_producer
-                else scan_to_paperless_meta
-            )
-        pdf_.save(destination)
-    if progress:
-        call(["cp", destination, os.path.join(root_folder, "5-pikepdf.pdf")])
+            call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pikepdf.pdf")])
+            count += 1
+        call(["cp", temporary_pdf.name, destination])
 
 
 def process_code() -> None:
