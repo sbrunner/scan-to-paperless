@@ -23,6 +23,8 @@ RUN poetry export --output=requirements.txt \
 
 FROM base-all as base-dist
 
+RUN echo "deb https://notesalexp.org/tesseract-ocr-dev/jammy/ jammy main" > /etc/apt/sources.list.d/notesalexp.list
+
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get install --assume-yes --no-install-recommends \
