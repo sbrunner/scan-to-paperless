@@ -168,7 +168,13 @@ class Context:  # pylint: disable=too-many-instance-attributes
                 )
                 if mask_file:
                     mask = cv2.add(
-                        mask, cv2.bitwise_not(cv2.cvtColor(cv2.imread(mask_file), cv2.COLOR_BGR2GRAY))
+                        mask,
+                        cv2.bitwise_not(
+                            cv2.resize(
+                                cv2.cvtColor(cv2.imread(mask_file), cv2.COLOR_BGR2GRAY),
+                                (mask.shape[1], mask.shape[0]),
+                            )
+                        ),
                     )
 
             final_mask = cv2.bitwise_not(mask)
@@ -186,10 +192,12 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
             final_mask = cv2.imread(mask_file)
 
-        maskbw = final_mask if len(final_mask.shape) == 2 else cv2.cvtColor(final_mask, cv2.COLOR_BGR2GRAY)
-        if self.image is not None and final_mask is not None:
-            return cast(NpNdarrayInt, cv2.resize(maskbw, (self.image.shape[1], self.image.shape[0])))
-        return cast(NpNdarrayInt, maskbw)
+            maskbw = (
+                final_mask if len(final_mask.shape) == 2 else cv2.cvtColor(final_mask, cv2.COLOR_BGR2GRAY)
+            )
+            if self.image is not None and final_mask is not None:
+                return cast(NpNdarrayInt, cv2.resize(maskbw, (self.image.shape[1], self.image.shape[0])))
+        return cast(NpNdarrayInt, final_mask)
 
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and deskew calculation."""
