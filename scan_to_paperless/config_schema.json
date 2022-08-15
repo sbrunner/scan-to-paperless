@@ -85,6 +85,16 @@
           "description": "Max level if no level end no auto-level",
           "default": 15
         },
+        "cut_white": {
+          "type": "number",
+          "description": "Set the near white pixels on the image to white",
+          "default": 250
+        },
+        "cut_black": {
+          "type": "number",
+          "description": "Set the near black pixels on the image to black",
+          "default": 0
+        },
         "no_crop": {
           "type": "boolean",
           "default": false,

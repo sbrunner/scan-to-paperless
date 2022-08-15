@@ -18,6 +18,14 @@ Arguments = TypedDict(
         #
         # default: 15
         "max_level": Union[int, float],
+        # Set the near white pixels on the image to white
+        #
+        # default: 250
+        "cut_white": Union[int, float],
+        # Set the near black pixels on the image to black
+        #
+        # default: 0
+        "cut_black": Union[int, float],
         # Don't do any crop
         #
         # default: False

@@ -45,6 +45,8 @@
   - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `False`.
   - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `15`.
   - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `15`.
+  - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `250`.
+  - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
   - **`no_crop`** _(boolean)_: Don't do any crop. Default: `False`.
   - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
   - **`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
