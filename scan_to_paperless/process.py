@@ -3,7 +3,6 @@
 """Process the scanned documents."""
 
 import argparse
-import datetime
 import glob
 import json
 import logging
@@ -1241,10 +1240,19 @@ def finalize(
                 call(CONVERT + [img, "+repage", file_name])
             pdf.append(file_name)
 
-    producer = None
+    tesseract_producer = None
     if pdf:
         with pikepdf.open(pdf[0]) as pdf_:
-            producer = json.loads(pdf_.docinfo.get("/Producer").to_json())  # type: ignore
+            if tesseract_producer is None and pdf_.docinfo.get("/Producer") is not None:
+                tesseract_producer = json.loads(pdf_.docinfo.get("/Producer").to_json())  # type: ignore
+                if "tesseract" not in tesseract_producer.lower():
+                    tesseract_producer = None
+            if tesseract_producer is None:
+                with pdf_.open_metadata() as meta:
+                    if "{http://purl.org/dc/elements/1.1/}producer" in meta:
+                        tesseract_producer = meta["{http://purl.org/dc/elements/1.1/}producer"]
+                        if "tesseract" not in tesseract_producer.lower():
+                            tesseract_producer = None
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
@@ -1279,12 +1287,13 @@ def finalize(
     call(["cp", one_pdf, destination])
 
     with pikepdf.open(destination, allow_overwriting_input=True) as pdf_:
-        date = datetime.datetime.fromtimestamp(os.path.getmtime("/opt/scan_to_paperless"))
-        str_date = datetime.datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
-        scan_to_paperless_meta = f"Scan to Paperless {str_date}"
-        pdf_.docinfo["/Creator"] = (
-            f"{scan_to_paperless_meta}, {producer}" if producer else scan_to_paperless_meta
-        )
+        scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
+        with pdf_.open_metadata() as meta:
+            meta["{http://purl.org/dc/elements/1.1/}creator"] = (
+                f"{scan_to_paperless_meta}, {tesseract_producer}"
+                if tesseract_producer
+                else scan_to_paperless_meta
+            )
         pdf_.save(destination)
     if progress:
         call(["cp", destination, os.path.join(root_folder, "5-pikepdf.pdf")])

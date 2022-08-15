@@ -22,6 +22,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.branch }}
+          fetch-depth: 0
 
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
@@ -45,7 +46,7 @@ jobs:
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=results:/results --volume=tests:/tests
-          tests bash -c '
+          sbrunner/scan-to-paperless-tests bash -c '
           cd /tests &&
           pytest --durations=0 --verbose --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
