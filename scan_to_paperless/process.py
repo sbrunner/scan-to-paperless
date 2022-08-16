@@ -1520,7 +1520,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
 def main() -> None:
     """Process the scanned documents."""
     parser = argparse.ArgumentParser("Process the scanned documents.")
-    parser.add_argument("config", help="The config file to process.")
+    parser.add_argument("config", nargs="?", help="The config file to process.")
     args = parser.parse_args()
 
     if args.config:
