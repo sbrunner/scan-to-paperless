@@ -53,16 +53,16 @@
     - **Items** _(integer)_
   - **`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `True`.
   - **`inverse_mask`** _(boolean)_: Inverse the mask. Default: `False`.
-  - **`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `20`.
+  - **`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `1000`.
   - **`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
-  - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `50 an case of mask, 20 in case of cut`.
+  - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
   - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
   - **`additional_filename`** _(string)_: An image file used to add on the mask.
 - **`args`** _(object)_
-  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%.
+  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `False`.
   - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `False`.
   - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `15`.
-  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `15`.
+  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `85`.
   - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `250`.
   - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
   - **`no_crop`** _(boolean)_: Don't do any crop. Default: `False`.
@@ -71,7 +71,7 @@
   - **`dpi`** _(number)_: The DPI used to convert the mm to pixel. Default: `300`.
   - **`sharpen`** _(boolean)_: Do the sharpen. Default: `False`.
   - **`dither`** _(boolean)_: Do the dither. Default: `False`.
-  - **`tesseract`** _(boolean)_: Use tesseract to to an OCR on the document. Default: `False`.
+  - **`tesseract`** _(boolean)_: Use tesseract to to an OCR on the document. Default: `True`.
   - **`tesseract_lang`** _(string)_: The used language for tesseract. Default: `fra+eng`.
   - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `False`.
   - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `False`.
@@ -85,7 +85,7 @@
   - **`contour_kernel_size_empty`** _(number)_: The block size used in a box on content find if the page is empty [mm]. Default: `1.5`.
   - **`threshold_block_size_empty`** _(number)_: The block size used in a box on threshold for content find if the page is empty [mm]. Default: `1.5`.
   - **`threshold_value_c_empty`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty. Default: `70`.
-  - **`min_box_size_limit`** _(number)_: The minimum box size to find the limits based on content [mm]. Default: `3`.
+  - **`min_box_size_limit`** _(number)_: The minimum box size to find the limits based on content [mm]. Default: `10`.
   - **`min_box_black_limit`** _(number)_: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
   - **`contour_kernel_size_limit`** _(number)_: The block size used in a box on content find the limits based on content [mm]. Default: `1.5`.
   - **`threshold_block_size_limit`** _(number)_: The block size used in a box on threshold for content find the limits based on content [mm]. Default: `1.5`.
@@ -101,7 +101,7 @@
   - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.
   - **`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.
     - **Items** _(integer)_
-  - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and deskew calculation. Refer to _#/definitions/auto_mask_.
+  - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Refer to _#/definitions/auto_mask_.
   - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _#/definitions/auto_mask_.
   - **`deskew_min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-10`.
   - **`deskew_max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `10`.

@@ -1,145 +1,229 @@
 from typing import Dict, List, TypedDict, Union
 
+# Default value of the field path 'Arguments append_credit_card'
+APPEND_CREDIT_CARD_DEFAULT = False
+
+
+# Default value of the field path 'Arguments assisted_split'
+ASSISTED_SPLIT_DEFAULT = False
+
+
+# Default value of the field path 'Arguments auto_level'
+AUTO_LEVEL_DEFAULT = False
+
+
 # Arguments
 #
 # Editor note: The properties of this object should be modified in the config_schema.json file
 Arguments = TypedDict(
     "Arguments",
     {
+        # Level
+        #
         # true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
+        #
+        # default: False
         "level": Union[bool, int],
+        # Auto level
+        #
         # If no level specified, do auto level
         #
         # default: False
         "auto_level": bool,
+        # Min level
+        #
         # Min level if no level end no auto-level
         #
         # default: 15
         "min_level": Union[int, float],
+        # Max level
+        #
         # Max level if no level end no auto-level
         #
-        # default: 15
+        # default: 85
         "max_level": Union[int, float],
+        # Cut white
+        #
         # Set the near white pixels on the image to white
         #
         # default: 250
         "cut_white": Union[int, float],
+        # Cut black
+        #
         # Set the near black pixels on the image to black
         #
         # default: 0
         "cut_black": Union[int, float],
+        # No crop
+        #
         # Don't do any crop
         #
         # default: False
         "no_crop": bool,
+        # Margin horizontal
+        #
         # The horizontal margin used on auto-detect content [mm]
         #
         # default: 9
         "margin_horizontal": Union[int, float],
+        # Margin vertical
+        #
         # The vertical margin used on auto-detect content [mm]
         #
         # default: 6
         "margin_vertical": Union[int, float],
+        # Dpi
+        #
         # The DPI used to convert the mm to pixel
         #
         # default: 300
         "dpi": Union[int, float],
+        # Sharpen
+        #
         # Do the sharpen
         #
         # default: False
         "sharpen": bool,
+        # Dither
+        #
         # Do the dither
         #
         # default: False
         "dither": bool,
+        # Tesseract
+        #
         # Use tesseract to to an OCR on the document
         #
-        # default: False
+        # default: True
         "tesseract": bool,
+        # Tesseract lang
+        #
         # The used language for tesseract
         #
         # default: fra+eng
         "tesseract_lang": str,
+        # Append credit card
+        #
         # Do an assisted split
         #
         # default: False
         "append_credit_card": bool,
+        # Assisted split
+        #
         # Do an assisted split
         #
         # default: False
         "assisted_split": bool,
+        # Min box size crop
+        #
         # The minimum box size to find the content on witch one we will crop [mm]
         #
         # default: 3
         "min_box_size_crop": Union[int, float],
+        # Min box black crop
+        #
         # The minimum black in a box on content find on witch one we will crop [%]
         #
         # default: 2
         "min_box_black_crop": Union[int, float],
+        # Contour kernel size crop
+        #
         # The block size used in a box on content find on witch one we will crop [mm]
         #
         # default: 1.5
         "contour_kernel_size_crop": Union[int, float],
+        # Threshold block size crop
+        #
         # The block size used in a box on threshold for content find on witch one we will crop [mm]
         #
         # default: 1.5
         "threshold_block_size_crop": Union[int, float],
+        # Threshold value c crop
+        #
         # A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop
         #
         # default: 70
         "threshold_value_c_crop": Union[int, float],
+        # Min box size empty
+        #
         # The minimum box size to find the content to determine if the page is empty [mm]
         #
         # default: 10
         "min_box_size_empty": Union[int, float],
+        # Min box black empty
+        #
         # The minimum black in a box on content find if the page is empty [%]
         #
         # default: 2
         "min_box_black_empty": Union[int, float],
+        # Contour kernel size empty
+        #
         # The block size used in a box on content find if the page is empty [mm]
         #
         # default: 1.5
         "contour_kernel_size_empty": Union[int, float],
+        # Threshold block size empty
+        #
         # The block size used in a box on threshold for content find if the page is empty [mm]
         #
         # default: 1.5
         "threshold_block_size_empty": Union[int, float],
+        # Threshold value c empty
+        #
         # A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty
         #
         # default: 70
         "threshold_value_c_empty": Union[int, float],
+        # Min box size limit
+        #
         # The minimum box size to find the limits based on content [mm]
         #
-        # default: 3
+        # default: 10
         "min_box_size_limit": Union[int, float],
+        # Min box black limit
+        #
         # The minimum black in a box on content find the limits based on content [%]
         #
         # default: 2
         "min_box_black_limit": Union[int, float],
+        # Contour kernel size limit
+        #
         # The block size used in a box on content find the limits based on content [mm]
         #
         # default: 1.5
         "contour_kernel_size_limit": Union[int, float],
+        # Threshold block size limit
+        #
         # The block size used in a box on threshold for content find the limits based on content [mm]
         #
         # default: 1.5
         "threshold_block_size_limit": Union[int, float],
+        # Threshold value c limit
+        #
         # A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content
         #
         # default: 70
         "threshold_value_c_limit": Union[int, float],
+        # Colors
+        #
         # The number of colors in the png
         #
         # default: 0
         "colors": int,
+        # Run optipng
+        #
         # Run the optipng optimizer
         #
         # default: True
         "run_optipng": bool,
+        # Run pngquant
+        #
         # Run the pngquant optimizer
         #
         # default: False
         "run_pngquant": bool,
+        # Pngquant options
+        #
         # The pngquant options
         #
         # default:
@@ -148,22 +232,32 @@ Arguments = TypedDict(
         #   - --strip
         #   - --quality=0-32
         "pngquant_options": List[str],
+        # Run exiftool
+        #
         # Run the exiftool optimizer
         #
         # default: False
         "run_exiftool": bool,
+        # Run ps2pdf
+        #
         # Run the ps2pdf optimizer (=> JPEG)
         #
         # default: False
         "run_ps2pdf": bool,
+        # Jpeg
+        #
         # Convert images to JPEG
         #
         # default: False
         "jpeg": bool,
+        # Jpeg quality
+        #
         # The JPEG quality
         #
         # default: 90
         "jpeg_quality": int,
+        # Background color
+        #
         # The background color
         #
         # default:
@@ -177,14 +271,20 @@ Arguments = TypedDict(
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         "auto_cut": "AutoMask",
+        # Deskew min angle
+        #
         # The minimum angle to detect the image skew [degree]
         #
         # default: -10
         "deskew_min_angle": Union[int, float],
+        # Deskew max angle
+        #
         # The maximum angle to detect the image skew [degree]
         #
         # default: 10
         "deskew_max_angle": Union[int, float],
+        # Deskew angle derivation
+        #
         # The step of angle to detect the image skew [degree]
         #
         # default: 0.1
@@ -215,12 +315,14 @@ AssistedSplit = TypedDict(
 
 # Auto mask
 #
-# The auto mask configuration, the mask is used to mask the image on crop and deskew calculation
+# The auto mask configuration, the mask is used to mask the image on crop and skew calculation
 #
 # Editor note: The properties of this object should be modified in the config_schema.json file
 AutoMask = TypedDict(
     "AutoMask",
     {
+        # Lower hsv color
+        #
         # The lower color in HSV representation
         #
         # default:
@@ -228,6 +330,8 @@ AutoMask = TypedDict(
         #   - 0
         #   - 250
         "lower_hsv_color": List[int],
+        # Upper hsv color
+        #
         # The upper color in HSV representation
         #
         # default:
@@ -235,26 +339,38 @@ AutoMask = TypedDict(
         #   - 10
         #   - 255
         "upper_hsv_color": List[int],
+        # De noise morphology
+        #
         # Apply a morphology operation to remove noise
         #
         # default: True
         "de_noise_morphology": bool,
+        # Inverse mask
+        #
         # Inverse the mask
         #
         # default: False
         "inverse_mask": bool,
+        # De noise size
+        #
         # The size of the artifact that will be de noise
         #
-        # default: 20
+        # default: 1000
         "de_noise_size": int,
+        # De noise level
+        #
         # The threshold level used in de noise on the blurry image
         #
         # default: 220
         "de_noise_level": int,
+        # Buffer size
+        #
         # The size of the buffer add on the mask
         #
-        # default: 50 an case of mask, 20 in case of cut
+        # default: 20
         "buffer_size": int,
+        # Buffer level
+        #
         # The threshold level used in buffer on the blurry image
         #
         # default: 20
@@ -264,6 +380,42 @@ AutoMask = TypedDict(
     },
     total=False,
 )
+
+
+# Default value of the field path 'Arguments background_color'
+BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
+
+
+# Default value of the field path 'Auto mask buffer_level'
+BUFFER_LEVEL_DEFAULT = 20
+
+
+# Default value of the field path 'Auto mask buffer_size'
+BUFFER_SIZE_DEFAULT = 20
+
+
+# Default value of the field path 'Arguments colors'
+COLORS_DEFAULT = 0
+
+
+# Default value of the field path 'Arguments contour_kernel_size_crop'
+CONTOUR_KERNEL_SIZE_CROP_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments contour_kernel_size_empty'
+CONTOUR_KERNEL_SIZE_EMPTY_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments contour_kernel_size_limit'
+CONTOUR_KERNEL_SIZE_LIMIT_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments cut_black'
+CUT_BLACK_DEFAULT = 0
+
+
+# Default value of the field path 'Arguments cut_white'
+CUT_WHITE_DEFAULT = 250
 
 
 # Configuration
@@ -279,6 +431,8 @@ Configuration = TypedDict(
         #
         # required
         "args": "Arguments",
+        # Progress
+        #
         # Run in progress mode
         #
         # default: False
@@ -296,6 +450,42 @@ Configuration = TypedDict(
 )
 
 
+# Default value of the field path 'Arguments deskew_angle_derivation'
+DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
+
+
+# Default value of the field path 'Arguments deskew_max_angle'
+DESKEW_MAX_ANGLE_DEFAULT = 10
+
+
+# Default value of the field path 'Arguments deskew_min_angle'
+DESKEW_MIN_ANGLE_DEFAULT = -10
+
+
+# Default value of the field path 'Auto mask de_noise_level'
+DE_NOISE_LEVEL_DEFAULT = 220
+
+
+# Default value of the field path 'Auto mask de_noise_morphology'
+DE_NOISE_MORPHOLOGY_DEFAULT = True
+
+
+# Default value of the field path 'Auto mask de_noise_size'
+DE_NOISE_SIZE_DEFAULT = 1000
+
+
+# Default value of the field path 'Arguments dither'
+DITHER_DEFAULT = False
+
+
+# Default value of the field path 'Arguments dpi'
+DPI_DEFAULT = 300
+
+
+# Default value of the field path 'Auto mask inverse_mask'
+INVERSE_MASK_DEFAULT = False
+
+
 # Intermediate error
 IntermediateError = TypedDict(
     "IntermediateError",
@@ -305,6 +495,22 @@ IntermediateError = TypedDict(
     },
     total=False,
 )
+
+
+# Default value of the field path 'Arguments jpeg'
+JPEG_DEFAULT = False
+
+
+# Default value of the field path 'Arguments jpeg_quality'
+JPEG_QUALITY_DEFAULT = 90
+
+
+# Default value of the field path 'Arguments level'
+LEVEL_DEFAULT = False
+
+
+# Default value of the field path 'Auto mask lower_hsv_color'
+LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
 
 
 # Limit
@@ -326,6 +532,78 @@ Limit = TypedDict(
 )
 
 
+# Default value of the field path 'Arguments margin_horizontal'
+MARGIN_HORIZONTAL_DEFAULT = 9
+
+
+# Default value of the field path 'Arguments margin_vertical'
+MARGIN_VERTICAL_DEFAULT = 6
+
+
+# Default value of the field path 'Arguments max_level'
+MAX_LEVEL_DEFAULT = 85
+
+
+# Default value of the field path 'Arguments min_box_black_crop'
+MIN_BOX_BLACK_CROP_DEFAULT = 2
+
+
+# Default value of the field path 'Arguments min_box_black_empty'
+MIN_BOX_BLACK_EMPTY_DEFAULT = 2
+
+
+# Default value of the field path 'Arguments min_box_black_limit'
+MIN_BOX_BLACK_LIMIT_DEFAULT = 2
+
+
+# Default value of the field path 'Arguments min_box_size_crop'
+MIN_BOX_SIZE_CROP_DEFAULT = 3
+
+
+# Default value of the field path 'Arguments min_box_size_empty'
+MIN_BOX_SIZE_EMPTY_DEFAULT = 10
+
+
+# Default value of the field path 'Arguments min_box_size_limit'
+MIN_BOX_SIZE_LIMIT_DEFAULT = 10
+
+
+# Default value of the field path 'Arguments min_level'
+MIN_LEVEL_DEFAULT = 15
+
+
+# Default value of the field path 'Arguments no_crop'
+NO_CROP_DEFAULT = False
+
+
+# Default value of the field path 'Arguments pngquant_options'
+PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
+
+
+# Default value of the field path 'Configuration progress'
+PROGRESS_DEFAULT = False
+
+
+# Default value of the field path 'Arguments run_exiftool'
+RUN_EXIFTOOL_DEFAULT = False
+
+
+# Default value of the field path 'Arguments run_optipng'
+RUN_OPTIPNG_DEFAULT = True
+
+
+# Default value of the field path 'Arguments run_pngquant'
+RUN_PNGQUANT_DEFAULT = False
+
+
+# Default value of the field path 'Arguments run_ps2pdf'
+RUN_PS2PDF_DEFAULT = False
+
+
+# Default value of the field path 'Arguments sharpen'
+SHARPEN_DEFAULT = False
+
+
 # Step
 Step = TypedDict(
     "Step",
@@ -341,208 +619,40 @@ Step = TypedDict(
 )
 
 
-# Default value of the field path 'Arguments append_credit_card'
-_ARGUMENTS_APPEND_CREDIT_CARD_DEFAULT = False
-
-
-# Default value of the field path 'Arguments assisted_split'
-_ARGUMENTS_ASSISTED_SPLIT_DEFAULT = False
-
-
-# Default value of the field path 'Arguments auto_level'
-_ARGUMENTS_AUTO_LEVEL_DEFAULT = False
-
-
-# Default value of the field path 'Arguments background_color'
-_ARGUMENTS_BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
-
-
-# Default value of the field path 'Arguments colors'
-_ARGUMENTS_COLORS_DEFAULT = 0
-
-
-# Default value of the field path 'Arguments contour_kernel_size_crop'
-_ARGUMENTS_CONTOUR_KERNEL_SIZE_CROP_DEFAULT = 1.5
-
-
-# Default value of the field path 'Arguments contour_kernel_size_empty'
-_ARGUMENTS_CONTOUR_KERNEL_SIZE_EMPTY_DEFAULT = 1.5
-
-
-# Default value of the field path 'Arguments contour_kernel_size_limit'
-_ARGUMENTS_CONTOUR_KERNEL_SIZE_LIMIT_DEFAULT = 1.5
-
-
-# Default value of the field path 'Arguments cut_black'
-_ARGUMENTS_CUT_BLACK_DEFAULT = 0
-
-
-# Default value of the field path 'Arguments cut_white'
-_ARGUMENTS_CUT_WHITE_DEFAULT = 250
-
-
-# Default value of the field path 'Arguments deskew_angle_derivation'
-_ARGUMENTS_DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
-
-
-# Default value of the field path 'Arguments deskew_max_angle'
-_ARGUMENTS_DESKEW_MAX_ANGLE_DEFAULT = 10
-
-
-# Default value of the field path 'Arguments deskew_min_angle'
-_ARGUMENTS_DESKEW_MIN_ANGLE_DEFAULT = -10
-
-
-# Default value of the field path 'Arguments dither'
-_ARGUMENTS_DITHER_DEFAULT = False
-
-
-# Default value of the field path 'Arguments dpi'
-_ARGUMENTS_DPI_DEFAULT = 300
-
-
-# Default value of the field path 'Arguments jpeg'
-_ARGUMENTS_JPEG_DEFAULT = False
-
-
-# Default value of the field path 'Arguments jpeg_quality'
-_ARGUMENTS_JPEG_QUALITY_DEFAULT = 90
-
-
-# Default value of the field path 'Arguments margin_horizontal'
-_ARGUMENTS_MARGIN_HORIZONTAL_DEFAULT = 9
-
-
-# Default value of the field path 'Arguments margin_vertical'
-_ARGUMENTS_MARGIN_VERTICAL_DEFAULT = 6
-
-
-# Default value of the field path 'Arguments max_level'
-_ARGUMENTS_MAX_LEVEL_DEFAULT = 15
-
-
-# Default value of the field path 'Arguments min_box_black_crop'
-_ARGUMENTS_MIN_BOX_BLACK_CROP_DEFAULT = 2
-
-
-# Default value of the field path 'Arguments min_box_black_empty'
-_ARGUMENTS_MIN_BOX_BLACK_EMPTY_DEFAULT = 2
-
-
-# Default value of the field path 'Arguments min_box_black_limit'
-_ARGUMENTS_MIN_BOX_BLACK_LIMIT_DEFAULT = 2
-
-
-# Default value of the field path 'Arguments min_box_size_crop'
-_ARGUMENTS_MIN_BOX_SIZE_CROP_DEFAULT = 3
-
-
-# Default value of the field path 'Arguments min_box_size_empty'
-_ARGUMENTS_MIN_BOX_SIZE_EMPTY_DEFAULT = 10
-
-
-# Default value of the field path 'Arguments min_box_size_limit'
-_ARGUMENTS_MIN_BOX_SIZE_LIMIT_DEFAULT = 3
-
-
-# Default value of the field path 'Arguments min_level'
-_ARGUMENTS_MIN_LEVEL_DEFAULT = 15
-
-
-# Default value of the field path 'Arguments no_crop'
-_ARGUMENTS_NO_CROP_DEFAULT = False
-
-
-# Default value of the field path 'Arguments pngquant_options'
-_ARGUMENTS_PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
-
-
-# Default value of the field path 'Arguments run_exiftool'
-_ARGUMENTS_RUN_EXIFTOOL_DEFAULT = False
-
-
-# Default value of the field path 'Arguments run_optipng'
-_ARGUMENTS_RUN_OPTIPNG_DEFAULT = True
-
-
-# Default value of the field path 'Arguments run_pngquant'
-_ARGUMENTS_RUN_PNGQUANT_DEFAULT = False
-
-
-# Default value of the field path 'Arguments run_ps2pdf'
-_ARGUMENTS_RUN_PS2PDF_DEFAULT = False
-
-
-# Default value of the field path 'Arguments sharpen'
-_ARGUMENTS_SHARPEN_DEFAULT = False
-
-
 # Default value of the field path 'Arguments tesseract'
-_ARGUMENTS_TESSERACT_DEFAULT = False
+TESSERACT_DEFAULT = True
 
 
 # Default value of the field path 'Arguments tesseract_lang'
-_ARGUMENTS_TESSERACT_LANG_DEFAULT = "fra+eng"
+TESSERACT_LANG_DEFAULT = "fra+eng"
 
 
 # Default value of the field path 'Arguments threshold_block_size_crop'
-_ARGUMENTS_THRESHOLD_BLOCK_SIZE_CROP_DEFAULT = 1.5
+THRESHOLD_BLOCK_SIZE_CROP_DEFAULT = 1.5
 
 
 # Default value of the field path 'Arguments threshold_block_size_empty'
-_ARGUMENTS_THRESHOLD_BLOCK_SIZE_EMPTY_DEFAULT = 1.5
+THRESHOLD_BLOCK_SIZE_EMPTY_DEFAULT = 1.5
 
 
 # Default value of the field path 'Arguments threshold_block_size_limit'
-_ARGUMENTS_THRESHOLD_BLOCK_SIZE_LIMIT_DEFAULT = 1.5
+THRESHOLD_BLOCK_SIZE_LIMIT_DEFAULT = 1.5
 
 
 # Default value of the field path 'Arguments threshold_value_c_crop'
-_ARGUMENTS_THRESHOLD_VALUE_C_CROP_DEFAULT = 70
+THRESHOLD_VALUE_C_CROP_DEFAULT = 70
 
 
 # Default value of the field path 'Arguments threshold_value_c_empty'
-_ARGUMENTS_THRESHOLD_VALUE_C_EMPTY_DEFAULT = 70
+THRESHOLD_VALUE_C_EMPTY_DEFAULT = 70
 
 
 # Default value of the field path 'Arguments threshold_value_c_limit'
-_ARGUMENTS_THRESHOLD_VALUE_C_LIMIT_DEFAULT = 70
-
-
-# Default value of the field path 'Auto mask buffer_level'
-_AUTO_MASK_BUFFER_LEVEL_DEFAULT = 20
-
-
-# Default value of the field path 'Auto mask buffer_size'
-_AUTO_MASK_BUFFER_SIZE_DEFAULT = "50 an case of mask, 20 in case of cut"
-
-
-# Default value of the field path 'Auto mask de_noise_level'
-_AUTO_MASK_DE_NOISE_LEVEL_DEFAULT = 220
-
-
-# Default value of the field path 'Auto mask de_noise_morphology'
-_AUTO_MASK_DE_NOISE_MORPHOLOGY_DEFAULT = True
-
-
-# Default value of the field path 'Auto mask de_noise_size'
-_AUTO_MASK_DE_NOISE_SIZE_DEFAULT = 20
-
-
-# Default value of the field path 'Auto mask inverse_mask'
-_AUTO_MASK_INVERSE_MASK_DEFAULT = False
-
-
-# Default value of the field path 'Auto mask lower_hsv_color'
-_AUTO_MASK_LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
+THRESHOLD_VALUE_C_LIMIT_DEFAULT = 70
 
 
 # Default value of the field path 'Auto mask upper_hsv_color'
-_AUTO_MASK_UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
-
-
-# Default value of the field path 'Configuration progress'
-_CONFIGURATION_PROGRESS_DEFAULT = False
+UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
 
 
 _ConfigurationImagesConfigAdditionalproperties = TypedDict(

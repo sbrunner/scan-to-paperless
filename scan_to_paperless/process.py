@@ -27,8 +27,8 @@ from scipy.signal import find_peaks
 from skimage.color import rgb2gray, rgba2rgb
 from skimage.metrics import structural_similarity
 
-import scan_to_paperless.process_schema
 from scan_to_paperless import code
+from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
@@ -82,8 +82,8 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        config: scan_to_paperless.process_schema.Configuration,
-        step: scan_to_paperless.process_schema.Step,
+        config: schema.Configuration,
+        step: schema.Step,
         config_file_name: Optional[str] = None,
         root_folder: Optional[str] = None,
         image_name: Optional[str] = None,
@@ -100,20 +100,23 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def _get_mask(
         self,
-        auto_mask_config: Optional[scan_to_paperless.process_schema.AutoMask],
+        auto_mask_config: Optional[schema.AutoMask],
         config_section: str,
         default_file_name: str,
-        default_buffer_size: int,
     ) -> Optional[NpNdarrayInt]:
         """Init the mask."""
         if auto_mask_config is not None:
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
-            lower_val = np.array(auto_mask_config.setdefault("lower_hsv_color", [0, 0, 250]))
-            upper_val = np.array(auto_mask_config.setdefault("upper_hsv_color", [255, 10, 255]))
+            lower_val = np.array(
+                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)
+            )
+            upper_val = np.array(
+                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)
+            )
             mask = cv2.inRange(hsv, lower_val, upper_val)
 
-            de_noise_size = auto_mask_config.setdefault("de_noise_size", 20)
+            de_noise_size = auto_mask_config.setdefault("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)
             mask = cv2.copyMakeBorder(
                 mask,
                 de_noise_size,
@@ -134,18 +137,21 @@ class Context:  # pylint: disable=too-many-instance-attributes
                     (de_noise_size, de_noise_size),
                 )
                 _, mask = cv2.threshold(
-                    blur, auto_mask_config.setdefault("de_noise_level", 220), 255, cv2.THRESH_BINARY
+                    blur,
+                    auto_mask_config.setdefault("de_noise_level", schema.DE_NOISE_LEVEL_DEFAULT),
+                    255,
+                    cv2.THRESH_BINARY,
                 )
 
             inverse_mask = auto_mask_config.get("inverse_mask", False)
             if not inverse_mask:
                 mask = cv2.bitwise_not(mask)
 
-            buffer_size = auto_mask_config.setdefault("buffer_size", default_buffer_size)
+            buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
             blur = cv2.blur(mask, (buffer_size, buffer_size))
             _, mask = cv2.threshold(
                 blur,
-                auto_mask_config.setdefault("buffer_level", 20),
+                auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
                 255,
                 cv2.THRESH_BINARY,
             )
@@ -200,18 +206,21 @@ class Context:  # pylint: disable=too-many-instance-attributes
         return cast(NpNdarrayInt, final_mask)
 
     def init_mask(self) -> None:
-        """Init the mask image used to mask the image on the crop and deskew calculation."""
-        self.mask = self._get_mask(self.config["args"].get("auto_mask"), "auto_mask", "mask.png", 50)
+        """Init the mask image used to mask the image on the crop and skew calculation."""
+        self.mask = self._get_mask(self.config["args"].get("auto_mask"), "auto_mask", "mask.png")
 
     def get_background_color(self) -> Tuple[int, int, int]:
         """Get the background color."""
-        return cast(Tuple[int, int, int], self.config["args"].setdefault("background_color", [255, 255, 255]))
+        return cast(
+            Tuple[int, int, int],
+            self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
+        )
 
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         if "auto_cut" in self.config["args"]:
             assert self.image is not None
-            mask = self._get_mask(self.config["args"].get("auto_cut"), "auto_cut", "cut.png", 20)
+            mask = self._get_mask(self.config["args"].get("auto_cut"), "auto_cut", "cut.png")
             self.image[mask == 0] = self.get_background_color()
 
     def get_process_count(self) -> int:
@@ -254,12 +263,14 @@ class Context:  # pylint: disable=too-many-instance-attributes
             cast(float, cast(Dict[str, Any], self.config["args"]).setdefault(name, default))
             / 10
             / 2.51
-            * self.config["args"].setdefault("dpi", 300)
+            * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
         )
 
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
-        return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault("progress", False)
+        return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
+            "progress", schema.PROGRESS_DEFAULT
+        )
 
     def save_progress_images(
         self,
@@ -302,7 +313,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
 
 def add_intermediate_error(
-    config: scan_to_paperless.process_schema.Configuration,
+    config: schema.Configuration,
     config_file_name: Optional[str],
     error: Exception,
     traceback_: List[str],
@@ -313,7 +324,7 @@ def add_intermediate_error(
     if "intermediate_error" not in config:
         config["intermediate_error"] = []
 
-    old_intermediate_error: List[scan_to_paperless.process_schema.IntermediateError] = []
+    old_intermediate_error: List[schema.IntermediateError] = []
     old_intermediate_error.extend(config["intermediate_error"])
     yaml = YAML()
     yaml.default_flow_style = False
@@ -494,7 +505,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     """
     image = context.get_masked()
     process_count = context.get_process_count()
-    contours = find_contours(image, context, process_count, "crop", "crop", 3)
+    contours = find_contours(image, context, process_count, "crop", "crop", schema.MIN_BOX_SIZE_CROP_DEFAULT)
 
     if contours:
         for contour in contours:
@@ -510,15 +521,15 @@ def level(context: Context) -> NpNdarrayInt:
     """Do the level on an image."""
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
-    if context.config["args"].setdefault("auto_level", False):
+    if context.config["args"].setdefault("auto_level", schema.AUTO_LEVEL_DEFAULT):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
         return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
-    level_ = context.config["args"].setdefault("level", False)
+    level_ = context.config["args"].setdefault("level", schema.LEVEL_DEFAULT)
     min_p100 = 0.0
     max_p100 = 100.0
     if level_ is True:
-        min_p100 = 15.0
-        max_p100 = 85.0
+        min_p100 = schema.MIN_LEVEL_DEFAULT
+        max_p100 = schema.MAX_LEVEL_DEFAULT
     elif isinstance(level_, (float, int)):
         min_p100 = 0.0 + level_
         max_p100 = 100.0 - level_
@@ -544,8 +555,12 @@ def color_cut(context: Context) -> None:
     assert context.image is not None
     grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
 
-    white_mask = cv2.inRange(grayscale, context.config["args"].setdefault("cut_white", 250), 255)
-    black_mask = cv2.inRange(grayscale, context.config["args"].setdefault("cut_black", 0), 0)
+    white_mask = cv2.inRange(
+        grayscale, context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT), 255
+    )
+    black_mask = cv2.inRange(
+        grayscale, context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT), 0
+    )
     context.image[white_mask == 0] = (255, 255, 255)
     context.image[black_mask == 0] = (0, 0, 0)
 
@@ -597,9 +612,17 @@ def deskew(context: Context) -> None:
 
         skew_angle, angles, average_deviation, _ = determine_skew_dev(
             grayscale,
-            min_angle=np.deg2rad(context.config["args"].setdefault("deskew_min_angle", -10)),
-            max_angle=np.deg2rad(context.config["args"].setdefault("deskew_max_angle", 10)),
-            min_deviation=np.deg2rad(context.config["args"].setdefault("deskew_angle_derivation", 0.1)),
+            min_angle=np.deg2rad(
+                context.config["args"].setdefault("deskew_min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT)
+            ),
+            max_angle=np.deg2rad(
+                context.config["args"].setdefault("deskew_max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT)
+            ),
+            min_deviation=np.deg2rad(
+                context.config["args"].setdefault(
+                    "deskew_angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT
+                )
+            ),
         )
         if skew_angle is not None:
             image_status["angle"] = float(nice_angle(skew_angle))
@@ -633,17 +656,17 @@ def deskew(context: Context) -> None:
 def docrop(context: Context) -> None:
     """Crop an image."""
     # Margin in mm
-    if context.config["args"].setdefault("no_crop", False):
+    if context.config["args"].setdefault("no_crop", schema.NO_CROP_DEFAULT):
         return
-    margin_horizontal = context.get_px_value("margin_horizontal", 9)
-    margin_vertical = context.get_px_value("margin_vertical", 6)
+    margin_horizontal = context.get_px_value("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT)
+    margin_vertical = context.get_px_value("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT)
     crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
 
 
 @Process("sharpen")
 def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
-    if context.config["args"].setdefault("sharpen", False) is False:
+    if context.config["args"].setdefault("sharpen", schema.SHARPEN_DEFAULT) is False:
         return None
     if context.image is None:
         raise Exception("The image is required")
@@ -655,7 +678,7 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
 @external
 def dither(context: Context, source: str, destination: str) -> None:
     """Dither an image."""
-    if context.config["args"].setdefault("dither", False) is False:
+    if context.config["args"].setdefault("dither", schema.DITHER_DEFAULT) is False:
         return
     call(CONVERT + ["+dither", source, destination])
 
@@ -676,7 +699,7 @@ def autorotate(context: Context) -> None:
 
 def draw_line(  # pylint: disable=too-many-arguments
     image: NpNdarrayInt, vertical: bool, position: float, value: int, name: str, type_: str
-) -> scan_to_paperless.process_schema.Limit:
+) -> schema.Limit:
     """Draw a line on an image."""
     img_len = image.shape[0 if vertical else 1]
     color = (255, 0, 0) if vertical else (0, 255, 0)
@@ -765,16 +788,14 @@ def find_limit_contour(
     return result, contours
 
 
-def fill_limits(
-    image: NpNdarrayInt, vertical: bool, context: Context
-) -> List[scan_to_paperless.process_schema.Limit]:
+def fill_limits(image: NpNdarrayInt, vertical: bool, context: Context) -> List[schema.Limit]:
     """Find the limit for assisted split."""
     contours_limits, contours = find_limit_contour(image, context, vertical)
     peaks, properties = find_lines(image, vertical)
     for contour_limit in contours:
         draw_rectangle(image, contour_limit)
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
-    limits: List[scan_to_paperless.process_schema.Limit] = []
+    limits: List[schema.Limit] = []
     prefix = "V" if vertical else "H"
     for index, peak in enumerate(peaks):
         value = int(round(properties["peak_heights"][index] / 3))
@@ -798,12 +819,14 @@ def find_contours(
     progress_count: int,
     name: str,
     prefix: str,
-    default_min_box_size: int = 10,
+    default_min_box_size: int = schema.MIN_BOX_SIZE_EMPTY_DEFAULT,
 ) -> List[Tuple[int, int, int, int]]:
     """Find the contours on an image."""
-    block_size = context.get_px_value(f"threshold_block_size_{prefix}", 1.5)
+    block_size = context.get_px_value(
+        f"threshold_block_size_{prefix}", schema.THRESHOLD_BLOCK_SIZE_CROP_DEFAULT
+    )
     threshold_value_c = cast(Dict[str, int], context.config["args"]).setdefault(
-        f"threshold_value_c_{prefix}", 70
+        f"threshold_value_c_{prefix}", schema.THRESHOLD_VALUE_C_CROP_DEFAULT
     )
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -850,8 +873,12 @@ def _find_contours_thresh(
     image: NpNdarrayInt, thresh: NpNdarrayInt, context: Context, prefix: str, default_min_box_size: int = 10
 ) -> List[Tuple[int, int, int, int]]:
     min_size = context.get_px_value(f"min_box_size_{prefix}", default_min_box_size)
-    min_black = cast(Dict[str, int], context.config["args"]).setdefault(f"min_box_black_{prefix}", 2)
-    kernel_size = context.get_px_value(f"contour_kernel_size_{prefix}", 1.5)
+    min_black = cast(Dict[str, int], context.config["args"]).setdefault(
+        f"min_box_black_{prefix}", schema.MIN_BOX_BLACK_CROP_DEFAULT
+    )
+    kernel_size = context.get_px_value(
+        f"contour_kernel_size_{prefix}", schema.CONTOUR_KERNEL_SIZE_CROP_DEFAULT
+    )
 
     kernel_size = int(round(kernel_size / 2))
 
@@ -886,11 +913,11 @@ def _find_contours_thresh(
 
 
 def transform(
-    config: scan_to_paperless.process_schema.Configuration,
-    step: scan_to_paperless.process_schema.Step,
+    config: schema.Configuration,
+    step: schema.Step,
     config_file_name: str,
     root_folder: str,
-) -> scan_to_paperless.process_schema.Step:
+) -> schema.Step:
     """Apply the transforms on a document."""
     if "intermediate_error" in config:
         del config["intermediate_error"]
@@ -898,7 +925,7 @@ def transform(
     images = []
     process_count = 0
 
-    if config["args"].setdefault("assisted_split", False):
+    if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
         config["assisted_split"] = []
 
     for index, img in enumerate(step["sources"]):
@@ -929,8 +956,8 @@ def transform(
             print(f"Ignore image with no content: {img}")
             continue
 
-        if config["args"].setdefault("assisted_split", False):
-            assisted_split: scan_to_paperless.process_schema.AssistedSplit = {}
+        if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
+            assisted_split: schema.AssistedSplit = {}
             name = os.path.join(root_folder, context.image_name)
             source = context.save_progress_images("assisted-split", context.image, force=True)
             assert source
@@ -964,14 +991,16 @@ def transform(
         if progress:
             _save_progress(context.root_folder, count, "finalize", os.path.basename(image), image)
 
-    if config["args"].setdefault("colors", 0):
+    if config["args"].setdefault("colors", schema.COLORS_DEFAULT):
         count = context.get_process_count()
         for image in images:
             call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
             if progress:
                 _save_progress(context.root_folder, count, "colors", os.path.basename(image), image)
 
-    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault("run_pngquant", False):
+    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault(
+        "run_pngquant", schema.RUN_PNGQUANT_DEFAULT
+    ):
         count = context.get_process_count()
         for image in images:
             with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
@@ -979,7 +1008,7 @@ def transform(
                     ["pngquant", f"--output={temp_file.name}"]
                     + config["args"].setdefault(
                         "pngquant_options",
-                        ["--force", "--speed=1", "--strip", "--quality=0-32"],
+                        schema.PNGQUANT_OPTIONS_DEFAULT,
                     )
                     + ["--", image],
                     check=False,
@@ -989,7 +1018,7 @@ def transform(
             if progress:
                 _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
 
-    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault(
+    if not config["args"].setdefault("jpeg", schema.JPEG_DEFAULT) and config["args"].setdefault(
         "run_optipng", not config["args"]["run_pngquant"]
     ):
         count = context.get_process_count()
@@ -998,7 +1027,7 @@ def transform(
             if progress:
                 _save_progress(context.root_folder, count, "optipng", os.path.basename(image), image)
 
-    if config["args"].setdefault("jpeg", False):
+    if config["args"].setdefault("jpeg", schema.JPEG_DEFAULT):
         count = context.get_process_count()
         new_images = []
         for img in images:
@@ -1010,7 +1039,7 @@ def transform(
                     "convert",
                     img,
                     "-quality",
-                    str(config["args"].setdefault("jpeg_quality", 90)),
+                    str(config["args"].setdefault("jpeg_quality", schema.JPEG_QUALITY_DEFAULT)),
                     jpeg_img,
                 ],
                 check=True,
@@ -1023,7 +1052,9 @@ def transform(
 
     return {
         "sources": images,
-        "name": "split" if config["args"].setdefault("assisted_split", False) else "finalise",
+        "name": "split"
+        if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT)
+        else "finalise",
         "process_count": process_count,
     }
 
@@ -1065,10 +1096,10 @@ class Item(TypedDict, total=False):
 
 
 def split(
-    config: scan_to_paperless.process_schema.Configuration,
-    step: scan_to_paperless.process_schema.Step,
+    config: schema.Configuration,
+    step: schema.Step,
     root_folder: str,
-) -> scan_to_paperless.process_schema.Step:
+) -> schema.Step:
     """Split an image using the assisted split instructions."""
     process_count = 0
     for assisted_split in config["assisted_split"]:
@@ -1156,10 +1187,12 @@ def split(
                         page_pos = 0
 
                     save(context, root_folder, process_file.name, f"{context.get_process_count()}-split")
-                    margin_horizontal = context.get_px_value("margin_horizontal", 9)
-                    margin_vertical = context.get_px_value("margin_vertical", 6)
+                    margin_horizontal = context.get_px_value(
+                        "margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT
+                    )
+                    margin_vertical = context.get_px_value("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT)
                     context.image = cv2.imread(process_file.name)
-                    if not context.config["args"].setdefault("no_crop", False):
+                    if not context.config["args"].setdefault("no_crop", schema.NO_CROP_DEFAULT):
                         crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png"
@@ -1202,8 +1235,8 @@ def split(
 
 
 def finalize(
-    config: scan_to_paperless.process_schema.Configuration,
-    step: scan_to_paperless.process_schema.Step,
+    config: schema.Configuration,
+    step: schema.Step,
     root_folder: str,
 ) -> None:
     """
@@ -1220,7 +1253,7 @@ def finalize(
 
     images = step["sources"]
 
-    if config["args"].setdefault("append_credit_card", False):
+    if config["args"].setdefault("append_credit_card", schema.APPEND_CREDIT_CARD_DEFAULT):
         images2 = []
         for img in images:
             if os.path.exists(img):
@@ -1239,15 +1272,15 @@ def finalize(
         if os.path.exists(img):
             name = os.path.splitext(os.path.basename(img))[0]
             file_name = os.path.join(root_folder, f"{name}.pdf")
-            if config["args"].setdefault("tesseract", True):
+            if config["args"].setdefault("tesseract", schema.TESSERACT_DEFAULT):
                 with open(file_name, "w", encoding="utf8") as output_file:
                     process = run(
                         [
                             "tesseract",
                             "--dpi",
-                            str(config["args"].setdefault("dpi", 300)),
+                            str(config["args"].setdefault("dpi", schema.DPI_DEFAULT)),
                             "-l",
-                            config["args"].setdefault("tesseract_lang", "fra+eng"),
+                            config["args"].setdefault("tesseract_lang", schema.TESSERACT_LANG_DEFAULT),
                             img,
                             "stdout",
                             "pdf",
@@ -1293,13 +1326,13 @@ def finalize(
             call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pdftk.pdf")])
             count += 1
 
-        if config["args"].setdefault("run_exiftool", False):
+        if config["args"].setdefault("run_exiftool", schema.RUN_EXIFTOOL_DEFAULT):
             call(["exiftool", "-overwrite_original_in_place", temporary_pdf.name])
             if progress:
                 call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-exiftool.pdf")])
                 count += 1
 
-        if config["args"].setdefault("run_ps2pdf", False):
+        if config["args"].setdefault("run_ps2pdf", schema.RUN_PS2PDF_DEFAULT):
             with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
                 call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
@@ -1362,7 +1395,7 @@ def is_sources_present(images: List[str], root_folder: str) -> bool:
     return True
 
 
-def save_config(config: scan_to_paperless.process_schema.Configuration, config_file_name: str) -> None:
+def save_config(config: schema.Configuration, config_file_name: str) -> None:
     """Save the configuration."""
     yaml = YAML()
     yaml.default_flow_style = False
@@ -1384,7 +1417,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
     yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name, encoding="utf-8") as config_file:
-        config: scan_to_paperless.process_schema.Configuration = yaml.load(config_file.read())
+        config: schema.Configuration = yaml.load(config_file.read())
     if config is None:
         print(config_file_name)
         print("Empty config")
@@ -1412,7 +1445,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
             rerun = True
 
         if "steps" not in config or not config["steps"]:
-            step: scan_to_paperless.process_schema.Step = {
+            step: schema.Step = {
                 "sources": config["images"],
                 "name": "transform",
             }
