@@ -561,8 +561,8 @@ def color_cut(context: Context) -> None:
     black_mask = cv2.inRange(
         grayscale, context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT), 0
     )
-    context.image[white_mask == 0] = (255, 255, 255)
-    context.image[black_mask == 0] = (0, 0, 0)
+    context.image[white_mask == 1] = (255, 255, 255)
+    context.image[black_mask == 1] = (0, 0, 0)
 
 
 @Process("mask-cut")
@@ -941,6 +941,7 @@ def transform(
         image_status["size"] = list(context.image.shape[:2][::-1])
         context.init_mask()
         level(context)
+        color_cut(context)
         cut(context)
         deskew(context)
         docrop(context)
