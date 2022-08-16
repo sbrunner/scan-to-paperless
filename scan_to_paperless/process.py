@@ -941,6 +941,7 @@ def transform(
         image_status["size"] = list(context.image.shape[:2][::-1])
         context.init_mask()
         level(context)
+        color_cut(context)
         cut(context)
         deskew(context)
         docrop(context)

@@ -396,7 +396,7 @@ def test_empty():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True},
+        "args": {"level": True, "cut_white": 255},
     }
     step = {
         "sources": [
