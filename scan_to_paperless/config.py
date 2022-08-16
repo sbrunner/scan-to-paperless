@@ -314,6 +314,222 @@ MergeStrategies = TypedDict(
 )
 
 
+# Default value of the field path 'Arguments append_credit_card'
+_ARGUMENTS_APPEND_CREDIT_CARD_DEFAULT = False
+
+
+# Default value of the field path 'Arguments assisted_split'
+_ARGUMENTS_ASSISTED_SPLIT_DEFAULT = False
+
+
+# Default value of the field path 'Arguments auto_level'
+_ARGUMENTS_AUTO_LEVEL_DEFAULT = False
+
+
+# Default value of the field path 'Arguments background_color'
+_ARGUMENTS_BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
+
+
+# Default value of the field path 'Arguments colors'
+_ARGUMENTS_COLORS_DEFAULT = 0
+
+
+# Default value of the field path 'Arguments contour_kernel_size_crop'
+_ARGUMENTS_CONTOUR_KERNEL_SIZE_CROP_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments contour_kernel_size_empty'
+_ARGUMENTS_CONTOUR_KERNEL_SIZE_EMPTY_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments contour_kernel_size_limit'
+_ARGUMENTS_CONTOUR_KERNEL_SIZE_LIMIT_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments cut_black'
+_ARGUMENTS_CUT_BLACK_DEFAULT = 0
+
+
+# Default value of the field path 'Arguments cut_white'
+_ARGUMENTS_CUT_WHITE_DEFAULT = 250
+
+
+# Default value of the field path 'Arguments deskew_angle_derivation'
+_ARGUMENTS_DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
+
+
+# Default value of the field path 'Arguments deskew_max_angle'
+_ARGUMENTS_DESKEW_MAX_ANGLE_DEFAULT = 10
+
+
+# Default value of the field path 'Arguments deskew_min_angle'
+_ARGUMENTS_DESKEW_MIN_ANGLE_DEFAULT = -10
+
+
+# Default value of the field path 'Arguments dither'
+_ARGUMENTS_DITHER_DEFAULT = False
+
+
+# Default value of the field path 'Arguments dpi'
+_ARGUMENTS_DPI_DEFAULT = 300
+
+
+# Default value of the field path 'Arguments jpeg'
+_ARGUMENTS_JPEG_DEFAULT = False
+
+
+# Default value of the field path 'Arguments jpeg_quality'
+_ARGUMENTS_JPEG_QUALITY_DEFAULT = 90
+
+
+# Default value of the field path 'Arguments margin_horizontal'
+_ARGUMENTS_MARGIN_HORIZONTAL_DEFAULT = 9
+
+
+# Default value of the field path 'Arguments margin_vertical'
+_ARGUMENTS_MARGIN_VERTICAL_DEFAULT = 6
+
+
+# Default value of the field path 'Arguments max_level'
+_ARGUMENTS_MAX_LEVEL_DEFAULT = 15
+
+
+# Default value of the field path 'Arguments min_box_black_crop'
+_ARGUMENTS_MIN_BOX_BLACK_CROP_DEFAULT = 2
+
+
+# Default value of the field path 'Arguments min_box_black_empty'
+_ARGUMENTS_MIN_BOX_BLACK_EMPTY_DEFAULT = 2
+
+
+# Default value of the field path 'Arguments min_box_black_limit'
+_ARGUMENTS_MIN_BOX_BLACK_LIMIT_DEFAULT = 2
+
+
+# Default value of the field path 'Arguments min_box_size_crop'
+_ARGUMENTS_MIN_BOX_SIZE_CROP_DEFAULT = 3
+
+
+# Default value of the field path 'Arguments min_box_size_empty'
+_ARGUMENTS_MIN_BOX_SIZE_EMPTY_DEFAULT = 10
+
+
+# Default value of the field path 'Arguments min_box_size_limit'
+_ARGUMENTS_MIN_BOX_SIZE_LIMIT_DEFAULT = 3
+
+
+# Default value of the field path 'Arguments min_level'
+_ARGUMENTS_MIN_LEVEL_DEFAULT = 15
+
+
+# Default value of the field path 'Arguments no_crop'
+_ARGUMENTS_NO_CROP_DEFAULT = False
+
+
+# Default value of the field path 'Arguments pngquant_options'
+_ARGUMENTS_PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
+
+
+# Default value of the field path 'Arguments run_exiftool'
+_ARGUMENTS_RUN_EXIFTOOL_DEFAULT = False
+
+
+# Default value of the field path 'Arguments run_optipng'
+_ARGUMENTS_RUN_OPTIPNG_DEFAULT = True
+
+
+# Default value of the field path 'Arguments run_pngquant'
+_ARGUMENTS_RUN_PNGQUANT_DEFAULT = False
+
+
+# Default value of the field path 'Arguments run_ps2pdf'
+_ARGUMENTS_RUN_PS2PDF_DEFAULT = False
+
+
+# Default value of the field path 'Arguments sharpen'
+_ARGUMENTS_SHARPEN_DEFAULT = False
+
+
+# Default value of the field path 'Arguments tesseract'
+_ARGUMENTS_TESSERACT_DEFAULT = False
+
+
+# Default value of the field path 'Arguments tesseract_lang'
+_ARGUMENTS_TESSERACT_LANG_DEFAULT = "fra+eng"
+
+
+# Default value of the field path 'Arguments threshold_block_size_crop'
+_ARGUMENTS_THRESHOLD_BLOCK_SIZE_CROP_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments threshold_block_size_empty'
+_ARGUMENTS_THRESHOLD_BLOCK_SIZE_EMPTY_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments threshold_block_size_limit'
+_ARGUMENTS_THRESHOLD_BLOCK_SIZE_LIMIT_DEFAULT = 1.5
+
+
+# Default value of the field path 'Arguments threshold_value_c_crop'
+_ARGUMENTS_THRESHOLD_VALUE_C_CROP_DEFAULT = 70
+
+
+# Default value of the field path 'Arguments threshold_value_c_empty'
+_ARGUMENTS_THRESHOLD_VALUE_C_EMPTY_DEFAULT = 70
+
+
+# Default value of the field path 'Arguments threshold_value_c_limit'
+_ARGUMENTS_THRESHOLD_VALUE_C_LIMIT_DEFAULT = 70
+
+
+# Default value of the field path 'Auto mask buffer_level'
+_AUTO_MASK_BUFFER_LEVEL_DEFAULT = 20
+
+
+# Default value of the field path 'Auto mask buffer_size'
+_AUTO_MASK_BUFFER_SIZE_DEFAULT = "50 an case of mask, 20 in case of cut"
+
+
+# Default value of the field path 'Auto mask de_noise_level'
+_AUTO_MASK_DE_NOISE_LEVEL_DEFAULT = 220
+
+
+# Default value of the field path 'Auto mask de_noise_morphology'
+_AUTO_MASK_DE_NOISE_MORPHOLOGY_DEFAULT = True
+
+
+# Default value of the field path 'Auto mask de_noise_size'
+_AUTO_MASK_DE_NOISE_SIZE_DEFAULT = 20
+
+
+# Default value of the field path 'Auto mask inverse_mask'
+_AUTO_MASK_INVERSE_MASK_DEFAULT = False
+
+
+# Default value of the field path 'Auto mask lower_hsv_color'
+_AUTO_MASK_LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
+
+
+# Default value of the field path 'Auto mask upper_hsv_color'
+_AUTO_MASK_UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
+
+
+# Default value of the field path 'Configuration extension'
+_CONFIGURATION_EXTENSION_DEFAULT = "png"
+
+
+# Default value of the field path 'Configuration scanimage_arguments'
+_CONFIGURATION_SCANIMAGE_ARGUMENTS_DEFAULT = ["--format=png", "--mode=color", "--resolution=300"]
+
+
+# Default value of the field path 'Configuration scanimage'
+_CONFIGURATION_SCANIMAGE_DEFAULT = "scanimage"
+
+
+# Default value of the field path 'Configuration viewer'
+_CONFIGURATION_VIEWER_DEFAULT = "eog"
+
+
 _ConfigurationModesAdditionalproperties = TypedDict(
     "_ConfigurationModesAdditionalproperties",
     {
@@ -326,3 +542,19 @@ _ConfigurationModesAdditionalproperties = TypedDict(
     },
     total=False,
 )
+
+
+# Default value of the field path 'Merge strategies dict'
+_MERGE_STRATEGIES_DICT_DEFAULT = ["merge"]
+
+
+# Default value of the field path 'Merge strategies fallback'
+_MERGE_STRATEGIES_FALLBACK_DEFAULT = ["override"]
+
+
+# Default value of the field path 'Merge strategies list'
+_MERGE_STRATEGIES_LIST_DEFAULT = ["override"]
+
+
+# Default value of the field path 'Merge strategies type_conflict'
+_MERGE_STRATEGIES_TYPE_CONFLICT_DEFAULT = ["override"]
