@@ -71,7 +71,7 @@ def main() -> None:
         "adf: {scanimage_arguments: [--source=ADF]}, "
         "multi: {scanimage_arguments: [--batch-prompt]}, "
         "one: {scanimage_arguments: [--batch-count=1]}, "
-        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}"
+        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}",
     )
     parser.add_argument(
         "--preset",

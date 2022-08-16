@@ -30,6 +30,7 @@ pylint:
     - wrong-import-order
     - line-too-long
     - no-value-for-parameter
+    - no-else-continue
     - broad-except
   options:
     good-names: x,y
