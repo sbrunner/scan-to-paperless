@@ -19,9 +19,6 @@ pydocstyle:
 
 pylint:
   disable:
-    - wrong-import-order
-    - line-too-long
-    - no-value-for-parameter
     - too-few-public-methods
     - too-many-lines
     - too-many-branches
@@ -29,6 +26,10 @@ pylint:
     - too-many-locals
     - too-many-nested-blocks
     - too-many-arguments
+    - too-many-return-statements
+    - wrong-import-order
+    - line-too-long
+    - no-value-for-parameter
     - broad-except
   options:
     good-names: x,y
