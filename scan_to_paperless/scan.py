@@ -17,11 +17,12 @@ from ruamel.yaml.main import YAML
 from skimage import io
 
 from scan_to_paperless import CONFIG_PATH, get_config
+from .config import VIEWER_DEFAULT
 
 if sys.version_info.minor >= 8:
-    from scan_to_paperless import config as stp_config
+    from scan_to_paperless import config as schema
 else:
-    from scan_to_paperless import config_old as stp_config  # type: ignore
+    from scan_to_paperless import config_old as schema  # type: ignore
 
 
 def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> None:
@@ -108,7 +109,7 @@ def main() -> None:
     args = parser.parse_args()
 
     config_filename = CONFIG_PATH if args.preset is None else f"{CONFIG_PATH[:-5]}-{args.preset}.yaml"
-    config: stp_config.Configuration = get_config(config_filename)
+    config: schema.Configuration = get_config(config_filename)
 
     if args.config:
         yaml = YAML()
@@ -160,21 +161,14 @@ def main() -> None:
     os.makedirs(root_folder)
 
     try:
-        scanimage: List[str] = [config.get("scanimage", "scanimage")]
-        scanimage += config.get("scanimage_arguments", ["--format=png", "--mode=color", "--resolution=300"])
-        scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', 'png')}"]
+        scanimage: List[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
+        scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
+        scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
         mode_config = config.get("modes", {}).get(args.mode, {})
-        if "scanimage_arguments" in mode_config:
-            scanimage += mode_config["scanimage_arguments"]
-        else:
-            if args.mode in ("adf", "double"):
-                scanimage += ["--source=ADF Duplex"]
-            if args.mode == "multi":
-                scanimage += ["--batch-prompt"]
-            if args.mode == "one":
-                scanimage += ["--batch-count=1"]
+        mode_default = cast(schema.Mode, schema.MODES_DEFAULT.get(args.mode, {}))
+        scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
-        if mode_config.get("auto_bash", args.mode == "double"):
+        if mode_config.get("auto_bash", mode_default.get('auto_bash', schema.AUTO_BASH_DEFAULT)):
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
             input("Put your document in the automatic document feeder for the other side, and press enter.")
@@ -186,7 +180,7 @@ def main() -> None:
                     f"--batch-count={len(odd)}",
                 ]
             )
-            if mode_config.get("rotate_even", args.mode == "double"):
+            if mode_config.get("rotate_even", mode_default.get('rotate_even', schema.ROTATE_EVEN_DEFAULT)):
                 for img in os.listdir(root_folder):
                     if img not in odd:
                         path = os.path.join(root_folder, img)
@@ -197,20 +191,20 @@ def main() -> None:
         else:
             call(scanimage)
 
-        args_: stp_config.Arguments = {}
+        args_: schema.Arguments = {}
         args_.update(config.get("default_args", {}))
         args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
         del args_cmd["mode"]
         del args_cmd["preset"]
         del args_cmd["config"]
         del args_cmd["set_config"]
-        args_.update(cast(stp_config.Arguments, args_cmd))
+        args_.update(cast(schema.Arguments, args_cmd))
 
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
-    if config.get("extension", "png") != "png":
+    if config.get("extension", schema.EXTENSION_DEFAULT) != "png":
         for img in os.listdir(root_folder):
             if not img.startswith("image-"):
                 continue
@@ -219,7 +213,7 @@ def main() -> None:
                     args_["dpi"] = tiff.pages[0].tags["XResolution"].value[0]
 
     print(base_folder)
-    subprocess.call([config.get("viewer", "eog"), root_folder])  # nosec
+    subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec
 
     images = []
     for img in os.listdir(root_folder):
@@ -227,7 +221,7 @@ def main() -> None:
             continue
         images.append(os.path.join("source", img))
 
-    regex = re.compile(rf"^source\/image\-([0-9]+)\.{config.get('extension', 'png')}$")
+    regex = re.compile(rf"^source\/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
 
     def image_match(image_name: str) -> int:
         match = regex.match(image_name)

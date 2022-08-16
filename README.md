@@ -151,7 +151,7 @@ the images.
 
 ### Add a mask
 
-If your scanner add some margin around the scanned image it will relay case some issue the deskew and the
+If your scanner add some margin around the scanned image it will relay case some issue the skew and the
 content detection.
 
 To solve that you can add a black and white image named `mask.png` in the root folder and draw in black the

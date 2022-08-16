@@ -7,9 +7,9 @@ from deepmerge import Merger
 from ruamel.yaml.main import YAML
 
 if sys.version_info.minor >= 8:
-    from scan_to_paperless import config as stp_config
+    from scan_to_paperless import config as schema
 else:
-    from scan_to_paperless import config_old as stp_config  # type: ignore
+    from scan_to_paperless import config_old as schema  # type: ignore
 
 CONFIG_FILENAME = "scan-to-paperless.yaml"
 
@@ -23,13 +23,13 @@ else:
 CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILENAME)
 
 
-def get_config(config_filename: str) -> stp_config.Configuration:
+def get_config(config_filename: str) -> schema.Configuration:
     """Get the configuration."""
     if os.path.exists(config_filename):
         yaml = YAML()
         yaml.default_flow_style = False
         with open(config_filename, encoding="utf-8") as config_file:
-            config = cast(stp_config.Configuration, yaml.load(config_file))
+            config = cast(schema.Configuration, yaml.load(config_file))
             if "exteds" in config:
 
                 base_config = get_config(
@@ -38,7 +38,7 @@ def get_config(config_filename: str) -> stp_config.Configuration:
                     )
                 )
 
-                strategies_config = cast(stp_config.MergeStrategies, config.get("strategies", {}))
+                strategies_config = cast(schema.MergeStrategies, config.get("strategies", {}))
                 merger = Merger(
                     [
                         (list, strategies_config.get("list", ["override"])),
@@ -47,7 +47,7 @@ def get_config(config_filename: str) -> stp_config.Configuration:
                     strategies_config.get("fallback", ["merge"]),
                     strategies_config.get("type_conflict", ["merge"]),
                 )
-                config = cast(stp_config.Configuration, merger.merge(base_config, config))
+                config = cast(schema.Configuration, merger.merge(base_config, config))
             return config
     print(f"Missing config file: {config_filename}")
     return {}
