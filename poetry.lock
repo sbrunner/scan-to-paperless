@@ -39,10 +39,10 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
-tests_no_zope = ["cloudpickle", "pytest-mypy-plugins", "mypy (>=0.900,!=0.940)", "pytest (>=4.3.0)", "pympler", "hypothesis", "coverage[toml] (>=5.0.2)"]
-tests = ["cloudpickle", "zope.interface", "pytest-mypy-plugins", "mypy (>=0.900,!=0.940)", "pytest (>=4.3.0)", "pympler", "hypothesis", "coverage[toml] (>=5.0.2)"]
-docs = ["sphinx-notfound-page", "zope.interface", "sphinx", "furo"]
-dev = ["cloudpickle", "pre-commit", "sphinx-notfound-page", "sphinx", "furo", "zope.interface", "pytest-mypy-plugins", "mypy (>=0.900,!=0.940)", "pytest (>=4.3.0)", "pympler", "hypothesis", "coverage[toml] (>=5.0.2)"]
+dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "mypy (>=0.900,!=0.940)", "pytest-mypy-plugins", "zope.interface", "furo", "sphinx", "sphinx-notfound-page", "pre-commit", "cloudpickle"]
+docs = ["furo", "sphinx", "zope.interface", "sphinx-notfound-page"]
+tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "mypy (>=0.900,!=0.940)", "pytest-mypy-plugins", "zope.interface", "cloudpickle"]
+tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "mypy (>=0.900,!=0.940)", "pytest-mypy-plugins", "cloudpickle"]
 
 [[package]]
 name = "bandit"
@@ -59,9 +59,9 @@ PyYAML = ">=5.3.1"
 stevedore = ">=1.20.0"
 
 [package.extras]
-yaml = ["pyyaml"]
+test = ["coverage (>=4.5.4)", "fixtures (>=3.0.0)", "flake8 (>=4.0.0)", "stestr (>=2.5.0)", "testscenarios (>=0.5.0)", "testtools (>=2.3.0)", "toml", "beautifulsoup4 (>=4.8.0)", "pylint (==1.9.4)"]
 toml = ["toml"]
-test = ["pylint (==1.9.4)", "beautifulsoup4 (>=4.8.0)", "toml", "testtools (>=2.3.0)", "testscenarios (>=0.5.0)", "stestr (>=2.5.0)", "flake8 (>=4.0.0)", "fixtures (>=3.0.0)", "coverage (>=4.5.4)"]
+yaml = ["pyyaml"]
 
 [[package]]
 name = "brotli"
@@ -240,7 +240,7 @@ flake8 = "*"
 
 [[package]]
 name = "fonttools"
-version = "4.34.4"
+version = "4.35.0"
 description = "Tools to manipulate font files"
 category = "main"
 optional = false
@@ -362,8 +362,8 @@ python-versions = ">=3.7"
 zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-testing = ["pytest-mypy (>=0.9.1)", "pytest-black (>=0.3.7)", "pytest-enabler (>=1.3)", "pytest-cov", "pytest-flake8", "pytest-checkdocs (>=2.4)", "pytest (>=6)"]
-docs = ["jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "jaraco.packaging (>=9)", "sphinx"]
+docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [[package]]
 name = "iniconfig"
@@ -402,8 +402,8 @@ pkgutil-resolve-name = {version = ">=1.3.10", markers = "python_version < \"3.9\
 pyrsistent = ">=0.14.0,<0.17.0 || >0.17.0,<0.17.1 || >0.17.1,<0.17.2 || >0.17.2"
 
 [package.extras]
-format-nongpl = ["webcolors (>=1.11)", "uri-template", "rfc3986-validator (>0.1.0)", "rfc3339-validator", "jsonpointer (>1.13)", "isoduration", "idna", "fqdn"]
-format = ["webcolors (>=1.11)", "uri-template", "rfc3987", "rfc3339-validator", "jsonpointer (>1.13)", "isoduration", "idna", "fqdn"]
+format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
+format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
 
 [[package]]
 name = "jsonschema-gentypes"
@@ -439,10 +439,10 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, != 3.4.*"
 
 [package.extras]
-source = ["Cython (>=0.29.7)"]
-htmlsoup = ["beautifulsoup4"]
-html5 = ["html5lib"]
 cssselect = ["cssselect (>=0.7)"]
+html5 = ["html5lib"]
+htmlsoup = ["beautifulsoup4"]
+source = ["Cython (>=0.29.7)"]
 
 [[package]]
 name = "mccabe"
@@ -466,9 +466,9 @@ tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 typing-extensions = ">=3.10"
 
 [package.extras]
-reports = ["lxml"]
-python2 = ["typed-ast (>=1.4.0,<2)"]
 dmypy = ["psutil (>=4.0)"]
+python2 = ["typed-ast (>=1.4.0,<2)"]
+reports = ["lxml"]
 
 [[package]]
 name = "mypy-extensions"
@@ -511,10 +511,10 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.19.3", markers = "python_version >= \"3.9\" or python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\""},
-    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
+    {version = ">=1.21.2", markers = "python_version >= \"3.10\" or python_version >= \"3.6\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
+    {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
     {version = ">=1.14.5", markers = "python_version >= \"3.7\""},
-    {version = ">=1.21.2", markers = "python_version >= \"3.6\" and platform_system == \"Darwin\" and platform_machine == \"arm64\" or python_version >= \"3.10\""},
+    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
 ]
 
 [[package]]
@@ -581,9 +581,9 @@ packaging = "*"
 Pillow = ">=6.0"
 
 [package.extras]
-test = ["python-xmp-toolkit (>=2.0.1)", "tomli", "python-dateutil (>=2.8.0)", "pytest-xdist (>=1.28)", "pytest-timeout (>=1.4.2)", "pytest-cov (>=2.10.1)", "pytest (>=6)", "pybind11", "psutil (>=5)", "hypothesis (>=5)", "coverage", "attrs (>=20.2.0)", "Pillow (>=9)"]
-mypy = ["types-setuptools", "types-requests", "types-pillow", "lxml-stubs"]
-docs = ["tomli", "sphinx-rtd-theme", "sphinx-issues", "sphinx-design", "setuptools-scm", "requests", "pybind11", "matplotlib", "ipython", "Sphinx (>=3)", "pygithub", "gitpython"]
+docs = ["gitpython", "pygithub", "Sphinx (>=3)", "ipython", "matplotlib", "pybind11", "requests", "setuptools-scm", "sphinx-design", "sphinx-issues", "sphinx-rtd-theme", "tomli"]
+mypy = ["lxml-stubs", "types-pillow", "types-requests", "types-setuptools"]
+test = ["Pillow (>=9)", "attrs (>=20.2.0)", "coverage", "hypothesis (>=5)", "psutil (>=5)", "pybind11", "pytest (>=6)", "pytest-cov (>=2.10.1)", "pytest-timeout (>=1.4.2)", "pytest-xdist (>=1.28)", "python-dateutil (>=2.8.0)", "tomli", "python-xmp-toolkit (>=2.0.1)"]
 
 [[package]]
 name = "pillow"
@@ -594,8 +594,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-tests = ["pytest-timeout", "pytest-cov", "pytest", "pyroma", "packaging", "olefile", "markdown2", "defusedxml", "coverage", "check-manifest"]
-docs = ["sphinxext-opengraph", "sphinx-removed-in", "sphinx-issues (>=3.0.1)", "sphinx-copybutton", "sphinx (>=2.4)", "olefile", "furo"]
+docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-issues (>=3.0.1)", "sphinx-removed-in", "sphinxext-opengraph"]
+tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
 
 [[package]]
 name = "pkgutil-resolve-name"
@@ -614,8 +614,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-test = ["pytest (>=6)", "pytest-mock (>=3.6)", "pytest-cov (>=2.7)", "appdirs (==1.4.4)"]
-docs = ["sphinx (>=4)", "sphinx-autodoc-typehints (>=1.12)", "proselint (>=0.10.2)", "furo (>=2021.7.5b38)"]
+docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx-autodoc-typehints (>=1.12)", "sphinx (>=4)"]
+test = ["appdirs (==1.4.4)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)", "pytest (>=6)"]
 
 [[package]]
 name = "pluggy"
@@ -751,8 +751,8 @@ tomlkit = ">=0.10.1"
 typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-testutils = ["gitpython (>3)"]
 spelling = ["pyenchant (>=3.2,<4.0)"]
+testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pylint-celery"
@@ -814,11 +814,11 @@ optional = false
 python-versions = ">=3.6.8"
 
 [package.extras]
-diagrams = ["jinja2", "railroad-diagrams"]
+diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
 name = "pypdf2"
-version = "2.10.0"
+version = "2.10.2"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 category = "main"
 optional = false
@@ -894,7 +894,7 @@ py = ">=1.8.2"
 tomli = ">=1.0.0"
 
 [package.extras]
-testing = ["xmlschema", "requests", "pygments (>=2.7.2)", "nose", "mock", "hypothesis (>=3.56)", "argcomplete"]
+testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
 name = "pytest-profiling"
@@ -971,8 +971,8 @@ idna = ">=2.5,<4"
 urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
-use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
+use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requirements-detector"
@@ -1027,10 +1027,10 @@ scipy = ">=1.4.1"
 tifffile = ">=2019.7.26"
 
 [package.extras]
-test = ["pytest-faulthandler", "pytest-localserver", "pytest-cov (>=2.7.0)", "pytest (>=5.2.0)", "pooch (>=1.3.0)", "matplotlib (>=3.0.3)", "flake8", "codecov", "asv"]
-optional = ["qtpy", "pyamg", "pooch (>=1.3.0)", "matplotlib (>=3.0.3)", "dask[array] (>=1.0.0,!=2.17.0)", "cloudpickle (>=0.2.1)", "astropy (>=3.1.2)", "simpleitk"]
-docs = ["kaleido", "plotly (>=4.14.0)", "ipywidgets", "myst-parser", "tifffile (>=2020.5.30)", "pooch (>=1.3.0)", "seaborn (>=0.7.1)", "pandas (>=0.23.0)", "cloudpickle (>=0.2.1)", "dask[array] (>=0.15.0,!=2.17.0)", "matplotlib (>=3.3)", "scikit-learn", "pytest-runner", "sphinx-copybutton", "numpydoc (>=1.0)", "sphinx-gallery (>=0.10.1)", "sphinx (>=1.8)"]
 data = ["pooch (>=1.3.0)"]
+docs = ["sphinx (>=1.8)", "sphinx-gallery (>=0.10.1)", "numpydoc (>=1.0)", "sphinx-copybutton", "pytest-runner", "scikit-learn", "matplotlib (>=3.3)", "dask[array] (>=0.15.0,!=2.17.0)", "cloudpickle (>=0.2.1)", "pandas (>=0.23.0)", "seaborn (>=0.7.1)", "pooch (>=1.3.0)", "tifffile (>=2020.5.30)", "myst-parser", "ipywidgets", "plotly (>=4.14.0)", "kaleido"]
+optional = ["simpleitk", "astropy (>=3.1.2)", "cloudpickle (>=0.2.1)", "dask[array] (>=1.0.0,!=2.17.0)", "matplotlib (>=3.0.3)", "pooch (>=1.3.0)", "pyamg", "qtpy"]
+test = ["asv", "codecov", "flake8", "matplotlib (>=3.0.3)", "pooch (>=1.3.0)", "pytest (>=5.2.0)", "pytest-cov (>=2.7.0)", "pytest-localserver", "pytest-faulthandler"]
 
 [[package]]
 name = "scipy"
@@ -1159,9 +1159,9 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
 
 [package.extras]
+brotli = ["brotlicffi (>=0.8.0)", "brotli (>=1.0.9)", "brotlipy (>=0.6.0)"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
-secure = ["ipaddress", "certifi", "idna (>=2.0.0)", "cryptography (>=1.3.4)", "pyOpenSSL (>=0.14)"]
-brotli = ["brotlipy (>=0.6.0)", "brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
 
 [[package]]
 name = "weasyprint"
@@ -1182,8 +1182,8 @@ Pyphen = ">=0.9.1"
 tinycss2 = ">=1.0.0"
 
 [package.extras]
-test = ["coverage", "pytest-cov", "pytest-isort", "pytest-flake8", "pytest-xdist", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["pytest", "pytest-xdist", "pytest-flake8", "pytest-isort", "pytest-cov", "coverage"]
 
 [[package]]
 name = "webencodings"
@@ -1238,7 +1238,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "aa9be01dab38914b53c1826a4a015197bf69b0ffffcb97f088d476fb0d431024"
+content-hash = "cf24cf6c86b677bb7cd14ce5c5a2da46b7ac16e3d75c72c5de69064fdcc16bf8"
 
 [metadata.files]
 argcomplete = [
@@ -1474,8 +1474,8 @@ flake8-polyfill = [
     {file = "flake8_polyfill-1.0.2-py2.py3-none-any.whl", hash = "sha256:12be6a34ee3ab795b19ca73505e7b55826d5f6ad7230d31b18e106400169b9e9"},
 ]
 fonttools = [
-    {file = "fonttools-4.34.4-py3-none-any.whl", hash = "sha256:d73f25b283cd8033367451122aa868a23de0734757a01984e4b30b18b9050c72"},
-    {file = "fonttools-4.34.4.zip", hash = "sha256:9a1c52488045cd6c6491fd07711a380f932466e317cb8e016fc4e99dc7eac2f0"},
+    {file = "fonttools-4.35.0-py3-none-any.whl", hash = "sha256:0292e391c1b46f2308bda20ea2a2dd5253725e7e2d3a1928b631338eb318eb22"},
+    {file = "fonttools-4.35.0.zip", hash = "sha256:1cfb335c0abdeb6231191dc4f9d7ce1173e2ac94b335c617e045b96f9c974aea"},
 ]
 gitdb = [
     {file = "gitdb-4.0.9-py3-none-any.whl", hash = "sha256:8033ad4e853066ba6ca92050b9df2f89301b8fc8bf7e9324d412a63f8bf1a8fd"},
@@ -1888,8 +1888,8 @@ pyparsing = [
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pypdf2 = [
-    {file = "PyPDF2-2.10.0-py3-none-any.whl", hash = "sha256:733f24dd34a7b13205c47a63f1c1a13a1e9de6fca98c95b457994b2880398372"},
-    {file = "PyPDF2-2.10.0.tar.gz", hash = "sha256:b26078206221c6411ec97a5a5c08975ae79ba7ec467575d11477a99cce601eb9"},
+    {file = "PyPDF2-2.10.2-py3-none-any.whl", hash = "sha256:62a6e52779a5f09e13c5c3de1ae8983fe56ca5bf249ec9f2b6da009c09961ef0"},
+    {file = "PyPDF2-2.10.2.tar.gz", hash = "sha256:2a5b21911c7f58a22d0e48d360d17eb0d872e86f4d7d5d274398c2201c187fc9"},
 ]
 pyperclip = [
     {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
