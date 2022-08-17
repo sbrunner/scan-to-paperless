@@ -177,7 +177,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
                         mask,
                         cv2.bitwise_not(
                             cv2.resize(
-                                cv2.cvtColor(cv2.imread(mask_file), cv2.COLOR_BGR2GRAY),
+                                cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE),
                                 (mask.shape[1], mask.shape[0]),
                             )
                         ),
@@ -196,13 +196,9 @@ class Context:  # pylint: disable=too-many-instance-attributes
                 if not os.path.exists(mask_file):
                     return None
 
-            final_mask = cv2.imread(mask_file)
-
-            maskbw = (
-                final_mask if len(final_mask.shape) == 2 else cv2.cvtColor(final_mask, cv2.COLOR_BGR2GRAY)
-            )
+            final_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
             if self.image is not None and final_mask is not None:
-                return cast(NpNdarrayInt, cv2.resize(maskbw, (self.image.shape[1], self.image.shape[0])))
+                return cast(NpNdarrayInt, cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])))
         return cast(NpNdarrayInt, final_mask)
 
     def init_mask(self) -> None:
