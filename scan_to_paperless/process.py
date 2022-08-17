@@ -172,7 +172,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
                     if mask_file
                     else auto_mask_config.get("additional_filename")
                 )
-                if mask_file:
+                if mask_file and os.path.exists(mask_file):
                     mask = cv2.add(
                         mask,
                         cv2.bitwise_not(
