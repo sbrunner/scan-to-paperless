@@ -56,6 +56,7 @@ jobs:
           cd /tests &&
           pytest --durations=0 -vv --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
+      - run: ps aux
       - uses: actions/upload-artifact@v3
         with:
           name: results
