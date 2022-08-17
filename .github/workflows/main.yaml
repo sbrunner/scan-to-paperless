@@ -64,6 +64,8 @@ jobs:
         if: failure()
       - run: sudo service docker stop
         if: failure()
+      - run: sudo chmod -R go+r results
+        if: failure()
       - uses: actions/upload-artifact@v3
         with:
           name: results
@@ -71,12 +73,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 5
         if: failure()
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Test report
-          path: results/test-reports
-          if-no-files-found: ignore
-          retention-days: 5
 
       - run: make build-all
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
