@@ -7,6 +7,8 @@ on:
       - reopened
       - labeled
       - unlabeled
+      - edit
+      - synchronize
 
 jobs:
   build:
@@ -16,16 +18,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-
-      - uses: yashhy/pr-label-check-and-comment-action@master
-        with:
-          required_labels: enhancement, bug, refactor, documentation, chore, dependencies
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.actor != 'renovate[bot]'
-
-      # Do spell on pull request title
       - run: python3 -m pip install --user codespell
-      - run: jq -r '.pull_request.title' ${GITHUB_EVENT_PATH} > pull-request-title
-      # --ignore-words=spell-ignore-words.txt
-      - run: codespell pull-request-title
+      - name: Check pull request
+        run: ci/check-pull-request
+        env:
+          GITHUB_EVENT: ${{ toJson(github) }}

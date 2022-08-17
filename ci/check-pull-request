@@ -1,0 +1,268 @@
+#!/usr/bin/env python3
+"""Check the pull request commits, messages and labels."""
+
+import argparse
+import json
+import os
+import re
+import subprocess  # nosec
+import sys
+from tempfile import NamedTemporaryFile
+from typing import Any, Dict, List
+
+import requests
+import yaml
+
+
+def _print_separator(char: str = "=") -> bool:
+    print(char * 30)
+    return True
+
+
+def _intro(need_separator: bool, commit: Dict[str, Any]) -> bool:
+    head = commit["commit"]["message"].split("\n")[0]
+    if need_separator:
+        _print_separator("-")
+    print(f'{commit["commit"]["tree"]["sha"]}: {head}')
+    return True
+
+
+def _check_commits(
+    need_separator: bool, commits: List[Dict[str, Any]], args: argparse.Namespace, **kwargs: Any
+) -> bool:
+    del kwargs
+
+    error = False
+    first_capital = re.compile(r"^[A-Z]")
+    for commit in commits:
+        head = commit["commit"]["message"].split("\n")[0]
+        if head.startswith("fixup! "):
+            need_separator = _intro(need_separator, commit)
+            print("Fixup message not allowed")
+            error = True
+            continue
+        if head.startswith("squash! "):
+            need_separator = _intro(need_separator, commit)
+            print("Squash message not allowed")
+            error = True
+            continue
+        if first_capital.match(head) is None:
+            need_separator = _intro(need_separator, commit)
+            print("The first letter of message head should be a capital")
+            error = True
+            continue
+        if len(head) < args.length:
+            need_separator = _intro(need_separator, commit)
+            print(f"The message head should be at least {args.length} characters long")
+            error = True
+            continue
+    return error
+
+
+def _check_commits_spell(
+    global_need_separator: bool,
+    commits: List[Dict[str, Any]],
+    args: argparse.Namespace,
+    spellcheck_cmd: List[str],
+    **kwargs,
+) -> bool:
+    del kwargs
+
+    error = False
+    for commit in commits:
+        need_separator = False
+        with NamedTemporaryFile("w+t", encoding="utf-8", suffix=".yaml") as temp_file:
+            if args.only_head:
+                head = commit["commit"]["message"].split("\n")[0]
+                temp_file.write(head)
+            else:
+                temp_file.write(commit["commit"]["message"])
+            temp_file.flush()
+            spell = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+                spellcheck_cmd + [temp_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            if spell.returncode != 0:
+                if global_need_separator:
+                    _print_separator()
+                global_need_separator = False
+                need_separator = _intro(need_separator, commit)
+                print("Code spell error")
+                print(spell.stderr)
+                print(spell.stdout)
+                global_need_separator = True
+                error = True
+    return error
+
+
+def _check_pull_request_spell(
+    need_separator: bool,
+    args: argparse.Namespace,
+    spellcheck_cmd: List[str],
+    github_event: Dict[str, Any],
+    **kwargs: Any,
+) -> bool:
+    del kwargs
+
+    with NamedTemporaryFile("w+t") as temp_file:
+        temp_file.write(github_event["event"]["pull_request"]["title"])
+        temp_file.write("\n")
+        if not args.only_head:
+            temp_file.write("\n")
+            temp_file.write(github_event["event"]["pull_request"]["body"])
+            temp_file.write("\n")
+        temp_file.flush()
+        spell = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+            spellcheck_cmd + [temp_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        if spell.returncode != 0:
+            if need_separator:
+                _print_separator()
+            print("Code spell error in pull request")
+            print(spell.stderr)
+            print(spell.stdout)
+            return True
+    return False
+
+
+def _check_pull_request_labels(need_separator: bool, github_event: Dict[str, Any], **kwargs: Any) -> bool:
+    del kwargs
+
+    if github_event["actor"] == "renovate[bot]":
+        return True
+
+    if not os.path.exists(".github/changelog-config.yaml"):
+        return True
+
+    required_labels = []
+    with open(".github/changelog-config.yaml", encoding="utf-8") as changelog_config_file:
+        changelog_config = yaml.load(changelog_config_file, Loader=yaml.SafeLoader)
+        for section in changelog_config.values():
+            if "labels" in section:
+                required_labels.extend(section["labels"])
+
+    if required_labels:
+        labels = [
+            label["name"]
+            for label in github_event["event"]["pull_request"]["labels"]
+            if label["name"] in required_labels
+        ]
+        if len(labels) == 0:
+            if need_separator:
+                _print_separator()
+            print(f"No required label found: {', '.join(required_labels)}")
+            return True
+        if len(labels) > 1:
+            if need_separator:
+                _print_separator()
+            print(f"Too many required labels found: {', '.join(labels)}")
+            return True
+    return False
+
+
+def _test_issue_link() -> None:
+    all_re = [
+        re.compile(r"^([A-Z]{3,6}-[0-9]+)-.*$"),
+        re.compile(r"^([a-z]{3,6}-[0-9]+)-.*$"),
+        re.compile(r"^.*-([A-Z]{3,6}-[0-9]+)$"),
+        re.compile(r"^.*-([a-z]{3,6}-[0-9]+)$"),
+    ]
+
+    for name in [
+        "test-gsgmf-123",
+        "test-GSGMF-123",
+        "gsgmf-123-test",
+        "GSGMF-123-test",
+        "test-geo-123",
+        "test-gsgfch-123",
+        "test-gs-123",
+        "test-gsgnfch-123",
+    ]:
+        match = None
+        for re_ in all_re:
+            match = re_.match(name)
+            if match is not None:
+                break
+        print(f"{name}: {match}")
+        if match is not None:
+            print(match.group(1))
+
+
+def _add_issue_link(need_separator: bool, github_event: Dict[str, Any], **kwargs: Any) -> bool:
+    del kwargs
+
+    if "GSGMF-1371" not in github_event["event"]["pull_request"]["body"]:
+        comments_response = requests.get(github_event["event"]["pull_request"]["_links"]["comments"]["href"])
+        comments_response.raise_for_status()
+        comments = comments_response.json()
+
+        for comment in comments:
+            if "GSGMF-1371" in comment["body"]:
+                return
+
+        response = requests.post(
+            github_event["event"]["pull_request"]["_links"]["comments"]["href"],
+            headers={
+                "Accept": "application/vnd.github+json",
+                "Authorization": f"Bearer {github_event['token']}",
+            },
+            json={"body": "See also: [GSGMF-1371](https://jira.camptocamp.com/browse/GSGMF-1371)"},
+        )
+
+        if not response.ok:
+            if need_separator:
+                _print_separator()
+            print(response.text)
+            return False
+    return True
+
+
+def _main() -> None:
+    argparser = argparse.ArgumentParser("Check the pull request commits, messages and labels")
+    argparser.add_argument(
+        "--length", help="The minimum length of the commit message header", type=int, default=20
+    )
+    argparser.add_argument(
+        "--only-head", help="Run spellcheck only on pull request and messages head", action="store_true"
+    )
+    args = argparser.parse_args()
+
+    github_event = json.loads(os.environ["GITHUB_EVENT"])
+    print("::group::GitHub event")
+    print(json.dumps(github_event, indent=2))
+    print("::endgroup::")
+
+    commits_response = requests.get(github_event["event"]["pull_request"]["_links"]["commits"]["href"])
+    commits_response.raise_for_status()
+    commits = commits_response.json()
+
+    spellcheck_cmd = ["codespell"]
+    if os.path.exists("spell-ignore-words.txt"):
+        spellcheck_cmd.append("--ignore-words=spell-ignore-words.txt")
+
+    check_args = {
+        "commits": commits,
+        "args": args,
+        "spellcheck_cmd": spellcheck_cmd,
+        "github_event": github_event,
+    }
+    error = False
+
+    checks = [
+        _check_commits,
+        _check_commits_spell,
+        _check_pull_request_spell,
+        _check_pull_request_labels,
+        _add_issue_link,
+    ]
+
+    for check in checks:
+        new_error = check(error, **check_args)  # type: ignore
+        if new_error:
+            error = True
+
+    if error:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    _main()
