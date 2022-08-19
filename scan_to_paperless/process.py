@@ -423,12 +423,6 @@ class Process:  # pylint: disable=too-few-public-methods
         """Call the function."""
 
         def wrapper(context: Context) -> None:
-            if context.image is None:
-                raise Exception("The image is required")
-            if context.root_folder is None:
-                raise Exception("The root folder is required")
-            if context.image_name is None:
-                raise Exception("The image name is required")
             start_time = time.perf_counter()
             if self.ignore_error:
                 try:
@@ -555,10 +549,10 @@ def color_cut(context: Context) -> None:
         grayscale, context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT), 255
     )
     black_mask = cv2.inRange(
-        grayscale, context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT), 0
+        grayscale, 0, context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT)
     )
-    context.image[white_mask == 1] = (255, 255, 255)
-    context.image[black_mask == 1] = (0, 0, 0)
+    context.image[white_mask == 255] = (255, 255, 255)
+    context.image[black_mask == 255] = (0, 0, 0)
 
 
 @Process("mask-cut")

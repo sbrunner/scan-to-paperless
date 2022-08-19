@@ -105,7 +105,7 @@ def init_test():
 @pytest.mark.parametrize(
     "type_,limit",
     [
-        ("lines", {"name": "VL0", "type": "line detection", "value": 1031, "vertical": True, "margin": 0}),
+        ("lines", {"name": "VL1", "type": "line detection", "value": 1864, "vertical": True, "margin": 0}),
         (
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 1584, "vertical": True, "margin": 0},
@@ -593,3 +593,11 @@ def test_auto_cut():
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.do_initial_cut()
     check_image("/results/auto_cut", context.image, "auto_cut")
+
+
+# @pytest.mark.skip(reason="for test")
+def test_color_cut():
+    context = process.Context({"args": {}}, {})
+    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
+    process.color_cut(context)
+    check_image("/results/white-cut", context.image, "white-cut")
