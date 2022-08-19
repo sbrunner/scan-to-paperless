@@ -19,13 +19,19 @@ from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Set, 
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
 from deskew import determine_skew_dev
+from matplotlib import cm
 from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
+from skimage import data
 from skimage.color import rgb2gray, rgba2rgb
+from skimage.draw import line
+from skimage.feature import canny
 from skimage.metrics import structural_similarity
+from skimage.transform import hough_line, hough_line_peaks
 
 from scan_to_paperless import code
 from scan_to_paperless import process_schema as schema
@@ -606,7 +612,7 @@ def deskew(context: Context) -> None:
         grayscale = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
         image = cast(NpNdarrayInt, context.image).copy()
 
-        skew_angle, angles, average_deviation, _ = determine_skew_dev(
+        skew_angle, angles, average_deviation, hough_line = determine_skew_dev(
             grayscale,
             min_angle=np.deg2rad(
                 context.config["args"].setdefault("deskew_min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT)
@@ -642,7 +648,36 @@ def deskew(context: Context) -> None:
         image_status["angles"] = [float(a) for a in float_angles]
 
         assert context.root_folder
-        context.save_progress_images("skew-angles", image, force=True)
+        context.save_progress_images("deskew", image, image_prefix="angles", force=True)
+
+        # hover image
+        h, theta, d = hough_line
+        _, ax = plt.subplots(figsize=(15, 5))
+
+        ax.imshow(np.log(1 + h),  cmap=cm.gray,aspect='auto' )
+        ax.set_title('Hough transform')
+        ax.set_xlabel('Angles (degrees)')
+        ax.set_ylabel('Distance (pixels)')
+
+        plt.tight_layout()
+        plt.show()
+
+        # detected lines
+
+        fig, ax = plt.subplots(figsize=(15, 6))
+
+
+        ax.imshow(image, cmap=cm.gray)
+        ax.set_ylim((image.shape[0], 0))
+        ax.set_axis_off()
+        ax.set_title('Detected lines')
+
+        for _, angle, dist in zip(*hough_line_peaks(h, theta, d, num_peaks=20, threshold=0.05 * np.max(h))):
+            (x0, y0) = dist * np.array([np.cos(angle), np.sin(angle)])
+            ax.axline((x0, y0), slope=np.tan(angle + np.pi/2))
+
+        plt.tight_layout()
+        plt.show()
 
     if angle:
         context.rotate(angle)
