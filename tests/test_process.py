@@ -34,7 +34,6 @@ def test_find_limit_contour():
 
 def check_image_file(root_folder, image, name, level=0.9):
     result = cv2.imread(image)
-    subprocess.run(["ls", "-l", image])
     assert result is not None, "Wrong image: " + image
     check_image(root_folder, result, name, level)
 
@@ -312,9 +311,9 @@ def test_full(progress):
     check_image_file(root_folder, step["sources"][0], "all-1")
 
     if progress == "TRUE":
-        assert os.path.exists(os.path.join(root_folder, "0-level/all-1.png"))
+        assert os.path.exists(os.path.join(root_folder, "1-level/all-1.png"))
     else:
-        assert not os.path.exists(os.path.join(root_folder, "0-level"))
+        assert not os.path.exists(os.path.join(root_folder, "1-level"))
 
     assert step["name"] == "finalise"
     process.finalize(config, step, root_folder)
@@ -429,6 +428,7 @@ def test_custom_process(test, args):
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize("name", ["qrcode", "qrbill", "qrbill2"])
 def test_qr_code(name):
+    init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), f"{name}.pdf"), f"/results/{name}.pdf")
     root_folder = f"/results/qrcode"
     for page in range(2):
@@ -449,6 +449,7 @@ def test_qr_code(name):
 
 # @pytest.mark.skip(reason="for test")
 def test_qr_code_metadata():
+    init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill.pdf"), "/results/qrbill.pdf")
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
@@ -502,6 +503,7 @@ EPD
 
 # @pytest.mark.skip(reason="for test")
 def test_multi_code():
+    init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill-multi.pdf"), "/results/qrbill-multi.pdf")
     root_folder = f"/results/qrcode"
     for page in range(3):
@@ -525,7 +527,6 @@ def test_multi_code():
 # @pytest.mark.skip(reason="for test")
 def test_tiff():
     init_test()
-    os.environ["PROGRESS"] = "TRUE"
     root_folder = "/results/tiff"
     source_folder = os.path.join(root_folder, "source")
     if not os.path.exists(source_folder):
@@ -571,6 +572,7 @@ def test_tiff():
     ],
 )
 def test_auto_mask(config, name):
+    init_test()
     context = process.Context({"args": {"auto_mask": config}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
@@ -579,6 +581,7 @@ def test_auto_mask(config, name):
 
 # @pytest.mark.skip(reason="for test")
 def test_auto_mask_combine():
+    init_test()
     context = process.Context({"args": {"auto_mask": {}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
@@ -589,6 +592,7 @@ def test_auto_mask_combine():
 
 # @pytest.mark.skip(reason="for test")
 def test_auto_cut():
+    init_test()
     context = process.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.do_initial_cut()
@@ -597,7 +601,19 @@ def test_auto_cut():
 
 # @pytest.mark.skip(reason="for test")
 def test_color_cut():
+    init_test()
     context = process.Context({"args": {}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
     process.color_cut(context)
     check_image("/results/white-cut", context.image, "white-cut")
+
+
+# @pytest.mark.skip(reason="for test")
+def test_histogram():
+    init_test()
+    context = process.Context({"args": {"level": True}}, {})
+    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
+    context.image_name = "hist.png"
+    context.root_folder = "/tmp"
+    process.histogram(context)
+    check_image_file("/results/histogram/", "/tmp/histogram/hist.png", "histogram")

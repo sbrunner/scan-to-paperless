@@ -72,7 +72,7 @@ def main() -> None:
         "adf: {scanimage_arguments: [--source=ADF]}, "
         "multi: {scanimage_arguments: [--batch-prompt]}, "
         "one: {scanimage_arguments: [--batch-count=1]}, "
-        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}"
+        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}",
     )
     parser.add_argument(
         "--preset",
@@ -168,7 +168,7 @@ def main() -> None:
         mode_default = cast(schema.Mode, schema.MODES_DEFAULT.get(args.mode, {}))
         scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
-        if mode_config.get("auto_bash", mode_default.get('auto_bash', schema.AUTO_BASH_DEFAULT)):
+        if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
             input("Put your document in the automatic document feeder for the other side, and press enter.")
@@ -180,7 +180,7 @@ def main() -> None:
                     f"--batch-count={len(odd)}",
                 ]
             )
-            if mode_config.get("rotate_even", mode_default.get('rotate_even', schema.ROTATE_EVEN_DEFAULT)):
+            if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
                 for img in os.listdir(root_folder):
                     if img not in odd:
                         path = os.path.join(root_folder, img)
