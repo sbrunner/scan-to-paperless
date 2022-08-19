@@ -19,13 +19,16 @@ from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Set, 
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
 from deskew import determine_skew_dev
 from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray, rgba2rgb
+from skimage.exposure import histogram as skimage_histogram
 from skimage.metrics import structural_similarity
+from skimage.util import img_as_ubyte
 
 from scan_to_paperless import code
 from scan_to_paperless import process_schema as schema
@@ -414,10 +417,11 @@ class Process:  # pylint: disable=too-few-public-methods
     To save the process image when needed.
     """
 
-    def __init__(self, name: str, ignore_error: bool = False) -> None:
+    def __init__(self, name: str, ignore_error: bool = False, progress: bool = True) -> None:
         """Initialize."""
         self.name = name
         self.ignore_error = ignore_error
+        self.progress = progress
 
     def __call__(self, func: FunctionWithContextReturnsImage) -> FunctionWithContextReturnsNone:
         """Call the function."""
@@ -445,7 +449,8 @@ class Process:  # pylint: disable=too-few-public-methods
             if os.environ.get("TIME", "FALSE") == "TRUE":
                 print(f"Elapsed time in {self.name}: {int(round(elapsed_time))}s.")
 
-            context.save_progress_images(self.name)
+            if self.progress:
+                context.save_progress_images(self.name)
 
         return wrapper
 
@@ -506,14 +511,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
         context.crop(x, y, width, height)
 
 
-@Process("level")
-def level(context: Context) -> NpNdarrayInt:
-    """Do the level on an image."""
-    img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
-
-    if context.config["args"].setdefault("auto_level", schema.AUTO_LEVEL_DEFAULT):
-        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
-        return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+def _get_level(context: Context) -> Tuple[bool, float, float]:
     level_ = context.config["args"].setdefault("level", schema.LEVEL_DEFAULT)
     min_p100 = 0.0
     max_p100 = 100.0
@@ -529,6 +527,69 @@ def level(context: Context) -> NpNdarrayInt:
 
     min_ = min_p100 / 100.0 * 255.0
     max_ = max_p100 / 100.0 * 255.0
+    return level_ is not False, min_, max_
+
+
+@Process("histogram", progress=False)
+def histogram(context: Context) -> None:
+    """Create an image with the histogram of the current image."""
+    noisy_image = img_as_ubyte(context.image)
+    hist, hist_centers = skimage_histogram(noisy_image)
+    hist_max = max(hist)
+
+    _, axes = plt.subplots(figsize=(15, 5))
+
+    axes.plot(hist_centers, hist, lw=1)
+    axes.set_title("Gray-level histogram")
+
+    points = []
+    level_, min_, max_ = _get_level(context)
+
+    if level_:
+        points.append(("min_level", min_, hist_max / 5))
+
+    cut_white = (
+        context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT) / 255 * (max_ - min_) + min_
+    )
+    cut_black = (
+        context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT) / 255 * (max_ - min_) + min_
+    )
+
+    points.append(("cut_black", cut_black, hist_max / 10))
+    points.append(("cut_white", cut_white, hist_max / 5))
+
+    if level_:
+        points.append(("max_level", max_, hist_max / 10))
+
+    for label, value, pos in points:
+        hist_value = hist[int(round(value))]
+        axes.annotate(
+            label,
+            xy=(value, hist_value),
+            xycoords="data",
+            xytext=(value, hist_value + pos),
+            textcoords="data",
+            arrowprops={"facecolor": "black", "width": 1},
+        )
+
+    plt.tight_layout()
+    with tempfile.NamedTemporaryFile(suffix=".png") as file:
+        plt.savefig(file.name)
+        subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
+        image = cv2.imread(file.name)
+        context.save_progress_images("histogram", image, force=True)
+
+
+@Process("level")
+def level(context: Context) -> NpNdarrayInt:
+    """Do the level on an image."""
+    img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
+
+    if context.config["args"].setdefault("auto_level", schema.AUTO_LEVEL_DEFAULT):
+        img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+        return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+
+    _, min_, max_ = _get_level(context)
 
     chanel_y = img_yuv[:, :, 0]
     mins = np.zeros(chanel_y.shape)
@@ -930,6 +991,7 @@ def transform(
         assert context.image is not None
         image_status["size"] = list(context.image.shape[:2][::-1])
         context.init_mask()
+        histogram(context)
         level(context)
         color_cut(context)
         cut(context)
