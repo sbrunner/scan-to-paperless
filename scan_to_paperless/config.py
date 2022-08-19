@@ -48,7 +48,7 @@ Arguments = TypedDict(
         #
         # Set the near white pixels on the image to white
         #
-        # default: 250
+        # default: 200
         "cut_white": Union[int, float],
         # Cut black
         #
@@ -396,7 +396,7 @@ CUT_BLACK_DEFAULT = 0
 
 
 # Default value of the field path 'Arguments cut_white'
-CUT_WHITE_DEFAULT = 250
+CUT_WHITE_DEFAULT = 200
 
 
 # Configuration

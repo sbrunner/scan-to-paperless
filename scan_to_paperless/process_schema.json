@@ -102,7 +102,7 @@
         "cut_white": {
           "type": "number",
           "description": "Set the near white pixels on the image to white",
-          "default": 250,
+          "default": 200,
           "title": "Cut white"
         },
         "cut_black": {
