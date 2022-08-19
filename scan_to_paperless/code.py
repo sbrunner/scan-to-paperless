@@ -14,7 +14,7 @@ import cv2
 import pikepdf
 import zxingcpp
 from PIL import Image
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfReader, PdfWriter
 from pyzbar import pyzbar
 from reportlab.lib.colors import Color
 from reportlab.pdfgen import canvas
@@ -369,9 +369,9 @@ def add_codes(
     added_codes: Dict[str, _AllCodes] = {}
 
     with open(input_filename, "rb") as input_file:
-        existing_pdf = PdfFileReader(input_file)
+        existing_pdf = PdfReader(input_file)
         metadata = {**existing_pdf.metadata}  # type: ignore
-        output_pdf = PdfFileWriter()
+        output_pdf = PdfWriter()
         for index, page in enumerate(existing_pdf.pages):
             _LOG.info("Processing page %s", index + 1)
             # Get the QR code from the page
@@ -456,10 +456,10 @@ def add_codes(
                     packet.seek(0)
 
                     # Create a new PDF with Reportlab
-                    new_pdf = PdfFileReader(packet)
+                    new_pdf = PdfReader(packet)
 
-                    page.mergePage(new_pdf.getPage(0))
-                output_pdf.addPage(page)
+                    page.merge_page(new_pdf.pages[0])
+                output_pdf.add_page(page)
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
