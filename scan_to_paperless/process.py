@@ -534,19 +534,19 @@ def _get_level(context: Context) -> Tuple[bool, float, float]:
 def histogram(context: Context) -> None:
     """Create an image with the histogram of the current image."""
     noisy_image = img_as_ubyte(context.image)
-    hist, hist_centers = skimage_histogram(noisy_image)
-    hist_max = max(hist)
+    histogram_data, histogram_centers = skimage_histogram(noisy_image)
+    histogram_max = max(histogram_data)
 
     _, axes = plt.subplots(figsize=(15, 5))
 
-    axes.plot(hist_centers, hist, lw=1)
+    axes.plot(histogram_centers, histogram_data, lw=1)
     axes.set_title("Gray-level histogram")
 
     points = []
     level_, min_, max_ = _get_level(context)
 
     if level_:
-        points.append(("min_level", min_, hist_max / 5))
+        points.append(("min_level", min_, histogram_max / 5))
 
     cut_white = (
         context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT) / 255 * (max_ - min_) + min_
@@ -555,14 +555,14 @@ def histogram(context: Context) -> None:
         context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT) / 255 * (max_ - min_) + min_
     )
 
-    points.append(("cut_black", cut_black, hist_max / 10))
-    points.append(("cut_white", cut_white, hist_max / 5))
+    points.append(("cut_black", cut_black, histogram_max / 10))
+    points.append(("cut_white", cut_white, histogram_max / 5))
 
     if level_:
-        points.append(("max_level", max_, hist_max / 10))
+        points.append(("max_level", max_, histogram_max / 10))
 
     for label, value, pos in points:
-        hist_value = hist[int(round(value))]
+        hist_value = histogram_data[int(round(value))]
         axes.annotate(
             label,
             xy=(value, hist_value),
