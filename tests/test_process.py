@@ -613,7 +613,7 @@ def test_histogram():
     init_test()
     context = process.Context({"args": {"level": True}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
-    context.image_name = "hist.png"
+    context.image_name = "histogram.png"
     context.root_folder = "/tmp"
     process.histogram(context)
-    check_image_file("/results/histogram/", "/tmp/histogram/hist.png", "histogram")
+    check_image_file("/results/histogram/", "/tmp/histogram/histogram.png", "histogram")
