@@ -328,23 +328,47 @@
           "description": "The auto mask configuration, the mask is used to definitively mask the source image",
           "$ref": "#/definitions/auto_mask"
         },
-        "deskew_min_angle": {
-          "type": "number",
-          "default": -10,
-          "description": "The minimum angle to detect the image skew [degree]",
-          "title": "Deskew min angle"
-        },
-        "deskew_max_angle": {
-          "type": "number",
-          "default": 10,
-          "description": "The maximum angle to detect the image skew [degree]",
-          "title": "Deskew max angle"
-        },
-        "deskew_angle_derivation": {
-          "type": "number",
-          "default": 0.1,
-          "description": "The step of angle to detect the image skew [degree]",
-          "title": "Deskew angle derivation"
+        "deskew": {
+          "type": "object",
+          "description": "The deskew configuration",
+          "properties": {
+            "min_angle": {
+              "type": "number",
+              "default": -10,
+              "description": "The minimum angle to detect the image skew [degree]",
+              "title": "Deskew min angle"
+            },
+            "max_angle": {
+              "type": "number",
+              "default": 10,
+              "description": "The maximum angle to detect the image skew [degree]",
+              "title": "Deskew max angle"
+            },
+            "angle_derivation": {
+              "type": "number",
+              "default": 0.1,
+              "description": "The step of angle to detect the image skew [degree]",
+              "title": "Deskew angle derivation"
+            },
+            "sigma": {
+              "title": "Deskew sigma",
+              "description": "Used in the `canny` function",
+              "default": 3.0,
+              "type": "number"
+            },
+            "num_peaks": {
+              "title": "Deskew num peaks",
+              "description": "number of peaks we ask for",
+              "default": 20,
+              "type": "integer"
+            },
+            "angle_pm_90": {
+              "title": "Deskew angle pm 90",
+              "description": "Detect an angle of +/- 90 degree, also +/- 45 degree",
+              "default": false,
+              "type": "boolean"
+            }
+          }
         }
       }
     }

@@ -271,24 +271,9 @@ Arguments = TypedDict(
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         "auto_cut": "AutoMask",
-        # Deskew min angle
-        #
-        # The minimum angle to detect the image skew [degree]
-        #
-        # default: -10
-        "deskew_min_angle": Union[int, float],
-        # Deskew max angle
-        #
-        # The maximum angle to detect the image skew [degree]
-        #
-        # default: 10
-        "deskew_max_angle": Union[int, float],
-        # Deskew angle derivation
-        #
-        # The step of angle to detect the image skew [degree]
-        #
-        # default: 0.1
-        "deskew_angle_derivation": Union[int, float],
+        # WARNING: The required are not correctly taken in account,
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+        "deskew": "_ArgumentsDeskew",
     },
     total=False,
 )
@@ -450,16 +435,28 @@ Configuration = TypedDict(
 )
 
 
-# Default value of the field path 'Arguments deskew_angle_derivation'
+# Default value of the field path 'Arguments deskew angle_derivation'
 DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
 
 
-# Default value of the field path 'Arguments deskew_max_angle'
+# Default value of the field path 'Arguments deskew angle_pm_90'
+DESKEW_ANGLE_PM_90_DEFAULT = False
+
+
+# Default value of the field path 'Arguments deskew max_angle'
 DESKEW_MAX_ANGLE_DEFAULT = 10
 
 
-# Default value of the field path 'Arguments deskew_min_angle'
+# Default value of the field path 'Arguments deskew min_angle'
 DESKEW_MIN_ANGLE_DEFAULT = -10
+
+
+# Default value of the field path 'Arguments deskew num_peaks'
+DESKEW_NUM_PEAKS_DEFAULT = 20
+
+
+# Default value of the field path 'Arguments deskew sigma'
+DESKEW_SIGMA_DEFAULT = 3.0
 
 
 # Default value of the field path 'Auto mask de_noise_level'
@@ -655,6 +652,51 @@ THRESHOLD_VALUE_C_LIMIT_DEFAULT = 70
 UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
 
 
+# The deskew configuration
+_ArgumentsDeskew = TypedDict(
+    "_ArgumentsDeskew",
+    {
+        # Deskew min angle
+        #
+        # The minimum angle to detect the image skew [degree]
+        #
+        # default: -10
+        "min_angle": Union[int, float],
+        # Deskew max angle
+        #
+        # The maximum angle to detect the image skew [degree]
+        #
+        # default: 10
+        "max_angle": Union[int, float],
+        # Deskew angle derivation
+        #
+        # The step of angle to detect the image skew [degree]
+        #
+        # default: 0.1
+        "angle_derivation": Union[int, float],
+        # Deskew sigma
+        #
+        # Used in the `canny` function
+        #
+        # default: 3.0
+        "sigma": Union[int, float],
+        # Deskew num peaks
+        #
+        # number of peaks we ask for
+        #
+        # default: 20
+        "num_peaks": int,
+        # Deskew angle pm 90
+        #
+        # Detect an angle of +/- 90 degree, also +/- 45 degree
+        #
+        # default: False
+        "angle_pm_90": bool,
+    },
+    total=False,
+)
+
+
 _ConfigurationImagesConfigAdditionalproperties = TypedDict(
     "_ConfigurationImagesConfigAdditionalproperties",
     {
@@ -673,12 +715,6 @@ _ConfigurationImagesConfigAdditionalpropertiesStatus = TypedDict(
     {
         # The measured deskew angle
         "angle": Union[int, float],
-        # The measured deskew angle deviation
-        "average_deviation": Union[int, float],
-        # The measured deskew angle deviation, corrected
-        "average_deviation2": Union[int, float],
-        # The measured possible deskew angles, visible on the generated image
-        "angles": List[Union[int, float]],
         # The image dimensions
         "size": List[Union[int, float]],
     },
