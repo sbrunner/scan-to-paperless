@@ -85,6 +85,10 @@
     - **Items** _(integer)_
   - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Refer to _#/definitions/auto_mask_.
   - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _#/definitions/auto_mask_.
-  - **`deskew_min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-10`.
-  - **`deskew_max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `10`.
-  - **`deskew_angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.
+  - **`deskew`** _(object)_: The deskew configuration.
+    - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-10`.
+    - **`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `10`.
+    - **`angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.
+    - **`sigma`** _(number)_: Used in the `canny` function. Default: `3.0`.
+    - **`num_peaks`** _(integer)_: number of peaks we ask for. Default: `20`.
+    - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `False`.

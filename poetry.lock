@@ -7,7 +7,7 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-test = ["wheel", "pexpect", "flake8", "coverage"]
+test = ["coverage", "flake8", "pexpect", "wheel"]
 
 [[package]]
 name = "astroid"
@@ -39,10 +39,10 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
-tests_no_zope = ["cloudpickle", "pytest-mypy-plugins", "mypy (>=0.900,!=0.940)", "pytest (>=4.3.0)", "pympler", "hypothesis", "coverage[toml] (>=5.0.2)"]
-tests = ["cloudpickle", "zope.interface", "pytest-mypy-plugins", "mypy (>=0.900,!=0.940)", "pytest (>=4.3.0)", "pympler", "hypothesis", "coverage[toml] (>=5.0.2)"]
-docs = ["sphinx-notfound-page", "zope.interface", "sphinx", "furo"]
-dev = ["cloudpickle", "pre-commit", "sphinx-notfound-page", "sphinx", "furo", "zope.interface", "pytest-mypy-plugins", "mypy (>=0.900,!=0.940)", "pytest (>=4.3.0)", "pympler", "hypothesis", "coverage[toml] (>=5.0.2)"]
+dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy (>=0.900,!=0.940)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "sphinx", "sphinx-notfound-page", "zope.interface"]
+docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
+tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "zope.interface"]
+tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "bandit"
@@ -59,9 +59,9 @@ PyYAML = ">=5.3.1"
 stevedore = ">=1.20.0"
 
 [package.extras]
-yaml = ["pyyaml"]
+test = ["beautifulsoup4 (>=4.8.0)", "coverage (>=4.5.4)", "fixtures (>=3.0.0)", "flake8 (>=4.0.0)", "pylint (==1.9.4)", "stestr (>=2.5.0)", "testscenarios (>=0.5.0)", "testtools (>=2.3.0)", "toml"]
 toml = ["toml"]
-test = ["pylint (==1.9.4)", "beautifulsoup4 (>=4.8.0)", "toml", "testtools (>=2.3.0)", "testscenarios (>=0.5.0)", "stestr (>=2.5.0)", "flake8 (>=4.0.0)", "fixtures (>=3.0.0)", "coverage (>=4.5.4)"]
+yaml = ["pyyaml"]
 
 [[package]]
 name = "brotli"
@@ -97,10 +97,10 @@ pep517 = ">=0.9.1"
 tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
+docs = ["furo (>=2021.08.31)", "sphinx (>=4.0,<5.0)", "sphinx-argparse-cli (>=1.5)", "sphinx-autodoc-typehints (>=1.10)"]
+test = ["filelock (>=3)", "pytest (>=6.2.4)", "pytest-cov (>=2.12)", "pytest-mock (>=2)", "pytest-rerunfailures (>=9.1)", "pytest-xdist (>=1.34)", "setuptools (>=42.0.0)", "setuptools (>=56.0.0)", "toml (>=0.10.0)", "wheel (>=0.36.0)"]
+typing = ["importlib-metadata (>=4.6.4)", "mypy (==0.950)", "typing-extensions (>=3.7.4.3)"]
 virtualenv = ["virtualenv (>=20.0.35)"]
-typing = ["typing-extensions (>=3.7.4.3)", "mypy (==0.950)", "importlib-metadata (>=4.6.4)"]
-test = ["setuptools (>=56.0.0)", "setuptools (>=42.0.0)", "wheel (>=0.36.0)", "toml (>=0.10.0)", "pytest-xdist (>=1.34)", "pytest-rerunfailures (>=9.1)", "pytest-mock (>=2)", "pytest-cov (>=2.12)", "pytest (>=6.2.4)", "filelock (>=3)"]
-docs = ["sphinx-autodoc-typehints (>=1.10)", "sphinx-argparse-cli (>=1.5)", "sphinx (>=4.0,<5.0)", "furo (>=2021.08.31)"]
 
 [[package]]
 name = "certifi"
@@ -153,8 +153,8 @@ tinycss2 = "*"
 webencodings = "*"
 
 [package.extras]
-test = ["coverage", "pytest-isort", "pytest-flake8", "pytest-cov", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["coverage", "pytest", "pytest-cov", "pytest-flake8", "pytest-isort"]
 
 [[package]]
 name = "cycler"
@@ -185,15 +185,18 @@ packaging = "*"
 
 [[package]]
 name = "deskew"
-version = "1.2.0"
+version = "1.3.0"
 description = "Skew detection and correction in images containing text"
 category = "main"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.8,<3.12"
 
 [package.dependencies]
 numpy = "*"
 scikit-image = "*"
+
+[package.extras]
+debug_images = ["matplotlib", "opencv-python-headless"]
 
 [[package]]
 name = "dill"
@@ -260,9 +263,9 @@ brotlicffi = {version = ">=0.8.0", optional = true, markers = "platform_python_i
 zopfli = {version = ">=0.1.4", optional = true, markers = "extra == \"woff\""}
 
 [package.extras]
-all = ["fs (>=2.2.0,<3)", "lxml (>=4.0,<5)", "zopfli (>=0.1.4)", "lz4 (>=1.7.4.2)", "matplotlib", "sympy", "skia-pathops (>=0.5.0)", "uharfbuzz (>=0.23.0)", "brotlicffi (>=0.8.0)", "scipy", "brotli (>=1.0.1)", "munkres", "unicodedata2 (>=14.0.0)", "xattr"]
+all = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "fs (>=2.2.0,<3)", "lxml (>=4.0,<5)", "lz4 (>=1.7.4.2)", "matplotlib", "munkres", "scipy", "skia-pathops (>=0.5.0)", "sympy", "uharfbuzz (>=0.23.0)", "unicodedata2 (>=14.0.0)", "xattr", "zopfli (>=0.1.4)"]
 graphite = ["lz4 (>=1.7.4.2)"]
-interpolatable = ["scipy", "munkres"]
+interpolatable = ["munkres", "scipy"]
 lxml = ["lxml (>=4.0,<5)"]
 pathops = ["skia-pathops (>=0.5.0)"]
 plot = ["matplotlib"]
@@ -271,7 +274,7 @@ symfont = ["sympy"]
 type1 = ["xattr"]
 ufo = ["fs (>=2.2.0,<3)"]
 unicode = ["unicodedata2 (>=14.0.0)"]
-woff = ["zopfli (>=0.1.4)", "brotlicffi (>=0.8.0)", "brotli (>=1.0.1)"]
+woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
 name = "gitdb"
@@ -316,10 +319,10 @@ six = ">=1.9"
 webencodings = "*"
 
 [package.extras]
-lxml = ["lxml"]
-genshi = ["genshi"]
+all = ["chardet (>=2.2)", "genshi", "lxml"]
 chardet = ["chardet (>=2.2)"]
-all = ["lxml", "chardet (>=2.2)", "genshi"]
+genshi = ["genshi"]
+lxml = ["lxml"]
 
 [[package]]
 name = "idna"
@@ -342,21 +345,21 @@ numpy = "*"
 pillow = ">=8.3.2"
 
 [package.extras]
-tifffile = ["tifffile"]
-test = ["fsspec", "pytest-cov", "pytest", "invoke"]
-pyav = ["av"]
-opencv = ["opencv-python"]
-linting = ["flake8", "black"]
-itk = ["itk"]
-gdal = ["gdal"]
-full = ["wheel", "tifffile", "sphinx", "pytest-cov", "pytest", "pydata-sphinx-theme", "psutil", "opencv-python", "numpydoc", "itk", "invoke", "imageio-ffmpeg", "gdal", "fsspec", "flake8", "black", "av", "astropy"]
-fits = ["astropy"]
-ffmpeg = ["psutil", "imageio-ffmpeg"]
-docs = ["pydata-sphinx-theme", "numpydoc", "sphinx"]
-dev = ["flake8", "black", "fsspec", "pytest-cov", "pytest", "invoke"]
+all-plugins = ["astropy", "av", "imageio-ffmpeg", "opencv-python", "psutil", "tifffile"]
+all-plugins-pypy = ["av", "imageio-ffmpeg", "psutil", "tifffile"]
 build = ["wheel"]
-all-plugins-pypy = ["tifffile", "psutil", "imageio-ffmpeg", "av"]
-all-plugins = ["tifffile", "psutil", "opencv-python", "imageio-ffmpeg", "av", "astropy"]
+dev = ["black", "flake8", "fsspec", "invoke", "pytest", "pytest-cov"]
+docs = ["numpydoc", "pydata-sphinx-theme", "sphinx"]
+ffmpeg = ["imageio-ffmpeg", "psutil"]
+fits = ["astropy"]
+full = ["astropy", "av", "black", "flake8", "fsspec", "gdal", "imageio-ffmpeg", "invoke", "itk", "numpydoc", "opencv-python", "psutil", "pydata-sphinx-theme", "pytest", "pytest-cov", "sphinx", "tifffile", "wheel"]
+gdal = ["gdal"]
+itk = ["itk"]
+linting = ["black", "flake8"]
+opencv = ["opencv-python"]
+pyav = ["av"]
+test = ["fsspec", "invoke", "pytest", "pytest-cov"]
+tifffile = ["tifffile"]
 
 [[package]]
 name = "importlib-resources"
@@ -370,8 +373,8 @@ python-versions = ">=3.7"
 zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
+docs = ["jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx"]
+testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
 
 [[package]]
 name = "iniconfig"
@@ -390,10 +393,10 @@ optional = false
 python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
-plugins = ["setuptools"]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
+pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
+plugins = ["setuptools"]
 requirements_deprecated_finder = ["pip-api", "pipreqs"]
-pipfile_deprecated_finder = ["requirementslib", "pipreqs"]
 
 [[package]]
 name = "jsonschema"
@@ -410,8 +413,8 @@ pkgutil-resolve-name = {version = ">=1.3.10", markers = "python_version < \"3.9\
 pyrsistent = ">=0.14.0,<0.17.0 || >0.17.0,<0.17.1 || >0.17.1,<0.17.2 || >0.17.2"
 
 [package.extras]
-format-nongpl = ["webcolors (>=1.11)", "uri-template", "rfc3986-validator (>0.1.0)", "rfc3339-validator", "jsonpointer (>1.13)", "isoduration", "idna", "fqdn"]
-format = ["webcolors (>=1.11)", "uri-template", "rfc3987", "rfc3339-validator", "jsonpointer (>1.13)", "isoduration", "idna", "fqdn"]
+format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
+format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
 
 [[package]]
 name = "jsonschema-gentypes"
@@ -426,9 +429,9 @@ jsonschema = "*"
 "ruamel.yaml" = "*"
 
 [package.extras]
-extra = ["romkan", "romanize", "pinyin"]
-generate = ["requests", "pyyaml"]
-tools = ["pyupgrade", "isort", "black"]
+extra = ["pinyin", "romanize", "romkan"]
+generate = ["pyyaml", "requests"]
+tools = ["black", "isort", "pyupgrade"]
 
 [[package]]
 name = "kiwisolver"
@@ -455,10 +458,10 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, != 3.4.*"
 
 [package.extras]
-source = ["Cython (>=0.29.7)"]
-htmlsoup = ["beautifulsoup4"]
-html5 = ["html5lib"]
 cssselect = ["cssselect (>=0.7)"]
+html5 = ["html5lib"]
+htmlsoup = ["beautifulsoup4"]
+source = ["Cython (>=0.29.7)"]
 
 [[package]]
 name = "matplotlib"
@@ -501,9 +504,9 @@ tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 typing-extensions = ">=3.10"
 
 [package.extras]
-reports = ["lxml"]
-python2 = ["typed-ast (>=1.4.0,<2)"]
 dmypy = ["psutil (>=4.0)"]
+python2 = ["typed-ast (>=1.4.0,<2)"]
+reports = ["lxml"]
 
 [[package]]
 name = "mypy-extensions"
@@ -522,11 +525,11 @@ optional = false
 python-versions = ">=3.8"
 
 [package.extras]
-test = ["codecov (>=2.1)", "pytest-cov (>=3.0)", "pytest (>=7.1)"]
-extra = ["sympy (>=1.10)", "pydot (>=1.4.2)", "pygraphviz (>=1.9)", "lxml (>=4.6)"]
-doc = ["texext (>=0.6.6)", "nb2plots (>=0.6)", "pillow (>=9.1)", "numpydoc (>=1.4)", "sphinx-gallery (>=0.10)", "pydata-sphinx-theme (>=0.9)", "sphinx (>=5)"]
+default = ["matplotlib (>=3.4)", "numpy (>=1.19)", "pandas (>=1.3)", "scipy (>=1.8)"]
 developer = ["mypy (>=0.960)", "pre-commit (>=2.19)"]
-default = ["pandas (>=1.3)", "matplotlib (>=3.4)", "scipy (>=1.8)", "numpy (>=1.19)"]
+doc = ["nb2plots (>=0.6)", "numpydoc (>=1.4)", "pillow (>=9.1)", "pydata-sphinx-theme (>=0.9)", "sphinx (>=5)", "sphinx-gallery (>=0.10)", "texext (>=0.6.6)"]
+extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.9)", "sympy (>=1.10)"]
+test = ["codecov (>=2.1)", "pytest (>=7.1)", "pytest-cov (>=3.0)"]
 
 [[package]]
 name = "numpy"
@@ -603,7 +606,7 @@ flake8-polyfill = ">=1.0.2,<2"
 
 [[package]]
 name = "pikepdf"
-version = "5.4.2"
+version = "5.5.0"
 description = "Read and write PDFs with Python, powered by qpdf"
 category = "main"
 optional = false
@@ -616,9 +619,9 @@ packaging = "*"
 Pillow = ">=6.0"
 
 [package.extras]
-test = ["python-xmp-toolkit (>=2.0.1)", "tomli", "python-dateutil (>=2.8.0)", "pytest-xdist (>=1.28)", "pytest-timeout (>=1.4.2)", "pytest-cov (>=2.10.1)", "pytest (>=6)", "pybind11", "psutil (>=5)", "hypothesis (>=5)", "coverage", "attrs (>=20.2.0)", "Pillow (>=9)"]
-mypy = ["types-setuptools", "types-requests", "types-pillow", "lxml-stubs"]
-docs = ["tomli", "sphinx-rtd-theme", "sphinx-issues", "sphinx-design", "setuptools-scm", "requests", "pybind11", "matplotlib", "ipython", "Sphinx (>=3)", "pygithub", "gitpython"]
+docs = ["Sphinx (>=3)", "gitpython", "ipython", "matplotlib", "pybind11", "pygithub", "requests", "setuptools-scm", "sphinx-design", "sphinx-issues", "sphinx-rtd-theme", "tomli"]
+mypy = ["lxml-stubs", "types-pillow", "types-requests", "types-setuptools"]
+test = ["Pillow (>=9)", "attrs (>=20.2.0)", "coverage", "hypothesis (>=5)", "psutil (>=5)", "pybind11", "pytest (>=6)", "pytest-cov (>=2.10.1)", "pytest-timeout (>=1.4.2)", "pytest-xdist (>=1.28)", "python-dateutil (>=2.8.0)", "python-xmp-toolkit (>=2.0.1)", "tomli"]
 
 [[package]]
 name = "pillow"
@@ -649,8 +652,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-test = ["pytest (>=6)", "pytest-mock (>=3.6)", "pytest-cov (>=2.7)", "appdirs (==1.4.4)"]
-docs = ["sphinx (>=4)", "sphinx-autodoc-typehints (>=1.12)", "proselint (>=0.10.2)", "furo (>=2021.7.5b38)"]
+docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx (>=4)", "sphinx-autodoc-typehints (>=1.12)"]
+test = ["appdirs (==1.4.4)", "pytest (>=6)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)"]
 
 [[package]]
 name = "pluggy"
@@ -661,8 +664,8 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-testing = ["pytest-benchmark", "pytest"]
-dev = ["tox", "pre-commit"]
+dev = ["pre-commit", "tox"]
+testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prospector"
@@ -693,12 +696,12 @@ setoptconf-tmp = ">=0.3.1,<0.4.0"
 toml = ">=0.10.2,<0.11.0"
 
 [package.extras]
-with_vulture = ["vulture (>=1.5)"]
-with_everything = ["vulture (>=1.5)", "pyroma (>=2.4)", "mypy (>=0.600)", "frosted (>=1.4.1)", "bandit (>=1.5.1)"]
-with_pyroma = ["pyroma (>=2.4)"]
-with_mypy = ["mypy (>=0.600)"]
-with_frosted = ["frosted (>=1.4.1)"]
 with_bandit = ["bandit (>=1.5.1)"]
+with_everything = ["bandit (>=1.5.1)", "frosted (>=1.4.1)", "mypy (>=0.600)", "pyroma (>=2.4)", "vulture (>=1.5)"]
+with_frosted = ["frosted (>=1.4.1)"]
+with_mypy = ["mypy (>=0.600)"]
+with_pyroma = ["pyroma (>=2.4)"]
+with_vulture = ["vulture (>=1.5)"]
 
 [[package]]
 name = "py"
@@ -747,8 +750,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-test = ["pillow", "coverage", "pytest-cov", "pytest-isort", "pytest-flake8", "pytest-xdist", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["coverage", "pillow", "pytest", "pytest-cov", "pytest-flake8", "pytest-isort", "pytest-xdist"]
 
 [[package]]
 name = "pyflakes"
@@ -789,8 +792,8 @@ tomlkit = ">=0.10.1"
 typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-testutils = ["gitpython (>3)"]
 spelling = ["pyenchant (>=3.2,<4.0)"]
+testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pylint-celery"
@@ -818,8 +821,8 @@ pylint = ">=2.0,<3"
 pylint-plugin-utils = ">=0.7"
 
 [package.extras]
+for_tests = ["coverage", "django-tables2", "django-tastypie", "factory-boy", "pylint (>=2.13)", "pytest", "wheel"]
 with_django = ["django"]
-for_tests = ["pylint (>=2.13)", "django-tastypie", "wheel", "pytest", "coverage", "factory-boy", "django-tables2"]
 
 [[package]]
 name = "pylint-flask"
@@ -885,8 +888,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-test = ["coverage", "pytest-isort", "pytest-flake8", "pytest-cov", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["coverage", "pytest", "pytest-cov", "pytest-flake8", "pytest-isort"]
 
 [[package]]
 name = "pyroma"
@@ -903,7 +906,7 @@ pygments = "*"
 requests = "*"
 
 [package.extras]
-test = ["setuptools (>=60)", "pytest-cov", "pytest"]
+test = ["pytest", "pytest-cov", "setuptools (>=60)"]
 
 [[package]]
 name = "pyrsistent"
@@ -932,7 +935,7 @@ py = ">=1.8.2"
 tomli = ">=1.0.0"
 
 [package.extras]
-testing = ["xmlschema", "requests", "pygments (>=2.7.2)", "nose", "mock", "hypothesis (>=3.56)", "argcomplete"]
+testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
 name = "pytest-profiling"
@@ -1020,8 +1023,8 @@ idna = ">=2.5,<4"
 urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
-use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
+use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requirements-detector"
@@ -1076,10 +1079,10 @@ scipy = ">=1.4.1"
 tifffile = ">=2019.7.26"
 
 [package.extras]
-test = ["pytest-faulthandler", "pytest-localserver", "pytest-cov (>=2.7.0)", "pytest (>=5.2.0)", "pooch (>=1.3.0)", "matplotlib (>=3.0.3)", "flake8", "codecov", "asv"]
-optional = ["qtpy", "pyamg", "pooch (>=1.3.0)", "matplotlib (>=3.0.3)", "dask[array] (>=1.0.0,!=2.17.0)", "cloudpickle (>=0.2.1)", "astropy (>=3.1.2)", "simpleitk"]
-docs = ["kaleido", "plotly (>=4.14.0)", "ipywidgets", "myst-parser", "tifffile (>=2020.5.30)", "pooch (>=1.3.0)", "seaborn (>=0.7.1)", "pandas (>=0.23.0)", "cloudpickle (>=0.2.1)", "dask[array] (>=0.15.0,!=2.17.0)", "matplotlib (>=3.3)", "scikit-learn", "pytest-runner", "sphinx-copybutton", "numpydoc (>=1.0)", "sphinx-gallery (>=0.10.1)", "sphinx (>=1.8)"]
 data = ["pooch (>=1.3.0)"]
+docs = ["cloudpickle (>=0.2.1)", "dask[array] (>=0.15.0,!=2.17.0)", "ipywidgets", "kaleido", "matplotlib (>=3.3)", "myst-parser", "numpydoc (>=1.0)", "pandas (>=0.23.0)", "plotly (>=4.14.0)", "pooch (>=1.3.0)", "pytest-runner", "scikit-learn", "seaborn (>=0.7.1)", "sphinx (>=1.8)", "sphinx-copybutton", "sphinx-gallery (>=0.10.1)", "tifffile (>=2020.5.30)"]
+optional = ["astropy (>=3.1.2)", "cloudpickle (>=0.2.1)", "dask[array] (>=1.0.0,!=2.17.0)", "matplotlib (>=3.0.3)", "pooch (>=1.3.0)", "pyamg", "qtpy", "simpleitk"]
+test = ["asv", "codecov", "flake8", "matplotlib (>=3.0.3)", "pooch (>=1.3.0)", "pytest (>=5.2.0)", "pytest-cov (>=2.7.0)", "pytest-faulthandler", "pytest-localserver"]
 
 [[package]]
 name = "scipy"
@@ -1116,8 +1119,8 @@ packaging = ">=20.0"
 tomli = ">=1.0.0"
 
 [package.extras]
+test = ["pytest (>=6.2)", "virtualenv (>20)"]
 toml = ["setuptools (>=42)"]
-test = ["virtualenv (>20)", "pytest (>=6.2)"]
 
 [[package]]
 name = "six"
@@ -1166,7 +1169,7 @@ python-versions = ">=3.8"
 numpy = ">=1.19.2"
 
 [package.extras]
-all = ["imagecodecs (>=2022.2.22)", "matplotlib (>=3.3)", "lxml"]
+all = ["imagecodecs (>=2022.2.22)", "lxml", "matplotlib (>=3.3)"]
 
 [[package]]
 name = "tinycss2"
@@ -1180,8 +1183,8 @@ python-versions = ">=3.6"
 webencodings = ">=0.4"
 
 [package.extras]
-test = ["coverage", "pytest-isort", "pytest-flake8", "pytest-cov", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["coverage", "pytest", "pytest-cov", "pytest-flake8", "pytest-isort"]
 
 [[package]]
 name = "toml"
@@ -1224,9 +1227,9 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
 
 [package.extras]
+brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
+secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
-secure = ["ipaddress", "certifi", "idna (>=2.0.0)", "cryptography (>=1.3.4)", "pyOpenSSL (>=0.14)"]
-brotli = ["brotlipy (>=0.6.0)", "brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
 
 [[package]]
 name = "weasyprint"
@@ -1247,8 +1250,8 @@ Pyphen = ">=0.9.1"
 tinycss2 = ">=1.0.0"
 
 [package.extras]
-test = ["coverage", "pytest-cov", "pytest-isort", "pytest-flake8", "pytest-xdist", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["coverage", "pytest", "pytest-cov", "pytest-flake8", "pytest-isort", "pytest-xdist"]
 
 [[package]]
 name = "webencodings"
@@ -1275,8 +1278,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-testing = ["pytest-mypy (>=0.9.1)", "pytest-black (>=0.3.7)", "func-timeout", "jaraco.itertools", "pytest-enabler (>=1.3)", "pytest-cov", "pytest-flake8", "pytest-checkdocs (>=2.4)", "pytest (>=6)"]
-docs = ["jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "jaraco.packaging (>=9)", "sphinx"]
+docs = ["jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx"]
+testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
 
 [[package]]
 name = "zopfli"
@@ -1303,7 +1306,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "379b90737ea82d1692dc494989a57fca6594dd5656c176eb216782e0dd85b992"
+content-hash = "d9cbc168658c89cdd54c4cf625b5f9a9f8fe71b32a449fe595feb3fe1ac596bb"
 
 [metadata.files]
 argcomplete = [
@@ -1520,7 +1523,7 @@ deprecation = [
     {file = "deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff"},
 ]
 deskew = [
-    {file = "deskew-1.2.0-py3-none-any.whl", hash = "sha256:de5006478f00a46ad5dc5fe8168fdb8216229d86b4df85d439922a6c884cf716"},
+    {file = "deskew-1.3.0-py3-none-any.whl", hash = "sha256:c3ac4b6b4001d16120d1a043c31e5fc63834daa483a2dbf230040915e1310ea4"},
 ]
 dill = [
     {file = "dill-0.3.5.1-py2.py3-none-any.whl", hash = "sha256:33501d03270bbe410c72639b350e941882a8b0fd55357580fbc873fba0c59302"},
@@ -1904,38 +1907,37 @@ pep8-naming = [
     {file = "pep8_naming-0.10.0-py2.py3-none-any.whl", hash = "sha256:5d9f1056cb9427ce344e98d1a7f5665710e2f20f748438e308995852cfa24164"},
 ]
 pikepdf = [
-    {file = "pikepdf-5.4.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b06816b473b0b9a4d50a8a17b1298dfca9e0a73943938cabbaa31fb12e1a55af"},
-    {file = "pikepdf-5.4.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:df9bea9b7e0b4a72388740d974cb6fa54e33327a885d6d01501b0162fa03cb4f"},
-    {file = "pikepdf-5.4.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:439d1123768447d3e1699eecedfebb3d66fc08e11f58558b91ca16c882db8de7"},
-    {file = "pikepdf-5.4.2-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:41d4bd09d9ba7b3517b5bd5aa6c07ebe0222f79b00fecda53a3ff65032431115"},
-    {file = "pikepdf-5.4.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f6cb2c8974958f6b5d8c1a275c713aeaa025ddf2e9b5bba69e15489c82cefd64"},
-    {file = "pikepdf-5.4.2-cp310-cp310-win32.whl", hash = "sha256:c2a75f73a8585d3b57b26e2c857a84d1a167bae6a0cfccb1e671aa285e87beb8"},
-    {file = "pikepdf-5.4.2-cp310-cp310-win_amd64.whl", hash = "sha256:fbdda6a8baf83c8f47d11214e12cdcf2331b750db1bcb155c5f3138b1ac11856"},
-    {file = "pikepdf-5.4.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a84ca5b4ee4374eb15abf52fe902e4d773f55b119f075f033e9862e536c206b9"},
-    {file = "pikepdf-5.4.2-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c1b0cfa0058f5dbc18c2565f02d6f7f7ab629a0a0699edbe96f0446b10f14c39"},
-    {file = "pikepdf-5.4.2-cp37-cp37m-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e209560debb1f933eb31457130c91f3d0d2e002899cf7f1f3509825c52eec63f"},
-    {file = "pikepdf-5.4.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:37bf6c9bb441b3f719eb59aef66b2803a852f9447bac42131a25f5f11769c60f"},
-    {file = "pikepdf-5.4.2-cp37-cp37m-win32.whl", hash = "sha256:a843bce388967a7ca65e1abfea9478362e0bb761cf27c19992576f345a816268"},
-    {file = "pikepdf-5.4.2-cp37-cp37m-win_amd64.whl", hash = "sha256:2a7df0a8340ef05bb7a7c42383f37df59b6ee0c9ec59810206b8b4086bcd711c"},
-    {file = "pikepdf-5.4.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:2b1a61b4deac7c6d1313b7669d3ac0fcb2d8ae6d942e95c70bcc292da607752c"},
-    {file = "pikepdf-5.4.2-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:86a5feeaf22a426f466a5e2dce23382dd0a4306b34679777f6d5637be889eb2a"},
-    {file = "pikepdf-5.4.2-cp38-cp38-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d34071d0033769284fbbd20946327886c0044ffbed8718871be01a806dae2f92"},
-    {file = "pikepdf-5.4.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9f4378221d8698bda01f093ae7b6f6aa93450cc2d467f039099238cf6dbe00dd"},
-    {file = "pikepdf-5.4.2-cp38-cp38-win32.whl", hash = "sha256:7835681bed0bf4bf97842c286639d99586ae2cf3a05f4fe3bc3a1422f7a90318"},
-    {file = "pikepdf-5.4.2-cp38-cp38-win_amd64.whl", hash = "sha256:4e4b9f288060ef04508ce030e7797a753c53f94fcd54a7f1ef61a112e976d9aa"},
-    {file = "pikepdf-5.4.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:c980f0b1b93e556eb27ac483d7d4cc61568a2945e73c9c261210538c64d1e44b"},
-    {file = "pikepdf-5.4.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:d382a4ba2c628a4bd8da1907ebc0c2fa1c369a0b20b633b3ed85aaf7377f40cc"},
-    {file = "pikepdf-5.4.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c23cac76a421fc926f2cdc6bc88309bcf2e64b72f4e9fb130d61d6dbb8965641"},
-    {file = "pikepdf-5.4.2-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f12b86fd47e5bb42d6a6b94582c9793a64d47939b08ae1b3c3325460e2f7fdfd"},
-    {file = "pikepdf-5.4.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8b066a4da175e73945877fe0726e3da4db5b4f7efae553ff954b991e0c58aea3"},
-    {file = "pikepdf-5.4.2-cp39-cp39-win32.whl", hash = "sha256:1bc68d7f36c1570c9cc28b2f8c0ecb9bcd3657306f4ce4b8c1711169de983e87"},
-    {file = "pikepdf-5.4.2-cp39-cp39-win_amd64.whl", hash = "sha256:48069359ab11b181ac06a47ae1d80cc59c486261f2295d59b6f90e18f543a11a"},
-    {file = "pikepdf-5.4.2-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:1bc680f9bc26fabe733b8db4b330b453793651e482917b000bb7471873758519"},
-    {file = "pikepdf-5.4.2-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e3488ec916662ee1b8511a45427b4a5b09ffbf41dd8a64813235f9a3b512dcad"},
-    {file = "pikepdf-5.4.2-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:242309c366e7f84f35ed350da629910e35584aa10176599faa0265e2066de04c"},
-    {file = "pikepdf-5.4.2-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fcbc554517f4b0f6303a5bb30bce7738fbee88972ce35ae80ab74798af18006d"},
-    {file = "pikepdf-5.4.2-pp39-pypy39_pp73-macosx_10_9_x86_64.whl", hash = "sha256:52dba73bf2220f356eb8dcc4a7d1cd68f2e6166f2c0fab1c5cad33689cf81fa3"},
-    {file = "pikepdf-5.4.2.tar.gz", hash = "sha256:8f3a056f7a5647c91fc0861e8ae011c6dd7ecdf6c622ff483739c74887fc3eaa"},
+    {file = "pikepdf-5.5.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:2cbb53f1d2979a52f4cd2b4a12410e537dc854ab28093b56dab00864dc0090c4"},
+    {file = "pikepdf-5.5.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c94af61eb542289b4411ebcb8d46ccce678eaca1f9dfd1cfe720bd3ea75a4839"},
+    {file = "pikepdf-5.5.0-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:09fd6ad782a93a1f7599771132502c7ca4ac6473527925cd822f61f0740e1401"},
+    {file = "pikepdf-5.5.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a6fa014b9c49e6a8fab37b0ac6a775ad9254df24d8468a554ec9a38f610afd1e"},
+    {file = "pikepdf-5.5.0-cp310-cp310-win32.whl", hash = "sha256:4ec70c09f94220c1a275baf6973c7ab0f1fb4309ee7a8c000abcc7ea351bd2a2"},
+    {file = "pikepdf-5.5.0-cp310-cp310-win_amd64.whl", hash = "sha256:53efd1db3cf828cbdb9bc691a118bc7261f99e395f439c92c6f38e5ac7a47093"},
+    {file = "pikepdf-5.5.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:af1a3488057e3a7f5bc1b81e914b59cea997e2db9d67071f94a1f01588e561a3"},
+    {file = "pikepdf-5.5.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c51f53f77dc4d4fb147b3175224e3646922377b9c222b41e513495145291fe7c"},
+    {file = "pikepdf-5.5.0-cp37-cp37m-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3c85e79a297c77436c11a09b72ff69f5408ad8d1926c33f5722405c8c70b69af"},
+    {file = "pikepdf-5.5.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a8b92effd2de2abf1935f4308f42f6321053f49c0750ac4a4e3dc93fb4ba27f1"},
+    {file = "pikepdf-5.5.0-cp37-cp37m-win32.whl", hash = "sha256:7447fe441a8913f984a6a6b2ea4a7776c309d3e82c738daa973e21e764e5b819"},
+    {file = "pikepdf-5.5.0-cp37-cp37m-win_amd64.whl", hash = "sha256:8d573ac603bc5e081480e9c31d349445c1f9f6558d51c04f98d2661c18d67e70"},
+    {file = "pikepdf-5.5.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:999bf1c23a393a72503bab7241cf2f6e785e6064e9eb20f64a4499a028da477d"},
+    {file = "pikepdf-5.5.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c85c49b0d5462664105d8566070e04a54473951dfc6404d0945cb877b942c562"},
+    {file = "pikepdf-5.5.0-cp38-cp38-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:5e70a77d7bd41277559af46aa2d7b538fcf79cad15cf9493eee1228dae7b015b"},
+    {file = "pikepdf-5.5.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3df3e39720b68e78c2690e3c4ca95d586b3ebcb099defe7f3ed92189c1b80c70"},
+    {file = "pikepdf-5.5.0-cp38-cp38-win32.whl", hash = "sha256:9159798c95c0f25ffb0a1610e26b9d412cd0936f041fb77be8abaab9dc69ed3d"},
+    {file = "pikepdf-5.5.0-cp38-cp38-win_amd64.whl", hash = "sha256:c9352a909f7c6cbcb743d1510fdbfdd7f2bf42fdd4f34b0234558d24bdb2f738"},
+    {file = "pikepdf-5.5.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:6789a8ff3635f8c830b758468a07fb907b87e0da39684b28d21990fef33f57df"},
+    {file = "pikepdf-5.5.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:62dab267b5c37e5ca69864b4125cfd60462567f4120506ec6439a76ca9c50e6f"},
+    {file = "pikepdf-5.5.0-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4534efdcde2d5f7a8cad336393c0cb9c5a38d28c91ac4d8e1c5d32d1cf03cb84"},
+    {file = "pikepdf-5.5.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:53f253be2df5cd72594dd7518a20bf8c9df391510557ed065f74bf66b09cd9f1"},
+    {file = "pikepdf-5.5.0-cp39-cp39-win32.whl", hash = "sha256:1a1c65c3b66370492a4de982fd4ad8f9ced0d7529dc39f03b58d713c8b5bdce1"},
+    {file = "pikepdf-5.5.0-cp39-cp39-win_amd64.whl", hash = "sha256:f01e0e889769dc9995086faba97d947437cd92284a4ffc743c29e1872ddc9f4b"},
+    {file = "pikepdf-5.5.0-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:693a3dc9b0d3b396aea92c8b3a5a7ed1c6b8eeafe819bb50df6bb9817ad1b79f"},
+    {file = "pikepdf-5.5.0-pp37-pypy37_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d4e57f973c7cd50ba0a964aae680f4d1d814c49205b8da018a956260ce3a09d6"},
+    {file = "pikepdf-5.5.0-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bd0004901bd253dbe3ebd040fe23430c4a87235f4d55a1d8169b6d9ea7443f69"},
+    {file = "pikepdf-5.5.0-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:d5df4d0dbdda627ea8d4c593a16f7af6c1e3d4f7a34f9ffacecc805e47738c21"},
+    {file = "pikepdf-5.5.0-pp38-pypy38_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:88b69bc4b7365e5563afe63b9c25473ef6155ad9b220fdd6110d5abbd44e578d"},
+    {file = "pikepdf-5.5.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b530abc08a7b15fb3721f0fdc0189c071fa53f87828fcf8b5e80fc6f9a377f08"},
+    {file = "pikepdf-5.5.0.tar.gz", hash = "sha256:9dd51dbdfa0470135cced6f14ef77ab2d2478f15711b1376984702191ef7625b"},
 ]
 pillow = [
     {file = "Pillow-9.2.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:a9c9bc489f8ab30906d7a85afac4b4944a572a7432e00698a7239f44a44e6efb"},

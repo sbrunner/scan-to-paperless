@@ -15,14 +15,14 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Set, Tuple, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
-from deskew import determine_skew_dev
+from deskew import determine_skew_debug_images
 from ruamel.yaml.main import YAML
 from scipy.signal import find_peaks
 from skimage.color import rgb2gray, rgba2rgb
@@ -622,31 +622,6 @@ def cut(context: Context) -> None:
     context.do_initial_cut()
 
 
-def draw_angle(image: NpNdarrayInt, angle: np.float64, color: Tuple[int, int, int]) -> None:
-    """Draw an angle on the image (as a line passed at the center of the image)."""
-    angle = angle % 90
-    height, width = image.shape[:2]
-    center = (int(width / 2), int(height / 2))
-    length = min(width, height) / 2
-
-    angle_radian = math.radians(angle)
-    sin_a = np.sin(angle_radian) * length
-    cos_a = np.cos(angle_radian) * length
-    for matrix in ([[0, -1], [-1, 0]], [[1, 0], [0, -1]], [[0, 1], [1, 0]], [[-1, 0], [0, 1]]):
-        diff = np.dot(matrix, [sin_a, cos_a])
-        x = diff[0] + width / 2
-        y = diff[1] + height / 2
-
-        cv2.line(image, center, (int(x), int(y)), color, 2)
-        if matrix[0][0] == -1:
-            cv2.putText(image, str(angle), (int(x), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color)
-
-
-def nice_angle(angle: np.float64) -> np.float64:
-    """Fix the angle to be between -45° and 45°."""
-    return ((angle + 45) % 90) - 45
-
-
 @Process("deskew")
 def deskew(context: Context) -> None:
     """Deskew an image."""
@@ -657,47 +632,29 @@ def deskew(context: Context) -> None:
     angle = image_config.setdefault("angle", None)
     if angle is None:
         image = context.get_masked()
-        imagergb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image
-        grayscale = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
-        image = cast(NpNdarrayInt, context.image).copy()
+        image_rgb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image
+        grayscale = rgb2gray(image_rgb) if len(image_rgb.shape) == 3 else image_rgb
 
-        skew_angle, angles, average_deviation, _ = determine_skew_dev(
+        deskew_configuration = context.config["args"].setdefault("deskew", {})
+        skew_angle, debug_images = determine_skew_debug_images(
             grayscale,
-            min_angle=np.deg2rad(
-                context.config["args"].setdefault("deskew_min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT)
+            min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
+            max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
+            min_deviation=deskew_configuration.setdefault(
+                "angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT
             ),
-            max_angle=np.deg2rad(
-                context.config["args"].setdefault("deskew_max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT)
-            ),
-            min_deviation=np.deg2rad(
-                context.config["args"].setdefault(
-                    "deskew_angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT
-                )
-            ),
+            sigma=deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT),
+            num_peaks=deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
+            angle_pm_90=deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
         )
         if skew_angle is not None:
-            image_status["angle"] = float(nice_angle(skew_angle))
-            draw_angle(image, skew_angle, (255, 0, 0))
+            image_status["angle"] = float(skew_angle)
             angle = float(skew_angle)
 
-        float_angles: Set[np.float64] = set()
-        average_deviation_float = average_deviation
-        image_status["average_deviation"] = float(average_deviation_float)
-        average_deviation2 = nice_angle(average_deviation_float - 45)
-        image_status["average_deviation2"] = float(average_deviation2)
-        if math.isfinite(average_deviation2):
-            float_angles.add(average_deviation2)
-
-        for current_angles in angles:
-            for current_angle in current_angles:
-                if current_angle is not None and math.isfinite(float(current_angle)):
-                    float_angles.add(nice_angle(current_angle))
-        for current_angle in float_angles:
-            draw_angle(image, current_angle, (0, 255, 0))
-        image_status["angles"] = [float(a) for a in float_angles]
-
         assert context.root_folder
-        context.save_progress_images("skew-angles", image, force=True)
+        process_count = context.get_process_count()
+        for name, image in debug_images:
+            context.save_progress_images("skew", image, name, process_count, True)
 
     if angle:
         context.rotate(angle)
