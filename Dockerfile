@@ -23,7 +23,7 @@ RUN poetry export --output=requirements.txt \
 
 FROM base-all as base-dist
 
-RUN echo "deb https://notesalexp.org/tesseract-ocr-dev/jammy/ jammy main" > /etc/apt/sources.list.d/notesalexp.list
+RUN echo "deb https://notesalexp.org/tesseract-ocr5/jammy/ jammy main" > /etc/apt/sources.list.d/notesalexp.list
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
