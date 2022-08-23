@@ -102,16 +102,21 @@ def init_test():
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize(
-    "type_,limit",
+    "type_,limit,better_value",
     [
-        ("lines", {"name": "VL1", "type": "line detection", "value": 1864, "vertical": True, "margin": 0}),
+        (
+            "lines",
+            {"name": "VL1", "type": "line detection", "value": 1907, "vertical": True, "margin": 0},
+            1820,
+        ),
         (
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 1584, "vertical": True, "margin": 0},
+            1584,
         ),
     ],
 )
-def test_assisted_split_full(type_, limit):
+def test_assisted_split_full(type_, limit, better_value):
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = f"/results/assisted-split-full-{type_}"
@@ -150,6 +155,7 @@ def test_assisted_split_full(type_, limit):
     limits = [item for item in limits if item["name"] == limit["name"]]
     assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
+    config["assisted_split"][0]["limits"][0]["value"] = better_value
     check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
