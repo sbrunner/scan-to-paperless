@@ -582,7 +582,7 @@ def test_auto_mask(config, name):
     context = process.Context({"args": {"auto_mask": config}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
-    check_image("/results/auto_mask", context.mask, f"auto_mask-{name}")
+    check_image("/results/", context.mask, f"auto_mask-{name}")
 
 
 # @pytest.mark.skip(reason="for test")
@@ -593,7 +593,7 @@ def test_auto_mask_combine():
     context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
     context.image_name = "image.png"
     context.init_mask()
-    check_image("/results/auto_mask_combine", context.mask, "auto_mask_combine")
+    check_image("/results/", context.mask, "auto_mask_combine")
 
 
 # @pytest.mark.skip(reason="for test")
@@ -602,7 +602,7 @@ def test_auto_cut():
     context = process.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.do_initial_cut()
-    check_image("/results/auto_cut", context.image, "auto_cut")
+    check_image("/results/", context.image, "auto_cut")
 
 
 # @pytest.mark.skip(reason="for test")
@@ -611,7 +611,7 @@ def test_color_cut():
     context = process.Context({"args": {}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
     process.color_cut(context)
-    check_image("/results/white-cut", context.image, "white-cut")
+    check_image("/results/", context.image, "white-cut")
 
 
 # @pytest.mark.skip(reason="for test")
@@ -623,3 +623,4 @@ def test_histogram():
     context.root_folder = "/tmp"
     process.histogram(context)
     check_image_file("/results/histogram/", "/tmp/histogram/histogram.png", "histogram")
+    check_image("/results/", context.image, "auto_cut")

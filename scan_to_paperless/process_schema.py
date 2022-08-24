@@ -444,11 +444,11 @@ DESKEW_ANGLE_PM_90_DEFAULT = False
 
 
 # Default value of the field path 'Arguments deskew max_angle'
-DESKEW_MAX_ANGLE_DEFAULT = 10
+DESKEW_MAX_ANGLE_DEFAULT = 45
 
 
 # Default value of the field path 'Arguments deskew min_angle'
-DESKEW_MIN_ANGLE_DEFAULT = -10
+DESKEW_MIN_ANGLE_DEFAULT = -45
 
 
 # Default value of the field path 'Arguments deskew num_peaks'
@@ -660,13 +660,13 @@ _ArgumentsDeskew = TypedDict(
         #
         # The minimum angle to detect the image skew [degree]
         #
-        # default: -10
+        # default: -45
         "min_angle": Union[int, float],
         # Deskew max angle
         #
         # The maximum angle to detect the image skew [degree]
         #
-        # default: 10
+        # default: 45
         "max_angle": Union[int, float],
         # Deskew angle derivation
         #

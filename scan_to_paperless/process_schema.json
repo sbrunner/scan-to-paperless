@@ -335,13 +335,13 @@
           "properties": {
             "min_angle": {
               "type": "number",
-              "default": -10,
+              "default": -45,
               "description": "The minimum angle to detect the image skew [degree]",
               "title": "Deskew min angle"
             },
             "max_angle": {
               "type": "number",
-              "default": 10,
+              "default": 45,
               "description": "The maximum angle to detect the image skew [degree]",
               "title": "Deskew max angle"
             },
