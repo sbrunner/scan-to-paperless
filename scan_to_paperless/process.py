@@ -530,16 +530,21 @@ def _get_level(context: Context) -> Tuple[bool, float, float]:
     return level_ is not False, min_, max_
 
 
-@Process("histogram", progress=False)
-def histogram(context: Context) -> None:
-    """Create an image with the histogram of the current image."""
-    noisy_image = img_as_ubyte(context.image)
-    histogram_data, histogram_centers = skimage_histogram(noisy_image)
-    histogram_max = max(histogram_data)
+def _histogram(
+    context: Context,
+    histogram_data: Any,
+    histogram_centers: Any,
+    histogram_max: Any,
+    process_count: int,
+    log: bool,
+) -> None:
 
     _, axes = plt.subplots(figsize=(15, 5))
 
-    axes.plot(histogram_centers, histogram_data, lw=1)
+    if log:
+        axes.semilogy(histogram_centers, histogram_data, lw=1)
+    else:
+        axes.plot(histogram_centers, histogram_data, lw=1)
     axes.set_title("Gray-level histogram")
 
     points = []
@@ -577,7 +582,21 @@ def histogram(context: Context) -> None:
         plt.savefig(file.name)
         subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
         image = cv2.imread(file.name)
-        context.save_progress_images("histogram", image, force=True)
+        context.save_progress_images(
+            "histogram", image, image_prefix="log-" if log else "", process_count=process_count, force=True
+        )
+
+
+@Process("histogram", progress=False)
+def histogram(context: Context) -> None:
+    """Create an image with the histogram of the current image."""
+    noisy_image = img_as_ubyte(context.image)
+    histogram_data, histogram_centers = skimage_histogram(noisy_image)
+    histogram_max = max(histogram_data)
+    process_count = context.get_process_count()
+
+    _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, False)
+    _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, True)
 
 
 @Process("level")

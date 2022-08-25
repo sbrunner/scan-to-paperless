@@ -623,4 +623,5 @@ def test_histogram():
     context.root_folder = "/tmp"
     process.histogram(context)
     check_image_file("/results/histogram/", "/tmp/histogram/histogram.png", "histogram")
+    check_image_file("/results/histogram/", "/tmp/histogram/log-histogram.png", "histogram-log")
     check_image("/results/", context.image, "auto_cut")
