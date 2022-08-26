@@ -185,7 +185,7 @@ packaging = "*"
 
 [[package]]
 name = "deskew"
-version = "1.3.0"
+version = "1.3.2"
 description = "Skew detection and correction in images containing text"
 category = "main"
 optional = false
@@ -549,10 +549,10 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.19.3", markers = "python_version >= \"3.9\" or python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\""},
-    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
+    {version = ">=1.21.2", markers = "python_version >= \"3.10\" or python_version >= \"3.6\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
+    {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
     {version = ">=1.14.5", markers = "python_version >= \"3.7\""},
-    {version = ">=1.21.2", markers = "python_version >= \"3.6\" and platform_system == \"Darwin\" and platform_machine == \"arm64\" or python_version >= \"3.10\""},
+    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
 ]
 
 [[package]]
@@ -1306,7 +1306,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "d9cbc168658c89cdd54c4cf625b5f9a9f8fe71b32a449fe595feb3fe1ac596bb"
+content-hash = "8085ad3e498f448df8baeb201e8e7696f28772d425c47f9bb2e2974c4bdbcebb"
 
 [metadata.files]
 argcomplete = [
@@ -1523,7 +1523,7 @@ deprecation = [
     {file = "deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff"},
 ]
 deskew = [
-    {file = "deskew-1.3.0-py3-none-any.whl", hash = "sha256:c3ac4b6b4001d16120d1a043c31e5fc63834daa483a2dbf230040915e1310ea4"},
+    {file = "deskew-1.3.2-py3-none-any.whl", hash = "sha256:b6d98793c784dbb08b825585302efa5bcbfd4c50fe83763111751b9b2c3416a3"},
 ]
 dill = [
     {file = "dill-0.3.5.1-py2.py3-none-any.whl", hash = "sha256:33501d03270bbe410c72639b350e941882a8b0fd55357580fbc873fba0c59302"},
