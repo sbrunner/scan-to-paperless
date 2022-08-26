@@ -38,7 +38,7 @@ def check_image_file(root_folder, image, name, level=0.9):
     check_image(root_folder, result, name, level)
 
 
-def check_image(root_folder, image, name, level=0.9):
+def check_image(root_folder, image, name, level=0.95):
     assert image is not None, "Image required"
     expected_name = os.path.join(os.path.dirname(__file__), f"{name}.expected.png")
     result_name = os.path.join(root_folder, f"{name}.result.png")
@@ -47,9 +47,10 @@ def check_image(root_folder, image, name, level=0.9):
     if False:
         cv2.imwrite(expected_name, image)
         return
-    if not os.path.exists(expected_name):
+    if not os.path.isfile(expected_name):
+        cv2.imwrite(result_name, image)
         cv2.imwrite(expected_name, image)
-        assert not os.path.isfile(expected_name), "Expected image not found: " + expected_name
+        assert False, "Expected image not found: " + expected_name
     expected = cv2.imread(expected_name)
     assert expected is not None, "Wrong image: " + expected_name
     score, diff = process.image_diff(expected, image)
