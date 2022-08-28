@@ -567,15 +567,16 @@ def _histogram(
         points.append(("max_level", max_, histogram_max / 10))
 
     for label, value, pos in points:
-        hist_value = histogram_data[int(round(value))]
-        axes.annotate(
-            label,
-            xy=(value, hist_value),
-            xycoords="data",
-            xytext=(value, hist_value + pos),
-            textcoords="data",
-            arrowprops={"facecolor": "black", "width": 1},
-        )
+        if int(round(value)) < len(histogram_data):
+            hist_value = histogram_data[int(round(value))]
+            axes.annotate(
+                label,
+                xy=(value, hist_value),
+                xycoords="data",
+                xytext=(value, hist_value + pos),
+                textcoords="data",
+                arrowprops={"facecolor": "black", "width": 1},
+            )
 
     plt.tight_layout()
     with tempfile.NamedTemporaryFile(suffix=".png") as file:
