@@ -11,16 +11,16 @@ test = ["coverage", "flake8", "pexpect", "wheel"]
 
 [[package]]
 name = "astroid"
-version = "2.11.7"
+version = "2.12.4"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
-python-versions = ">=3.6.2"
+python-versions = ">=3.7.2"
 
 [package.dependencies]
 lazy-object-proxy = ">=1.4.0"
 typing-extensions = {version = ">=3.10", markers = "python_version < \"3.10\""}
-wrapt = ">=1.11,<2"
+wrapt = {version = ">=1.11,<2", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "atomicwrites"
@@ -251,7 +251,7 @@ flake8 = "*"
 
 [[package]]
 name = "fonttools"
-version = "4.36.0"
+version = "4.37.1"
 description = "Tools to manipulate font files"
 category = "main"
 optional = false
@@ -518,7 +518,7 @@ python-versions = "*"
 
 [[package]]
 name = "networkx"
-version = "2.8.5"
+version = "2.8.6"
 description = "Python package for creating and manipulating graphs and networks"
 category = "main"
 optional = false
@@ -526,7 +526,7 @@ python-versions = ">=3.8"
 
 [package.extras]
 default = ["matplotlib (>=3.4)", "numpy (>=1.19)", "pandas (>=1.3)", "scipy (>=1.8)"]
-developer = ["mypy (>=0.960)", "pre-commit (>=2.19)"]
+developer = ["mypy (>=0.961)", "pre-commit (>=2.20)"]
 doc = ["nb2plots (>=0.6)", "numpydoc (>=1.4)", "pillow (>=9.1)", "pydata-sphinx-theme (>=0.9)", "sphinx (>=5)", "sphinx-gallery (>=0.10)", "texext (>=0.6.6)"]
 extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.9)", "sympy (>=1.10)"]
 test = ["codecov (>=2.1)", "pytest (>=7.1)", "pytest-cov (>=3.0)"]
@@ -774,14 +774,14 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pylint"
-version = "2.14.5"
+version = "2.15.0"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 
 [package.dependencies]
-astroid = ">=2.11.6,<=2.12.0-dev0"
+astroid = ">=2.12.4,<=2.14.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = ">=0.2"
 isort = ">=4.2.5,<6"
@@ -1220,7 +1220,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "urllib3"
-version = "1.26.11"
+version = "1.26.12"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "dev"
 optional = false
@@ -1228,7 +1228,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, 
 
 [package.extras]
 brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
-secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)"]
+secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)", "urllib3-secure-extra"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
@@ -1314,8 +1314,8 @@ argcomplete = [
     {file = "argcomplete-2.0.0.tar.gz", hash = "sha256:6372ad78c89d662035101418ae253668445b391755cfe94ea52f1b9d22425b20"},
 ]
 astroid = [
-    {file = "astroid-2.11.7-py3-none-any.whl", hash = "sha256:86b0a340a512c65abf4368b80252754cda17c02cdbbd3f587dddf98112233e7b"},
-    {file = "astroid-2.11.7.tar.gz", hash = "sha256:bb24615c77f4837c707669d16907331374ae8a964650a66999da3f5ca68dc946"},
+    {file = "astroid-2.12.4-py3-none-any.whl", hash = "sha256:af71cdc0775b6e4d88076746620e2c8cd1bf4533a9977cfdd00eeea97d95530c"},
+    {file = "astroid-2.12.4.tar.gz", hash = "sha256:39fa822c82dc112f5072a208ddf01c58184043aa90e3e469786fa0520c71aaa7"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.1.tar.gz", hash = "sha256:81b2c9071a49367a7f770170e5eec8cb66567cfbbc8c73d20ce5ca4a8d71cf11"},
@@ -1546,8 +1546,8 @@ flake8-polyfill = [
     {file = "flake8_polyfill-1.0.2-py2.py3-none-any.whl", hash = "sha256:12be6a34ee3ab795b19ca73505e7b55826d5f6ad7230d31b18e106400169b9e9"},
 ]
 fonttools = [
-    {file = "fonttools-4.36.0-py3-none-any.whl", hash = "sha256:cb91ef8d5a435d90aeb3ab814b2548c6b515df5bc13b4c5adaa23778f2f79823"},
-    {file = "fonttools-4.36.0.zip", hash = "sha256:e637d2fe06bddabbfc488e02ef32d04d561e3c71e9ba11abc7782ea753ceb218"},
+    {file = "fonttools-4.37.1-py3-none-any.whl", hash = "sha256:fff6b752e326c15756c819fe2fe7ceab69f96a1dbcfe8911d0941cdb49905007"},
+    {file = "fonttools-4.37.1.zip", hash = "sha256:4606e1a88ee1f6699d182fea9511bd9a8a915d913eab4584e5226da1180fcce7"},
 ]
 gitdb = [
     {file = "gitdb-4.0.9-py3-none-any.whl", hash = "sha256:8033ad4e853066ba6ca92050b9df2f89301b8fc8bf7e9324d412a63f8bf1a8fd"},
@@ -1844,8 +1844,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 networkx = [
-    {file = "networkx-2.8.5-py3-none-any.whl", hash = "sha256:a762f4b385692d9c3a6f2912d058d76d29a827deaedf9e63ed14d397b8030687"},
-    {file = "networkx-2.8.5.tar.gz", hash = "sha256:15a7b81a360791c458c55a417418ea136c13378cfdc06a2dcdc12bd2f9cf09c1"},
+    {file = "networkx-2.8.6-py3-none-any.whl", hash = "sha256:2a30822761f34d56b9a370d96a4bf4827a535f5591a4078a453425caeba0c5bb"},
+    {file = "networkx-2.8.6.tar.gz", hash = "sha256:bd2b7730300860cbd2dafe8e5af89ff5c9a65c3975b352799d87a6238b4301a6"},
 ]
 numpy = [
     {file = "numpy-1.23.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e603ca1fb47b913942f3e660a15e55a9ebca906857edfea476ae5f0fe9b457d5"},
@@ -2046,8 +2046,8 @@ pygments = [
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
 ]
 pylint = [
-    {file = "pylint-2.14.5-py3-none-any.whl", hash = "sha256:fabe30000de7d07636d2e82c9a518ad5ad7908590fe135ace169b44839c15f90"},
-    {file = "pylint-2.14.5.tar.gz", hash = "sha256:487ce2192eee48211269a0e976421f334cf94de1806ca9d0a99449adcdf0285e"},
+    {file = "pylint-2.15.0-py3-none-any.whl", hash = "sha256:4b124affc198b7f7c9b5f9ab690d85db48282a025ef9333f51d2d7281b92a6c3"},
+    {file = "pylint-2.15.0.tar.gz", hash = "sha256:4f3f7e869646b0bd63b3dfb79f3c0f28fc3d2d923ea220d52620fd625aed92b0"},
 ]
 pylint-celery = [
     {file = "pylint-celery-0.3.tar.gz", hash = "sha256:41e32094e7408d15c044178ea828dd524beedbdbe6f83f712c5e35bde1de4beb"},
@@ -2374,8 +2374,8 @@ typing-extensions = [
     {file = "typing_extensions-4.3.0.tar.gz", hash = "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"},
 ]
 urllib3 = [
-    {file = "urllib3-1.26.11-py2.py3-none-any.whl", hash = "sha256:c33ccba33c819596124764c23a97d25f32b28433ba0dedeb77d873a38722c9bc"},
-    {file = "urllib3-1.26.11.tar.gz", hash = "sha256:ea6e8fb210b19d950fab93b60c9009226c63a28808bc8386e05301e25883ac0a"},
+    {file = "urllib3-1.26.12-py2.py3-none-any.whl", hash = "sha256:b930dd878d5a8afb066a637fbb35144fe7901e3b209d1cd4f524bd0e9deee997"},
+    {file = "urllib3-1.26.12.tar.gz", hash = "sha256:3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e"},
 ]
 weasyprint = [
     {file = "weasyprint-56.1-py3-none-any.whl", hash = "sha256:86ffa626a7b335d19a7024c0b59a6b3160fd5c0e7a3634500f50a2c35faeafb5"},
