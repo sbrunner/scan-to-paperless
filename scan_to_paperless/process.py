@@ -753,7 +753,8 @@ def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int]) -> N
     mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
     mask_image[:, :] = color
     opacity_result = cv2.addWeighted(sub_img, 1 - opacity, mask_image, opacity, 1.0)
-    image[y : y + height, x : x + width] = opacity_result
+    if opacity_result is not None:
+        image[y : y + height, x : x + width] = opacity_result
 
     cv2.rectangle(image, (x, y), (x + 1, y + height), color, -1)
     cv2.rectangle(image, (x, y), (x + width, y + 1), color, -1)
