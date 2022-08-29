@@ -89,19 +89,19 @@
         "min_level": {
           "type": "number",
           "description": "Min level if no level end no auto-level",
-          "default": 15,
+          "default": 0,
           "title": "Min level"
         },
         "max_level": {
           "type": "number",
           "description": "Max level if no level end no auto-level",
-          "default": 85,
+          "default": 100,
           "title": "Max level"
         },
         "cut_white": {
           "type": "number",
           "description": "Set the near white pixels on the image to white",
-          "default": 200,
+          "default": 255,
           "title": "Cut white"
         },
         "cut_black": {

@@ -550,7 +550,7 @@ def _histogram(
     points = []
     level_, min_, max_ = _get_level(context)
 
-    if level_:
+    if level_ and min_ > 0:
         points.append(("min_level", min_, histogram_max / 5))
 
     cut_white = (
@@ -560,10 +560,12 @@ def _histogram(
         context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT) / 255 * (max_ - min_) + min_
     )
 
-    points.append(("cut_black", cut_black, histogram_max / 10))
-    points.append(("cut_white", cut_white, histogram_max / 5))
+    if cut_black > 0:
+        points.append(("cut_black", cut_black, histogram_max / 10))
+    if cut_white < 255:
+        points.append(("cut_white", cut_white, histogram_max / 5))
 
-    if level_:
+    if level_ and max_ < 100:
         points.append(("max_level", max_, histogram_max / 10))
 
     for label, value, pos in points:

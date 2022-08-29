@@ -67,33 +67,12 @@ scanimage_arguments: # Additional argument passed to the scanimage command
   - --mode=color
   - --resolution=300
 default_args:
-  ## Level
-  # true: => do level on 15% - 85% (under 15 % will be black above 85% will be white)
-  # false: => 0% - 100%
-  # <number>: => (0 + <number>)% - (100 - number)%
-  level:
-  # If no level specified, do auto level
-  auto_level: False
-  # min level if no level end no auto level
-  min_level: 15
-  # max level if no level end no auto level
-  max_level: 95
-
-  ## Crop
-  no_crop: False # Don't do any crop
-  marging_horizontal: 9 # mm, the horizontal margin used on autodetect content
-  marging_vertical: 6 # mm, the vertical margin used on autodetect content
-  dpi: 300 # The DPI used to convert the mm to pixel
-
-  # Sharpen
-  sharpen: False # Do the sharpen
-
-  # Dither
-  dither: False # Do the dither
-
-  ## OCR
-  tesseract: True # Use tesseract to to an OCR on the document
-  tesseract_lang: fra+eng # The used language
+  auto_mask: {}
+  auto_cut: {}
+  run_pngquant: true
+  cut_white: 200 # cut the near white color to have a uniform background
+  dpi: 300 # Not necessary if the scanner generate a tiff file
+  tesseract_lang: fra+eng # The used languages for the OCR
 ```
 
 [Full config documentation](./config.md)
@@ -103,7 +82,7 @@ default_args:
 The Docker support is required, Personally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
 and you can get the \*.syno.json files to configure your Docker services.
 
-Otherwise use:
+Otherwise, use:
 
 ```bash
 docker run --name=scan-to-paperless --restart=unless-stopped --detatch \
