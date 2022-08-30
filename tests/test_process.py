@@ -107,7 +107,7 @@ def init_test():
     [
         (
             "lines",
-            {"name": "VL1", "type": "line detection", "value": 1907, "vertical": True, "margin": 0},
+            {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0},
             1820,
         ),
         (

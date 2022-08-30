@@ -57,9 +57,9 @@
 - **`args`** _(object)_
   - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `False`.
   - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `False`.
-  - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `15`.
-  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `85`.
-  - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `200`.
+  - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `0`.
+  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `100`.
+  - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `255`.
   - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
   - **`no_crop`** _(boolean)_: Don't do any crop. Default: `False`.
   - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.

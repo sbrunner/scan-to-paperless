@@ -36,19 +36,19 @@ Arguments = TypedDict(
         #
         # Min level if no level end no auto-level
         #
-        # default: 15
+        # default: 0
         "min_level": Union[int, float],
         # Max level
         #
         # Max level if no level end no auto-level
         #
-        # default: 85
+        # default: 100
         "max_level": Union[int, float],
         # Cut white
         #
         # Set the near white pixels on the image to white
         #
-        # default: 200
+        # default: 255
         "cut_white": Union[int, float],
         # Cut black
         #
@@ -381,7 +381,7 @@ CUT_BLACK_DEFAULT = 0
 
 
 # Default value of the field path 'Arguments cut_white'
-CUT_WHITE_DEFAULT = 200
+CUT_WHITE_DEFAULT = 255
 
 
 # Configuration
@@ -539,7 +539,7 @@ MARGIN_VERTICAL_DEFAULT = 6
 
 
 # Default value of the field path 'Arguments max_level'
-MAX_LEVEL_DEFAULT = 85
+MAX_LEVEL_DEFAULT = 100
 
 
 # Default value of the field path 'Arguments min_box_black_crop'
@@ -567,7 +567,7 @@ MIN_BOX_SIZE_LIMIT_DEFAULT = 10
 
 
 # Default value of the field path 'Arguments min_level'
-MIN_LEVEL_DEFAULT = 15
+MIN_LEVEL_DEFAULT = 0
 
 
 # Default value of the field path 'Configuration modes'
