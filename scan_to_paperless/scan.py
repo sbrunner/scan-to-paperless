@@ -17,6 +17,7 @@ from ruamel.yaml.main import YAML
 from skimage import io
 
 from scan_to_paperless import CONFIG_PATH, get_config
+
 from .config import VIEWER_DEFAULT
 
 if sys.version_info.minor >= 8:

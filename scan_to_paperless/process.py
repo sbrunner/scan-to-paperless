@@ -540,6 +540,7 @@ def _histogram(
 ) -> None:
 
     _, axes = plt.subplots(figsize=(15, 5))
+    axes.set_xlim(0, 255)
 
     if log:
         axes.semilogy(histogram_centers, histogram_data, lw=1)
@@ -560,12 +561,12 @@ def _histogram(
         context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT) / 255 * (max_ - min_) + min_
     )
 
-    if cut_black > 0:
+    if cut_black > 0.0:
         points.append(("cut_black", cut_black, histogram_max / 10))
-    if cut_white < 255:
+    if cut_white < 255.0:
         points.append(("cut_white", cut_white, histogram_max / 5))
 
-    if level_ and max_ < 100:
+    if level_ and max_ < 255.0:
         points.append(("max_level", max_, histogram_max / 10))
 
     for label, value, pos in points:
@@ -720,6 +721,8 @@ def autorotate(context: Context) -> None:
 
     Put the text in the right position.
     """
+    if context.config["args"].setdefault("no_auto_rotate", schema.NO_AUTO_ROTATE_DEFAULT):
+        return
     with tempfile.NamedTemporaryFile(suffix=".png") as source:
         cv2.imwrite(source.name, context.get_masked())
         orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()

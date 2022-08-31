@@ -7,7 +7,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    apt-get install --assume-yes --no-install-recommends python3-pip
+    apt-get install --assume-yes --no-install-recommends python3-pip gnupg
 
 FROM base-all as poetry
 
@@ -23,7 +23,8 @@ RUN poetry export --output=requirements.txt \
 
 FROM base-all as base-dist
 
-RUN echo "deb https://notesalexp.org/tesseract-ocr5/jammy/ jammy main" > /etc/apt/sources.list.d/notesalexp.list
+RUN echo "deb https://notesalexp.org/tesseract-ocr5/jammy/ jammy main" > /etc/apt/sources.list.d/notesalexp.list \
+    && gpg --keyserver hkp://keyserver.ubuntu.com:80 --receive-keys 82F409933771AC78
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \

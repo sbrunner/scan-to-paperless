@@ -300,6 +300,12 @@
           "description": "Run the ps2pdf optimizer (=> JPEG)",
           "title": "Run ps2pdf"
         },
+        "no_auto_rotate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the auto rotate detected by Tesseract",
+          "title": "No auto rotate"
+        },
         "jpeg": {
           "type": "boolean",
           "default": false,
