@@ -25,17 +25,16 @@ def test_should_not_commit():
 
 # @pytest.mark.skip(reason="for test")
 def test_find_lines():
-    peaks, _ = process.find_lines(load_image("limit-lines-1.png"), True)
-    assert 2844 in peaks
+    lines = process.find_lines(load_image("limit-lines-1.png"), True, {})
+    assert 1821 in [l[0] for l in lines]
 
 
 # @pytest.mark.skip(reason="for test")
 def test_find_limit_contour():
-    limits, _ = process.find_limit_contour(
-        load_image("limit-contour-1.png"),
-        process.Context({"args": {"min_box_size_empty": 40}}, {}),
-        True,
-    )
+    context = process.Context({"args": {"min_box_size_empty": 40}}, {})
+    context.image = load_image("limit-contour-1.png")
+    contours = process.find_contours(context.image, context, context.get_process_count(), "limits", "limit")
+    limits = process.find_limit_contour(context.image, True, contours)
     assert limits == [1589]
 
 
@@ -143,7 +142,7 @@ def init_test():
     [
         pytest.param(
             "lines",
-            {"name": "VL0", "type": "line detection", "value": 1005, "vertical": True, "margin": 0},
+            {"name": "VL0", "type": "line detection", "value": 979, "vertical": True, "margin": 0},
             979,
             240,
             id="lines",
@@ -195,18 +194,11 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
         generate_expected_image=REGENERATE,
     )
     limits = [item for item in config["assisted_split"][0]["limits"] if item["vertical"]]
-    print(json.dumps(limits))
     assert not [item for item in limits if item["name"] == "C"], "We shouldn't have center limit"
     limits = [item for item in limits if item["name"] == limit["name"]]
     assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
     config["assisted_split"][0]["limits"][0]["value"] = better_value
-    check_image_file(
-        root_folder,
-        images[0],
-        os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-1.expected.png"),
-        generate_expected_image=REGENERATE,
-    )
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalise"
@@ -517,7 +509,7 @@ def test_empty():
 
 
 # @pytest.mark.skip(reason="for test")
-@pytest.mark.parametrize("test,args", [("600", {"dpi": 600, "num_angles": 179})])
+@pytest.mark.parametrize("test,args", [pytest.param("600", {"dpi": 600, "num_angles": 179}, id="600")])
 def test_custom_process(test, args):
     init_test()
     root_folder = f"/results/600"
