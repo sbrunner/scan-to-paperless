@@ -85,11 +85,12 @@ and you can get the \*.syno.json files to configure your Docker services.
 Otherwise, use:
 
 ```bash
+SCAN_FOLDER=<scan_folder>
+CONSUME_FOLDER=<consume_folder>
 docker run --name=scan-to-paperless --restart=unless-stopped --detatch \
-  --volume= \
-  --volume= \
-  sbrunner/scan-to-paperless < scan_folder > :/source \
-  < consume_folder > :/destination
+  --volume=${SCAN_FOLDER}:/source \
+  --volume=${CONSUME_FOLDER}:/destination \
+  sbrunner/scan-to-paperless
 ```
 
 You can set the environment variable `PROGRESS` to `TRUE` to get all the intermediate images.
