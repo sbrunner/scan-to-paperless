@@ -79,6 +79,7 @@
     - **Items** _(string)_
   - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `False`.
   - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
+  - **`no_auto_rotate`** _(boolean)_: Run the auto rotate detected by Tesseract. Default: `False`.
   - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.
   - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.
   - **`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.

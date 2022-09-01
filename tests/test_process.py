@@ -8,12 +8,19 @@ import subprocess
 import cv2
 import pikepdf
 import pytest
+from c2cwsgiutils.acceptance.image import check_image, check_image_file
 
 from scan_to_paperless import code, process
+
+REGENERATE = False
 
 
 def load_image(image_name):
     return cv2.imread(os.path.join(os.path.dirname(__file__), image_name))
+
+
+def test_should_not_commit():
+    assert REGENERATE is False
 
 
 # @pytest.mark.skip(reason="for test")
@@ -32,49 +39,48 @@ def test_find_limit_contour():
     assert limits == [1589]
 
 
-def check_image_file(root_folder, image, name, level=0.9):
-    result = cv2.imread(image)
-    assert result is not None, "Wrong image: " + image
-    check_image(root_folder, result, name, level)
-
-
-def check_image(root_folder, image, name, level=0.95):
-    assert image is not None, "Image required"
-    expected_name = os.path.join(os.path.dirname(__file__), f"{name}.expected.png")
-    result_name = os.path.join(root_folder, f"{name}.result.png")
-    diff_name = os.path.join(root_folder, f"{name}.diff.png")
-    # Set to True to regenerate images
-    if False:
-        cv2.imwrite(expected_name, image)
-        return
-    if not os.path.isfile(expected_name):
-        cv2.imwrite(result_name, image)
-        cv2.imwrite(expected_name, image)
-        assert False, "Expected image not found: " + expected_name
-    expected = cv2.imread(expected_name)
-    assert expected is not None, "Wrong image: " + expected_name
-    score, diff = process.image_diff(expected, image)
-    if diff is None:
-        cv2.imwrite(result_name, image)
-        assert diff is not None, "No diff generated"
-    if score > level:
-        cv2.imwrite(result_name, image)
-        cv2.imwrite(diff_name, diff)
-        assert score > level, f"{result_name} != {expected_name} => {diff_name} ({score} > {level})"
-
-
 # @pytest.mark.skip(reason="for test")
 def test_crop():
     image = load_image("image-1.png")
     root_folder = "/results/crop"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
-    check_image(root_folder, process.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), "crop-1")
-    check_image(root_folder, process.crop_image(image, 0, 100, 300, 100, (255, 255, 255)), "crop-2")
-    check_image(root_folder, process.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), "crop-3")
-    check_image(root_folder, process.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), "crop-4")
-    check_image(root_folder, process.crop_image(image, 100, 200, 100, 200, (255, 255, 255)), "crop-5")
-    check_image(root_folder, process.crop_image(image, 200, 100, 200, 100, (255, 255, 255)), "crop-6")
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "crop-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.crop_image(image, 0, 100, 300, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "crop-2.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "crop-3.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "crop-4.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.crop_image(image, 100, 200, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "crop-5.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.crop_image(image, 200, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "crop-6.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     shutil.rmtree(root_folder)
 
 
@@ -85,12 +91,42 @@ def test_rotate():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     image = process.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
-    check_image(root_folder, process.rotate_image(image, 10, (255, 255, 255)), "rotate-1")
-    check_image(root_folder, process.rotate_image(image, -10, (255, 255, 255)), "rotate-2")
-    check_image(root_folder, process.rotate_image(image, 90, (255, 255, 255)), "rotate-3")
-    check_image(root_folder, process.rotate_image(image, -90, (255, 255, 255)), "rotate-4")
-    check_image(root_folder, process.rotate_image(image, 270, (255, 255, 255)), "rotate-4")
-    check_image(root_folder, process.rotate_image(image, 180, (255, 255, 255)), "rotate-5")
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.rotate_image(image, 10, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "rotate-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.rotate_image(image, -10, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "rotate-2.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.rotate_image(image, 90, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "rotate-3.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.rotate_image(image, -90, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "rotate-4.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.rotate_image(image, 270, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "rotate-4.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image(
+        root_folder,
+        cv2.cvtColor(process.rotate_image(image, 180, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "rotate-5.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     shutil.rmtree(root_folder)
 
 
@@ -103,21 +139,25 @@ def init_test():
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize(
-    "type_,limit,better_value",
+    "type_,limit,better_value,cut_white",
     [
-        (
+        pytest.param(
             "lines",
-            {"name": "VL1", "type": "line detection", "value": 1812, "vertical": True, "margin": 0},
-            1820,
+            {"name": "VL0", "type": "line detection", "value": 1005, "vertical": True, "margin": 0},
+            979,
+            240,
+            id="lines",
         ),
-        (
+        pytest.param(
             "contour",
-            {"name": "VC0", "type": "contour detection", "value": 1584, "vertical": True, "margin": 0},
-            1584,
+            {"name": "VC0", "type": "contour detection", "value": 864, "vertical": True, "margin": 0},
+            864,
+            200,
+            id="contour",
         ),
     ],
 )
-def test_assisted_split_full(type_, limit, better_value):
+def test_assisted_split_full(type_, limit, better_value, cut_white):
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = f"/results/assisted-split-full-{type_}"
@@ -131,12 +171,12 @@ def test_assisted_split_full(type_, limit, better_value):
     config = {
         "args": {
             "assisted_split": True,
-            "level": True,
             "tesseract": False,
-            "sharpen": True,
             "num_angles": 179,
             "threshold_block_size_crop": 20,
             "threshold_value_c_crop": 20,
+            "cut_white": cut_white,
+            "no_auto_rotate": True,
         },
     }
     step = {
@@ -148,8 +188,12 @@ def test_assisted_split_full(type_, limit, better_value):
     images = step["sources"]
     assert len(images) == 1
     assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
-    check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
-    # check_image_file(root_folder, config['assisted_split'][0]['source'], 'assisted-split-{}-2'.format(type_))
+    check_image_file(
+        root_folder,
+        images[0],
+        os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     limits = [item for item in config["assisted_split"][0]["limits"] if item["vertical"]]
     print(json.dumps(limits))
     assert not [item for item in limits if item["name"] == "C"], "We shouldn't have center limit"
@@ -157,12 +201,27 @@ def test_assisted_split_full(type_, limit, better_value):
     assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
     config["assisted_split"][0]["limits"][0]["value"] = better_value
-    check_image_file(root_folder, images[0], f"assisted-split-{type_}-1", 0.998)
+    check_image_file(
+        root_folder,
+        images[0],
+        os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalise"
-    check_image_file(root_folder, step["sources"][0], f"assisted-split-{type_}-3")
-    check_image_file(root_folder, step["sources"][1], f"assisted-split-{type_}-4")
+    check_image_file(
+        root_folder,
+        step["sources"][0],
+        os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-3.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image_file(
+        root_folder,
+        step["sources"][1],
+        os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-4.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     process.finalize(config, step, root_folder)
     pdfinfo = process.output(
         ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
@@ -183,7 +242,8 @@ def test_assisted_split_full(type_, limit, better_value):
     check_image_file(
         root_folder,
         os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
-        f"assisted-split-{type_}-5",
+        os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-5.expected.png"),
+        generate_expected_image=REGENERATE,
     )
     shutil.rmtree(root_folder)
 
@@ -227,7 +287,12 @@ def test_assisted_split_join_full():
     step = process.split(config, step, root_folder)
     assert step["name"] == "finalise"
     assert len(step["sources"]) == 1
-    check_image_file(root_folder, step["sources"][0], "assisted-split-join-1")
+    check_image_file(
+        root_folder,
+        step["sources"][0],
+        os.path.join(os.path.dirname(__file__), "assisted-split-join-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
 
     process.finalize(config, step, root_folder)
     pdfinfo = process.output(
@@ -247,7 +312,10 @@ def test_assisted_split_join_full():
         ]
     )
     check_image_file(
-        root_folder, os.path.join("/results", f"{os.path.basename(root_folder)}.png"), "assisted-split-join-2"
+        root_folder,
+        os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
+        os.path.join(os.path.dirname(__file__), "assisted-split-join-2.expected.png"),
+        generate_expected_image=REGENERATE,
     )
     shutil.rmtree(root_folder)
 
@@ -294,10 +362,30 @@ def test_assisted_split_booth():
     step = process.split(config, step, root_folder)
     assert step["name"] == "finalise"
     assert len(step["sources"]) == 4
-    check_image_file(root_folder, step["sources"][0], "assisted-split-booth-1")
-    check_image_file(root_folder, step["sources"][1], "assisted-split-booth-2")
-    check_image_file(root_folder, step["sources"][2], "assisted-split-booth-3")
-    check_image_file(root_folder, step["sources"][3], "assisted-split-booth-4")
+    check_image_file(
+        root_folder,
+        step["sources"][0],
+        os.path.join(os.path.dirname(__file__), "assisted-split-booth-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image_file(
+        root_folder,
+        step["sources"][1],
+        os.path.join(os.path.dirname(__file__), "assisted-split-booth-2.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image_file(
+        root_folder,
+        step["sources"][2],
+        os.path.join(os.path.dirname(__file__), "assisted-split-booth-3.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image_file(
+        root_folder,
+        step["sources"][3],
+        os.path.join(os.path.dirname(__file__), "assisted-split-booth-4.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     shutil.rmtree(root_folder)
 
 
@@ -310,12 +398,17 @@ def test_full(progress):
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True},
+        "args": {"level": 15, "cut_white": 200},
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
-    check_image_file(root_folder, step["sources"][0], "all-1")
+    check_image_file(
+        root_folder,
+        step["sources"][0],
+        os.path.join(os.path.dirname(__file__), "all-1.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
 
     if progress == "TRUE":
         assert os.path.exists(os.path.join(root_folder, "1-level/all-1.png"))
@@ -348,7 +441,12 @@ def test_full(progress):
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
-    check_image_file(root_folder, os.path.join("/results", f"{os.path.basename(root_folder)}.png"), "all-2")
+    check_image_file(
+        root_folder,
+        os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
+        os.path.join(os.path.dirname(__file__), "all-2.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
     shutil.rmtree(root_folder)
 
 
@@ -360,7 +458,7 @@ def test_credit_card_full():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True, "append_credit_card": True, "num_angles": 179},
+        "args": {"append_credit_card": True, "num_angles": 179, "cut_white": 200},
     }
     step = {
         "sources": [
@@ -389,7 +487,10 @@ def test_credit_card_full():
         ]
     )
     check_image_file(
-        root_folder, os.path.join("/results", f"{os.path.basename(root_folder)}.png"), "credit-card-1"
+        root_folder,
+        os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
+        os.path.join(os.path.dirname(__file__), "credit-card-1.expected.png"),
+        generate_expected_image=REGENERATE,
     )
     shutil.rmtree(root_folder)
 
@@ -428,7 +529,13 @@ def test_custom_process(test, args):
     step = {"sources": [os.path.join(os.path.dirname(__file__), f"{test}.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
-    check_image_file(root_folder, step["sources"][0], test)
+    check_image_file(
+        root_folder,
+        step["sources"][0],
+        os.path.join(os.path.dirname(__file__), f"{test}.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
     shutil.rmtree(root_folder)
 
 
@@ -451,7 +558,12 @@ def test_qr_code(name):
             check=True,
         )
     for page in range(2):
-        check_image_file(root_folder, f"/results/{name}-{page}.png", f"{name}-{page}", level=0.99999)
+        check_image_file(
+            root_folder,
+            f"/results/{name}-{page}.png",
+            os.path.join(os.path.dirname(__file__), f"{name}-{page}.expected.png"),
+            generate_expected_image=REGENERATE,
+        )
 
 
 # @pytest.mark.skip(reason="for test")
@@ -527,7 +639,10 @@ def test_multi_code():
         )
     for page in range(3):
         check_image_file(
-            root_folder, f"/results/qrbill-multi-{page}.png", f"qrbill-multi-{page}", level=0.99999
+            root_folder,
+            f"/results/qrbill-multi-{page}.png",
+            os.path.join(os.path.dirname(__file__), f"qrbill-multi-{page}.expected.png"),
+            generate_expected_image=REGENERATE,
         )
 
 
@@ -561,20 +676,30 @@ def test_tiff():
 @pytest.mark.parametrize(
     "name,config",
     [
-        ("default", {}),
-        (
+        pytest.param("default", {}, id="default"),
+        pytest.param(
             "inverse",
-            {"lower_hsv_color": [0, 0, 108], "upper_hsv_color": [255, 10, 148], "inverse_mask": True},
+            {
+                "lower_hsv_color": [0, 0, 108],
+                "upper_hsv_color": [255, 10, 148],
+                "inverse_mask": True,
+                "de_noise_size": 20,
+            },
+            id="inverse",
         ),
-        ("no-morphology", {"de_noise_morphology": False}),
-        (
+        pytest.param(
+            "no-morphology", {"de_noise_morphology": False, "de_noise_size": 20}, id="no-morphology"
+        ),
+        pytest.param(
             "inverse-no-morphology",
             {
                 "lower_hsv_color": [0, 0, 108],
                 "upper_hsv_color": [255, 10, 148],
                 "inverse_mask": True,
                 "de_noise_morphology": False,
+                "de_noise_size": 20,
             },
+            id="inverse-no-morphology",
         ),
     ],
 )
@@ -583,7 +708,12 @@ def test_auto_mask(config, name):
     context = process.Context({"args": {"auto_mask": config}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
-    check_image("/results/", context.mask, f"auto_mask-{name}")
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), f"auto_mask-{name}.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
 
 
 # @pytest.mark.skip(reason="for test")
@@ -594,7 +724,12 @@ def test_auto_mask_combine():
     context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
     context.image_name = "image.png"
     context.init_mask()
-    check_image("/results/", context.mask, "auto_mask_combine")
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "auto_mask_combine.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
 
 
 # @pytest.mark.skip(reason="for test")
@@ -603,26 +738,47 @@ def test_auto_cut():
     context = process.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.do_initial_cut()
-    check_image("/results/", context.image, "auto_cut")
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "auto_cut.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
 
 
 # @pytest.mark.skip(reason="for test")
 def test_color_cut():
     init_test()
-    context = process.Context({"args": {}}, {})
+    context = process.Context({"args": {"cut_white": 200}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
     process.color_cut(context)
-    check_image("/results/", context.image, "white-cut")
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
+        os.path.join(os.path.dirname(__file__), "white-cut.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
 
 
 # @pytest.mark.skip(reason="for test")
 def test_histogram():
     init_test()
-    context = process.Context({"args": {"level": True}}, {})
+    context = process.Context(
+        {"args": {"level": True, "min_level": 10, "max_level": 90, "cut_black": 20, "cut_white": 200}}, {}
+    )
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
     context.image_name = "histogram.png"
     context.root_folder = "/tmp"
     process.histogram(context)
-    check_image_file("/results/histogram/", "/tmp/histogram/histogram.png", "histogram")
-    check_image_file("/results/histogram/", "/tmp/histogram/log-histogram.png", "histogram-log")
-    check_image("/results/", context.image, "auto_cut")
+    check_image_file(
+        "/results/histogram/",
+        "/tmp/histogram/histogram.png",
+        os.path.join(os.path.dirname(__file__), "histogram.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+    check_image_file(
+        "/results/histogram/",
+        "/tmp/histogram/log-histogram.png",
+        os.path.join(os.path.dirname(__file__), "histogram-log.expected.png"),
+        generate_expected_image=REGENERATE,
+    )

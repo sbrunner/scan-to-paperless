@@ -244,6 +244,12 @@ Arguments = TypedDict(
         #
         # default: False
         "run_ps2pdf": bool,
+        # No auto rotate
+        #
+        # Run the auto rotate detected by Tesseract
+        #
+        # default: False
+        "no_auto_rotate": bool,
         # Jpeg
         #
         # Convert images to JPEG
@@ -567,6 +573,10 @@ MIN_BOX_SIZE_LIMIT_DEFAULT = 10
 
 # Default value of the field path 'Arguments min_level'
 MIN_LEVEL_DEFAULT = 0
+
+
+# Default value of the field path 'Arguments no_auto_rotate'
+NO_AUTO_ROTATE_DEFAULT = False
 
 
 # Default value of the field path 'Arguments no_crop'
