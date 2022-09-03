@@ -424,6 +424,87 @@
               "title": "Line detection max line gap"
             }
           }
+        },
+        "rule": {
+          "type": "object",
+          "title": "Rule",
+          "description": "Configuration of rule displayed in assisted split images",
+          "properties": {
+            "enable": {
+              "title": "Rule enable",
+              "type": "boolean",
+              "default": true
+            },
+            "minor_graduation_space": {
+              "title": "Rule minor graduation space",
+              "type": "integer",
+              "default": 10
+            },
+            "major_graduation_space": {
+              "title": "Rule major graduation space",
+              "type": "integer",
+              "default": 100
+            },
+            "lines_space": {
+              "title": "Rule lines space",
+              "type": "integer",
+              "default": 100
+            },
+            "minor_graduation_size": {
+              "title": "Rule minor graduation size",
+              "type": "integer",
+              "default": 10
+            },
+            "major_graduation_size": {
+              "title": "Rule major graduation size",
+              "type": "integer",
+              "default": 30
+            },
+            "graduation_color": {
+              "title": "Rule graduation color",
+              "type": "array",
+              "default": [0, 0, 0],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "lines_color": {
+              "title": "Rule lines color",
+              "type": "array",
+              "default": [0, 0, 0],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "lines_opacity": {
+              "title": "Rule lines opacity",
+              "type": "number",
+              "default": 0.2
+            },
+            "graduation_text_font_filename": {
+              "title": "Rule graduation text font filename",
+              "type": "string",
+              "default": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+            },
+            "graduation_text_font_size": {
+              "title": "Rule graduation text font size",
+              "type": "number",
+              "default": 17
+            },
+            "graduation_text_font_color": {
+              "title": "Rule graduation text font color",
+              "type": "array",
+              "default": [0, 0, 0],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "graduation_text_margin": {
+              "title": "Rule graduation text margin",
+              "type": "integer",
+              "default": 6
+            }
+          }
         }
       }
     }

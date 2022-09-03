@@ -7,7 +7,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    apt-get install --assume-yes --no-install-recommends python3-pip gnupg
+    apt-get install --assume-yes --no-install-recommends python3-pip gnupg fonts-dejavu-core
 
 FROM base-all as poetry
 

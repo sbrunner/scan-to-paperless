@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
 from deskew import determine_skew_debug_images
+from PIL import Image, ImageDraw, ImageFont
 from ruamel.yaml.main import YAML
 from skimage.color import rgb2gray, rgba2rgb
 from skimage.exposure import histogram as skimage_histogram
@@ -769,7 +770,7 @@ def draw_line(  # pylint: disable=too-many-arguments
     return {"name": name, "type": type_, "value": int(position), "vertical": vertical, "margin": 0}
 
 
-def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int]) -> None:
+def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int], border: bool = True) -> None:
     """Draw a rectangle on an image."""
     color = (0, 255, 0)
     opacity = 0.1
@@ -786,10 +787,11 @@ def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int]) -> N
     if opacity_result is not None:
         image[y : y + height, x : x + width] = opacity_result
 
-    cv2.rectangle(image, (x, y), (x + 1, y + height), color, -1)
-    cv2.rectangle(image, (x, y), (x + width, y + 1), color, -1)
-    cv2.rectangle(image, (x, y + height - 1), (x + width, y + height), color, -1)
-    cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
+    if border:
+        cv2.rectangle(image, (x, y), (x + 1, y + height), color, -1)
+        cv2.rectangle(image, (x, y), (x + width, y + 1), color, -1)
+        cv2.rectangle(image, (x, y + height - 1), (x + width, y + height), color, -1)
+        cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
 
 
 def find_lines(
@@ -1019,12 +1021,12 @@ def transform(
     if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
         config["assisted_split"] = []
 
-    for index, img in enumerate(step["sources"]):
-        image_name = f"{os.path.basename(img).rsplit('.')[0]}.png"
+    for index, image in enumerate(step["sources"]):
+        image_name = f"{os.path.basename(image).rsplit('.')[0]}.png"
         context = Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
             raise Exception("Image name is required")
-        context.image = cv2.imread(os.path.join(root_folder, img))
+        context.image = cv2.imread(os.path.join(root_folder, image))
         images_config = context.config.setdefault("images_config", {})
         image_config = images_config.setdefault(context.image_name, {})
         image_status = image_config.setdefault("status", {})
@@ -1046,7 +1048,7 @@ def transform(
             context.get_masked(), context, context.get_process_count(), "is-empty", "empty"
         )
         if not contours:
-            print(f"Ignore image with no content: {img}")
+            print(f"Ignore image with no content: {image}")
             continue
 
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
@@ -1070,10 +1072,119 @@ def transform(
             horizontal_limits_context = find_limits(context.image, False, context, contours)
 
             for contour_limit in contours:
-                draw_rectangle(context.image, contour_limit)
+                draw_rectangle(context.image, contour_limit, False)
             limits.extend(fill_limits(context.image, True, *vertical_limits_context))
             limits.extend(fill_limits(context.image, False, *horizontal_limits_context))
             assisted_split["limits"] = limits
+
+            rule_config = config["args"].setdefault("rule", {})
+            if rule_config.setdefault("enable", schema.RULE_ENABLE_DEFAULT):
+                minor_graduation_space = rule_config.setdefault(
+                    "minor_graduation_space", schema.RULE_MINOR_GRADUATION_SPACE_DEFAULT
+                )
+                major_graduation_space = rule_config.setdefault(
+                    "major_graduation_space", schema.RULE_MAJOR_GRADUATION_SPACE_DEFAULT
+                )
+                lines_space = rule_config.setdefault("lines_space", schema.RULE_LINES_SPACE_DEFAULT)
+                minor_graduation_size = rule_config.setdefault(
+                    "minor_graduation_size", schema.RULE_MINOR_GRADUATION_SIZE_DEFAULT
+                )
+                major_graduation_size = rule_config.setdefault(
+                    "major_graduation_size", schema.RULE_MAJOR_GRADUATION_SIZE_DEFAULT
+                )
+                graduation_color = rule_config.setdefault(
+                    "graduation_color", schema.RULE_GRADUATION_COLOR_DEFAULT
+                )
+                lines_color = rule_config.setdefault("lines_color", schema.RULE_LINES_COLOR_DEFAULT)
+                lines_opacity = rule_config.setdefault("lines_opacity", schema.RULE_LINES_OPACITY_DEFAULT)
+                graduation_text_font_filename = rule_config.setdefault(
+                    "graduation_text_font_filename", schema.RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT
+                )
+                graduation_text_font_size = rule_config.setdefault(
+                    "graduation_text_font_size", schema.RULE_GRADUATION_TEXT_FONT_SIZE_DEFAULT
+                )
+                graduation_text_font_color = rule_config.setdefault(
+                    "graduation_text_font_color", schema.RULE_GRADUATION_TEXT_FONT_COLOR_DEFAULT
+                )
+                graduation_text_margin = rule_config.setdefault(
+                    "graduation_text_margin", schema.RULE_GRADUATION_TEXT_MARGIN_DEFAULT
+                )
+
+                x = minor_graduation_space
+                while x < context.image.shape[1]:
+                    if x % lines_space == 0:
+                        sub_img = context.image[0 : context.image.shape[0], x : x + 1]
+                        mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
+                        mask_image[:, :] = lines_color
+                        opacity_result = cv2.addWeighted(
+                            sub_img, 1 - lines_opacity, mask_image, lines_opacity, 1.0
+                        )
+                        if opacity_result is not None:
+                            context.image[0 : context.image.shape[0], x : x + 1] = opacity_result
+
+                    if x % major_graduation_space == 0:
+                        cv2.rectangle(
+                            context.image, (x, 0), (x + 1, major_graduation_size), graduation_color, -1
+                        )
+                    else:
+                        cv2.rectangle(
+                            context.image, (x, 0), (x + 1, minor_graduation_size), graduation_color, -1
+                        )
+                    x += minor_graduation_space
+
+                y = minor_graduation_space
+                while y < context.image.shape[0]:
+                    if y % lines_space == 0:
+                        sub_img = context.image[y : y + 1, 0 : context.image.shape[1]]
+                        mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
+                        mask_image[:, :] = lines_color
+                        opacity_result = cv2.addWeighted(
+                            sub_img, 1 - lines_opacity, mask_image, lines_opacity, 1.0
+                        )
+                        if opacity_result is not None:
+                            context.image[y : y + 1, 0 : context.image.shape[1]] = opacity_result
+                    if y % major_graduation_space == 0:
+                        cv2.rectangle(
+                            context.image, (0, y), (major_graduation_size, y + 1), graduation_color, -1
+                        )
+                    else:
+                        cv2.rectangle(
+                            context.image, (0, y), (minor_graduation_size, y + 1), graduation_color, -1
+                        )
+                    y += minor_graduation_space
+
+                pil_image = Image.fromarray(context.image)
+
+                font = ImageFont.truetype(font=graduation_text_font_filename, size=graduation_text_font_size)
+                draw = ImageDraw.Draw(pil_image)
+
+                x = major_graduation_space
+                print(graduation_text_font_color)
+                while x < context.image.shape[1]:
+                    draw.text(
+                        (x + graduation_text_margin, major_graduation_size),
+                        f"{x}",
+                        fill=tuple(graduation_text_font_color),
+                        anchor="lb",
+                        font=font,
+                    )
+                    x += major_graduation_space
+
+                pil_image = pil_image.rotate(-90, expand=True)
+                draw = ImageDraw.Draw(pil_image)
+                y = major_graduation_space
+                while y < context.image.shape[0]:
+                    draw.text(
+                        (context.image.shape[0] - y + graduation_text_margin, major_graduation_size),
+                        f"{y}",
+                        fill=tuple(graduation_text_font_color),
+                        anchor="lb",
+                        font=font,
+                    )
+                    y += major_graduation_space
+                pil_image = pil_image.rotate(90, expand=True)
+
+                context.image = np.array(pil_image)
 
             cv2.imwrite(name, context.image)
             assisted_split["image"] = context.image_name
@@ -1130,14 +1241,14 @@ def transform(
     if config["args"].setdefault("jpeg", schema.JPEG_DEFAULT):
         count = context.get_process_count()
         new_images = []
-        for img in images:
-            name = os.path.splitext(os.path.basename(img))[0]
+        for image in images:
+            name = os.path.splitext(os.path.basename(image))[0]
             jpeg_img = f"{name}.jpeg"
             subprocess.run(  # nosec
                 [
                     "gm",
                     "convert",
-                    img,
+                    image,
                     "-quality",
                     str(config["args"].setdefault("jpeg_quality", schema.JPEG_QUALITY_DEFAULT)),
                     jpeg_img,
@@ -1172,16 +1283,16 @@ def _save_progress(root_folder: Optional[str], count: int, name: str, image_name
         print(exception)
 
 
-def save(context: Context, root_folder: str, img: str, folder: str, force: bool = False) -> str:
+def save(context: Context, root_folder: str, image: str, folder: str, force: bool = False) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
     if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
             os.makedirs(dest_folder)
-        dest_file = os.path.join(dest_folder, os.path.basename(img))
-        shutil.copyfile(img, dest_file)
+        dest_file = os.path.join(dest_folder, os.path.basename(image))
+        shutil.copyfile(image, dest_file)
         return dest_file
-    return img
+    return image
 
 
 class Item(TypedDict, total=False):
@@ -1216,7 +1327,7 @@ def split(
             if nb_vertical * nb_horizontal != len(assisted_split["destinations"]):
                 raise Exception(
                     f"Wrong number of destinations ({len(assisted_split['destinations'])}), "
-                    f"vertical: {nb_horizontal}, height: {nb_vertical}, img '{assisted_split['source']}'"
+                    f"vertical: {nb_horizontal}, height: {nb_vertical}, image: '{assisted_split['source']}'"
                 )
 
     for assisted_split in config["assisted_split"]:
@@ -1228,10 +1339,10 @@ def split(
     append: Dict[Union[str, int], List[Item]] = {}
     transformed_images = []
     for assisted_split in config["assisted_split"]:
-        img = assisted_split["source"]
+        image = assisted_split["source"]
         context = Context(config, step)
         width, height = (
-            int(e) for e in output(CONVERT + [img, "-format", "%w %h", "info:-"]).strip().split(" ")
+            int(e) for e in output(CONVERT + [image, "-format", "%w %h", "info:-"]).strip().split(" ")
         )
 
         horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
@@ -1274,7 +1385,7 @@ def split(
                             f"{vertical_value - vertical_margin - last_x}x"
                             f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
                             "+repage",
-                            img,
+                            image,
                             process_file.name,
                         ]
                     )
@@ -1355,9 +1466,9 @@ def finalize(
 
     if config["args"].setdefault("append_credit_card", schema.APPEND_CREDIT_CARD_DEFAULT):
         images2 = []
-        for img in images:
-            if os.path.exists(img):
-                images2.append(img)
+        for image in images:
+            if os.path.exists(image):
+                images2.append(image)
 
         file_name = os.path.join(root_folder, "append.png")
         call(CONVERT + images2 + ["-background", "#ffffff", "-gravity", "center", "-append", file_name])
@@ -1368,9 +1479,9 @@ def finalize(
         images = [file_name]
 
     pdf = []
-    for img in images:
-        if os.path.exists(img):
-            name = os.path.splitext(os.path.basename(img))[0]
+    for image in images:
+        if os.path.exists(image):
+            name = os.path.splitext(os.path.basename(image))[0]
             file_name = os.path.join(root_folder, f"{name}.pdf")
             if config["args"].setdefault("tesseract", schema.TESSERACT_DEFAULT):
                 with open(file_name, "w", encoding="utf8") as output_file:
@@ -1381,7 +1492,7 @@ def finalize(
                             str(config["args"].setdefault("dpi", schema.DPI_DEFAULT)),
                             "-l",
                             config["args"].setdefault("tesseract_lang", schema.TESSERACT_LANG_DEFAULT),
-                            img,
+                            image,
                             "stdout",
                             "pdf",
                         ],
@@ -1390,7 +1501,7 @@ def finalize(
                     if process.stderr:
                         print(process.stderr)
             else:
-                call(CONVERT + [img, "+repage", file_name])
+                call(CONVERT + [image, "+repage", file_name])
             pdf.append(file_name)
 
     tesseract_producer = None
@@ -1488,9 +1599,9 @@ def process_code() -> None:
 
 def is_sources_present(images: List[str], root_folder: str) -> bool:
     """Are sources present for the next step."""
-    for img in images:
-        if not os.path.exists(os.path.join(root_folder, img)):
-            print(f"Missing {root_folder} - {img}")
+    for image in images:
+        if not os.path.exists(os.path.join(root_folder, image)):
+            print(f"Missing {root_folder} - {image}")
             return False
     return True
 
