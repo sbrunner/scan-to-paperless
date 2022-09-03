@@ -107,3 +107,11 @@
     - **`sigma`** _(number)_: Used in the `canny` function. Default: `3.0`.
     - **`num_peaks`** _(integer)_: number of peaks we ask for. Default: `20`.
     - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `False`.
+  - **`line_detection`** _(object)_: The line detection used in assisted split.
+    - **`low_threshold`** _(integer)_: The low threshold used in the Canny edge detector. Default: `0`.
+    - **`high_threshold`** _(integer)_: The high threshold used in the Canny edge detector. Default: `1000`.
+    - **`aperture_size`** _(integer)_: The aperture size used in the Canny edge detector. Default: `3`.
+    - **`rho`** _(integer)_: The rho used in the Hough transform. Default: `1`.
+    - **`threshold`** _(integer)_: The threshold used in the Hough transform. Default: `100`.
+    - **`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
+    - **`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.

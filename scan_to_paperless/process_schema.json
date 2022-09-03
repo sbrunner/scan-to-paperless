@@ -376,6 +376,55 @@
               "type": "boolean"
             }
           }
+        },
+        "line_detection": {
+          "type": "object",
+          "title": "Line detection",
+          "description": "The line detection used in assisted split",
+          "properties": {
+            "low_threshold": {
+              "type": "integer",
+              "default": 0,
+              "description": "The low threshold used in the Canny edge detector",
+              "title": "Line detection low threshold"
+            },
+            "high_threshold": {
+              "type": "integer",
+              "default": 1000,
+              "description": "The high threshold used in the Canny edge detector",
+              "title": "Line detection high threshold"
+            },
+            "aperture_size": {
+              "type": "integer",
+              "default": 3,
+              "description": "The aperture size used in the Canny edge detector",
+              "title": "Line detection aperture size"
+            },
+            "rho": {
+              "type": "integer",
+              "default": 1,
+              "description": "The rho used in the Hough transform",
+              "title": "Line detection rho"
+            },
+            "threshold": {
+              "type": "integer",
+              "default": 100,
+              "description": "The threshold used in the Hough transform",
+              "title": "Line detection threshold"
+            },
+            "min_line_length": {
+              "type": "integer",
+              "default": 50,
+              "description": "The minimum line length in percentage of the image size used in the Hough transform",
+              "title": "Line detection min line length"
+            },
+            "max_line_gap": {
+              "type": "integer",
+              "default": 100,
+              "description": "The maximum line gap in percentage of the image size used in the Hough transform",
+              "title": "Line detection max line gap"
+            }
+          }
         }
       }
     }

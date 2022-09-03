@@ -24,7 +24,6 @@ import numpy as np
 import pikepdf
 from deskew import determine_skew_debug_images
 from ruamel.yaml.main import YAML
-from scipy.signal import find_peaks
 from skimage.color import rgb2gray, rgba2rgb
 from skimage.exposure import histogram as skimage_histogram
 from skimage.metrics import structural_similarity
@@ -731,17 +730,42 @@ def autorotate(context: Context) -> None:
 
 
 def draw_line(  # pylint: disable=too-many-arguments
-    image: NpNdarrayInt, vertical: bool, position: float, value: int, name: str, type_: str
+    image: NpNdarrayInt,
+    vertical: bool,
+    position: Optional[float],
+    value: Optional[int],
+    name: str,
+    type_: str,
+    color: Tuple[int, int, int],
+    line: Optional[Tuple[int, int, int, int]] = None,
 ) -> schema.Limit:
     """Draw a line on an image."""
     img_len = image.shape[0 if vertical else 1]
-    color = (255, 0, 0) if vertical else (0, 255, 0)
-    if vertical:
-        cv2.rectangle(image, (int(position) - 1, img_len), (int(position) + 0, img_len - value), color, -1)
-        cv2.putText(image, name, (int(position), img_len - value), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4)
+    if line is None:
+        assert position is not None
+        assert value is not None
+        if vertical:
+            cv2.rectangle(
+                image, (int(position) - 1, img_len), (int(position) + 1, img_len - value), color, -1
+            )
+            cv2.putText(
+                image, name, (int(position), img_len - value), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4
+            )
+        else:
+            cv2.rectangle(image, (0, int(position) - 1), (value, int(position) + 1), color, -1)
+            cv2.putText(image, name, (value, int(position)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4)
     else:
-        cv2.rectangle(image, (0, int(position) - 1), (value, int(position) + 0), color, -1)
-        cv2.putText(image, name, (value, int(position)), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4)
+        position = line[0] if vertical else line[1]
+        cv2.rectangle(
+            image,
+            (line[0] - (1 if vertical else 0), line[1] - (0 if vertical else 1)),
+            (line[2] + (1 if vertical else 0), line[3] + (0 if vertical else 1)),
+            color,
+            -1,
+        )
+        cv2.putText(image, name, (line[0], line[3]), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4)
+
+    assert position is not None
     return {"name": name, "type": type_, "value": int(position), "vertical": vertical, "margin": 0}
 
 
@@ -768,34 +792,36 @@ def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int]) -> N
     cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
 
 
-def find_lines(image: NpNdarrayInt, vertical: bool) -> Tuple[NpNdarrayInt, Dict[str, NpNdarrayInt]]:
+def find_lines(
+    image: NpNdarrayInt, vertical: bool, config: schema.LineDetection
+) -> List[Tuple[int, int, int, int]]:
     """Find the lines on an image."""
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+    edges = cv2.Canny(
+        image,
+        config.setdefault("high_threshold", schema.LINE_DETECTION_HIGH_THRESHOLD_DEFAULT),
+        config.setdefault("low_threshold", schema.LINE_DETECTION_LOW_THRESHOLD_DEFAULT),
+        apertureSize=config.setdefault("aperture_size", schema.LINE_DETECTION_APERTURE_SIZE_DEFAULT),
+    )
     lines = cv2.HoughLinesP(
         image=edges,
-        rho=0.02,
-        theta=np.pi / 500,
-        threshold=10,
-        lines=np.array([]),
-        minLineLength=100,
-        maxLineGap=100,
+        rho=config.setdefault("rho", schema.LINE_DETECTION_RHO_DEFAULT),
+        theta=np.pi / 2,
+        threshold=config.setdefault("threshold", schema.LINE_DETECTION_THRESHOLD_DEFAULT),
+        minLineLength=(image.shape[0] if vertical else image.shape[1])
+        / 100
+        * config.setdefault("min_line_length", schema.LINE_DETECTION_MIN_LINE_LENGTH_DEFAULT),
+        maxLineGap=config.setdefault("max_line_gap", schema.LINE_DETECTION_MAX_LINE_GAP_DEFAULT),
     )
 
-    values = np.zeros(image.shape[1 if vertical else 0])
-    for index in range(lines.shape[0]):
-        line = lines[index][0]
-        if line[0 if vertical else 1] == line[2 if vertical else 3]:
-            values[line[0 if vertical else 1]] += line[1 if vertical else 0] - line[3 if vertical else 2]
-    correlated_values = np.correlate(values, [0.2, 0.6, 1, 0.6, 0.2])
-    dist = 1.0
-    peaks, properties = find_peaks(correlated_values, height=dist * 10, distance=dist)
-    while len(peaks) > 5:
-        dist *= 1.3
-        peaks, properties = find_peaks(correlated_values, height=dist * 10, distance=dist)
-    peaks += 2
+    if lines is None:
+        return []
 
-    return peaks, properties
+    lines = [line for line, in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
+
+    def _key(line: Tuple[int, int, int, int]) -> int:
+        return line[1] - line[3] if vertical else line[2] - line[0]
+
+    return cast(List[Tuple[int, int, int, int]], sorted(lines, key=_key)[:5])
 
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
@@ -808,17 +834,22 @@ def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
 
 
 def find_limit_contour(
-    image: NpNdarrayInt, context: Context, vertical: bool
-) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
+    image: NpNdarrayInt, vertical: bool, contours: List[Tuple[int, int, int, int]]
+) -> List[int]:
     """Find the contour for assisted split."""
-    contours = find_contours(image, context, context.get_process_count(), "limits", "limit")
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
-    for x, _, width, height in contours:
-        x_int = int(round(x))
-        for value in range(x_int, min(x_int + width, image_size)):
-            values[value] += height
+    if vertical:
+        for x, _, width, height in contours:
+            x_int = int(round(x))
+            for value in range(x_int, min(x_int + width, image_size)):
+                values[value] += height
+    else:
+        for _, y, width, height in contours:
+            y_int = int(round(y))
+            for value in range(y_int, min(y_int + height, image_size)):
+                values[value] += width
 
     ranges = zero_ranges(values)
 
@@ -827,29 +858,47 @@ def find_limit_contour(
         if ranges_[0] != 0 and ranges_[1] != image_size:
             result.append(int(round(sum(ranges_) / 2)))
 
-    return result, contours
+    return result
 
 
-def fill_limits(image: NpNdarrayInt, vertical: bool, context: Context) -> List[schema.Limit]:
+def find_limits(
+    image: NpNdarrayInt, vertical: bool, context: Context, contours: List[Tuple[int, int, int, int]]
+) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
     """Find the limit for assisted split."""
-    contours_limits, contours = find_limit_contour(image, context, vertical)
-    peaks, properties = find_lines(image, vertical)
-    for contour_limit in contours:
-        draw_rectangle(image, contour_limit)
+    contours_limits = find_limit_contour(image, vertical, contours)
+    lines = find_lines(image, vertical, context.config["args"].setdefault("line_detection", {}))
+    return contours_limits, lines
+
+
+def fill_limits(
+    image: NpNdarrayInt, vertical: bool, contours_limits: List[int], lines: List[Tuple[int, int, int, int]]
+) -> List[schema.Limit]:
+    """Fill the limit for assisted split."""
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
     limits: List[schema.Limit] = []
     prefix = "V" if vertical else "H"
-    for index, peak in enumerate(peaks):
-        value = int(round(properties["peak_heights"][index] / 3))
-        limits.append(draw_line(image, vertical, peak, value, f"{prefix}L{index}", "line detection"))
+    for index, line in enumerate(lines):
+        limits.append(
+            draw_line(image, vertical, None, None, f"{prefix}L{index}", "line detection", (255, 0, 0), line)
+        )
     for index, contour in enumerate(contours_limits):
         limits.append(
-            draw_line(image, vertical, contour, third_image_size, f"{prefix}C{index}", "contour detection")
+            draw_line(
+                image,
+                vertical,
+                contour,
+                third_image_size,
+                f"{prefix}C{index}",
+                "contour detection",
+                (0, 255, 0),
+            )
         )
     if not limits:
         half_image_size = image.shape[1 if vertical else 0] / 2
         limits.append(
-            draw_line(image, vertical, half_image_size, third_image_size, f"{prefix}C", "image center")
+            draw_line(
+                image, vertical, half_image_size, third_image_size, f"{prefix}C", "image center", (0, 0, 255)
+            )
         )
 
     return limits
@@ -1015,8 +1064,15 @@ def transform(
 
             limits = []
             assert context.image is not None
-            limits.extend(fill_limits(context.image, True, context))
-            limits.extend(fill_limits(context.image, False, context))
+
+            contours = find_contours(context.image, context, context.get_process_count(), "limits", "limit")
+            vertical_limits_context = find_limits(context.image, True, context, contours)
+            horizontal_limits_context = find_limits(context.image, False, context, contours)
+
+            for contour_limit in contours:
+                draw_rectangle(context.image, contour_limit)
+            limits.extend(fill_limits(context.image, True, *vertical_limits_context))
+            limits.extend(fill_limits(context.image, False, *horizontal_limits_context))
             assisted_split["limits"] = limits
 
             cv2.imwrite(name, context.image)

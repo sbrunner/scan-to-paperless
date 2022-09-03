@@ -282,6 +282,9 @@ Arguments = TypedDict(
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         "deskew": "_ArgumentsDeskew",
+        # WARNING: The required are not correctly taken in account,
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+        "line_detection": "LineDetection",
     },
     total=False,
 )
@@ -528,12 +531,93 @@ JPEG_QUALITY_DEFAULT = 90
 LEVEL_DEFAULT = False
 
 
+# Default value of the field path 'Line detection aperture_size'
+LINE_DETECTION_APERTURE_SIZE_DEFAULT = 3
+
+
+# Default value of the field path 'Line detection high_threshold'
+LINE_DETECTION_HIGH_THRESHOLD_DEFAULT = 1000
+
+
+# Default value of the field path 'Line detection low_threshold'
+LINE_DETECTION_LOW_THRESHOLD_DEFAULT = 0
+
+
+# Default value of the field path 'Line detection max_line_gap'
+LINE_DETECTION_MAX_LINE_GAP_DEFAULT = 100
+
+
+# Default value of the field path 'Line detection min_line_length'
+LINE_DETECTION_MIN_LINE_LENGTH_DEFAULT = 50
+
+
+# Default value of the field path 'Line detection rho'
+LINE_DETECTION_RHO_DEFAULT = 1
+
+
+# Default value of the field path 'Line detection threshold'
+LINE_DETECTION_THRESHOLD_DEFAULT = 100
+
+
 # Default value of the field path 'Merge strategies list'
 LIST_DEFAULT = ["override"]
 
 
 # Default value of the field path 'Auto mask lower_hsv_color'
 LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
+
+
+# Line detection
+#
+# The line detection used in assisted split
+LineDetection = TypedDict(
+    "LineDetection",
+    {
+        # Line detection low threshold
+        #
+        # The low threshold used in the Canny edge detector
+        #
+        # default: 0
+        "low_threshold": int,
+        # Line detection high threshold
+        #
+        # The high threshold used in the Canny edge detector
+        #
+        # default: 1000
+        "high_threshold": int,
+        # Line detection aperture size
+        #
+        # The aperture size used in the Canny edge detector
+        #
+        # default: 3
+        "aperture_size": int,
+        # Line detection rho
+        #
+        # The rho used in the Hough transform
+        #
+        # default: 1
+        "rho": int,
+        # Line detection threshold
+        #
+        # The threshold used in the Hough transform
+        #
+        # default: 100
+        "threshold": int,
+        # Line detection min line length
+        #
+        # The minimum line length in percentage of the image size used in the Hough transform
+        #
+        # default: 50
+        "min_line_length": int,
+        # Line detection max line gap
+        #
+        # The maximum line gap in percentage of the image size used in the Hough transform
+        #
+        # default: 100
+        "max_line_gap": int,
+    },
+    total=False,
+)
 
 
 # Default value of the field path 'Arguments margin_horizontal'
