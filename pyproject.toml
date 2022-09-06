@@ -51,12 +51,12 @@ jsonschema-gentypes = "1.3.1"
 "ruamel.yaml" = "0.17.21"
 argcomplete = "2.0.0"
 Pillow = "9.2.0"
-PyPDF2 = "2.10.4"
+PyPDF2 = "2.10.5"
 pyzbar = "0.1.9"
 reportlab = "3.6.11"
 weasyprint = "56.1"
 cffi = "1.15.1"
-pikepdf = "5.6.0"
+pikepdf = "5.6.1"
 zxing-cpp = "1.4.0"
 pyperclip = "1.8.2"
 tifffile = "2022.8.12"
@@ -65,11 +65,11 @@ matplotlib = "3.5.3"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
-pytest = "7.1.2"
+pytest = "7.1.3"
 pytest-profiling = "1.7.0"
 pyroma = "4.0"
 typing-extensions = "4.3.0"
-c2cwsgiutils = { version = "5.1.2", extras = ["test_images"] }
+c2cwsgiutils = { version = "5.1.4", extras = ["test_images"] }
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-plugin-tweak-dependencies-version"]
