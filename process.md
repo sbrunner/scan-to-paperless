@@ -115,3 +115,20 @@
     - **`threshold`** _(integer)_: The threshold used in the Hough transform. Default: `100`.
     - **`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
     - **`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.
+  - **`rule`** _(object)_: Configuration of rule displayed in assisted split images.
+    - **`enable`** _(boolean)_: Default: `True`.
+    - **`minor_graduation_space`** _(integer)_: Default: `10`.
+    - **`major_graduation_space`** _(integer)_: Default: `100`.
+    - **`lines_space`** _(integer)_: Default: `100`.
+    - **`minor_graduation_size`** _(integer)_: Default: `10`.
+    - **`major_graduation_size`** _(integer)_: Default: `30`.
+    - **`graduation_color`** _(array)_: Default: `[0, 0, 0]`.
+      - **Items** _(integer)_
+    - **`lines_color`** _(array)_: Default: `[0, 0, 0]`.
+      - **Items** _(integer)_
+    - **`lines_opacity`** _(number)_: Default: `0.2`.
+    - **`graduation_text_font_filename`** _(string)_: Default: `/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf`.
+    - **`graduation_text_font_size`** _(number)_: Default: `17`.
+    - **`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
+      - **Items** _(integer)_
+    - **`graduation_text_margin`** _(integer)_: Default: `6`.

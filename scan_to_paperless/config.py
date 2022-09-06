@@ -285,6 +285,9 @@ Arguments = TypedDict(
         # WARNING: The required are not correctly taken in account,
         # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
         "line_detection": "LineDetection",
+        # WARNING: The required are not correctly taken in account,
+        # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+        "rule": "Rule",
     },
     total=False,
 )
@@ -747,6 +750,58 @@ PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
 ROTATE_EVEN_DEFAULT = False
 
 
+# Default value of the field path 'Rule enable'
+RULE_ENABLE_DEFAULT = True
+
+
+# Default value of the field path 'Rule graduation_color'
+RULE_GRADUATION_COLOR_DEFAULT = [0, 0, 0]
+
+
+# Default value of the field path 'Rule graduation_text_font_color'
+RULE_GRADUATION_TEXT_FONT_COLOR_DEFAULT = [0, 0, 0]
+
+
+# Default value of the field path 'Rule graduation_text_font_filename'
+RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+
+# Default value of the field path 'Rule graduation_text_font_size'
+RULE_GRADUATION_TEXT_FONT_SIZE_DEFAULT = 17
+
+
+# Default value of the field path 'Rule graduation_text_margin'
+RULE_GRADUATION_TEXT_MARGIN_DEFAULT = 6
+
+
+# Default value of the field path 'Rule lines_color'
+RULE_LINES_COLOR_DEFAULT = [0, 0, 0]
+
+
+# Default value of the field path 'Rule lines_opacity'
+RULE_LINES_OPACITY_DEFAULT = 0.2
+
+
+# Default value of the field path 'Rule lines_space'
+RULE_LINES_SPACE_DEFAULT = 100
+
+
+# Default value of the field path 'Rule major_graduation_size'
+RULE_MAJOR_GRADUATION_SIZE_DEFAULT = 30
+
+
+# Default value of the field path 'Rule major_graduation_space'
+RULE_MAJOR_GRADUATION_SPACE_DEFAULT = 100
+
+
+# Default value of the field path 'Rule minor_graduation_size'
+RULE_MINOR_GRADUATION_SIZE_DEFAULT = 10
+
+
+# Default value of the field path 'Rule minor_graduation_space'
+RULE_MINOR_GRADUATION_SPACE_DEFAULT = 10
+
+
 # Default value of the field path 'Arguments run_exiftool'
 RUN_EXIFTOOL_DEFAULT = False
 
@@ -761,6 +816,78 @@ RUN_PNGQUANT_DEFAULT = False
 
 # Default value of the field path 'Arguments run_ps2pdf'
 RUN_PS2PDF_DEFAULT = False
+
+
+# Rule
+#
+# Configuration of rule displayed in assisted split images
+Rule = TypedDict(
+    "Rule",
+    {
+        # Rule enable
+        #
+        # default: True
+        "enable": bool,
+        # Rule minor graduation space
+        #
+        # default: 10
+        "minor_graduation_space": int,
+        # Rule major graduation space
+        #
+        # default: 100
+        "major_graduation_space": int,
+        # Rule lines space
+        #
+        # default: 100
+        "lines_space": int,
+        # Rule minor graduation size
+        #
+        # default: 10
+        "minor_graduation_size": int,
+        # Rule major graduation size
+        #
+        # default: 30
+        "major_graduation_size": int,
+        # Rule graduation color
+        #
+        # default:
+        #   - 0
+        #   - 0
+        #   - 0
+        "graduation_color": List[int],
+        # Rule lines color
+        #
+        # default:
+        #   - 0
+        #   - 0
+        #   - 0
+        "lines_color": List[int],
+        # Rule lines opacity
+        #
+        # default: 0.2
+        "lines_opacity": Union[int, float],
+        # Rule graduation text font filename
+        #
+        # default: /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+        "graduation_text_font_filename": str,
+        # Rule graduation text font size
+        #
+        # default: 17
+        "graduation_text_font_size": Union[int, float],
+        # Rule graduation text font color
+        #
+        # default:
+        #   - 0
+        #   - 0
+        #   - 0
+        "graduation_text_font_color": List[int],
+        # Rule graduation text margin
+        #
+        # default: 6
+        "graduation_text_margin": int,
+    },
+    total=False,
+)
 
 
 # Default value of the field path 'Configuration scanimage_arguments'
