@@ -1,9 +1,8 @@
----
 name: Rebuild
 
 on:
   schedule:
-    - cron: '30 2 * * *'
+    - cron: 30 2 * * *
 
 jobs:
   rebuild:
@@ -19,6 +18,7 @@ jobs:
           - master
 
     steps:
+      - run: docker system prune --all --force
       - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.branch }}
@@ -30,7 +30,7 @@ jobs:
       - name: Checks
         run: c2cciutils-checks
 
-      # the if the generated files are up to date
+        # the if the generated files are up to date
       - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
@@ -71,7 +71,8 @@ jobs:
         if: failure()
 
       - run: make build-all
-      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD
+          }}
 
       - name: Init pypi
         run: |
@@ -81,4 +82,5 @@ jobs:
           pip install --user wheel twine
 
       - name: Publish
-        run: c2cciutils-publish --group=docker --type=rebuild --branch=${{ matrix.branch }}
+        run: c2cciutils-publish --group=docker --type=rebuild --branch=${{ matrix.branch
+          }}
