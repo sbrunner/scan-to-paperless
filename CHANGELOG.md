@@ -6,15 +6,55 @@
 
 #### :sparkles: Enhancements
 
+- Better line detection [\#803](https://github.com/sbrunner/scan-to-paperless/pull/803) ([sbrunner](https://github.com/sbrunner))
+- Add mask in detected content [\#795](https://github.com/sbrunner/scan-to-paperless/pull/795) ([sbrunner](https://github.com/sbrunner))
+- Add an histogram in log [\#794](https://github.com/sbrunner/scan-to-paperless/pull/794) ([sbrunner](https://github.com/sbrunner))
+- Add histogram image [\#786](https://github.com/sbrunner/scan-to-paperless/pull/786) ([sbrunner](https://github.com/sbrunner))
+- Be able to run process on one config file [\#773](https://github.com/sbrunner/scan-to-paperless/pull/773) ([sbrunner](https://github.com/sbrunner))
+- Add black and white cut [\#770](https://github.com/sbrunner/scan-to-paperless/pull/770) ([sbrunner](https://github.com/sbrunner))
+- Be able to extends one config [\#755](https://github.com/sbrunner/scan-to-paperless/pull/755) ([sbrunner](https://github.com/sbrunner))
+- Limit the skew angle detection [\#753](https://github.com/sbrunner/scan-to-paperless/pull/753) ([sbrunner](https://github.com/sbrunner))
+- Add auto cut to be able to definitively mask the original image [\#752](https://github.com/sbrunner/scan-to-paperless/pull/752) ([sbrunner](https://github.com/sbrunner))
+- Combine auto_mask and mask file [\#748](https://github.com/sbrunner/scan-to-paperless/pull/748) ([sbrunner](https://github.com/sbrunner))
+- Process a tiff file [\#743](https://github.com/sbrunner/scan-to-paperless/pull/743) ([sbrunner](https://github.com/sbrunner))
+- Automatically creates a mask from a color range of the source image [\#740](https://github.com/sbrunner/scan-to-paperless/pull/740) ([sbrunner](https://github.com/sbrunner))
+- Mix OpenCV and WeChat to have the bbox [\#737](https://github.com/sbrunner/scan-to-paperless/pull/737) ([sbrunner](https://github.com/sbrunner))
+- Be able to have more than one code in a page [\#736](https://github.com/sbrunner/scan-to-paperless/pull/736) ([sbrunner](https://github.com/sbrunner))
+- Don't run exiftool by default [\#735](https://github.com/sbrunner/scan-to-paperless/pull/735) ([sbrunner](https://github.com/sbrunner))
+- Add same code on multiple page support [\#734](https://github.com/sbrunner/scan-to-paperless/pull/734) ([sbrunner](https://github.com/sbrunner))
+- Convert the clipboard content [\#731](https://github.com/sbrunner/scan-to-paperless/pull/731) ([sbrunner](https://github.com/sbrunner))
+- Add zxing support for QR code [\#724](https://github.com/sbrunner/scan-to-paperless/pull/724) ([sbrunner](https://github.com/sbrunner))
+- Use WeChat QR Code Scanner [\#722](https://github.com/sbrunner/scan-to-paperless/pull/722) ([sbrunner](https://github.com/sbrunner))
+- Add pngquant [\#721](https://github.com/sbrunner/scan-to-paperless/pull/721) ([sbrunner](https://github.com/sbrunner))
 - Add codes metadata [\#713](https://github.com/sbrunner/scan-to-paperless/pull/713) ([sbrunner](https://github.com/sbrunner))
 - Be able to convert images to jpeg [\#702](https://github.com/sbrunner/scan-to-paperless/pull/702) ([sbrunner](https://github.com/sbrunner))
 - Have the Tesseract version in the final producer [\#701](https://github.com/sbrunner/scan-to-paperless/pull/701) ([sbrunner](https://github.com/sbrunner))
 - Add QR bill support, better detect QR code [\#700](https://github.com/sbrunner/scan-to-paperless/pull/700) ([sbrunner](https://github.com/sbrunner))
 - Add a page with the QRCodes and BarCodes [\#690](https://github.com/sbrunner/scan-to-paperless/pull/690) ([sbrunner](https://github.com/sbrunner))
+- Be able to scan to tiff file [\#689](https://github.com/sbrunner/scan-to-paperless/pull/689) ([sbrunner](https://github.com/sbrunner))
 - Add more intermadiate files [\#688](https://github.com/sbrunner/scan-to-paperless/pull/688) ([sbrunner](https://github.com/sbrunner))
+- Add optipng, color, select optimizer [\#683](https://github.com/sbrunner/scan-to-paperless/pull/683) ([sbrunner](https://github.com/sbrunner))
 
 #### :bug: Bug Fixes
 
+- More neutral defaults [\#802](https://github.com/sbrunner/scan-to-paperless/pull/802) ([sbrunner](https://github.com/sbrunner))
+- Fix too big value [\#798](https://github.com/sbrunner/scan-to-paperless/pull/798) ([sbrunner](https://github.com/sbrunner))
+- Fix when opacity_result is None [\#797](https://github.com/sbrunner/scan-to-paperless/pull/797) ([sbrunner](https://github.com/sbrunner))
+- Fix color_cut [\#785](https://github.com/sbrunner/scan-to-paperless/pull/785) ([sbrunner](https://github.com/sbrunner))
+- Also work on missing mask file [\#784](https://github.com/sbrunner/scan-to-paperless/pull/784) ([sbrunner](https://github.com/sbrunner))
+- Fix error when the mask is already a grayscale image [\#783](https://github.com/sbrunner/scan-to-paperless/pull/783) ([sbrunner](https://github.com/sbrunner))
+- Add missing color cut call [\#781](https://github.com/sbrunner/scan-to-paperless/pull/781) ([sbrunner](https://github.com/sbrunner))
+- The config is optional [\#779](https://github.com/sbrunner/scan-to-paperless/pull/779) ([sbrunner](https://github.com/sbrunner))
+- Fix mask join \(auto-mask and file\) [\#774](https://github.com/sbrunner/scan-to-paperless/pull/774) ([sbrunner](https://github.com/sbrunner))
+- We can't save a file, where is opend in round-trip mode, in safe mode [\#772](https://github.com/sbrunner/scan-to-paperless/pull/772) ([sbrunner](https://github.com/sbrunner))
+- Move the jpeg conversion to the progress part [\#766](https://github.com/sbrunner/scan-to-paperless/pull/766) ([sbrunner](https://github.com/sbrunner))
+- Make the creator working with Paperless [\#765](https://github.com/sbrunner/scan-to-paperless/pull/765) ([sbrunner](https://github.com/sbrunner))
+- Use better pngquant options [\#751](https://github.com/sbrunner/scan-to-paperless/pull/751) ([sbrunner](https://github.com/sbrunner))
+- Fix pngquant run [\#749](https://github.com/sbrunner/scan-to-paperless/pull/749) ([sbrunner](https://github.com/sbrunner))
+- Save more progress images [\#747](https://github.com/sbrunner/scan-to-paperless/pull/747) ([sbrunner](https://github.com/sbrunner))
+- Don't take care on REMOVE_TO_CONTINUE and DONE on reren step [\#746](https://github.com/sbrunner/scan-to-paperless/pull/746) ([sbrunner](https://github.com/sbrunner))
+- Catch error from wechat decoder [\#732](https://github.com/sbrunner/scan-to-paperless/pull/732) ([sbrunner](https://github.com/sbrunner))
+- Fix and better print code content [\#730](https://github.com/sbrunner/scan-to-paperless/pull/730) ([sbrunner](https://github.com/sbrunner))
 - Add vertical bar on empty lines to be able to reconstitute the code [\#712](https://github.com/sbrunner/scan-to-paperless/pull/712) ([sbrunner](https://github.com/sbrunner))
 - Fix point reprojection [\#711](https://github.com/sbrunner/scan-to-paperless/pull/711) ([sbrunner](https://github.com/sbrunner))
 - Fix the creator in the PDF metadata [\#710](https://github.com/sbrunner/scan-to-paperless/pull/710) ([sbrunner](https://github.com/sbrunner))
@@ -25,21 +65,59 @@
 - Create required directories [\#705](https://github.com/sbrunner/scan-to-paperless/pull/705) ([sbrunner](https://github.com/sbrunner))
 - Correctly create the temporary file [\#703](https://github.com/sbrunner/scan-to-paperless/pull/703) ([sbrunner](https://github.com/sbrunner))
 
+#### :hammer: Refactor
+
+- Use the default from the jsonschema [\#778](https://github.com/sbrunner/scan-to-paperless/pull/778) ([sbrunner](https://github.com/sbrunner))
+- Use temporary files to do the finalize [\#771](https://github.com/sbrunner/scan-to-paperless/pull/771) ([sbrunner](https://github.com/sbrunner))
+
 #### :books: Documentation
 
+- Fix the readme command [\#814](https://github.com/sbrunner/scan-to-paperless/pull/814) ([sbrunner](https://github.com/sbrunner))
+- Update the README [\#764](https://github.com/sbrunner/scan-to-paperless/pull/764) ([sbrunner](https://github.com/sbrunner))
+- Add more documentation in the mode argument [\#756](https://github.com/sbrunner/scan-to-paperless/pull/756) ([sbrunner](https://github.com/sbrunner))
+- Add missing default [\#745](https://github.com/sbrunner/scan-to-paperless/pull/745) ([sbrunner](https://github.com/sbrunner))
 - Add generated changelog [\#684](https://github.com/sbrunner/scan-to-paperless/pull/684) ([sbrunner](https://github.com/sbrunner))
 
 #### :wrench: Build, CI, Tests, Code style
 
+- Add the changelog generation cache in Git ignore [\#822](https://github.com/sbrunner/scan-to-paperless/pull/822) ([sbrunner](https://github.com/sbrunner))
+- Remove Dependabot configuration [\#819](https://github.com/sbrunner/scan-to-paperless/pull/819) ([sbrunner](https://github.com/sbrunner))
+- Use c2cwsgiutils to check the images [\#804](https://github.com/sbrunner/scan-to-paperless/pull/804) ([sbrunner](https://github.com/sbrunner))
+- Fix deprecated warnings [\#787](https://github.com/sbrunner/scan-to-paperless/pull/787) ([sbrunner](https://github.com/sbrunner))
+- Disable the Renovate concurrent limit [\#768](https://github.com/sbrunner/scan-to-paperless/pull/768) ([sbrunner](https://github.com/sbrunner))
+- Use a newer version of Tesseract [\#763](https://github.com/sbrunner/scan-to-paperless/pull/763) ([sbrunner](https://github.com/sbrunner))
+- Add more test cases for auto mask creation [\#762](https://github.com/sbrunner/scan-to-paperless/pull/762) ([sbrunner](https://github.com/sbrunner))
+- Remove the experimental mode [\#750](https://github.com/sbrunner/scan-to-paperless/pull/750) ([sbrunner](https://github.com/sbrunner))
+- Add spell on the pull request title [\#739](https://github.com/sbrunner/scan-to-paperless/pull/739) ([sbrunner](https://github.com/sbrunner))
 - Fix changelog [\#719](https://github.com/sbrunner/scan-to-paperless/pull/719) ([sbrunner](https://github.com/sbrunner))
 - Fix the changelog generation [\#718](https://github.com/sbrunner/scan-to-paperless/pull/718) ([sbrunner](https://github.com/sbrunner))
+- Update the changelog [\#716](https://github.com/sbrunner/scan-to-paperless/pull/716) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Fix the changelog branch name [\#715](https://github.com/sbrunner/scan-to-paperless/pull/715) ([sbrunner](https://github.com/sbrunner))
 - Increase the timeouts [\#714](https://github.com/sbrunner/scan-to-paperless/pull/714) ([sbrunner](https://github.com/sbrunner))
 - Run workflow on test branch [\#704](https://github.com/sbrunner/scan-to-paperless/pull/704) ([sbrunner](https://github.com/sbrunner))
 - Don't limit of pull requests number [\#694](https://github.com/sbrunner/scan-to-paperless/pull/694) ([sbrunner](https://github.com/sbrunner))
+- Don't run 2 CI jobs in a pull request [\#672](https://github.com/sbrunner/scan-to-paperless/pull/672) ([sbrunner](https://github.com/sbrunner))
 
 #### :package: Dependencies update
 
+- Update all patch versions \(patch\) [\#818](https://github.com/sbrunner/scan-to-paperless/pull/818) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#816](https://github.com/sbrunner/scan-to-paperless/pull/816) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency poetry to v1.2.0 [\#805](https://github.com/sbrunner/scan-to-paperless/pull/805) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#801](https://github.com/sbrunner/scan-to-paperless/pull/801) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency pikepdf to v5.6.0 [\#800](https://github.com/sbrunner/scan-to-paperless/pull/800) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(patch\) [\#799](https://github.com/sbrunner/scan-to-paperless/pull/799) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(patch\) [\#796](https://github.com/sbrunner/scan-to-paperless/pull/796) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all minor versions \(minor\) [\#792](https://github.com/sbrunner/scan-to-paperless/pull/792) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(patch\) [\#791](https://github.com/sbrunner/scan-to-paperless/pull/791) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#790](https://github.com/sbrunner/scan-to-paperless/pull/790) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#789](https://github.com/sbrunner/scan-to-paperless/pull/789) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency jsonschema-gentypes to v1.3.1 [\#777](https://github.com/sbrunner/scan-to-paperless/pull/777) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency PyPDF2 to v2.10.2 [\#775](https://github.com/sbrunner/scan-to-paperless/pull/775) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency tifffile to v2022.8.12 [\#769](https://github.com/sbrunner/scan-to-paperless/pull/769) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#767](https://github.com/sbrunner/scan-to-paperless/pull/767) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(patch\) [\#760](https://github.com/sbrunner/scan-to-paperless/pull/760) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#738](https://github.com/sbrunner/scan-to-paperless/pull/738) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance [\#723](https://github.com/sbrunner/scan-to-paperless/pull/723) ([renovate[bot]](https://github.com/apps/renovate))
 - Lock file maintenance [\#717](https://github.com/sbrunner/scan-to-paperless/pull/717) ([renovate[bot]](https://github.com/apps/renovate))
 - Update all minor versions \(minor\) [\#698](https://github.com/sbrunner/scan-to-paperless/pull/698) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency poetry to v1.1.14 [\#697](https://github.com/sbrunner/scan-to-paperless/pull/697) ([renovate[bot]](https://github.com/apps/renovate))
@@ -60,8 +138,8 @@
 
 **Merged pull requests:**
 
-- Add optipng, color, select optimizer [\#683](https://github.com/sbrunner/scan-to-paperless/pull/683) ([sbrunner](https://github.com/sbrunner))
-- Don't run 2 CI jobs in a pull request [\#672](https://github.com/sbrunner/scan-to-paperless/pull/672) ([sbrunner](https://github.com/sbrunner))
+- Add rule to assisted split images [\#815](https://github.com/sbrunner/scan-to-paperless/pull/815) ([sbrunner](https://github.com/sbrunner))
+- Use Tesseract 5 [\#793](https://github.com/sbrunner/scan-to-paperless/pull/793) ([sbrunner](https://github.com/sbrunner))
 
 ## [1.23.0](https://github.com/sbrunner/scan-to-paperless/tree/1.23.0) (2022-06-06)
 
