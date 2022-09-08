@@ -3,10 +3,10 @@ name: Continuous integration
 on:
   push:
     branches:
-      - master
-      - test
+    - master
+    - test
     tags:
-      - '*'
+    - '*'
   pull_request:
 
 env:
@@ -20,83 +20,82 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
 
     steps:
-      - run: docker system prune --all --force
-      - uses: actions/checkout@v3
-        if: env.HAS_SECRETS != 'HAS_SECRETS'
-      - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.TOKEN }}
-          fetch-depth: 0
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
+    - run: docker system prune --all --force
+    - uses: actions/checkout@v3
+      if: env.HAS_SECRETS != 'HAS_SECRETS'
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.TOKEN }}
+        fetch-depth: 0
+      if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-      - run: python3 -m pip install --user --requirement=ci/requirements.txt
+    - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+    - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
-      - name: Checks
-        run: c2cciutils-checks
-      - name: GitHub event
-        run: echo ${GITHUB_EVENT} | python3 -m json.tool
-        env:
-          GITHUB_EVENT: ${{ toJson(github) }}
+    - name: Checks
+      run: c2cciutils-checks
+    - name: GitHub event
+      run: echo ${GITHUB_EVENT} | python3 -m json.tool
+      env:
+        GITHUB_EVENT: ${{ toJson(github) }}
 
         # the if the generated files are up to date
-      - run: make jsonschema
-      - run: git diff --quiet
-      - run: git diff
-        if: failure()
+    - run: make jsonschema
+    - run: git diff --quiet
+    - run: git diff
+      if: failure()
 
-      - run: make build
-      - run: make build-tests
-      - run: make prospector
-      - name: pytest
-        run: >
-          docker run --rm --env=PYTHONPATH=/opt/
-          --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
-          sbrunner/scan-to-paperless-tests bash -c '
-          cd /tests &&
-          pytest --durations=0 -vv --color=yes
-          --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
-      - run: sudo chmod -R go+r results || true
-        if: failure()
-      - uses: actions/upload-artifact@v3
-        with:
-          name: results
-          path: results
-          if-no-files-found: ignore
-          retention-days: 5
-        if: failure()
+    - run: make build
+    - run: make build-tests
+    - run: make prospector
+    - name: pytest
+      run: >
+        docker run --rm --env=PYTHONPATH=/opt/
+        --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
+        sbrunner/scan-to-paperless-tests bash -c '
+        cd /tests &&
+        pytest --durations=0 -vv --color=yes
+        --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
+    - run: sudo chmod -R go+r results || true
+      if: failure()
+    - uses: actions/upload-artifact@v3
+      with:
+        name: results
+        path: results
+        if-no-files-found: ignore
+        retention-days: 5
+      if: failure()
 
-      - run: make build-all
-      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD
-          }}
+    - run: make build-all
+    - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Init pypi
-        run: |
-          echo "[pypi]" > ~/.pypirc
-          echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
-          echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
-          pip install --user wheel twine
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
+    - name: Init pypi
+      run: |
+        echo "[pypi]" > ~/.pypirc
+        echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
+        echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
+        pip install --user wheel twine
+      if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - name: Init Git
-        run: |
-          git config user.email "<ci@ci.com>"
-          git config user.name "CI"
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
+    - name: Init Git
+      run: |
+        git config user.email "<ci@ci.com>"
+        git config user.name "CI"
+      if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - name: Bump version
-        run: |
-          poetry version patch
-          git add pyproject.toml
-          git commit --allow-empty -m "[skip ci] Bump Version"
-          git push
-        if: github.ref == 'refs/heads/master'
+    - name: Bump version
+      run: |
+        poetry version patch
+        git add pyproject.toml
+        git commit --allow-empty -m "[skip ci] Bump Version"
+        git push
+      if: github.ref == 'refs/heads/master'
 
-      - name: Publish PyPI
-        run: c2cciutils-publish --type=version_tag --version=unused
-        if: github.ref == 'refs/heads/master'
+    - name: Publish PyPI
+      run: c2cciutils-publish --type=version_tag --version=unused
+      if: github.ref == 'refs/heads/master'
 
-      - name: Publish Docker
-        run: |
-          c2cciutils-publish --group=docker
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
+    - name: Publish Docker
+      run: |
+        c2cciutils-publish --group=docker
+      if: env.HAS_SECRETS == 'HAS_SECRETS'
