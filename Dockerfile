@@ -36,6 +36,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
     python3 -m pip install --disable-pip-version-check --no-deps --requirement=/tmp/requirements.txt \
+    && python3 -m pip freeze > /requirements.txt \
     && mkdir -p /source /destination /scan-codes
 
 VOLUME /source \
