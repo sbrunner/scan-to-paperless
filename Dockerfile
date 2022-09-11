@@ -21,17 +21,26 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry export --output=requirements.txt \
     && poetry export --dev --output=requirements-dev.txt
 
+RUN --mount=type=cache,target=/var/lib/apt/lists \
+    --mount=type=cache,target=/var/cache,sharing=locked \
+    apt-get install --assume-yes --no-install-recommends curl \
+    && curl https://notesalexp.org/debian/alexp_key.asc > alexp_key.asc
+
 FROM base-all as base-dist
 
-RUN echo "deb https://notesalexp.org/tesseract-ocr5/jammy/ jammy main" > /etc/apt/sources.list.d/notesalexp.list \
-    && gpg --keyserver hkp://keyserver.ubuntu.com:80 --receive-keys 82F409933771AC78
+RUN --mount=type=bind,from=poetry,source=/tmp,target=/tmp2 \
+    . /etc/os-release \
+    && echo "deb https://notesalexp.org/tesseract-ocr5/${VERSION_CODENAME}/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/notesalexp.list \
+    && cp /tmp2/alexp_key.asc /tmp/alexp_key.asc \
+    && apt-key add /tmp/alexp_key.asc
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    apt-get install --assume-yes --no-install-recommends \
-    graphicsmagick pdftk-java \
-    tesseract-ocr tesseract-ocr-fra tesseract-ocr-deu tesseract-ocr-eng \
-    libimage-exiftool-perl software-properties-common ghostscript optipng pngquant libzbar0
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
+        graphicsmagick pdftk-java \
+        tesseract-ocr tesseract-ocr-fra tesseract-ocr-deu tesseract-ocr-eng \
+        libimage-exiftool-perl software-properties-common ghostscript optipng pngquant libzbar0
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
