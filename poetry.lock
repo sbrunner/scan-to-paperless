@@ -867,7 +867,7 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "PyPDF2"
-version = "2.10.6"
+version = "2.10.7"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 category = "main"
 optional = false
@@ -1340,7 +1340,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "b045b50c1c2f78ba032368f4f5ae96b5d5127a484817ef0abb63957152b9c4b3"
+content-hash = "7b8b6da54f3bc61e985479c8151888e930259c81b3b1cd0f395042aac45b3581"
 
 [metadata.files]
 argcomplete = [
@@ -2102,8 +2102,8 @@ pyparsing = [
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 PyPDF2 = [
-    {file = "PyPDF2-2.10.6-py3-none-any.whl", hash = "sha256:6315e7a6bd49afd695925c243d72876e2dbfb774ecd551b3115e87d18df29599"},
-    {file = "PyPDF2-2.10.6.tar.gz", hash = "sha256:9122a6441f6c10b92b0262a95f9c04f552fe4498f26e7dc6e3d26fc0a58153ce"},
+    {file = "PyPDF2-2.10.7-py3-none-any.whl", hash = "sha256:0edc8b05f953b13cbecf2e0a8ec23380ed51280711b56f26140a91d0d8b3aa47"},
+    {file = "PyPDF2-2.10.7.tar.gz", hash = "sha256:3c7930d9f2ba25dc9b182d9c2293ad6de3adaf2a3934c7e8c4178655ae8c7a39"},
 ]
 pyperclip = [
     {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
