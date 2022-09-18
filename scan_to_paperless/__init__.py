@@ -30,7 +30,7 @@ def get_config(config_filename: str) -> schema.Configuration:
         yaml.default_flow_style = False
         with open(config_filename, encoding="utf-8") as config_file:
             config = cast(schema.Configuration, yaml.load(config_file))
-            if "exteds" in config:
+            if "extends" in config:
 
                 base_config = get_config(
                     os.path.normpath(
@@ -44,8 +44,8 @@ def get_config(config_filename: str) -> schema.Configuration:
                         (list, strategies_config.get("list", ["override"])),
                         (dict, strategies_config.get("dict", ["merge"])),
                     ],
-                    strategies_config.get("fallback", ["merge"]),
-                    strategies_config.get("type_conflict", ["merge"]),
+                    strategies_config.get("fallback", ["override"]),
+                    strategies_config.get("type_conflict", ["override"]),
                 )
                 config = cast(schema.Configuration, merger.merge(base_config, config))
             return config
