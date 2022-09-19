@@ -35,7 +35,13 @@
       matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
     },
-    /** No c2cciutils on mastr branch */
+    /** Group Poetry packages */
+    {
+      matchPackageNames: ['poetry', 'poetry-core'],
+      groupName: 'poetry',
+      automerge: true,
+    },
+    /** No c2cciutils on master branch */
     {
       matchBaseBranches: ['master'],
       matchPackagePatterns: ['c2cciutils'],
