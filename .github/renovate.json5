@@ -26,7 +26,7 @@
       automerge: true,
     },
     {
-      matchPackagePatterns: ['scikit-image'],
+      matchPackageNames: ['scikit-image'],
       groupName: 'scikit-image',
     },
     /** Accept only the patch on the stabilization branches */
@@ -44,7 +44,7 @@
     /** No c2cciutils on master branch */
     {
       matchBaseBranches: ['master'],
-      matchPackagePatterns: ['c2cciutils'],
+      matchPackageNames: ['c2cciutils'],
       enabled: false,
     },
   ],
