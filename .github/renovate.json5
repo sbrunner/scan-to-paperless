@@ -34,14 +34,14 @@
       matchBaseBranches: ['master'],
       matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
-      separateMajorMinor: false,
-      separateMinorPatch: false,
     },
     /** Group Poetry packages */
     {
       matchPackageNames: ['poetry', 'poetry-core'],
       groupName: 'poetry',
       automerge: true,
+      separateMajorMinor: false,
+      separateMinorPatch: false,
     },
     /** No c2cciutils on master branch */
     {
