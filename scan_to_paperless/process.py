@@ -725,9 +725,12 @@ def autorotate(context: Context) -> None:
         return
     with tempfile.NamedTemporaryFile(suffix=".png") as source:
         cv2.imwrite(source.name, context.get_masked())
-        orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
-        orientation_lst = [e for e in orientation_lst if "Orientation in degrees" in e]
-        context.rotate(int(orientation_lst[0].split()[3]))
+        try:
+            orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
+            orientation_lst = [e for e in orientation_lst if "Orientation in degrees" in e]
+            context.rotate(int(orientation_lst[0].split()[3]))
+        except subprocess.CalledProcessError:
+            print("Not text found")
 
 
 def draw_line(  # pylint: disable=too-many-arguments
