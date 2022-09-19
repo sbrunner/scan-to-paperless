@@ -38,7 +38,7 @@
     /** Group Poetry packages */
     {
       matchPackageNames: ['poetry', 'poetry-core'],
-      groupName: 'poetry',
+      groupName: 'Poetry',
       automerge: true,
       separateMajorMinor: false,
       separateMinorPatch: false,
