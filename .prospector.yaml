@@ -10,6 +10,7 @@ ignore-paths:
 pycodestyle:
   disable:
     - E203 # whitespace before ':'
+    - E501 # line too long, redundant with Black
 
 pydocstyle:
   disable:
@@ -18,9 +19,6 @@ pydocstyle:
 
 pylint:
   disable:
-    - wrong-import-order
-    - line-too-long
-    - no-value-for-parameter
     - too-few-public-methods
     - too-many-lines
     - too-many-branches
@@ -28,6 +26,11 @@ pylint:
     - too-many-locals
     - too-many-nested-blocks
     - too-many-arguments
+    - too-many-return-statements
+    - wrong-import-order
+    - line-too-long
+    - no-value-for-parameter
+    - no-else-continue
     - broad-except
   options:
     good-names: x,y

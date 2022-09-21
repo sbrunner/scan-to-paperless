@@ -1,4 +1,3 @@
-c2cciutils==1.2.dev20220601085126
-poetry==1.1.13
+c2cciutils==1.2.1
 jsonschema2md==0.4.0
-jsonschema-gentypes==1.0.0
+jsonschema-gentypes==1.3.1

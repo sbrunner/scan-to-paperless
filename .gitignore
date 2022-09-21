@@ -2,5 +2,7 @@
 /dist/
 __pycache__
 /scan_to_paperless.egg-info/
-/tests/.coverage
 /tests/prof/
+/tests/img-0.png
+/tests/img-1.png
+/.github/changelog-generator-cache

@@ -3,10 +3,6 @@
     {
       "key": "PROGRESS",
       "value": "TRUE"
-    },
-    {
-      "key": "EXPERIMENTAL",
-      "value": "TRUE"
     }
   ],
   "image": "sbrunner/scan-to-paperless:test",

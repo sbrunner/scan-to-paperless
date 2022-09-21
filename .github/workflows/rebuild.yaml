@@ -1,15 +1,14 @@
----
 name: Rebuild
 
 on:
   schedule:
-    - cron: '30 2 * * *'
+    - cron: 30 2 * * *
 
 jobs:
   rebuild:
     runs-on: ubuntu-20.04
     name: Rebuild
-    timeout-minutes: 15
+    timeout-minutes: 50
 
     strategy:
       fail-fast: false
@@ -19,9 +18,11 @@ jobs:
           - master
 
     steps:
+      - run: docker system prune --all --force
       - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.branch }}
+          fetch-depth: 0
 
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
@@ -29,7 +30,7 @@ jobs:
       - name: Checks
         run: c2cciutils-checks
 
-      # the if the generated files are up to date
+        # the if the generated files are up to date
       - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
@@ -45,12 +46,10 @@ jobs:
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=results:/results --volume=tests:/tests
-          tests bash -c '
+          sbrunner/scan-to-paperless-tests bash -c '
           cd /tests &&
-          coverage run --source=scan_to_paperless --module pytest --durations=0 --verbose --color=yes
-          --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
-          coverage report &&
-          coverage html --directory=/results/coverage'
+          pytest --durations=0 --verbose --color=yes
+          --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
       - name: Extract data from Docker volumes
         run: |
           docker cp volumes:/results/ ./
@@ -71,15 +70,14 @@ jobs:
           retention-days: 5
         if: failure()
 
-      - run: make build-all
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Init pypi
-        run: |
-          echo "[pypi]" > ~/.pypirc
-          echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
-          echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
-          pip install --user wheel twine
 
       - name: Publish
         run: c2cciutils-publish --group=docker --type=rebuild --branch=${{ matrix.branch }}
+
+      - run: make build-all
+
+      - name: Publish Docker all
+        run: |
+          c2cciutils-publish --group=docker-all
+        if: env.HAS_SECRETS == 'HAS_SECRETS'

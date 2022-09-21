@@ -12,15 +12,21 @@ to verify that the result is OK (and do some advance operations describe below) 
 
 - Scan the images optionally by using the Automatic Document Feeder
 - Easily scan double-sided images using the Automatic Document Feeder
+- Extract the DPI from the TIFF images
 - Change the images levels
+- Remove the area out of the image
 - Deskew the images
 - Crop the images
 - Sharpen the images (disable by default)
 - Dither the images (disable by default)
 - Auto rotate the images by using tesseract (To have the text on the right side)
+- Optimize the images using `pngquant`, `optipng`, `ps2pdf` or `jpeg` (using quality from GraphicsMagick convert)
 - Assisted split, used to split a prospectus page in more pages (Requires to modify the YAML...)
 - Append credit cart, used to have the two faces of a credit cart on the same page
 - Be able to copy the OCR result from the PDF
+- Scan the QR code and Bar code and add a new page with the values (separate process)
+- Manage the empty lines in the QR code (replace by a pipe (`|`) in the PDF,
+  and run `scan --convert-clipboard` to scan your clipboard to do the inverse transform)
 
 ## Requirements
 
@@ -30,7 +36,9 @@ On the desktop:
 - The [scanimage](http://www.sane-project.org/) command, on Windows it should be able to use another command,
   but it's never be tested.
   This command would be an adapter that interpret the following arguments:
-  `--batch`, `--source=ADF`, `--batch-prompt`, `--batch-start`, `--batch-increment`, `--batch-count`.
+  `--batch`, `--batch-start`, `--batch-increment`, `--batch-count`,
+  `--batch` for the destination file name template (`%d` is replaced by the page number),
+  and the others for the `auto_bash`.
 
 On the NAS:
 
@@ -42,8 +50,9 @@ On the NAS:
 
 ```bash
 $ python3 -m pip install scan-to-paperless
-$ sudo activate-global-python-argcomplete # optional
 $ echo PATH=$PATH:~/venv/bin >> ~/.bashrc
+$ echo source <(register-python-argcomplete scan) >> ~/.bashrc
+$ echo source <(register-python-argcomplete scan-progress-status) >> ~/.bashrc
 ```
 
 Create the configuration file on `<home_config>/scan-to-paperless.yaml` (on Linux it's `~/.config/scan-to-paperless.yaml`), with:
@@ -58,33 +67,12 @@ scanimage_arguments: # Additional argument passed to the scanimage command
   - --mode=color
   - --resolution=300
 default_args:
-  ## Level
-  # true: => do level on 15% - 85% (under 15 % will be black above 85% will be white)
-  # false: => 0% - 100%
-  # <number>: => (0 + <number>)% - (100 - number)%
-  level:
-  # If no level specified, do auto level
-  auto_level: False
-  # min level if no level end no auto level
-  min_level: 15
-  # max level if no level end no auto level
-  max_level: 95
-
-  ## Crop
-  no_crop: False # Don't do any crop
-  marging_horizontal: 9 # mm, the horizontal margin used on autodetect content
-  marging_vertical: 6 # mm, the vertical margin used on autodetect content
-  dpi: 300 # The DPI used to convert the mm to pixel
-
-  # Sharpen
-  sharpen: False # Do the sharpen
-
-  # Dither
-  dither: False # Do the dither
-
-  ## OCR
-  tesseract: True # Use tesseract to to an OCR on the document
-  tesseract_lang: fra+eng # The used language
+  auto_mask: {}
+  auto_cut: {}
+  run_pngquant: true
+  cut_white: 200 # cut the near white color to have a uniform background
+  dpi: 300 # Not necessary if the scanner generate a tiff file
+  tesseract_lang: fra+eng # The used languages for the OCR
 ```
 
 [Full config documentation](./config.md)
@@ -94,13 +82,15 @@ default_args:
 The Docker support is required, Personally I use a [Synology DiskStation DS918+](https://www.synology.com/products/DS918+),
 and you can get the \*.syno.json files to configure your Docker services.
 
-Otherwise use:
+Otherwise, use:
 
 ```bash
+SCAN_FOLDER=<scan_folder>
+CONSUME_FOLDER=<consume_folder>
 docker run --name=scan-to-paperless --restart=unless-stopped --detatch \
-    --volume=<scan_folder>:/source \
-    --volume=<consume_folder>:/destination \
-    sbrunner/scan-to-paperless
+  --volume=${SCAN_FOLDER}:/source \
+  --volume=${CONSUME_FOLDER}:/destination \
+  sbrunner/scan-to-paperless
 ```
 
 You can set the environment variable `PROGRESS` to `TRUE` to get all the intermediate images.
@@ -149,11 +139,34 @@ the images.
 
 ### Add a mask
 
-If your scanner add some margin around the scanned image it will relay case some issue the deskew and the
+If your scanner add some margin around the scanned image it will relay case some issue the skew and the
 content detection.
 
 To solve that you can add a black and white image named `mask.png` in the root folder and draw in black the
 part that should not be taken in account.
+
+Scan to Paperless is also able to create a mask automatically, to enable is with the default configuration,
+just add `args` name `auto_mask` with an empty dictionary (`{}`).
+
+See also: [The documentation](./config.md#definitions)
+
+Configuration note:
+
+By default, the options `lower_hsv_color` and `upper_hsv_color` select the page (white).
+Yon can also select the scanner background, for that you also should set the option `inverse_mask` to `true`
+and the option `de_noise_morphology` to `false`.
+
+### Mask the image
+
+If your scanner add some margin around the scanned image you can definitively mask them.
+
+To solve that you can add a black and white image named `cut.png` in the root folder and draw in black the
+part that should not be taken in account.
+
+Scan to Paperless is also able to create a mask automatically, to enable is with the default configuration,
+just add `args` name `auto_cut` with an empty dictionary (`{}`).
+
+See also: [The documentation](./config.md#definitions)
 
 ### Double sized scanning
 
@@ -204,3 +217,35 @@ If you put destination like that: 2.1, it means that it will be the first part o
 4. After the process do his first pass you will have the final generated images.
 
 5. If it's OK delete the file `REMOVE_TO_CONTINUE`.
+
+## The scan modes configuration
+
+First of all the `scanimage` command and arguments can be configured with the `scanimage` and
+`scanimage_argumentss` options in the configuration file (`~/.config/scan-to-paperless.yaml`).
+
+In this file there is also a `modes` section that can configure each modes.
+
+See also: [The documentation](./config.md)
+
+## Extends an existing configuration
+
+To create the `preset` configuration file it can be useful to extends an existing configuration.
+For that you can use the `extends` (and `merge_strategies`) option in the configuration file.
+
+See also: [The documentation](./config.md)
+
+## Server configuration
+
+Environment variable:
+
+- `SCAN_SOURCE_FOLDER`: The main input folder for the scan process.
+- `SCAN_CODES_FOLDER`: The input folder for the codes (QR code ad Barcode) detection and add a new page.
+- `SCAN_FINAL_FOLDER`: The final folder for the scan process.
+- `SCAN_CODES_DPI`: The used DPI to decode the codes.
+- `SCAN_CODES_PDF_DPI`: The used PDF DPI to create the codes document.
+- `SCAN_CODES_FONT_NAME`: The used font of code number.
+- `SCAN_CODES_FONT_SIZE`: The used font size of code number.
+- `SCAN_CODES_MARGIN_TOP`: The top margin of code number.
+- `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.
+- `TIME`: Print the elapsed time.
+- `PROGRESS`: Save some intermediate files, don't clean the folder at the end.

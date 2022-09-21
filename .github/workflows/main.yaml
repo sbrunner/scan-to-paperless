@@ -1,47 +1,32 @@
----
 name: Continuous integration
 
 on:
   push:
+    branches:
+      - master
+      - test
+    tags:
+      - '*'
   pull_request:
 
 env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
 
 jobs:
-  dependabot-metadata:
-    name: Dependabot metadata
-    runs-on: ubuntu-20.04
-    timeout-minutes: 5
-    if: github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
-
-    steps:
-      - name: Fetch Dependabot metadata
-        id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.3.2
-        with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
-      - name: A comma-separated list of all package names updated
-        run: echo ${{ steps.dependabot-metadata.outputs.dependency-names }}
-      - name: The type of dependency has determined this PR to be
-        run: echo ${{ steps.dependabot-metadata.outputs.dependency-type }}
-      - name: The highest semver change being made by this PR
-        run: echo ${{ steps.dependabot-metadata.outputs.update-type }}
-      - name: A JSON string containing the full information about each updated Dependency
-        run: echo ${{ steps.dependabot-metadata.outputs.updated-dependencies-json }}
-
   build:
     name: Continuous integration
     runs-on: ubuntu-20.04
-    timeout-minutes: 15
+    timeout-minutes: 50
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
 
     steps:
+      - run: docker system prune --all --force
       - uses: actions/checkout@v3
         if: env.HAS_SECRETS != 'HAS_SECRETS'
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.TOKEN }}
+          fetch-depth: 0
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
@@ -54,7 +39,7 @@ jobs:
         env:
           GITHUB_EVENT: ${{ toJson(github) }}
 
-      # the if the generated files are up to date
+        # the if the generated files are up to date
       - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
@@ -62,17 +47,17 @@ jobs:
 
       - run: make build
       - run: make build-tests
-      - run: docker run --rm tests prospector -X --output=pylint
+      - run: make prospector
       - name: pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
-          tests bash -c '
+          sbrunner/scan-to-paperless-tests bash -c '
           cd /tests &&
-          coverage run --source=scan_to_paperless --module pytest --durations=0 --verbose --color=yes
-          --profile --profile-svg --junitxml=/results/test-reports/junit.xml . &&
-          coverage report &&
-          coverage html --directory=/results/coverage'
+          pytest --durations=0 -vv --color=yes
+          --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
+      - run: sudo chmod -R go+r results || true
+        if: failure()
       - uses: actions/upload-artifact@v3
         with:
           name: results
@@ -80,14 +65,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 5
         if: failure()
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Test report
-          path: results/test-reports
-          if-no-files-found: ignore
-          retention-days: 5
 
-      - run: make build-all
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
 
       - name: Init pypi
@@ -119,4 +97,11 @@ jobs:
       - name: Publish Docker
         run: |
           c2cciutils-publish --group=docker
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
+
+      - run: make build-all
+
+      - name: Publish Docker all
+        run: |
+          c2cciutils-publish --group=docker-all
         if: env.HAS_SECRETS == 'HAS_SECRETS'

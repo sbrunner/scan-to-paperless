@@ -11,15 +11,19 @@ from typing import Any, List, Optional, cast
 
 import argcomplete
 import numpy as np
+import pyperclip
+import tifffile
 from ruamel.yaml.main import YAML
 from skimage import io
 
 from scan_to_paperless import CONFIG_PATH, get_config
 
+from .config import VIEWER_DEFAULT
+
 if sys.version_info.minor >= 8:
-    from scan_to_paperless import config as stp_config
+    from scan_to_paperless import config as schema
 else:
-    from scan_to_paperless import config_old as stp_config  # type: ignore
+    from scan_to_paperless import config_old as schema  # type: ignore
 
 
 def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> None:
@@ -44,6 +48,15 @@ def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> b
         sys.exit(1)
 
 
+def convert_clipboard() -> None:
+    """Convert clipboard code from the PDF."""
+    original = pyperclip.paste()
+    new = "\n".join(["" if e == "|" else e for e in original.split("\n")])
+    if new != original:
+        pyperclip.copy(new)
+        print(new)
+
+
 def main() -> None:
     """Scan a new document."""
     parser = argparse.ArgumentParser()
@@ -55,7 +68,12 @@ def main() -> None:
         choices=("adf", "one", "multi", "double"),
         default="adf",
         help="The scan mode: 'adf': use Auto Document Feeder (Default), "
-        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF",
+        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF, "
+        "the default used configuration is, "
+        "adf: {scanimage_arguments: [--source=ADF]}, "
+        "multi: {scanimage_arguments: [--batch-prompt]}, "
+        "one: {scanimage_arguments: [--batch-count=1]}, "
+        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}",
     )
     parser.add_argument(
         "--preset",
@@ -76,16 +94,23 @@ def main() -> None:
     parser.add_argument(
         "--set-config",
         nargs=2,
+        metavar=("KEY", "VALUE"),
         action="append",
         default=[],
         help="Set a configuration option",
+    )
+    parser.add_argument(
+        "--convert-clipboard",
+        action="store_true",
+        help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
+        "see requirement: https://pypi.org/project/pyperclip/",
     )
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     config_filename = CONFIG_PATH if args.preset is None else f"{CONFIG_PATH[:-5]}-{args.preset}.yaml"
-    config: stp_config.Configuration = get_config(config_filename)
+    config: schema.Configuration = get_config(config_filename)
 
     if args.config:
         yaml = YAML()
@@ -93,6 +118,17 @@ def main() -> None:
         print("Config from file: " + config_filename)
         yaml.dump(config, sys.stdout)
         sys.exit()
+
+    if args.convert_clipboard:
+        print("Wait for clipboard content to be converted, press Ctrl+C to stop")
+        convert_clipboard()
+        try:
+            while True:
+                pyperclip.waitForNewPaste()
+                convert_clipboard()
+        except KeyboardInterrupt:
+            print()
+            sys.exit()
 
     dirty = False
     for conf in args.set_config:
@@ -122,23 +158,18 @@ def main() -> None:
         rand_int = str(random.randint(0, 999999))  # nosec
         base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
 
-    destination = f"/destination/{rand_int}.pdf"
-
     root_folder = os.path.join(base_folder, "source")
     os.makedirs(root_folder)
 
     try:
-        scanimage: List[str] = [config.get("scanimage", "scanimage")]
-        scanimage += config.get("scanimage_arguments", ["--format=png", "--mode=color", "--resolution=300"])
-        scanimage += [f"--batch={root_folder}/image-%d.png"]
-        if args.mode in ("adf", "double"):
-            scanimage += ["--source=ADF"]
-        if args.mode == "multi":
-            scanimage += ["--batch-prompt"]
-        if args.mode == "one":
-            scanimage += ["--batch-count=1"]
+        scanimage: List[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
+        scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
+        scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
+        mode_config = config.get("modes", {}).get(args.mode, {})
+        mode_default = cast(schema.Mode, schema.MODES_DEFAULT.get(args.mode, {}))
+        scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
-        if args.mode == "double":
+        if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
             call(scanimage + ["--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
             input("Put your document in the automatic document feeder for the other side, and press enter.")
@@ -150,30 +181,40 @@ def main() -> None:
                     f"--batch-count={len(odd)}",
                 ]
             )
-            for img in os.listdir(root_folder):
-                if img not in odd:
-                    path = os.path.join(root_folder, img)
-                    image = io.imread(path)
-                    image = np.rot90(image, 2)
-                    io.imsave(path, image.astype(np.uint8))
+            if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
+                for img in os.listdir(root_folder):
+                    if img not in odd:
+                        path = os.path.join(root_folder, img)
+                        print(path)
+                        image = io.imread(path)
+                        image = np.rot90(image, 2)
+                        io.imsave(path, image.astype(np.uint8))
         else:
             call(scanimage)
 
-        args_: stp_config.Arguments = {}
+        args_: schema.Arguments = {}
         args_.update(config.get("default_args", {}))
         args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
         del args_cmd["mode"]
         del args_cmd["preset"]
         del args_cmd["config"]
         del args_cmd["set_config"]
-        args_.update(cast(stp_config.Arguments, args_cmd))
+        args_.update(cast(schema.Arguments, args_cmd))
 
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
-    print(root_folder)
-    subprocess.call([config.get("viewer", "eog"), root_folder])  # nosec
+    if config.get("extension", schema.EXTENSION_DEFAULT) != "png":
+        for img in os.listdir(root_folder):
+            if not img.startswith("image-"):
+                continue
+            if "dpi" not in args_ and config["extension"] in ("tiff", "tif"):
+                with tifffile.TiffFile(os.path.join(root_folder, img)) as tiff:
+                    args_["dpi"] = tiff.pages[0].tags["XResolution"].value[0]
+
+    print(base_folder)
+    subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec
 
     images = []
     for img in os.listdir(root_folder):
@@ -181,7 +222,7 @@ def main() -> None:
             continue
         images.append(os.path.join("source", img))
 
-    regex = re.compile(r"^source\/image\-([0-9]+)\.png$")
+    regex = re.compile(rf"^source\/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
 
     def image_match(image_name: str) -> int:
         match = regex.match(image_name)
@@ -192,10 +233,9 @@ def main() -> None:
     if images:
         process_config = {
             "images": images,
-            "destination": destination,
             "args": args_,
         }
-        yaml = YAML(typ="safe")
+        yaml = YAML()
         yaml.default_flow_style = False
         with open(
             os.path.join(os.path.dirname(root_folder), "config.yaml"), "w", encoding="utf-8"

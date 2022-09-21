@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+import json
+
+
+def _main() -> None:
+    with open("scan_to_paperless/config_schema.json", encoding="utf-8") as config_schema_file:
+        config_schema = json.load(config_schema_file)
+    with open("scan_to_paperless/process_schema.json", encoding="utf-8") as process_schema_file:
+        process_schema = json.load(process_schema_file)
+
+    process_schema["definitions"]["args"]["properties"] = config_schema["definitions"]["args"]["properties"]
+    process_schema["definitions"]["auto_mask"]["properties"] = config_schema["definitions"]["auto_mask"][
+        "properties"
+    ]
+    with open("scan_to_paperless/process_schema.json", "w", encoding="utf-8") as process_schema_file:
+        json.dump(process_schema, process_schema_file, indent=2)
+
+
+if __name__ == "__main__":
+    _main()

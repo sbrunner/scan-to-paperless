@@ -17,6 +17,9 @@ publish:
         group: docker
         tags:
           - '{version}'
+      - name: sbrunner/scan-to-paperless
+        group: docker-all
+        tags:
           - '{version}-all'
     repository:
       github:

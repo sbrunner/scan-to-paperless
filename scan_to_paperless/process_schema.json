@@ -5,158 +5,507 @@
   "title": "Configuration",
   "additionalProperties": false,
   "definitions": {
+    "auto_mask": {
+      "Editor note": "The properties of this object should be modified in the config_schema.json file",
+      "type": "object",
+      "title": "Auto mask",
+      "properties": {
+        "lower_hsv_color": {
+          "type": "array",
+          "description": "The lower color in HSV representation",
+          "default": [0, 0, 250],
+          "items": {
+            "type": "integer"
+          },
+          "title": "Lower hsv color"
+        },
+        "upper_hsv_color": {
+          "type": "array",
+          "description": "The upper color in HSV representation",
+          "default": [255, 10, 255],
+          "items": {
+            "type": "integer"
+          },
+          "title": "Upper hsv color"
+        },
+        "de_noise_morphology": {
+          "type": "boolean",
+          "description": "Apply a morphology operation to remove noise",
+          "default": true,
+          "title": "De noise morphology"
+        },
+        "inverse_mask": {
+          "type": "boolean",
+          "description": "Inverse the mask",
+          "default": false,
+          "title": "Inverse mask"
+        },
+        "de_noise_size": {
+          "type": "integer",
+          "description": "The size of the artifact that will be de noise",
+          "default": 1000,
+          "title": "De noise size"
+        },
+        "de_noise_level": {
+          "type": "integer",
+          "description": "The threshold level used in de noise on the blurry image",
+          "default": 220,
+          "title": "De noise level"
+        },
+        "buffer_size": {
+          "type": "integer",
+          "description": "The size of the buffer add on the mask",
+          "default": 20,
+          "title": "Buffer size"
+        },
+        "buffer_level": {
+          "type": "integer",
+          "description": "The threshold level used in buffer on the blurry image",
+          "default": 20,
+          "title": "Buffer level"
+        },
+        "additional_filename": {
+          "type": "string",
+          "description": "An image file used to add on the mask"
+        }
+      }
+    },
     "args": {
+      "Editor note": "The properties of this object should be modified in the config_schema.json file",
       "type": "object",
       "title": "Arguments",
       "properties": {
         "level": {
           "type": ["boolean", "integer"],
-          "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%"
+          "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%",
+          "title": "Level",
+          "default": false
         },
         "auto_level": {
           "type": "boolean",
           "description": "If no level specified, do auto level",
-          "default": false
+          "default": false,
+          "title": "Auto level"
         },
         "min_level": {
           "type": "number",
           "description": "Min level if no level end no auto-level",
-          "default": 15
+          "default": 0,
+          "title": "Min level"
         },
         "max_level": {
           "type": "number",
           "description": "Max level if no level end no auto-level",
-          "default": 15
+          "default": 100,
+          "title": "Max level"
+        },
+        "cut_white": {
+          "type": "number",
+          "description": "Set the near white pixels on the image to white",
+          "default": 255,
+          "title": "Cut white"
+        },
+        "cut_black": {
+          "type": "number",
+          "description": "Set the near black pixels on the image to black",
+          "default": 0,
+          "title": "Cut black"
         },
         "no_crop": {
           "type": "boolean",
           "default": false,
-          "description": "Don't do any crop"
+          "description": "Don't do any crop",
+          "title": "No crop"
         },
         "margin_horizontal": {
           "type": "number",
           "default": 9,
-          "description": "The horizontal margin used on auto-detect content [mm]"
+          "description": "The horizontal margin used on auto-detect content [mm]",
+          "title": "Margin horizontal"
         },
         "margin_vertical": {
           "type": "number",
           "default": 6,
-          "description": "The vertical margin used on auto-detect content [mm]"
+          "description": "The vertical margin used on auto-detect content [mm]",
+          "title": "Margin vertical"
         },
         "dpi": {
           "type": "number",
           "default": 300,
-          "description": "The DPI used to convert the mm to pixel"
+          "description": "The DPI used to convert the mm to pixel",
+          "title": "Dpi"
         },
         "sharpen": {
           "type": "boolean",
           "default": false,
-          "description": "Do the sharpen"
+          "description": "Do the sharpen",
+          "title": "Sharpen"
         },
         "dither": {
           "type": "boolean",
           "default": false,
-          "description": "Do the dither"
+          "description": "Do the dither",
+          "title": "Dither"
         },
         "tesseract": {
           "type": "boolean",
-          "default": false,
-          "description": "Use tesseract to to an OCR on the document"
+          "default": true,
+          "description": "Use tesseract to to an OCR on the document",
+          "title": "Tesseract"
         },
         "tesseract_lang": {
           "type": "string",
           "default": "fra+eng",
-          "description": "The used language for tesseract"
+          "description": "The used language for tesseract",
+          "title": "Tesseract lang"
         },
         "append_credit_card": {
           "type": "boolean",
           "default": false,
-          "description": "Do an assisted split"
+          "description": "Do an assisted split",
+          "title": "Append credit card"
         },
         "assisted_split": {
           "type": "boolean",
           "default": false,
-          "description": "Do an assisted split"
-        },
-        "num_angles": {
-          "type": "integer",
-          "default": 1800,
-          "description": "The number of angle used to detect the image skew"
+          "description": "Do an assisted split",
+          "title": "Assisted split"
         },
         "min_box_size_crop": {
           "type": "number",
           "default": 3,
-          "description": "The minimum box size to find the content on witch one we will crop [mm]"
+          "description": "The minimum box size to find the content on witch one we will crop [mm]",
+          "title": "Min box size crop"
         },
         "min_box_black_crop": {
           "type": "number",
           "default": 2,
-          "description": "The minimum black in a box on content find on witch one we will crop [%]"
+          "description": "The minimum black in a box on content find on witch one we will crop [%]",
+          "title": "Min box black crop"
         },
         "contour_kernel_size_crop": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on content find on witch one we will crop [mm]"
+          "description": "The block size used in a box on content find on witch one we will crop [mm]",
+          "title": "Contour kernel size crop"
         },
         "threshold_block_size_crop": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on threshold for content find on witch one we will crop [mm]"
+          "description": "The block size used in a box on threshold for content find on witch one we will crop [mm]",
+          "title": "Threshold block size crop"
         },
         "threshold_value_c_crop": {
           "type": "number",
           "default": 70,
-          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop"
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop",
+          "title": "Threshold value c crop"
         },
         "min_box_size_empty": {
           "type": "number",
           "default": 10,
-          "description": "The minimum box size to find the content to determine if the page is empty [mm]"
+          "description": "The minimum box size to find the content to determine if the page is empty [mm]",
+          "title": "Min box size empty"
         },
         "min_box_black_empty": {
           "type": "number",
           "default": 2,
-          "description": "The minimum black in a box on content find if the page is empty [%]"
+          "description": "The minimum black in a box on content find if the page is empty [%]",
+          "title": "Min box black empty"
         },
         "contour_kernel_size_empty": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on content find if the page is empty [mm]"
+          "description": "The block size used in a box on content find if the page is empty [mm]",
+          "title": "Contour kernel size empty"
         },
         "threshold_block_size_empty": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on threshold for content find if the page is empty [mm]"
+          "description": "The block size used in a box on threshold for content find if the page is empty [mm]",
+          "title": "Threshold block size empty"
         },
         "threshold_value_c_empty": {
           "type": "number",
           "default": 70,
-          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty"
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty",
+          "title": "Threshold value c empty"
         },
         "min_box_size_limit": {
           "type": "number",
-          "default": 3,
-          "description": "The minimum box size to find the limits based on content [mm]"
+          "default": 10,
+          "description": "The minimum box size to find the limits based on content [mm]",
+          "title": "Min box size limit"
         },
         "min_box_black_limit": {
           "type": "number",
           "default": 2,
-          "description": "The minimum black in a box on content find the limits based on content [%]"
+          "description": "The minimum black in a box on content find the limits based on content [%]",
+          "title": "Min box black limit"
         },
         "contour_kernel_size_limit": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on content find the limits based on content [mm]"
+          "description": "The block size used in a box on content find the limits based on content [mm]",
+          "title": "Contour kernel size limit"
         },
         "threshold_block_size_limit": {
           "type": "number",
           "default": 1.5,
-          "description": "The block size used in a box on threshold for content find the limits based on content [mm]"
+          "description": "The block size used in a box on threshold for content find the limits based on content [mm]",
+          "title": "Threshold block size limit"
         },
         "threshold_value_c_limit": {
           "type": "number",
           "default": 70,
-          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content"
+          "description": "A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content",
+          "title": "Threshold value c limit"
+        },
+        "colors": {
+          "type": "integer",
+          "default": 0,
+          "description": "The number of colors in the png",
+          "title": "Colors"
+        },
+        "run_optipng": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run the optipng optimizer",
+          "title": "Run optipng"
+        },
+        "run_pngquant": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the pngquant optimizer",
+          "title": "Run pngquant"
+        },
+        "pngquant_options": {
+          "type": "array",
+          "description": "The pngquant options",
+          "default": ["--force", "--speed=1", "--strip", "--quality=0-32"],
+          "items": {
+            "type": "string"
+          },
+          "title": "Pngquant options"
+        },
+        "run_exiftool": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the exiftool optimizer",
+          "title": "Run exiftool"
+        },
+        "run_ps2pdf": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the ps2pdf optimizer (=> JPEG)",
+          "title": "Run ps2pdf"
+        },
+        "no_auto_rotate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the auto rotate detected by Tesseract",
+          "title": "No auto rotate"
+        },
+        "jpeg": {
+          "type": "boolean",
+          "default": false,
+          "description": "Convert images to JPEG",
+          "title": "Jpeg"
+        },
+        "jpeg_quality": {
+          "type": "integer",
+          "default": 90,
+          "description": "The JPEG quality",
+          "title": "Jpeg quality"
+        },
+        "background_color": {
+          "type": "array",
+          "default": [255, 255, 255],
+          "description": "The background color",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Background color"
+        },
+        "auto_mask": {
+          "description": "The auto mask configuration, the mask is used to mask the image on crop and skew calculation",
+          "$ref": "#/definitions/auto_mask"
+        },
+        "auto_cut": {
+          "description": "The auto mask configuration, the mask is used to definitively mask the source image",
+          "$ref": "#/definitions/auto_mask"
+        },
+        "deskew": {
+          "type": "object",
+          "description": "The deskew configuration",
+          "properties": {
+            "min_angle": {
+              "type": "number",
+              "default": -45,
+              "description": "The minimum angle to detect the image skew [degree]",
+              "title": "Deskew min angle"
+            },
+            "max_angle": {
+              "type": "number",
+              "default": 45,
+              "description": "The maximum angle to detect the image skew [degree]",
+              "title": "Deskew max angle"
+            },
+            "angle_derivation": {
+              "type": "number",
+              "default": 0.1,
+              "description": "The step of angle to detect the image skew [degree]",
+              "title": "Deskew angle derivation"
+            },
+            "sigma": {
+              "title": "Deskew sigma",
+              "description": "Used in the `canny` function",
+              "default": 3.0,
+              "type": "number"
+            },
+            "num_peaks": {
+              "title": "Deskew num peaks",
+              "description": "number of peaks we ask for",
+              "default": 20,
+              "type": "integer"
+            },
+            "angle_pm_90": {
+              "title": "Deskew angle pm 90",
+              "description": "Detect an angle of +/- 90 degree, also +/- 45 degree",
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        },
+        "line_detection": {
+          "type": "object",
+          "title": "Line detection",
+          "description": "The line detection used in assisted split",
+          "properties": {
+            "low_threshold": {
+              "type": "integer",
+              "default": 0,
+              "description": "The low threshold used in the Canny edge detector",
+              "title": "Line detection low threshold"
+            },
+            "high_threshold": {
+              "type": "integer",
+              "default": 1000,
+              "description": "The high threshold used in the Canny edge detector",
+              "title": "Line detection high threshold"
+            },
+            "aperture_size": {
+              "type": "integer",
+              "default": 3,
+              "description": "The aperture size used in the Canny edge detector",
+              "title": "Line detection aperture size"
+            },
+            "rho": {
+              "type": "integer",
+              "default": 1,
+              "description": "The rho used in the Hough transform",
+              "title": "Line detection rho"
+            },
+            "threshold": {
+              "type": "integer",
+              "default": 100,
+              "description": "The threshold used in the Hough transform",
+              "title": "Line detection threshold"
+            },
+            "min_line_length": {
+              "type": "integer",
+              "default": 50,
+              "description": "The minimum line length in percentage of the image size used in the Hough transform",
+              "title": "Line detection min line length"
+            },
+            "max_line_gap": {
+              "type": "integer",
+              "default": 100,
+              "description": "The maximum line gap in percentage of the image size used in the Hough transform",
+              "title": "Line detection max line gap"
+            }
+          }
+        },
+        "rule": {
+          "type": "object",
+          "title": "Rule",
+          "description": "Configuration of rule displayed in assisted split images",
+          "properties": {
+            "enable": {
+              "title": "Rule enable",
+              "type": "boolean",
+              "default": true
+            },
+            "minor_graduation_space": {
+              "title": "Rule minor graduation space",
+              "type": "integer",
+              "default": 10
+            },
+            "major_graduation_space": {
+              "title": "Rule major graduation space",
+              "type": "integer",
+              "default": 100
+            },
+            "lines_space": {
+              "title": "Rule lines space",
+              "type": "integer",
+              "default": 100
+            },
+            "minor_graduation_size": {
+              "title": "Rule minor graduation size",
+              "type": "integer",
+              "default": 10
+            },
+            "major_graduation_size": {
+              "title": "Rule major graduation size",
+              "type": "integer",
+              "default": 30
+            },
+            "graduation_color": {
+              "title": "Rule graduation color",
+              "type": "array",
+              "default": [0, 0, 0],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "lines_color": {
+              "title": "Rule lines color",
+              "type": "array",
+              "default": [0, 0, 0],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "lines_opacity": {
+              "title": "Rule lines opacity",
+              "type": "number",
+              "default": 0.2
+            },
+            "graduation_text_font_filename": {
+              "title": "Rule graduation text font filename",
+              "type": "string",
+              "default": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+            },
+            "graduation_text_font_size": {
+              "title": "Rule graduation text font size",
+              "type": "number",
+              "default": 17
+            },
+            "graduation_text_font_color": {
+              "title": "Rule graduation text font color",
+              "type": "array",
+              "default": [0, 0, 0],
+              "items": {
+                "type": "integer"
+              }
+            },
+            "graduation_text_margin": {
+              "title": "Rule graduation text margin",
+              "type": "integer",
+              "default": 6
+            }
+          }
         }
       }
     }
@@ -164,12 +513,10 @@
   "properties": {
     "images": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "The images"
-    },
-    "destination": {
-      "type": "string",
-      "description": "The destination file name"
     },
     "args": {
       "$ref": "#/definitions/args"
@@ -177,12 +524,8 @@
     "progress": {
       "type": "boolean",
       "description": "Run in progress mode",
-      "default": false
-    },
-    "experimental": {
-      "type": "boolean",
-      "description": "Run the experimental features",
-      "default": false
+      "default": false,
+      "title": "Progress"
     },
     "steps": {
       "type": "array",
@@ -199,7 +542,9 @@
           "sources": {
             "type": "array",
             "description": "The images obtain after the current step",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "process_count": {
             "type": "integer",
@@ -212,7 +557,6 @@
       "type": "array",
       "items": {
         "title": "Assisted split",
-
         "type": "object",
         "additionalProperties": false,
         "description": "Assisted split configuration",
@@ -311,21 +655,6 @@
                 "type": "number",
                 "description": "The measured deskew angle"
               },
-              "average_deviation": {
-                "type": "number",
-                "description": "The measured deskew angle deviation"
-              },
-              "average_deviation2": {
-                "type": "number",
-                "description": "The measured deskew angle deviation, corrected"
-              },
-              "angles": {
-                "type": "array",
-                "description": "The measured possible deskew angles, visible on the generated image",
-                "items": {
-                  "type": "number"
-                }
-              },
               "size": {
                 "type": "array",
                 "description": "The image dimensions",
@@ -339,5 +668,5 @@
       }
     }
   },
-  "required": ["images", "destination", "args"]
+  "required": ["images", "args"]
 }
