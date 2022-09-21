@@ -45,6 +45,8 @@ jobs:
       - run: git diff
         if: failure()
 
+      - run: poetry-dynamic-versioning
+
       - run: make build
       - run: make build-tests
       - run: make prospector
@@ -82,21 +84,8 @@ jobs:
           git config user.name "CI"
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - name: Bump version
-        run: |
-          poetry version patch
-          git add pyproject.toml
-          git commit --allow-empty -m "[skip ci] Bump Version"
-          git push
-        if: github.ref == 'refs/heads/master'
-
-      - name: Publish PyPI
-        run: c2cciutils-publish --type=version_tag --version=unused
-        if: github.ref == 'refs/heads/master'
-
-      - name: Publish Docker
-        run: |
-          c2cciutils-publish --group=docker
+      - name: Publish
+        run: c2cciutils-publish
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - run: make build-all
