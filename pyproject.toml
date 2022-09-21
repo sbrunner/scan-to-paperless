@@ -16,7 +16,7 @@ pytest_plugins = ["pytest_profiling"]
 
 [tool.poetry]
 name = "scan-to-paperless"
-version = "1.23.3"
+version = "0.0.0"
 description = "Tool to scan and process documents to paperless"
 readme = "README.md"
 keywords = ["scan", "paperless"]
@@ -72,8 +72,13 @@ typing-extensions = "4.3.0"
 c2cwsgiutils = { version = "5.1.5", extras = ["test_images"] }
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-plugin-tweak-dependencies-version"]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry-dynamic-versioning]
+enable = true # disable on Docker
+vcs = "git"
+pattern = "^((?P<epoch>\\d+)!)?(?P<base>\\d+(\\.\\d+)*)"
 
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
