@@ -201,7 +201,7 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
     config["assisted_split"][0]["limits"][0]["value"] = better_value
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
-    assert step["name"] == "finalise"
+    assert step["name"] == "finalize"
     check_image_file(
         root_folder,
         step["sources"][0],
@@ -277,7 +277,7 @@ def test_assisted_split_join_full():
         config["assisted_split"][number]["limits"] = [limit]
         config["assisted_split"][number]["destinations"] = destinations
     step = process.split(config, step, root_folder)
-    assert step["name"] == "finalise"
+    assert step["name"] == "finalize"
     assert len(step["sources"]) == 1
     check_image_file(
         root_folder,
@@ -352,7 +352,7 @@ def test_assisted_split_booth():
         "sources": ["image-1.png"],
     }
     step = process.split(config, step, root_folder)
-    assert step["name"] == "finalise"
+    assert step["name"] == "finalize"
     assert len(step["sources"]) == 4
     check_image_file(
         root_folder,
@@ -407,7 +407,7 @@ def test_full(progress):
     else:
         assert not os.path.exists(os.path.join(root_folder, "1-level"))
 
-    assert step["name"] == "finalise"
+    assert step["name"] == "finalize"
     process.finalize(config, step, root_folder)
 
     pdf_filename = os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")
@@ -460,7 +460,7 @@ def test_credit_card_full():
     }
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 2
-    assert step["name"] == "finalise"
+    assert step["name"] == "finalize"
     process.finalize(config, step, root_folder)
     pdfinfo = process.output(
         ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
@@ -504,7 +504,7 @@ def test_empty():
     }
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 0
-    assert step["name"] == "finalise"
+    assert step["name"] == "finalize"
     shutil.rmtree(root_folder)
 
 

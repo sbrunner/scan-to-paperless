@@ -1268,7 +1268,7 @@ def transform(
         "sources": images,
         "name": "split"
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT)
-        else "finalise",
+        else "finalize",
         "process_count": process_count,
     }
 
@@ -1445,7 +1445,7 @@ def split(
             transformed_images.append(img2)
     process_count += 1
 
-    return {"sources": transformed_images, "name": "finalise", "process_count": process_count}
+    return {"sources": transformed_images, "name": "finalize", "process_count": process_count}
 
 
 def finalize(
@@ -1684,7 +1684,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
             elif step["name"] == "split":
                 print("Split")
                 next_step = split(config, step, root_folder)
-            elif step["name"] == "finalise":
+            elif step["name"] == "finalize":
                 print("Finalize")
                 finalize(config, step, root_folder)
                 done = True
