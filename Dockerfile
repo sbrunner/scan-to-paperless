@@ -11,6 +11,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 FROM base-all as poetry
 
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=True
 WORKDIR /tmp
 COPY requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache \
