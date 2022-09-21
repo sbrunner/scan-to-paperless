@@ -1514,6 +1514,8 @@ def finalize(
                 tesseract_producer = json.loads(pdf_.docinfo.get("/Producer").to_json())  # type: ignore
                 if "tesseract" not in tesseract_producer.lower():
                     tesseract_producer = None
+                elif tesseract_producer.startswith("u:"):
+                    tesseract_producer = tesseract_producer[2:]
             if tesseract_producer is None:
                 with pdf_.open_metadata() as meta:
                     if "{http://purl.org/dc/elements/1.1/}producer" in meta:
