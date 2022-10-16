@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 FROM base-all as poetry
 
-ENV POETRY_DYNAMIC_VERSIONING_BYPASS=True
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=0.0.0.dev
 WORKDIR /tmp
 COPY requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache \
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 COPY poetry.lock pyproject.toml ./
 RUN poetry export --output=requirements.txt \
-    && poetry export --dev --output=requirements-dev.txt
+    && poetry export --with=dev --output=requirements-dev.txt
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
