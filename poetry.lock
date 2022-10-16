@@ -1207,7 +1207,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2022.8.12"
+version = "2022.10.10"
 description = "Read and write TIFF files"
 category = "main"
 optional = false
@@ -1217,7 +1217,7 @@ python-versions = ">=3.8"
 numpy = ">=1.19.2"
 
 [package.extras]
-all = ["imagecodecs (>=2022.2.22)", "lxml", "matplotlib (>=3.3)"]
+all = ["fsspec", "imagecodecs (>=2022.2.22)", "lxml", "matplotlib (>=3.3)", "zarr"]
 
 [[package]]
 name = "tinycss2"
@@ -1365,7 +1365,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "52272a0d8694b7b8b4f647deae9a385bf35711c3768dc84c194cac3a19b4759a"
+content-hash = "f291989829a2374eddce37a497fd4eda51df800cd0535eff68235d3006cd5706"
 
 [metadata.files]
 argcomplete = [
@@ -2492,8 +2492,8 @@ stevedore = [
     {file = "stevedore-4.0.0.tar.gz", hash = "sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786"},
 ]
 tifffile = [
-    {file = "tifffile-2022.8.12-py3-none-any.whl", hash = "sha256:1456f9f6943c85082ef4d73f5329038826da67f70d5d513873a06f3b1598d23e"},
-    {file = "tifffile-2022.8.12.tar.gz", hash = "sha256:3e74e0fd48838477ebcf40e09b7780bd095ee5920b2238f485e2c68463a3dcb4"},
+    {file = "tifffile-2022.10.10-py3-none-any.whl", hash = "sha256:87f3aee8a0d06b74655269a105de75c1958a24653e1930d523eb516100043503"},
+    {file = "tifffile-2022.10.10.tar.gz", hash = "sha256:50b61ba943b866d191295bc38a00191c9fdab23ece063544c7f1a264e3f6aa8e"},
 ]
 tinycss2 = [
     {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
