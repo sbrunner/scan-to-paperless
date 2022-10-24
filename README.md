@@ -46,6 +46,14 @@ On the NAS:
 
 ## Install
 
+Scan-to-paperless requires a desktop and a server part, the tow part communicate throw the scan folder.
+
+The server part is where the document were processed, and the desktop part is
+from where we want we will scan the document, on witch one the scanner is connected.
+
+The scan folder should be synchronized between the desktop and the server,
+I use [Syncthing](https://syncthing.net/) for that.
+
 ### On the desktop
 
 ```bash
@@ -87,7 +95,7 @@ Otherwise, use:
 ```bash
 SCAN_FOLDER=<scan_folder>
 CONSUME_FOLDER=<consume_folder>
-docker run --name=scan-to-paperless --restart=unless-stopped --detatch \
+docker run --name=scan-to-paperless --restart=unless-stopped --detach \
   --volume=${SCAN_FOLDER}:/source \
   --volume=${CONSUME_FOLDER}:/destination \
   sbrunner/scan-to-paperless
@@ -106,7 +114,7 @@ docker rm scan-to-paperless
 
 You should find a way to synchronize or using sharing to link the scan folder on your desktop and on your NAS.
 
-You should also link the consume folder to `paperless-ngx` probably just by using the same folder.
+You should also link to consume folder to `paperless-ngx` probably just by using the same folder.
 
 ## Usage
 
