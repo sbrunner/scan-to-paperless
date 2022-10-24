@@ -20,4 +20,7 @@ publish:
         group: docker-all
         tags:
           - '{version}-all'
+    repository:
+      github:
+        versions: []
     dispatch: false
