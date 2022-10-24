@@ -14,7 +14,6 @@ publish:
   docker:
     images:
       - name: sbrunner/scan-to-paperless
-        group: docker
         tags:
           - '{version}'
       - name: sbrunner/scan-to-paperless
