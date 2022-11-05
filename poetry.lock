@@ -1285,7 +1285,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "weasyprint"
-version = "57.0"
+version = "57.1"
 description = "The Awesome Document Factory"
 category = "main"
 optional = false
@@ -1296,7 +1296,7 @@ cffi = ">=0.6"
 cssselect2 = ">=0.1"
 fonttools = {version = ">=4.0.0", extras = ["woff"]}
 html5lib = ">=1.1"
-Pillow = ">=4.0.0"
+Pillow = ">=9.1.0"
 pydyf = ">=0.5.0"
 Pyphen = ">=0.9.1"
 tinycss2 = ">=1.0.0"
@@ -1369,7 +1369,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a8f0e5862796894ca7fa87b556f6d3498b1151b889e2465ba56c746fb688c25a"
+content-hash = "12ebdcdf106e90beb661bd108b13b1196b6be434abfadd8658c421021a46beb7"
 
 [metadata.files]
 argcomplete = [
@@ -2070,6 +2070,8 @@ pikepdf = [
     {file = "pikepdf-6.2.1.tar.gz", hash = "sha256:28309830b84e1392949afe5dc8e02d635531b63ab41f0ed6ec05ca8a8cc384ee"},
 ]
 pillow = [
+    {file = "Pillow-9.3.0-1-cp37-cp37m-win32.whl", hash = "sha256:e6ea6b856a74d560d9326c0f5895ef8050126acfdc7ca08ad703eb0081e82b74"},
+    {file = "Pillow-9.3.0-1-cp37-cp37m-win_amd64.whl", hash = "sha256:32a44128c4bdca7f31de5be641187367fe2a450ad83b833ef78910397db491aa"},
     {file = "Pillow-9.3.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:0b7257127d646ff8676ec8a15520013a698d1fdc48bc2a79ba4e53df792526f2"},
     {file = "Pillow-9.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:b90f7616ea170e92820775ed47e136208e04c967271c9ef615b6fbd08d9af0e3"},
     {file = "Pillow-9.3.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:68943d632f1f9e3dce98908e873b3a090f6cba1cbb1b892a9e8d97c938871fbe"},
@@ -2518,8 +2520,8 @@ urllib3 = [
     {file = "urllib3-1.26.12.tar.gz", hash = "sha256:3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e"},
 ]
 weasyprint = [
-    {file = "weasyprint-57.0-py3-none-any.whl", hash = "sha256:c714681139a765964c3a8514ac1fc0f65ae063aada4aad752085575f2129e765"},
-    {file = "weasyprint-57.0.tar.gz", hash = "sha256:7b6f5cc13819e9a7d8748c1dbf0e8d2444f7a4818a98339f82dccaa822bf911b"},
+    {file = "weasyprint-57.1-py3-none-any.whl", hash = "sha256:204dff5753e003c6e75f6c674e39825fc95a20f984cee38ddb7ed3ab242a66fd"},
+    {file = "weasyprint-57.1.tar.gz", hash = "sha256:397a9d11298f94485ec3b7b68aeef1c6106fb638350126d9d4a64109b73508a0"},
 ]
 webencodings = [
     {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
