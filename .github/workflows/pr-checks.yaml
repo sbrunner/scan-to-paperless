@@ -10,6 +10,9 @@ on:
       - edit
       - synchronize
 
+env:
+  POETRY_DYNAMIC_VERSIONING_BYPASS: 0.0.0
+
 jobs:
   build:
     name: Pull request check
@@ -20,7 +23,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-      - run: python3 -m pip install --user --pre c2cciutils[pr_checks]
+      - run: python3 -m pip install --user --requirement=requirements.txt
+      - run: poetry build
+      - run: python3 -m pip install --user --force-reinstall dist/c2cciutils-0.0.0-py3-none-any.whl[pr_checks]
+      - run: rm -rf dist build
 
       - name: Check pull request
         run: c2cciutils-pull-request-checks
