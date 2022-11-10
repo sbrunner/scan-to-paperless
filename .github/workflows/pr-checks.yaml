@@ -10,6 +10,9 @@ on:
       - edit
       - synchronize
 
+env:
+  POETRY_DYNAMIC_VERSIONING_BYPASS: 0.0.0
+
 jobs:
   build:
     name: Pull request check
