@@ -6,11 +6,6 @@ on:
       - opened
       - reopened
       - synchronize
-  workflow_run:
-    workflows:
-      - None
-    types:
-      - completed
 
 jobs:
   auto-merge:
