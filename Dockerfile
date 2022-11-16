@@ -53,8 +53,6 @@ VOLUME /source \
     /destination \
     /scan-codes
 
-ENV LANG=C.UTF-8
-
 WORKDIR /opt
 
 ARG VERSION
