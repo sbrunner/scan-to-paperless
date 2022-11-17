@@ -21,6 +21,9 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
+      - run: git config --global user.email "sbrunner@ci.org"
+      - run: git config --global user.name "Snyk autofix"
+
       - run: python3 -m venv ~/.venv
       - run: ~/.venv/bin/pip install --pre c2cciutils[audit]
       - run: python3 -m pip install --pre c2cciutils[audit]
