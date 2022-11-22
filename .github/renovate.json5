@@ -8,6 +8,7 @@
   prHourlyLimit: 0,
   prConcurrentLimit: 0,
   lockFileMaintenance: { enabled: true, automerge: true },
+  baseBranches: ['master', 'test'],
   packageRules: [
     /** Automerge the patch, the minor and the dev dependency */
     {
@@ -48,6 +49,12 @@
     {
       matchBaseBranches: ['master'],
       matchPackageNames: ['c2cciutils'],
+      enabled: false,
+    },
+    /** Accept only the patch on stabilization branches */
+    {
+      matchBaseBranches: ['master'],
+      matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
     },
   ],
