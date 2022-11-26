@@ -928,7 +928,7 @@ test = ["coverage[toml]", "flake8 (<5)", "pytest", "pytest-cov", "pytest-flake8"
 
 [[package]]
 name = "pyroma"
-version = "4.0"
+version = "4.1"
 description = "Test your project's packaging friendliness"
 category = "dev"
 optional = false
@@ -937,13 +937,15 @@ python-versions = "*"
 [package.dependencies]
 build = "*"
 docutils = "*"
+pep517 = "*"
 pygments = "*"
 requests = "*"
-setuptools = "*"
+setuptools = ">=61.0.0"
+trove-classifiers = ">=2022.6.26"
 wheel = "*"
 
 [package.extras]
-test = ["pytest", "pytest-cov", "setuptools (>=60)"]
+test = ["flit (>=3.4,<4)", "pytest", "pytest-cov", "setuptools (>=60)", "zest.releaser[recommended]"]
 
 [[package]]
 name = "pyrsistent"
@@ -1268,6 +1270,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "trove-classifiers"
+version = "2022.10.19"
+description = "Canonical source for classifiers on PyPI (pypi.org)."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -1374,7 +1384,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a7697a03647d565783918b5566887b06ccf1d4adf4e17349b69b4141a6058ed2"
+content-hash = "d75a366a7dcbdbb56e3c682d950f99283d5672c63788219d023ecad245564426"
 
 [metadata.files]
 argcomplete = [
@@ -2240,8 +2250,8 @@ pyphen = [
     {file = "pyphen-0.13.1.tar.gz", hash = "sha256:2892ada3e72b86fc4fc5172e2f1ad9e03929fab1aff0c0c77b35ab98d0fbf0fa"},
 ]
 pyroma = [
-    {file = "pyroma-4.0-py2.py3-none-any.whl", hash = "sha256:8aab9bc66f6bbd8a23a545a10ceea62d858bfdd1a3bd0144c2ac0854d029aacb"},
-    {file = "pyroma-4.0.tar.gz", hash = "sha256:b41ed0e080fb3aa9a7b8359d0ce7af39bc9b59cb9e7d696c6521f525257cc128"},
+    {file = "pyroma-4.1-py3-none-any.whl", hash = "sha256:a7f87ee185c8cf262bd04ba4a28b2f1f503335a2698bbf9700a230e4fe339f9d"},
+    {file = "pyroma-4.1.tar.gz", hash = "sha256:ff87335abce04efef0749ee63f2a4dbb9a3fa5a1eee285beaaaed65059dca89a"},
 ]
 pyrsistent = [
     {file = "pyrsistent-0.19.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d6982b5a0237e1b7d876b60265564648a69b14017f3b5f908c5be2de3f9abb7a"},
@@ -2544,6 +2554,10 @@ tomli = [
 tomlkit = [
     {file = "tomlkit-0.11.6-py3-none-any.whl", hash = "sha256:07de26b0d8cfc18f871aec595fda24d95b08fef89d147caa861939f37230bf4b"},
     {file = "tomlkit-0.11.6.tar.gz", hash = "sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73"},
+]
+trove-classifiers = [
+    {file = "trove-classifiers-2022.10.19.tar.gz", hash = "sha256:3a58b43b5149a0e125037e7e875d35e4471435a6a5a5b7e6b68cbee7afd23739"},
+    {file = "trove_classifiers-2022.10.19-py3-none-any.whl", hash = "sha256:887261694f96a6af04a6d09566d4fd46b70edd5f1025b9ffc35cb4961218e8b0"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
