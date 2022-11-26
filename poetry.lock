@@ -444,7 +444,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jsonschema-gentypes"
-version = "1.3.1"
+version = "1.3.2"
 description = "Tool to generate Python types based on TypedDict from a JSON Schema"
 category = "main"
 optional = false
@@ -1370,7 +1370,7 @@ numpy = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "f666128f969ef3d8b76a341ebdd8432e7c97a788c881bbd445e54a745f40b5fe"
+content-hash = "6ac8cf1a1d43600ba3b9d8386079447600556764727d41709aeb62bcab5794a9"
 
 [metadata.files]
 argcomplete = [
@@ -1745,7 +1745,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 jsonschema-gentypes = [
-    {file = "jsonschema_gentypes-1.3.1-py3-none-any.whl", hash = "sha256:5f461eb923aa5e9fe4fbe3ebfbeb2e5415674d82fb626c06a2062a55368ca693"},
+    {file = "jsonschema_gentypes-1.3.2-py3-none-any.whl", hash = "sha256:6753c04ce64632e9be1f2004e25ced751bb5100a90963ab6adde23ac654fd4a3"},
+    {file = "jsonschema_gentypes-1.3.2.tar.gz", hash = "sha256:2419c33a35b7fec85b08037c43d2d058d80cee796348f67a3bc2ca5b5fdbc39e"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
