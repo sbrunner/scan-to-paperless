@@ -67,7 +67,7 @@ matplotlib = "3.6.2"
 prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 pytest = "7.2.0"
 pytest-profiling = "1.7.0"
-pyroma = "4.0"
+pyroma = "4.1"
 typing-extensions = "4.4.0"
 c2cwsgiutils = { version = "5.1.5", extras = ["test_images"] }
 
