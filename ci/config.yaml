@@ -2,10 +2,6 @@
 
 checks:
   versions: False
-  required_workflows:
-    backport.yaml: False
-    audit.yaml: False
-    main.yaml: False
   codespell:
     ignore_re:
       - poetry.lock
