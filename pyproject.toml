@@ -64,7 +64,7 @@ deepmerge = "1.1.0"
 matplotlib = "3.6.2"
 
 [tool.poetry.dev-dependencies]
-prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+prospector = { version = "1.8.2", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 pytest = "7.2.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.1"
