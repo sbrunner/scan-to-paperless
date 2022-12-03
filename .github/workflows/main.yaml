@@ -34,6 +34,9 @@ jobs:
 
       - name: Checks
         run: c2cciutils-checks
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: GitHub event
         run: echo ${GITHUB_EVENT} | python3 -m json.tool
         env:
@@ -87,6 +90,8 @@ jobs:
       - name: Publish
         run: c2cciutils-publish
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - run: make build-all
 
@@ -94,3 +99,5 @@ jobs:
         run: |
           c2cciutils-publish --group=docker-all
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
