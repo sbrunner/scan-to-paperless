@@ -29,6 +29,8 @@ jobs:
 
       - name: Checks
         run: c2cciutils-checks
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
         # the if the generated files are up to date
       - run: make jsonschema
@@ -74,6 +76,8 @@ jobs:
 
       - name: Publish
         run: c2cciutils-publish --group=docker --type=rebuild --branch=${{ matrix.branch }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - run: make build-all
 
@@ -81,3 +85,5 @@ jobs:
         run: |
           c2cciutils-publish --group=docker-all
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
