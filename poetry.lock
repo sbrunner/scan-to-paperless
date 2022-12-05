@@ -437,7 +437,7 @@ requirements-deprecated-finder = ["pip-api", "pipreqs"]
 
 [[package]]
 name = "jsonschema"
-version = "4.17.1"
+version = "4.17.3"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -805,14 +805,14 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pylint"
-version = "2.15.6"
+version = "2.15.7"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 
 [package.dependencies]
-astroid = ">=2.12.12,<=2.14.0-dev0"
+astroid = ">=2.12.13,<=2.14.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = ">=0.2"
 isort = ">=4.2.5,<6"
@@ -916,7 +916,7 @@ python-versions = "*"
 
 [[package]]
 name = "pyphen"
-version = "0.13.1"
+version = "0.13.2"
 description = "Pure Python module to hyphenate text"
 category = "main"
 optional = false
@@ -1271,7 +1271,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "trove-classifiers"
-version = "2022.10.19"
+version = "2022.12.1"
 description = "Canonical source for classifiers on PyPI (pypi.org)."
 category = "dev"
 optional = false
@@ -1759,8 +1759,8 @@ isort = [
     {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.17.1-py3-none-any.whl", hash = "sha256:410ef23dcdbca4eaedc08b850079179883c2ed09378bd1f760d4af4aacfa28d7"},
-    {file = "jsonschema-4.17.1.tar.gz", hash = "sha256:05b2d22c83640cde0b7e0aa329ca7754fbd98ea66ad8ae24aa61328dfe057fa3"},
+    {file = "jsonschema-4.17.3-py3-none-any.whl", hash = "sha256:a870ad254da1a8ca84b6a2905cac29d265f805acc57af304784962a2aa6508f6"},
+    {file = "jsonschema-4.17.3.tar.gz", hash = "sha256:0f864437ab8b6076ba6707453ef8f98a6a0d512a80e93f8abdb676f737ecb60d"},
 ]
 jsonschema-gentypes = [
     {file = "jsonschema_gentypes-1.4.0-py3-none-any.whl", hash = "sha256:44d39905c4f4559096fdbeca4295921b1a90a155eb91178bb9052520995e1b4e"},
@@ -2216,8 +2216,8 @@ pygments = [
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
 ]
 pylint = [
-    {file = "pylint-2.15.6-py3-none-any.whl", hash = "sha256:15060cc22ed6830a4049cf40bc24977744df2e554d38da1b2657591de5bcd052"},
-    {file = "pylint-2.15.6.tar.gz", hash = "sha256:25b13ddcf5af7d112cf96935e21806c1da60e676f952efb650130f2a4483421c"},
+    {file = "pylint-2.15.7-py3-none-any.whl", hash = "sha256:1d561d1d3e8be9dd880edc685162fbdaa0409c88b9b7400873c0cf345602e326"},
+    {file = "pylint-2.15.7.tar.gz", hash = "sha256:91e4776dbcb4b4d921a3e4b6fec669551107ba11f29d9199154a01622e460a57"},
 ]
 pylint-celery = [
     {file = "pylint-celery-0.3.tar.gz", hash = "sha256:41e32094e7408d15c044178ea828dd524beedbdbe6f83f712c5e35bde1de4beb"},
@@ -2245,8 +2245,8 @@ pyperclip = [
     {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
 ]
 pyphen = [
-    {file = "pyphen-0.13.1-py3-none-any.whl", hash = "sha256:03960a96a9141e5268064a476f2feb63fb556924b7119156c4d37a2c847ae277"},
-    {file = "pyphen-0.13.1.tar.gz", hash = "sha256:2892ada3e72b86fc4fc5172e2f1ad9e03929fab1aff0c0c77b35ab98d0fbf0fa"},
+    {file = "pyphen-0.13.2-py3-none-any.whl", hash = "sha256:e88cfb46aed61f4c7fe49592ff322e6266485fd2447c818a9123485cd92b7ef4"},
+    {file = "pyphen-0.13.2.tar.gz", hash = "sha256:847f57a043a58408f24670ae0184ff6edfb5fd5731743208228c028ddc514438"},
 ]
 pyroma = [
     {file = "pyroma-4.1-py3-none-any.whl", hash = "sha256:a7f87ee185c8cf262bd04ba4a28b2f1f503335a2698bbf9700a230e4fe339f9d"},
@@ -2555,8 +2555,8 @@ tomlkit = [
     {file = "tomlkit-0.11.6.tar.gz", hash = "sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73"},
 ]
 trove-classifiers = [
-    {file = "trove-classifiers-2022.10.19.tar.gz", hash = "sha256:3a58b43b5149a0e125037e7e875d35e4471435a6a5a5b7e6b68cbee7afd23739"},
-    {file = "trove_classifiers-2022.10.19-py3-none-any.whl", hash = "sha256:887261694f96a6af04a6d09566d4fd46b70edd5f1025b9ffc35cb4961218e8b0"},
+    {file = "trove-classifiers-2022.12.1.tar.gz", hash = "sha256:8eccd9c075038ef2ec73276e2422d0dbf4d632f9133f029632d0df35374caf77"},
+    {file = "trove_classifiers-2022.12.1-py3-none-any.whl", hash = "sha256:20ce6feeadd5793718b2106f0c832f821f29838aec792143e620b0a0a0a810b8"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
