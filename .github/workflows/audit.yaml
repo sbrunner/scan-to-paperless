@@ -31,5 +31,5 @@ jobs:
       - name: Audit
         run: ~/.venv/bin/c2cciutils-audit --branch=${{ matrix.branch }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
