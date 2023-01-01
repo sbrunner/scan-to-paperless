@@ -1,6 +1,6 @@
-c2cciutils[checks,publish]==1.4.0
+c2cciutils[checks,publish]==1.4.4
 jsonschema2md==0.4.0
-jsonschema-gentypes==1.4.0
+jsonschema-gentypes==1.4.1
 poetry==1.2.2
 poetry-core==1.4.0
 poetry-plugin-tweak-dependencies-version==1.1.0
