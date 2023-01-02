@@ -46,7 +46,7 @@ On the NAS:
 
 ## Install
 
-Scan-to-paperless requires a desktop and a server part, the tow part communicate throw the scan folder.
+Scan-to-paperless requires a desktop and a server part, the two parts communicate through the scan folder.
 
 The server part is where the document were processed, and the desktop part is
 from where we want we will scan the document, on witch one the scanner is connected.
