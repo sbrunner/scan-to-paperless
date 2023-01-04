@@ -92,6 +92,7 @@ jobs:
         if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
 
       - run: make build-all
 
@@ -101,3 +102,4 @@ jobs:
         if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
