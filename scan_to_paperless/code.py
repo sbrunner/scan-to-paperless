@@ -443,11 +443,8 @@ def add_codes(
                         can.setFillColorRGB(0, 0, 0)
                         can.setFont(font_name, font_size)
                         can.drawString(
-                            min((p[0] for p in code["geometry"])) / dpi * pdf_dpi + margin_left,
-                            min((p[1] for p in code["geometry"])) / dpi * pdf_dpi
-                            + font_size
-                            + 0
-                            + margin_top,
+                            min(p[0] for p in code["geometry"]) / dpi * pdf_dpi + margin_left,
+                            min(p[1] for p in code["geometry"]) / dpi * pdf_dpi + font_size + 0 + margin_top,
                             str(code["pos"]),
                         )
 

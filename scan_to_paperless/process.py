@@ -349,8 +349,7 @@ def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
     kwargs.setdefault("check", True)
     subprocess.run(  # nosec # pylint: disable=subprocess-run-check
         cmd,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+        capture_output=True,
         **kwargs,
     )
 
