@@ -9,6 +9,13 @@
   prConcurrentLimit: 0,
   lockFileMaintenance: { enabled: true, automerge: true, schedule: 'on the first day of the month' },
   baseBranches: ['master', 'test'],
+  'pre-commit': { enabled: true },
+  regexManagers: [
+    {
+      fileMatch: ['^.pre-commit-config.yaml'],
+      matchStrings: [" +- '?(?<depName>[^' @=]+)(@|==)(?<currentValue>[^' @=]+)'? # (?<datasource>.+)"],
+    },
+  ],
   packageRules: [
     /** Automerge the patch, the minor and the dev dependency */
     {
