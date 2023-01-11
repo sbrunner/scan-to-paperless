@@ -17,19 +17,19 @@ test = ["coverage", "flake8", "pexpect", "wheel"]
 
 [[package]]
 name = "astroid"
-version = "2.12.13"
+version = "2.13.2"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 files = [
-    {file = "astroid-2.12.13-py3-none-any.whl", hash = "sha256:10e0ad5f7b79c435179d0d0f0df69998c4eef4597534aae44910db060baeb907"},
-    {file = "astroid-2.12.13.tar.gz", hash = "sha256:1493fe8bd3dfd73dc35bd53c9d5b6e49ead98497c47b2307662556a5692d29d7"},
+    {file = "astroid-2.13.2-py3-none-any.whl", hash = "sha256:8f6a8d40c4ad161d6fc419545ae4b2f275ed86d1c989c97825772120842ee0d2"},
+    {file = "astroid-2.13.2.tar.gz", hash = "sha256:3bc7834720e1a24ca797fd785d77efb14f7a28ee8e635ef040b6e2d80ccb3303"},
 ]
 
 [package.dependencies]
 lazy-object-proxy = ">=1.4.0"
-typing-extensions = {version = ">=3.10", markers = "python_version < \"3.10\""}
+typing-extensions = ">=4.0.0"
 wrapt = {version = ">=1.11,<2", markers = "python_version < \"3.11\""}
 
 [[package]]
@@ -729,14 +729,14 @@ files = [
 
 [[package]]
 name = "imageio"
-version = "2.23.0"
+version = "2.24.0"
 description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "imageio-2.23.0-py3-none-any.whl", hash = "sha256:3f937396c2f341a7d7600a99cd14727cc90002f850fd136cf65fad79c2ff44a0"},
-    {file = "imageio-2.23.0.tar.gz", hash = "sha256:cb635709765e527c94890b4fbb6870e59213fe182a1c8086d167eb3626073cbd"},
+    {file = "imageio-2.24.0-py3-none-any.whl", hash = "sha256:c4ccd0293a1aeb566c7fa04260d51897be064b8fb287a77548ce42050ec06d7a"},
+    {file = "imageio-2.24.0.tar.gz", hash = "sha256:f240f8229f4f329a1546281194b52da5d6694141a524668fed3f81b0d07782fa"},
 ]
 
 [package.dependencies]
@@ -748,10 +748,10 @@ all-plugins = ["astropy", "av", "imageio-ffmpeg", "opencv-python", "psutil", "ti
 all-plugins-pypy = ["av", "imageio-ffmpeg", "psutil", "tifffile"]
 build = ["wheel"]
 dev = ["black", "flake8", "fsspec[github]", "invoke", "pytest", "pytest-cov"]
-docs = ["numpydoc", "pydata-sphinx-theme", "sphinx"]
+docs = ["numpydoc", "pydata-sphinx-theme", "sphinx (<6)"]
 ffmpeg = ["imageio-ffmpeg", "psutil"]
 fits = ["astropy"]
-full = ["astropy", "av", "black", "flake8", "fsspec[github]", "gdal", "imageio-ffmpeg", "invoke", "itk", "numpydoc", "opencv-python", "psutil", "pydata-sphinx-theme", "pytest", "pytest-cov", "sphinx", "tifffile", "wheel"]
+full = ["astropy", "av", "black", "flake8", "fsspec[github]", "gdal", "imageio-ffmpeg", "invoke", "itk", "numpydoc", "opencv-python", "psutil", "pydata-sphinx-theme", "pytest", "pytest-cov", "sphinx (<6)", "tifffile", "wheel"]
 gdal = ["gdal"]
 itk = ["itk"]
 linting = ["black", "flake8"]
@@ -781,14 +781,14 @@ testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-chec
 
 [[package]]
 name = "iniconfig"
-version = "1.1.1"
-description = "iniconfig: brain-dead simple config-ini parsing"
+version = "2.0.0"
+description = "brain-dead simple config-ini parsing"
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 files = [
-    {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
-    {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
+    {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
+    {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
 ]
 
 [[package]]
@@ -933,31 +933,48 @@ files = [
 
 [[package]]
 name = "lazy-object-proxy"
-version = "1.8.0"
+version = "1.9.0"
 description = "A fast and thorough lazy object proxy."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "lazy-object-proxy-1.8.0.tar.gz", hash = "sha256:c219a00245af0f6fa4e95901ed28044544f50152840c5b6a3e7b2568db34d156"},
-    {file = "lazy_object_proxy-1.8.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:4fd031589121ad46e293629b39604031d354043bb5cdf83da4e93c2d7f3389fe"},
-    {file = "lazy_object_proxy-1.8.0-cp310-cp310-win32.whl", hash = "sha256:b70d6e7a332eb0217e7872a73926ad4fdc14f846e85ad6749ad111084e76df25"},
-    {file = "lazy_object_proxy-1.8.0-cp310-cp310-win_amd64.whl", hash = "sha256:eb329f8d8145379bf5dbe722182410fe8863d186e51bf034d2075eb8d85ee25b"},
-    {file = "lazy_object_proxy-1.8.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4e2d9f764f1befd8bdc97673261b8bb888764dfdbd7a4d8f55e4fbcabb8c3fb7"},
-    {file = "lazy_object_proxy-1.8.0-cp311-cp311-win32.whl", hash = "sha256:e20bfa6db17a39c706d24f82df8352488d2943a3b7ce7d4c22579cb89ca8896e"},
-    {file = "lazy_object_proxy-1.8.0-cp311-cp311-win_amd64.whl", hash = "sha256:14010b49a2f56ec4943b6cf925f597b534ee2fe1f0738c84b3bce0c1a11ff10d"},
-    {file = "lazy_object_proxy-1.8.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:6850e4aeca6d0df35bb06e05c8b934ff7c533734eb51d0ceb2d63696f1e6030c"},
-    {file = "lazy_object_proxy-1.8.0-cp37-cp37m-win32.whl", hash = "sha256:5b51d6f3bfeb289dfd4e95de2ecd464cd51982fe6f00e2be1d0bf94864d58acd"},
-    {file = "lazy_object_proxy-1.8.0-cp37-cp37m-win_amd64.whl", hash = "sha256:6f593f26c470a379cf7f5bc6db6b5f1722353e7bf937b8d0d0b3fba911998858"},
-    {file = "lazy_object_proxy-1.8.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:0c1c7c0433154bb7c54185714c6929acc0ba04ee1b167314a779b9025517eada"},
-    {file = "lazy_object_proxy-1.8.0-cp38-cp38-win32.whl", hash = "sha256:d176f392dbbdaacccf15919c77f526edf11a34aece58b55ab58539807b85436f"},
-    {file = "lazy_object_proxy-1.8.0-cp38-cp38-win_amd64.whl", hash = "sha256:afcaa24e48bb23b3be31e329deb3f1858f1f1df86aea3d70cb5c8578bfe5261c"},
-    {file = "lazy_object_proxy-1.8.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:71d9ae8a82203511a6f60ca5a1b9f8ad201cac0fc75038b2dc5fa519589c9288"},
-    {file = "lazy_object_proxy-1.8.0-cp39-cp39-win32.whl", hash = "sha256:8f6ce2118a90efa7f62dd38c7dbfffd42f468b180287b748626293bf12ed468f"},
-    {file = "lazy_object_proxy-1.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:eac3a9a5ef13b332c059772fd40b4b1c3d45a3a2b05e33a361dee48e54a4dad0"},
-    {file = "lazy_object_proxy-1.8.0-pp37-pypy37_pp73-any.whl", hash = "sha256:ae032743794fba4d171b5b67310d69176287b5bf82a21f588282406a79498891"},
-    {file = "lazy_object_proxy-1.8.0-pp38-pypy38_pp73-any.whl", hash = "sha256:7e1561626c49cb394268edd00501b289053a652ed762c58e1081224c8d881cec"},
-    {file = "lazy_object_proxy-1.8.0-pp39-pypy39_pp73-any.whl", hash = "sha256:ce58b2b3734c73e68f0e30e4e725264d4d6be95818ec0a0be4bb6bf9a7e79aa8"},
+    {file = "lazy-object-proxy-1.9.0.tar.gz", hash = "sha256:659fb5809fa4629b8a1ac5106f669cfc7bef26fbb389dda53b3e010d1ac4ebae"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b40387277b0ed2d0602b8293b94d7257e17d1479e257b4de114ea11a8cb7f2d7"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e8c6cfb338b133fbdbc5cfaa10fe3c6aeea827db80c978dbd13bc9dd8526b7d4"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:721532711daa7db0d8b779b0bb0318fa87af1c10d7fe5e52ef30f8eff254d0cd"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:66a3de4a3ec06cd8af3f61b8e1ec67614fbb7c995d02fa224813cb7afefee701"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:1aa3de4088c89a1b69f8ec0dcc169aa725b0ff017899ac568fe44ddc1396df46"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-win32.whl", hash = "sha256:f0705c376533ed2a9e5e97aacdbfe04cecd71e0aa84c7c0595d02ef93b6e4455"},
+    {file = "lazy_object_proxy-1.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:ea806fd4c37bf7e7ad82537b0757999264d5f70c45468447bb2b91afdbe73a6e"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:946d27deaff6cf8452ed0dba83ba38839a87f4f7a9732e8f9fd4107b21e6ff07"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:79a31b086e7e68b24b99b23d57723ef7e2c6d81ed21007b6281ebcd1688acb0a"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f699ac1c768270c9e384e4cbd268d6e67aebcfae6cd623b4d7c3bfde5a35db59"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:bfb38f9ffb53b942f2b5954e0f610f1e721ccebe9cce9025a38c8ccf4a5183a4"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:189bbd5d41ae7a498397287c408617fe5c48633e7755287b21d741f7db2706a9"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-win32.whl", hash = "sha256:81fc4d08b062b535d95c9ea70dbe8a335c45c04029878e62d744bdced5141586"},
+    {file = "lazy_object_proxy-1.9.0-cp311-cp311-win_amd64.whl", hash = "sha256:f2457189d8257dd41ae9b434ba33298aec198e30adf2dcdaaa3a28b9994f6adb"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:d9e25ef10a39e8afe59a5c348a4dbf29b4868ab76269f81ce1674494e2565a6e"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cbf9b082426036e19c6924a9ce90c740a9861e2bdc27a4834fd0a910742ac1e8"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9f5fa4a61ce2438267163891961cfd5e32ec97a2c444e5b842d574251ade27d2"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-musllinux_1_1_aarch64.whl", hash = "sha256:8fa02eaab317b1e9e03f69aab1f91e120e7899b392c4fc19807a8278a07a97e8"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:e7c21c95cae3c05c14aafffe2865bbd5e377cfc1348c4f7751d9dc9a48ca4bda"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-win32.whl", hash = "sha256:f12ad7126ae0c98d601a7ee504c1122bcef553d1d5e0c3bfa77b16b3968d2734"},
+    {file = "lazy_object_proxy-1.9.0-cp37-cp37m-win_amd64.whl", hash = "sha256:edd20c5a55acb67c7ed471fa2b5fb66cb17f61430b7a6b9c3b4a1e40293b1671"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:2d0daa332786cf3bb49e10dc6a17a52f6a8f9601b4cf5c295a4f85854d61de63"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9cd077f3d04a58e83d04b20e334f678c2b0ff9879b9375ed107d5d07ff160171"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:660c94ea760b3ce47d1855a30984c78327500493d396eac4dfd8bd82041b22be"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:212774e4dfa851e74d393a2370871e174d7ff0ebc980907723bb67d25c8a7c30"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:f0117049dd1d5635bbff65444496c90e0baa48ea405125c088e93d9cf4525b11"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-win32.whl", hash = "sha256:0a891e4e41b54fd5b8313b96399f8b0e173bbbfc03c7631f01efbe29bb0bcf82"},
+    {file = "lazy_object_proxy-1.9.0-cp38-cp38-win_amd64.whl", hash = "sha256:9990d8e71b9f6488e91ad25f322898c136b008d87bf852ff65391b004da5e17b"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:9e7551208b2aded9c1447453ee366f1c4070602b3d932ace044715d89666899b"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5f83ac4d83ef0ab017683d715ed356e30dd48a93746309c8f3517e1287523ef4"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7322c3d6f1766d4ef1e51a465f47955f1e8123caee67dd641e67d539a534d006"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:18b78ec83edbbeb69efdc0e9c1cb41a3b1b1ed11ddd8ded602464c3fc6020494"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:09763491ce220c0299688940f8dc2c5d05fd1f45af1e42e636b2e8b2303e4382"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-win32.whl", hash = "sha256:9090d8e53235aa280fc9239a86ae3ea8ac58eff66a705fa6aa2ec4968b95c821"},
+    {file = "lazy_object_proxy-1.9.0-cp39-cp39-win_amd64.whl", hash = "sha256:db1c1722726f47e10e0b5fdbf15ac3b8adb58c091d12b3ab713965795036985f"},
 ]
 
 [[package]]
@@ -1192,21 +1209,21 @@ files = [
 
 [[package]]
 name = "networkx"
-version = "2.8.8"
+version = "3.0"
 description = "Python package for creating and manipulating graphs and networks"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "networkx-2.8.8-py3-none-any.whl", hash = "sha256:e435dfa75b1d7195c7b8378c3859f0445cd88c6b0375c181ed66823a9ceb7524"},
-    {file = "networkx-2.8.8.tar.gz", hash = "sha256:230d388117af870fce5647a3c52401fcf753e94720e6ea6b4197a5355648885e"},
+    {file = "networkx-3.0-py3-none-any.whl", hash = "sha256:58058d66b1818043527244fab9d41a51fcd7dcc271748015f3c181b8a90c8e2e"},
+    {file = "networkx-3.0.tar.gz", hash = "sha256:9a9992345353618ae98339c2b63d8201c381c2944f38a2ab49cb45a4c667e412"},
 ]
 
 [package.extras]
-default = ["matplotlib (>=3.4)", "numpy (>=1.19)", "pandas (>=1.3)", "scipy (>=1.8)"]
-developer = ["mypy (>=0.982)", "pre-commit (>=2.20)"]
-doc = ["nb2plots (>=0.6)", "numpydoc (>=1.5)", "pillow (>=9.2)", "pydata-sphinx-theme (>=0.11)", "sphinx (>=5.2)", "sphinx-gallery (>=0.11)", "texext (>=0.6.6)"]
-extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.9)", "sympy (>=1.10)"]
+default = ["matplotlib (>=3.4)", "numpy (>=1.20)", "pandas (>=1.3)", "scipy (>=1.8)"]
+developer = ["mypy (>=0.991)", "pre-commit (>=2.20)"]
+doc = ["nb2plots (>=0.6)", "numpydoc (>=1.5)", "pillow (>=9.2)", "pydata-sphinx-theme (>=0.11)", "sphinx (==5.2.3)", "sphinx-gallery (>=0.11)", "texext (>=0.6.7)"]
+extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.10)", "sympy (>=1.10)"]
 test = ["codecov (>=2.1)", "pytest (>=7.2)", "pytest-cov (>=4.0)"]
 
 [[package]]
@@ -1291,14 +1308,14 @@ pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "pbr"
-version = "5.11.0"
+version = "5.11.1"
 description = "Python Build Reasonableness"
 category = "dev"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "pbr-5.11.0-py2.py3-none-any.whl", hash = "sha256:db2317ff07c84c4c63648c9064a79fe9d9f5c7ce85a9099d4b6258b3db83225a"},
-    {file = "pbr-5.11.0.tar.gz", hash = "sha256:b97bc6695b2aff02144133c2e7399d5885223d42b7912ffaec2ca3898e673bfe"},
+    {file = "pbr-5.11.1-py2.py3-none-any.whl", hash = "sha256:567f09558bae2b3ab53cb3c1e2e33e726ff3338e7bae3db5dc954b3a44eef12b"},
+    {file = "pbr-5.11.1.tar.gz", hash = "sha256:aefc51675b0b533d56bb5fd1c8c6c0522fe31896679882e1c4c63d5e4a0fccb3"},
 ]
 
 [[package]]
@@ -1611,21 +1628,21 @@ files = [
 
 [[package]]
 name = "pydocstyle"
-version = "6.2.0"
+version = "6.2.3"
 description = "Python docstring style checker"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "pydocstyle-6.2.0-py3-none-any.whl", hash = "sha256:39573fa08919ac492b063724af39a1afdcfea8cdaa2c7b8018ca0dfff5d7e36f"},
-    {file = "pydocstyle-6.2.0.tar.gz", hash = "sha256:b2d280501a4c0d9feeb96e9171dc3f6f7d0064c55270f4c7b1baa18452019fd9"},
+    {file = "pydocstyle-6.2.3-py3-none-any.whl", hash = "sha256:a04ed1e6fe0be0970eddbb1681a7ab59b11eb92729fdb4b9b24f0eb11a25629e"},
+    {file = "pydocstyle-6.2.3.tar.gz", hash = "sha256:d867acad25e48471f2ad8a40ef9813125e954ad675202245ca836cb6e28b2297"},
 ]
 
 [package.dependencies]
 snowballstemmer = ">=2.2.0"
 
 [package.extras]
-toml = ["toml (>=0.10.2)"]
+toml = ["tomli (>=1.2.3)"]
 
 [[package]]
 name = "pydyf"
@@ -1672,20 +1689,20 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pylint"
-version = "2.15.6"
+version = "2.15.10"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 files = [
-    {file = "pylint-2.15.6-py3-none-any.whl", hash = "sha256:15060cc22ed6830a4049cf40bc24977744df2e554d38da1b2657591de5bcd052"},
-    {file = "pylint-2.15.6.tar.gz", hash = "sha256:25b13ddcf5af7d112cf96935e21806c1da60e676f952efb650130f2a4483421c"},
+    {file = "pylint-2.15.10-py3-none-any.whl", hash = "sha256:9df0d07e8948a1c3ffa3b6e2d7e6e63d9fb457c5da5b961ed63106594780cc7e"},
+    {file = "pylint-2.15.10.tar.gz", hash = "sha256:b3dc5ef7d33858f297ac0d06cc73862f01e4f2e74025ec3eff347ce0bc60baf5"},
 ]
 
 [package.dependencies]
-astroid = ">=2.12.12,<=2.14.0-dev0"
+astroid = ">=2.12.13,<=2.14.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
-dill = ">=0.2"
+dill = {version = ">=0.2", markers = "python_version < \"3.11\""}
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
@@ -2489,14 +2506,14 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "1.26.13"
+version = "1.26.14"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 files = [
-    {file = "urllib3-1.26.13-py2.py3-none-any.whl", hash = "sha256:47cc05d99aaa09c9e72ed5809b60e7ba354e64b59c9c173ac3018642d8bb41fc"},
-    {file = "urllib3-1.26.13.tar.gz", hash = "sha256:c083dd0dce68dbfbe1129d5271cb90f9447dea7d52097c6e0126120c521ddea8"},
+    {file = "urllib3-1.26.14-py2.py3-none-any.whl", hash = "sha256:75edcdc2f7d85b137124a6c3c9fc3933cdeaa12ecb9a6a959f22797a0feca7e1"},
+    {file = "urllib3-1.26.14.tar.gz", hash = "sha256:076907bf8fd355cde77728471316625a4d2f7e713c125f51953bb5b3eecf4f72"},
 ]
 
 [package.extras]
