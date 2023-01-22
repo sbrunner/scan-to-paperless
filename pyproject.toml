@@ -20,6 +20,7 @@ version = "0.0.0"
 description = "Tool to scan and process documents to paperless"
 readme = "README.md"
 keywords = ["scan", "paperless"]
+license = "BSD-2-Clause"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
