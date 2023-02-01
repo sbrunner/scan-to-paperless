@@ -56,12 +56,12 @@ pyzbar = "0.1.9"
 reportlab = "3.6.12"
 weasyprint = "56.1"
 cffi = "1.15.1"
-pikepdf = "6.2.7"
+pikepdf = "6.2.9"
 zxing-cpp = "1.4.0"
 pyperclip = "1.8.2"
 tifffile = "2022.8.12"
 deepmerge = "1.0.1"
-matplotlib = "3.6.2"
+matplotlib = "3.6.3"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.7.7", extras = ["with_bandit", "with_mypy", "with_pyroma"] }

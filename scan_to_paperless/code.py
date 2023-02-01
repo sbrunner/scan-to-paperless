@@ -112,7 +112,6 @@ def _get_bar_codes_with_open_cv(
     all_codes: Optional[List[_Code]] = None,
     added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
-
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
@@ -171,7 +170,6 @@ def _get_qr_codes_with_open_cv(
     all_codes: Optional[List[_Code]] = None,
     added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
-
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
@@ -330,7 +328,6 @@ def _get_codes_with_z_bar(
     all_codes: Optional[List[_Code]] = None,
     added_codes: Optional[Dict[str, _AllCodes]] = None,
 ) -> List[_PageCode]:
-
     if added_codes is None:
         added_codes = {}
     if all_codes is None:

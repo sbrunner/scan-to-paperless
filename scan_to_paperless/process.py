@@ -538,7 +538,6 @@ def _histogram(
     process_count: int,
     log: bool,
 ) -> None:
-
     _, axes = plt.subplots(figsize=(15, 5))
     axes.set_xlim(0, 255)
 
