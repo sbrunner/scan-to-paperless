@@ -31,7 +31,6 @@ def get_config(config_filename: str) -> schema.Configuration:
         with open(config_filename, encoding="utf-8") as config_file:
             config = cast(schema.Configuration, yaml.load(config_file))
             if "extends" in config:
-
                 base_config = get_config(
                     os.path.normpath(
                         os.path.join(os.path.dirname(config_filename), os.path.expanduser(config["extends"]))
