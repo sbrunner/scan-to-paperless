@@ -1,0 +1,17 @@
+ci:
+  skip:
+    - copyright
+
+repos:
+  - repo: https://github.com/sbrunner/pre-commit-copyright
+    rev: 0.2.3
+    hooks:
+      - id: copyright
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
