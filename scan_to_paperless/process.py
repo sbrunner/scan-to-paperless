@@ -45,6 +45,10 @@ CONVERT = ["gm", "convert"]
 _LOG = logging.getLogger(__name__)
 
 
+class ScanToPaperlessException(Exception):
+    """Base exception for this module."""
+
+
 def rotate_image(
     image: NpNdarrayInt, angle: float, background: Union[int, Tuple[int, int, int]]
 ) -> NpNdarrayInt:
@@ -232,7 +236,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def get_masked(self) -> NpNdarrayInt:
         """Get the mask."""
         if self.image is None:
-            raise Exception("The image is None")
+            raise ScanToPaperlessException("The image is None")
         if self.mask is None:
             return self.image.copy()
 
@@ -243,7 +247,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def crop(self, x: int, y: int, width: int, height: int) -> None:
         """Crop the image."""
         if self.image is None:
-            raise Exception("The image is None")
+            raise ScanToPaperlessException("The image is None")
         self.image = crop_image(self.image, x, y, width, height, self.get_background_color())
         if self.mask is not None:
             self.mask = crop_image(self.mask, x, y, width, height, (0,))
@@ -251,7 +255,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def rotate(self, angle: float) -> None:
         """Rotate the image."""
         if self.image is None:
-            raise Exception("The image is None")
+            raise ScanToPaperlessException("The image is None")
         self.image = rotate_image(self.image, angle, self.get_background_color())
         if self.mask is not None:
             self.mask = rotate_image(self.mask, angle, 0)
@@ -319,7 +323,7 @@ def add_intermediate_error(
 ) -> None:
     """Add in the config non fatal error."""
     if config_file_name is None:
-        raise Exception("The config file name is required")
+        raise ScanToPaperlessException("The config file name is required") from error
     if "intermediate_error" not in config:
         config["intermediate_error"] = []
 
@@ -698,7 +702,7 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     if context.config["args"].setdefault("sharpen", schema.SHARPEN_DEFAULT) is False:
         return None
     if context.image is None:
-        raise Exception("The image is required")
+        raise ScanToPaperlessException("The image is required")
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
     return cast(NpNdarrayInt, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
 
@@ -1026,7 +1030,7 @@ def transform(
         image_name = f"{os.path.basename(image).rsplit('.')[0]}.png"
         context = Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
-            raise Exception("Image name is required")
+            raise ScanToPaperlessException("Image name is required")
         context.image = cv2.imread(os.path.join(root_folder, image))
         images_config = context.config.setdefault("images_config", {})
         image_config = images_config.setdefault(context.image_name, {})
@@ -1326,7 +1330,7 @@ def split(
                     nb_horizontal += 1
 
             if nb_vertical * nb_horizontal != len(assisted_split["destinations"]):
-                raise Exception(
+                raise ScanToPaperlessException(
                     f"Wrong number of destinations ({len(assisted_split['destinations'])}), "
                     f"vertical: {nb_horizontal}, height: {nb_vertical}, image: '{assisted_split['source']}'"
                 )
@@ -1422,7 +1426,7 @@ def split(
         items: List[Item] = append[page_number]
         vertical = len(horizontal_limits) == 0
         if not vertical and len(vertical_limits) != 0 and len(items) > 1:
-            raise Exception(f"Mix of limit type for page '{page_number}'")
+            raise ScanToPaperlessException(f"Mix of limit type for page '{page_number}'")
 
         with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
             call(
