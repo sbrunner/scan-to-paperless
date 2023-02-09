@@ -32,14 +32,23 @@ jobs:
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: "pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}\npre-commit-"
+      - run: pre-commit run --all-files
       - name: Checks
         run: c2cciutils-checks
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: GitHub event
         run: echo ${GITHUB_EVENT} | python3 -m json.tool
         env:
           GITHUB_EVENT: ${{ toJson(github) }}
 
-        # the if the generated files are up to date
+          # the if the generated files are up to date
       - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
@@ -87,6 +96,9 @@ jobs:
       - name: Publish
         run: c2cciutils-publish
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
 
       - run: make build-all
 
@@ -94,3 +106,6 @@ jobs:
         run: |
           c2cciutils-publish --group=docker-all
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}

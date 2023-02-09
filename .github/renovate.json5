@@ -1,13 +1,25 @@
 {
   extends: ['config:base'],
   timezone: 'Europe/Zurich',
-  schedule: 'after 1am on Saturday',
+  schedule: 'after 5pm on the first day of the month',
   labels: ['dependencies'],
   separateMajorMinor: true,
   separateMinorPatch: true,
   prHourlyLimit: 0,
   prConcurrentLimit: 0,
-  lockFileMaintenance: { enabled: true, automerge: true },
+  lockFileMaintenance: {
+    enabled: true,
+    automerge: true,
+    schedule: 'after 5pm on the first day of the month',
+  },
+  baseBranches: ['master', 'test'],
+  'pre-commit': { enabled: true },
+  regexManagers: [
+    {
+      fileMatch: ['^.pre-commit-config.yaml'],
+      matchStrings: [" +- '?(?<depName>[^' @=]+)(@|==)(?<currentValue>[^' @=]+)'? # (?<datasource>.+)"],
+    },
+  ],
   packageRules: [
     /** Automerge the patch, the minor and the dev dependency */
     {
@@ -37,7 +49,8 @@
     },
     /** Group Poetry packages */
     {
-      matchPackageNames: ['poetry', 'poetry-core'],
+      matchPackageNames: ['poetry', 'pip'],
+      matchPackagePrefixes: ['poetry-'],
       groupName: 'Poetry',
       automerge: true,
       separateMajorMinor: false,
@@ -47,6 +60,12 @@
     {
       matchBaseBranches: ['master'],
       matchPackageNames: ['c2cciutils'],
+      enabled: false,
+    },
+    /** Accept only the patch on stabilization branches */
+    {
+      matchBaseBranches: ['master'],
+      matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
     },
   ],
