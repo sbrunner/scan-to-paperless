@@ -367,7 +367,7 @@ def add_codes(
 
     with open(input_filename, "rb") as input_file:
         existing_pdf = PdfReader(input_file)
-        metadata = {**existing_pdf.metadata}  # type: ignore
+        metadata = {**existing_pdf.metadata} if existing_pdf.metadata is not None else {}
         output_pdf = PdfWriter()
         for index, page in enumerate(existing_pdf.pages):
             _LOG.info("Processing page %s", index + 1)
