@@ -684,6 +684,17 @@ def deskew(context: Context) -> None:
     if angle:
         context.rotate(angle)
 
+        image_name_split = os.path.splitext(context.image_name)
+        sources = [img for img in context.config.get("images", []) if f"{image_name_split[0]}." in img]
+        if len(sources) == 1:
+            assert context.root_folder
+            image = rotate_image(cv2.imread(sources[0]), angle, context.get_background_color())
+            source_split = os.path.splitext(sources[0])
+            cv2.imwrite(
+                os.path.join(context.root_folder, source_split[0] + "-skew-corrected" + source_split[1]),
+                image,
+            )
+
 
 @Process("docrop")
 def docrop(context: Context) -> None:
