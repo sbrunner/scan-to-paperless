@@ -390,6 +390,7 @@ def test_full(progress):
         os.makedirs(root_folder)
     config = {
         "args": {"level": 15, "cut_white": 200},
+        "images": [os.path.join(os.path.dirname(__file__), "all-1.png")],
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
@@ -399,6 +400,9 @@ def test_full(progress):
         step["sources"][0],
         os.path.join(os.path.dirname(__file__), "all-1.expected.png"),
         generate_expected_image=REGENERATE,
+    )
+    assert os.path.exists(os.path.join(os.path.dirname(__file__), "all-1-skew-corrected.png")), os.listdir(
+        os.path.dirname(__file__)
     )
 
     if progress == "TRUE":
