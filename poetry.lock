@@ -2594,14 +2594,14 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "weasyprint"
-version = "57.2"
+version = "58.0"
 description = "The Awesome Document Factory"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "weasyprint-57.2-py3-none-any.whl", hash = "sha256:685692e7a2b4aec21010a61c1e8f1d6cd611dd46509fa7068fcca3c8e59a94f5"},
-    {file = "weasyprint-57.2.tar.gz", hash = "sha256:b8e9ef2dcbcfbc82e99215acfd68f947b2b5f1999b5b156db75fabe380ba7e9a"},
+    {file = "weasyprint-58.0-py3-none-any.whl", hash = "sha256:63f092bae12a2c8eac6975209510782bb0af2f562fc68efba78222f9386c3897"},
+    {file = "weasyprint-58.0.tar.gz", hash = "sha256:70f482cad8e53c2c3eae9cf86af412eb93405b16ac8781b519ea3326d475bd6f"},
 ]
 
 [package.dependencies]
@@ -2838,4 +2838,4 @@ numpy = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "18b8abd0d578a3f9cd0047cd37ff83fe7f01212db9bd1cad1a5c5573d4f9006a"
+content-hash = "f426e333b06ace49ffefd83b3af611c1d0e35b0856ed77a1df4273392287d57c"
