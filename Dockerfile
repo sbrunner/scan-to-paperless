@@ -24,16 +24,9 @@ RUN poetry export --output=requirements.txt \
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    apt-get install --assume-yes --no-install-recommends curl \
-    && curl https://notesalexp.org/debian/alexp_key.asc > alexp_key.asc
+    apt-get install --assume-yes --no-install-recommends curl
 
 FROM base-all as base-dist
-
-RUN --mount=type=bind,from=poetry,source=/tmp,target=/tmp2 \
-    . /etc/os-release \
-    && echo "deb https://notesalexp.org/tesseract-ocr5/${VERSION_CODENAME}/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/notesalexp.list \
-    && cp /tmp2/alexp_key.asc /tmp/alexp_key.asc \
-    && apt-key add /tmp/alexp_key.asc
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
