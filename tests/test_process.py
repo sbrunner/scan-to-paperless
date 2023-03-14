@@ -7,6 +7,8 @@ import subprocess
 import cv2
 import pikepdf
 import pytest
+import skimage.color
+import skimage.io
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 
 from scan_to_paperless import code, process
@@ -550,10 +552,15 @@ def test_qr_code(name):
             ],
             check=True,
         )
+
     for page in range(2):
-        check_image_file(
+        image = skimage.io.imread(f"/results/{name}-{page}.png")
+        if len(image.shape) == 2:
+            image = skimage.color.gray2rgb(image)
+
+        check_image(
             root_folder,
-            f"/results/{name}-{page}.png",
+            image,
             os.path.join(os.path.dirname(__file__), f"{name}-{page}.expected.png"),
             generate_expected_image=REGENERATE,
         )
@@ -631,9 +638,13 @@ def test_multi_code():
             check=True,
         )
     for page in range(3):
-        check_image_file(
+        image = skimage.io.imread(f"/results/qrbill-multi-{page}.png")
+        if len(image.shape) == 2:
+            image = skimage.color.gray2rgb(image)
+
+        check_image(
             root_folder,
-            f"/results/qrbill-multi-{page}.png",
+            image,
             os.path.join(os.path.dirname(__file__), f"qrbill-multi-{page}.expected.png"),
             generate_expected_image=REGENERATE,
         )
