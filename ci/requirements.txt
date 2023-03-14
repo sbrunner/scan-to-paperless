@@ -1,4 +1,4 @@
-c2cciutils[checks,publish]==1.5.0
+c2cciutils[checks,publish]==1.5.1
 jsonschema2md==0.4.0
 jsonschema-gentypes==1.4.1
 poetry==1.4.0
