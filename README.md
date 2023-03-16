@@ -257,3 +257,12 @@ Environment variable:
 - `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.
 - `TIME`: Print the elapsed time.
 - `PROGRESS`: Save some intermediate files, don't clean the folder at the end.
+
+## Contributing
+
+Install the pre-commit hooks:
+
+```bash
+pip install pre-commit
+pre-commit install --allow-missing-config
+```
