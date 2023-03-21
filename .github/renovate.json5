@@ -14,6 +14,11 @@
   },
   baseBranches: ['master', 'test'],
   'pre-commit': { enabled: true },
+  osvVulnerabilityAlerts: true,
+  vulnerabilityAlerts: {
+    schedule: ['at any time'],
+    automerge: true,
+  },
   regexManagers: [
     {
       fileMatch: ['^.pre-commit-config.yaml$'],
