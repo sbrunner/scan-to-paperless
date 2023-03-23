@@ -6,7 +6,7 @@ on:
 
 jobs:
   rebuild:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Rebuild
     timeout-minutes: 50
 
@@ -32,7 +32,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-        # the if the generated files are up to date
+          # the if the generated files are up to date
       - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
