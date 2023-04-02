@@ -1,5 +1,7 @@
 from typing import Dict, List, TypedDict, Union
 
+from typing_extensions import Required
+
 APPEND_CREDIT_CARD_DEFAULT = False
 """Default value of the field path 'Arguments append_credit_card'"""
 
@@ -396,34 +398,10 @@ class Arguments(TypedDict, total=False):
     """
 
     auto_mask: "AutoMask"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     auto_cut: "AutoMask"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     deskew: "_ArgumentsDeskew"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     line_detection: "LineDetection"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     rule: "Rule"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 class AssistedSplit(TypedDict, total=False):
@@ -576,20 +554,15 @@ CUT_WHITE_DEFAULT = 255
 class Configuration(TypedDict, total=False):
     """Configuration."""
 
-    images: List[str]
+    images: Required[List[str]]
     """
     The images
 
-    required
+    Required property
     """
 
-    args: "Arguments"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-
-    required
-    """
+    args: Required["Arguments"]
+    """Required property"""
 
     progress: bool
     """
@@ -1150,10 +1123,6 @@ class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
     """The used angle to deskew, can be change, restart by deleting one of the generated images"""
 
     status: "_ConfigurationImagesConfigAdditionalpropertiesStatus"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=False):
