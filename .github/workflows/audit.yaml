@@ -21,6 +21,7 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
+          token: ${{ secrets.TOKEN }}
       - run: git config --global user.email "sbrunner@ci.org"
       - run: git config --global user.name "Snyk autofix"
 

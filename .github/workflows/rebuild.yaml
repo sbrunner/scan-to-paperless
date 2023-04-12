@@ -78,7 +78,7 @@ jobs:
         run: c2cciutils-publish --group=docker --type=rebuild --branch=${{ matrix.branch }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - run: make build-all
 
@@ -88,4 +88,4 @@ jobs:
         if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
