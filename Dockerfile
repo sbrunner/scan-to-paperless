@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base-all
+FROM ubuntu:kinetic as base-all
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
