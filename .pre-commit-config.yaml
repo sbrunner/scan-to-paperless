@@ -73,7 +73,11 @@ repos:
     rev: v0.1.5
     hooks:
       - id: ripsecrets
-        exclude: (^thepaperlessproject-paperless-webserver.json|thepaperlessproject-paperless-consumer.json)
+        exclude: |-
+          (?x)(
+            ^thepaperlessproject-paperless-webserver.json
+            |thepaperlessproject-paperless-consumer.json
+          )
   - repo: https://github.com/psf/black
     rev: 23.3.0
     hooks:
