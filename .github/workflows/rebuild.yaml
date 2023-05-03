@@ -15,7 +15,6 @@ jobs:
       matrix:
         branch:
           - test
-          - master
 
     steps:
       - run: docker system prune --all --force
