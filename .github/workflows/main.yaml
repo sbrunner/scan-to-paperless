@@ -86,11 +86,10 @@ jobs:
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
 
       - name: Init pypi
-        run: |
+        run: |-
           echo "[pypi]" > ~/.pypirc
           echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
           echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
-          pip install --user wheel twine
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - name: Init Git
