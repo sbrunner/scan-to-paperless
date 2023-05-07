@@ -117,15 +117,15 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libunwind: 1.3.2-2build2
   ubuntu_22_04/libwebp: 1.2.2-2
   ubuntu_22_04/libwmf: 0.2.12-5ubuntu1
-  ubuntu_22_04/libx11: 1.7.5-1
+  ubuntu_22_04/libx11: 2:1.7.5-1
   ubuntu_22_04/libxau: 1.0.9-1build5
   ubuntu_22_04/libxcb: 1.14-3ubuntu3
   ubuntu_22_04/libxcrypt: 4.4.27-1
   ubuntu_22_04/libxdmcp: 1.1.3-0ubuntu5
-  ubuntu_22_04/libxext: 1.3.4-1build1
+  ubuntu_22_04/libxext: 2:1.3.4-1build1
   ubuntu_22_04/libxml2: 2.9.13+dfsg-1ubuntu0.3
   ubuntu_22_04/libxmlb: 0.3.6-2build1
-  ubuntu_22_04/libxrender: 0.9.10-1build4
+  ubuntu_22_04/libxrender: 1:0.9.10-1build4
   ubuntu_22_04/libyaml: 0.2.2-1build2
   ubuntu_22_04/libzstd: 1.4.8+dfsg-3build1
   ubuntu_22_04/lsb: 11.1.0ubuntu4
@@ -326,15 +326,15 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libunwind: 1.3.2-2build2
   ubuntu_22_04/libwebp: 1.2.2-2
   ubuntu_22_04/libwmf: 0.2.12-5ubuntu1
-  ubuntu_22_04/libx11: 1.7.5-1
+  ubuntu_22_04/libx11: 2:1.7.5-1
   ubuntu_22_04/libxau: 1.0.9-1build5
   ubuntu_22_04/libxcb: 1.14-3ubuntu3
   ubuntu_22_04/libxcrypt: 4.4.27-1
   ubuntu_22_04/libxdmcp: 1.1.3-0ubuntu5
-  ubuntu_22_04/libxext: 1.3.4-1build1
+  ubuntu_22_04/libxext: 2:1.3.4-1build1
   ubuntu_22_04/libxml2: 2.9.13+dfsg-1ubuntu0.3
   ubuntu_22_04/libxmlb: 0.3.6-2build1
-  ubuntu_22_04/libxrender: 0.9.10-1build4
+  ubuntu_22_04/libxrender: 1:0.9.10-1build4
   ubuntu_22_04/libyaml: 0.2.2-1build2
   ubuntu_22_04/libzstd: 1.4.8+dfsg-3build1
   ubuntu_22_04/lsb: 11.1.0ubuntu4
