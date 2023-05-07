@@ -2,14 +2,6 @@ export DOCKER_BUILDKIT=1
 
 TAG = $(shell git describe --abbrev=0 --tags)
 
-.PHONY: jsonschema
-jsonschema:
-	ci/schema-copy
-	jsonschema2md scan_to_paperless/config_schema.json config.md
-	jsonschema2md scan_to_paperless/process_schema.json process.md
-	c2cciutils-checks --fix --check=prettier
-	jsonschema-gentypes
-
 .PHONY: build
 build:
 	docker build --build-arg=VERSION=${TAG}+$(shell git rev-list --count ${TAG}) --target=base --tag=sbrunner/scan-to-paperless .

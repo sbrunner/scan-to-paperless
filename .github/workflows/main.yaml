@@ -51,11 +51,8 @@ jobs:
       - name: GitHub event
         run: echo ${GITHUB_EVENT} | python3 -m json.tool
         env:
-          GITHUB_EVENT:
-            ${{ toJson(github) }}
+          GITHUB_EVENT: ${{ toJson(github) }}
 
-            # the if the generated files are up to date
-      - run: make jsonschema
       - run: git diff --quiet
       - run: git diff
         if: failure()

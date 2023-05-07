@@ -4,59 +4,59 @@
 
 - **`extends`** _(string)_: The configuration to extends.
 - **`merge_strategies`** _(object)_: The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies.
-  - **`list`** _(array)_: The merge strategy to use on list. Default: `['override']`.
+  - **`list`** _(array)_: The merge strategy to use on list. Default: `["override"]`.
     - **Items** _(string)_
-  - **`dict`** _(array)_: The merge strategy to use on dict. Default: `['merge']`.
+  - **`dict`** _(array)_: The merge strategy to use on dict. Default: `["merge"]`.
     - **Items** _(string)_
-  - **`fallback`** _(array)_: The fallback merge strategy. Default: `['override']`.
+  - **`fallback`** _(array)_: The fallback merge strategy. Default: `["override"]`.
     - **Items** _(string)_
-  - **`type_conflict`** _(array)_: The type_conflict merge strategy. Default: `['override']`.
+  - **`type_conflict`** _(array)_: The type_conflict merge strategy. Default: `["override"]`.
     - **Items** _(string)_
 - **`scan_folder`** _(string)_: This should be shared with the process container in 'source'.
-- **`scanimage`** _(string)_: The scanimage command. Default: `scanimage`.
-- **`scanimage_arguments`** _(array)_: The scanimage arguments. Default: `['--format=png', '--mode=color', '--resolution=300']`.
+- **`scanimage`** _(string)_: The scanimage command. Default: `"scanimage"`.
+- **`scanimage_arguments`** _(array)_: The scanimage arguments. Default: `["--format=png", "--mode=color", "--resolution=300"]`.
   - **Items** _(string)_
-- **`extension`** _(string)_: The extension of generate image (png or tiff). Default: `png`.
-- **`default_args`**: Refer to _#/definitions/args_.
-- **`viewer`** _(string)_: The command used to start the viewer. Default: `eog`.
-- **`modes`** _(object)_: Customize the modes. Can contain additional properties. Default: `{'adf': {'scanimage_arguments': ['--source=ADF']}, 'double': {'scanimage_arguments': ['--source=ADF'], 'auto_bash': True, 'rotate_even': True}, 'multi': {'scanimage_arguments': ['--batch-prompt']}, 'one': {'scanimage_arguments': ['--batch-count=1']}}`.
+- **`extension`** _(string)_: The extension of generate image (png or tiff). Default: `"png"`.
+- **`default_args`**: Refer to _[#/definitions/args](#definitions/args)_.
+- **`viewer`** _(string)_: The command used to start the viewer. Default: `"eog"`.
+- **`modes`** _(object)_: Customize the modes. Can contain additional properties. Default: `{"adf": {"scanimage_arguments": ["--source=ADF"]}, "double": {"scanimage_arguments": ["--source=ADF"], "auto_bash": true, "rotate_even": true}, "multi": {"scanimage_arguments": ["--batch-prompt"]}, "one": {"scanimage_arguments": ["--batch-count=1"]}}`.
   - **Additional Properties** _(object)_
     - **`scanimage_arguments`** _(array)_: Additional scanimage arguments.
       - **Items** _(string)_
-    - **`auto_bash`** _(boolean)_: Run the ADF in tow step odd and even, needed for scanner that don't support double face. Default: `False`.
-    - **`rotate_even`** _(boolean)_: Rotate the even pages, to use in conjunction with auto_bash. Default: `False`.
+    - **`auto_bash`** _(boolean)_: Run the ADF in tow step odd and even, needed for scanner that don't support double face. Default: `false`.
+    - **`rotate_even`** _(boolean)_: Rotate the even pages, to use in conjunction with auto_bash. Default: `false`.
 
 ## Definitions
 
-- **`auto_mask`** _(object)_
+- <a id="definitions/auto_mask"></a>**`auto_mask`** _(object)_
   - **`lower_hsv_color`** _(array)_: The lower color in HSV representation. Default: `[0, 0, 250]`.
     - **Items** _(integer)_
   - **`upper_hsv_color`** _(array)_: The upper color in HSV representation. Default: `[255, 10, 255]`.
     - **Items** _(integer)_
-  - **`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `True`.
-  - **`inverse_mask`** _(boolean)_: Inverse the mask. Default: `False`.
+  - **`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `true`.
+  - **`inverse_mask`** _(boolean)_: Inverse the mask. Default: `false`.
   - **`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `1000`.
   - **`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
   - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
   - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
   - **`additional_filename`** _(string)_: An image file used to add on the mask.
-- **`args`** _(object)_: Cannot contain additional properties.
-  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `False`.
-  - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `False`.
+- <a id="definitions/args"></a>**`args`** _(object)_: Cannot contain additional properties.
+  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
+  - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `false`.
   - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `0`.
   - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `100`.
   - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `255`.
   - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
-  - **`no_crop`** _(boolean)_: Don't do any crop. Default: `False`.
+  - **`no_crop`** _(boolean)_: Don't do any crop. Default: `false`.
   - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
   - **`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
   - **`dpi`** _(number)_: The DPI used to convert the mm to pixel. Default: `300`.
-  - **`sharpen`** _(boolean)_: Do the sharpen. Default: `False`.
-  - **`dither`** _(boolean)_: Do the dither. Default: `False`.
-  - **`tesseract`** _(boolean)_: Use tesseract to to an OCR on the document. Default: `True`.
-  - **`tesseract_lang`** _(string)_: The used language for tesseract. Default: `fra+eng`.
-  - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `False`.
-  - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `False`.
+  - **`sharpen`** _(boolean)_: Do the sharpen. Default: `false`.
+  - **`dither`** _(boolean)_: Do the dither. Default: `false`.
+  - **`tesseract`** _(boolean)_: Use tesseract to to an OCR on the document. Default: `true`.
+  - **`tesseract_lang`** _(string)_: The used language for tesseract. Default: `"fra+eng"`.
+  - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `false`.
+  - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `false`.
   - **`min_box_size_crop`** _(number)_: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
   - **`min_box_black_crop`** _(number)_: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
   - **`contour_kernel_size_crop`** _(number)_: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.
@@ -73,26 +73,26 @@
   - **`threshold_block_size_limit`** _(number)_: The block size used in a box on threshold for content find the limits based on content [mm]. Default: `1.5`.
   - **`threshold_value_c_limit`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content. Default: `70`.
   - **`colors`** _(integer)_: The number of colors in the png. Default: `0`.
-  - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `True`.
-  - **`run_pngquant`** _(boolean)_: Run the pngquant optimizer. Default: `False`.
-  - **`pngquant_options`** _(array)_: The pngquant options. Default: `['--force', '--speed=1', '--strip', '--quality=0-32']`.
+  - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `true`.
+  - **`run_pngquant`** _(boolean)_: Run the pngquant optimizer. Default: `false`.
+  - **`pngquant_options`** _(array)_: The pngquant options. Default: `["--force", "--speed=1", "--strip", "--quality=0-32"]`.
     - **Items** _(string)_
-  - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `False`.
-  - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
-  - **`no_auto_rotate`** _(boolean)_: Run the auto rotate detected by Tesseract. Default: `False`.
-  - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.
+  - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `false`.
+  - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `false`.
+  - **`no_auto_rotate`** _(boolean)_: Run the auto rotate detected by Tesseract. Default: `false`.
+  - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `false`.
   - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.
   - **`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.
     - **Items** _(integer)_
-  - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Refer to _#/definitions/auto_mask_.
-  - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _#/definitions/auto_mask_.
+  - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+  - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
   - **`deskew`** _(object)_: The deskew configuration.
     - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
     - **`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `45`.
     - **`angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.
     - **`sigma`** _(number)_: Used in the `canny` function. Default: `3.0`.
     - **`num_peaks`** _(integer)_: number of peaks we ask for. Default: `20`.
-    - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `False`.
+    - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `false`.
   - **`line_detection`** _(object)_: The line detection used in assisted split.
     - **`low_threshold`** _(integer)_: The low threshold used in the Canny edge detector. Default: `0`.
     - **`high_threshold`** _(integer)_: The high threshold used in the Canny edge detector. Default: `1000`.
@@ -102,7 +102,7 @@
     - **`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
     - **`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.
   - **`rule`** _(object)_: Configuration of rule displayed in assisted split images.
-    - **`enable`** _(boolean)_: Default: `True`.
+    - **`enable`** _(boolean)_: Default: `true`.
     - **`minor_graduation_space`** _(integer)_: Default: `10`.
     - **`major_graduation_space`** _(integer)_: Default: `100`.
     - **`lines_space`** _(integer)_: Default: `100`.
@@ -113,7 +113,7 @@
     - **`lines_color`** _(array)_: Default: `[0, 0, 0]`.
       - **Items** _(integer)_
     - **`lines_opacity`** _(number)_: Default: `0.2`.
-    - **`graduation_text_font_filename`** _(string)_: Default: `/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf`.
+    - **`graduation_text_font_filename`** _(string)_: Default: `"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"`.
     - **`graduation_text_font_size`** _(number)_: Default: `17`.
     - **`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
       - **Items** _(integer)_
