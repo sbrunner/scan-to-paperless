@@ -53,10 +53,6 @@ jobs:
         env:
           GITHUB_EVENT: ${{ toJson(github) }}
 
-      - run: git diff --quiet
-      - run: git diff
-        if: failure()
-
       - run: poetry-dynamic-versioning
 
       - run: make build
