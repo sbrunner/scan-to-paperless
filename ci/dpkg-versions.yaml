@@ -44,7 +44,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/fontconfig: 2.13.1-4.2ubuntu5
   ubuntu_22_04/fonts-dejavu: 2.37-2build1
   ubuntu_22_04/fonts-urw-base35: 20200910-1
-  ubuntu_22_04/freetype: 2.11.1+dfsg-1ubuntu0.1
+  ubuntu_22_04/freetype: 2.11.1+dfsg-1ubuntu0.2
   ubuntu_22_04/fribidi: 1.0.8-2ubuntu3.1
   ubuntu_22_04/gcc-12: 12.1.0-2ubuntu1~22.04
   ubuntu_22_04/gdbm: 1.23-1
@@ -253,7 +253,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/fontconfig: 2.13.1-4.2ubuntu5
   ubuntu_22_04/fonts-dejavu: 2.37-2build1
   ubuntu_22_04/fonts-urw-base35: 20200910-1
-  ubuntu_22_04/freetype: 2.11.1+dfsg-1ubuntu0.1
+  ubuntu_22_04/freetype: 2.11.1+dfsg-1ubuntu0.2
   ubuntu_22_04/fribidi: 1.0.8-2ubuntu3.1
   ubuntu_22_04/gcc-12: 12.1.0-2ubuntu1~22.04
   ubuntu_22_04/gdbm: 1.23-1
