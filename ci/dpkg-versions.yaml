@@ -75,7 +75,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/json-c: 0.15-3~ubuntu1.22.04.1
   ubuntu_22_04/keyutils: 1.6.1-2ubuntu3
   ubuntu_22_04/kmod: 29-1ubuntu1
-  ubuntu_22_04/krb5: 1.19.2-2ubuntu0.1
+  ubuntu_22_04/krb5: 1.19.2-2ubuntu0.2
   ubuntu_22_04/lazr.restfulclient: 0.14.4-1
   ubuntu_22_04/lazr.uri: 1.0.6-2
   ubuntu_22_04/lcms2: 2.12~rc1-2build2
@@ -284,7 +284,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/json-c: 0.15-3~ubuntu1.22.04.1
   ubuntu_22_04/keyutils: 1.6.1-2ubuntu3
   ubuntu_22_04/kmod: 29-1ubuntu1
-  ubuntu_22_04/krb5: 1.19.2-2ubuntu0.1
+  ubuntu_22_04/krb5: 1.19.2-2ubuntu0.2
   ubuntu_22_04/lazr.restfulclient: 0.14.4-1
   ubuntu_22_04/lazr.uri: 1.0.6-2
   ubuntu_22_04/lcms2: 2.12~rc1-2build2
