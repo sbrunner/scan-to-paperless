@@ -1665,6 +1665,9 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
 
     try:
         rerun = False
+        disable_remove_to_continue = config["args"].setdefault(
+            "no_remove_to_continue", schema.DISABLE_REMOVE_TO_CONTINUE_DEFAULT
+        )
         if "steps" not in config:
             rerun = True
         while config.get("steps") and not is_sources_present(config["steps"][-1]["sources"], root_folder):
@@ -1686,7 +1689,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
         step = config["steps"][-1]
 
         if is_sources_present(step["sources"], root_folder):
-            if config["args"]["no_remove_to_continue"] == True:
+            if not disable_remove_to_continue:
                 if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
                     return dirty, print_waiting
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
@@ -1718,7 +1721,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
                 if done:
                     with open(os.path.join(root_folder, "DONE"), "w"):
                         pass
-                elif config["args"]["no_remove_to_continue"] == True:
+                elif not disable_remove_to_continue:
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w"):
                         pass
 
