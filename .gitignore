@@ -6,3 +6,4 @@ __pycache__
 /tests/img-0.png
 /tests/img-1.png
 /.github/changelog-generator-cache
+/docker-compose.override.yaml
