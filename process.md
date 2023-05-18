@@ -132,4 +132,3 @@
     - **`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
       - **Items** _(integer)_
     - **`graduation_text_margin`** _(integer)_: Default: `6`.
-  - **`no_remove_to_continue`** _(boolean)_: Do not wait for the deletion of REMOVE_TO_CONTINUE before submitting the processed file. Default: `false`.

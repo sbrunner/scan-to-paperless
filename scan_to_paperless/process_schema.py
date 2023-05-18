@@ -406,14 +406,6 @@ class Arguments(TypedDict, total=False):
     deskew: "_ArgumentsDeskew"
     line_detection: "LineDetection"
     rule: "Rule"
-    no_remove_to_continue: bool
-    """
-    Disable REMOVE_TO_CONTINUE.
-
-    Do not wait for the deletion of REMOVE_TO_CONTINUE before submitting the processed file
-
-    default: False
-    """
 
 
 class AssistedSplit(TypedDict, total=False):
@@ -630,10 +622,6 @@ DE_NOISE_MORPHOLOGY_DEFAULT = True
 
 DE_NOISE_SIZE_DEFAULT = 1000
 """ Default value of the field path 'Auto mask de_noise_size' """
-
-
-DISABLE_REMOVE_TO_CONTINUE_DEFAULT = False
-""" Default value of the field path 'Arguments no_remove_to_continue' """
 
 
 DITHER_DEFAULT = False

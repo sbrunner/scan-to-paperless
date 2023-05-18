@@ -506,12 +506,6 @@
               "default": 6
             }
           }
-        },
-        "no_remove_to_continue": {
-          "type": "boolean",
-          "default": false,
-          "description": "Do not wait for the deletion of REMOVE_TO_CONTINUE before submitting the processed file",
-          "title": "Disable REMOVE_TO_CONTINUE"
         }
       }
     }
