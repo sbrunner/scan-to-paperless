@@ -105,6 +105,12 @@ def main() -> None:
         help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
         "see requirement: https://pypi.org/project/pyperclip/",
     )
+    parser.add_argument(
+        "--no-remove-to-continue",
+        action="store_true",
+        default=False,
+        help="Don't wait for REMOVE_TO_CONTINUE's deletion before uploading to Paperless.",
+    )
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()

@@ -1638,7 +1638,7 @@ def save_config(config: schema.Configuration, config_file_name: str) -> None:
 
 
 def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = True) -> Tuple[bool, bool]:
-    """Propcess one document."""
+    """Process one document."""
     if not os.path.exists(config_file_name):
         return dirty, print_waiting
 
@@ -1686,8 +1686,9 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
         step = config["steps"][-1]
 
         if is_sources_present(step["sources"], root_folder):
-            if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
-                return dirty, print_waiting
+            if config["args"]["no_remove_to_continue"] == True:
+                if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
+                    return dirty, print_waiting
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
                 return dirty, print_waiting
 
@@ -1714,12 +1715,13 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
                 if next_step is not None:
                     config["steps"].append(next_step)
                 save_config(config, config_file_name)
-                with open(
-                    os.path.join(root_folder, "DONE" if done else "REMOVE_TO_CONTINUE"),
-                    "w",
-                    encoding="utf-8",
-                ):
-                    pass
+                if done:
+                    with open(os.path.join(root_folder, "DONE"), "w"):
+                        pass
+                elif config["args"]["no_remove_to_continue"] == True:
+                    with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w"):
+                        pass
+
     except Exception as exception:
         print(exception)
         trace = traceback.format_exc()
