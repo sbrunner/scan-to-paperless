@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import nbformat
 import numpy as np
 import pikepdf
+import requests
 import ruamel.yaml.compat
 from deskew import determine_skew_debug_images
 from PIL import Image, ImageDraw, ImageFont
@@ -2374,7 +2375,34 @@ def finalize(
         if progress:
             call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pikepdf.pdf")])
             count += 1
-        call(["cp", temporary_pdf.name, destination])
+
+        if (
+            config["args"]
+            .setdefault("consume_folder", {})
+            .setdefault("enabled", schema.CONSUME_FOLDER_ENABLED_DEFAULT)
+        ):
+            call(["cp", temporary_pdf.name, destination])
+        if (
+            config["args"]
+            .setdefault("rest_upload", cast(schema.RestUpload, {}))
+            .setdefault("enabled", schema.REST_UPLOAD_ENABLED_DEFAULT)
+        ):
+            token = config["args"]["rest_upload"]["api_token"]
+            url = config["args"]["rest_upload"]["api_url"]
+            url = f"{url}/documents/post_document/"
+            headers = {"authorization": f"Token {token}"}
+
+            with open(temporary_pdf.name, "rb") as document_file:
+                files = {"document": document_file}
+                title = os.path.basename(root_folder)
+                data = {"title": title}
+                response = requests.post(url, headers=headers, data=data, files=files, timeout=120)
+                if not response.ok:
+                    raise ScanToPaperlessException(
+                        f"Failed ({response.status_code}) upload to "
+                        f"'{url}' with token '{token}'\n{response.text}"
+                    )
+                print(f"Uploaded {temporary_pdf.name} with title {title}")
 
 
 def _process_code(name: str) -> None:
@@ -2519,7 +2547,7 @@ def _process(
         trace = traceback.format_exc()
 
         out = {"error": str(exception), "traceback": trace.split("\n")}
-        for attribute in ("returncode", "cmd"):
+        for attribute in ("returncode", "cmd", "description", "error_text"):
             if hasattr(exception, attribute):
                 out[attribute] = getattr(exception, attribute)
         for attribute in ("output", "stdout", "stderr"):

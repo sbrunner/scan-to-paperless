@@ -2921,6 +2921,31 @@ files = [
 ]
 
 [[package]]
+name = "types-requests"
+version = "2.31.0.2"
+description = "Typing stubs for requests"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-requests-2.31.0.2.tar.gz", hash = "sha256:6aa3f7faf0ea52d728bb18c0a0d1522d9bfd8c72d26ff6f61bfc3d06a411cf40"},
+    {file = "types_requests-2.31.0.2-py3-none-any.whl", hash = "sha256:56d181c85b5925cbc59f4489a57e72a8b2166f18273fd8ba7b6fe0c0b986f12a"},
+]
+
+[package.dependencies]
+types-urllib3 = "*"
+
+[[package]]
+name = "types-urllib3"
+version = "1.26.25.14"
+description = "Typing stubs for urllib3"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-urllib3-1.26.25.14.tar.gz", hash = "sha256:229b7f577c951b8c1b92c1bc2b2fdb0b49847bd2af6d1cc2a2e3dd340f3bda8f"},
+    {file = "types_urllib3-1.26.25.14-py3-none-any.whl", hash = "sha256:9683bbb7fb72e32bfe9d2be6e04875fbe1b3eeec3cbb4ea231435aa7fd6b4f0e"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -3281,9 +3306,9 @@ files = [
 numpy = "*"
 
 [extras]
-process = ["Jinja2", "Pillow", "PyPDF2", "cffi", "deepmerge", "deskew", "matplotlib", "natsort", "nbformat", "opencv-contrib-python-headless", "pikepdf", "pyzbar", "reportlab", "typing-extensions", "weasyprint", "zxing-cpp"]
+process = ["Jinja2", "Pillow", "PyPDF2", "cffi", "deepmerge", "deskew", "matplotlib", "natsort", "nbformat", "opencv-contrib-python-headless", "pikepdf", "pyzbar", "reportlab", "requests", "typing-extensions", "weasyprint", "zxing-cpp"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "1e83c31dfebadcee50021877fe1f9969cd5f571df3b7b01c4dabbe8307c89702"
+content-hash = "1d2534d1114249baa7d4ed7d847fcb6c024fc4d46439490316a003eaf4e25a21"

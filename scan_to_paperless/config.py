@@ -4,6 +4,8 @@
 
 from typing import TypedDict, Union
 
+from typing_extensions import Required
+
 APPEND_CREDIT_CARD_DEFAULT = False
 """ Default value of the field path 'Arguments append_credit_card' """
 
@@ -163,13 +165,15 @@ class Arguments(TypedDict, total=False):
     """
     No REMOVE_TO_CONTINUE.
 
-    Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the pdf.
+    Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF.
 
     default: False
     """
 
     deskew: "_ArgumentsDeskew"
     rule: "Rule"
+    rest_upload: "RestUpload"
+    consume_folder: "ConsumeFolder"
 
 
 class AutoCut(TypedDict, total=False):
@@ -334,6 +338,10 @@ COLORS_DEFAULT = 0
 """ Default value of the field path 'Arguments colors' """
 
 
+CONSUME_FOLDER_ENABLED_DEFAULT = True
+""" Default value of the field path 'Consume folder enabled' """
+
+
 CONTOUR_KERNEL_SIZE_DEFAULT = 1.5
 """ Default value of the field path 'Contour contour_kernel_size' """
 
@@ -421,6 +429,23 @@ class Configuration(TypedDict, total=False):
       one:
         scanimage_arguments:
         - --batch-count=1
+    """
+
+
+class ConsumeFolder(TypedDict, total=False):
+    """
+    Consume folder.
+
+    Send the final PDF to Paperless using the consume folder
+    """
+
+    enabled: bool
+    """
+    Consume folder enabled.
+
+    Enable using the consume folder
+
+    default: True
     """
 
 
@@ -1019,6 +1044,10 @@ class Ps2Pdf(TypedDict, total=False):
     """
 
 
+REST_UPLOAD_ENABLED_DEFAULT = False
+""" Default value of the field path 'REST upload enabled' """
+
+
 ROTATE_EVEN_DEFAULT = False
 """ Default value of the field path 'Mode rotate_even' """
 
@@ -1073,6 +1102,41 @@ RULE_MINOR_GRADUATION_SIZE_DEFAULT = 10
 
 RULE_MINOR_GRADUATION_SPACE_DEFAULT = 10
 """ Default value of the field path 'Rule minor_graduation_space' """
+
+
+class RestUpload(TypedDict, total=False):
+    """
+    REST upload.
+
+    Upload the final PDF via Paperless REST API
+    """
+
+    enabled: bool
+    """
+    REST upload enabled.
+
+    Enable the upload of the PDF via REST API
+
+    default: False
+    """
+
+    api_url: Required[str]
+    """
+    REST upload API url.
+
+    The URL address of the REST API, usually http://server.name/api
+
+    Required property
+    """
+
+    api_token: Required[str]
+    """
+    REST upload API token.
+
+    The API token
+
+    Required property
+    """
 
 
 class Rule(TypedDict, total=False):
