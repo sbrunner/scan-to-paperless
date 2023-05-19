@@ -1666,7 +1666,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
     try:
         rerun = False
         disable_remove_to_continue = config["args"].setdefault(
-            "no_remove_to_continue", schema.DISABLE_REMOVE_TO_CONTINUE_DEFAULT
+            "no_remove_to_continue", schema.NO_REMOVE_TO_CONTINUE_DEFAULT
         )
         if "steps" not in config:
             rerun = True
