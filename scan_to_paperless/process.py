@@ -1281,6 +1281,10 @@ def transform(
 
         images = new_images
 
+    # Free matplotlib allocations
+    plt.clf()
+    plt.close("all")
+
     return {
         "sources": images,
         "name": "split"
