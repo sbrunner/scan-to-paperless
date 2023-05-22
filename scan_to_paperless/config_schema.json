@@ -334,6 +334,12 @@
           "description": "The auto mask configuration, the mask is used to definitively mask the source image",
           "$ref": "#/definitions/auto_mask"
         },
+        "no_remove_to_continue": {
+          "type": "boolean",
+          "default": false,
+          "description": "Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the pdf.",
+          "title": "No REMOVE_TO_CONTINUE"
+        },
         "deskew": {
           "type": "object",
           "description": "The deskew configuration",
