@@ -1719,10 +1719,10 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
                     config["steps"].append(next_step)
                 save_config(config, config_file_name)
                 if done:
-                    with open(os.path.join(root_folder, "DONE"), "w"):
+                    with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
                         pass
                 elif not disable_remove_to_continue:
-                    with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w"):
+                    with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass
 
     except Exception as exception:
