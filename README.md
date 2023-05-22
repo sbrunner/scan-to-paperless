@@ -8,7 +8,7 @@ A consequence of that it's a not easy to put it in place, but then you will be r
 The interface between the user and the process is the `scan` command to do the initial scan, and the file system
 to verify that the result is OK (and do some advance operations describe below) and validate it.
 
-## Features
+## Features dfg
 
 - Scan the images optionally by using the Automatic Document Feeder
 - Easily scan double-sided images using the Automatic Document Feeder
