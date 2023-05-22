@@ -1580,11 +1580,11 @@ def finalize(
         with pikepdf.open(temporary_pdf.name, allow_overwriting_input=True) as pdf_:
             scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
             with pdf_.open_metadata() as meta:
-                meta["{http://purl.org/dc/elements/1.1/}creator"] = (
+                meta["{http://purl.org/dc/elements/1.1/}creator"] = [
                     f"{scan_to_paperless_meta}, {tesseract_producer}"
                     if tesseract_producer
                     else scan_to_paperless_meta
-                )
+                ]
             pdf_.save(temporary_pdf.name)
         if progress:
             call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pikepdf.pdf")])
