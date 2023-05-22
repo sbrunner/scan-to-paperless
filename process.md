@@ -100,6 +100,7 @@
     - **Items** _(integer)_
   - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
   - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+  - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the pdf. Default: `false`.
   - **`deskew`** _(object)_: The deskew configuration.
     - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
     - **`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `45`.

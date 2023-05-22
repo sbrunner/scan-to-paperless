@@ -401,6 +401,15 @@ class Arguments(TypedDict, total=False):
 
     auto_mask: "AutoMask"
     auto_cut: "AutoMask"
+    no_remove_to_continue: bool
+    """
+    No REMOVE_TO_CONTINUE.
+
+    Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the pdf.
+
+    default: False
+    """
+
     deskew: "_ArgumentsDeskew"
     line_detection: "LineDetection"
     rule: "Rule"
@@ -908,6 +917,10 @@ NO_AUTO_ROTATE_DEFAULT = False
 
 NO_CROP_DEFAULT = False
 """ Default value of the field path 'Arguments no_crop' """
+
+
+NO_REMOVE_TO_CONTINUE_DEFAULT = False
+""" Default value of the field path 'Arguments no_remove_to_continue' """
 
 
 PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
