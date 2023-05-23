@@ -417,10 +417,13 @@ def test_full(progress):
 
     pdf_filename = os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")
 
-    creator_re = re.compile(r"^Scan to Paperless 1.[0-9]+.[0-9]+\+[0-9]+, Tesseract 4.[0-9]+.[0-9]+$")
+    creator_scan_tp_paperless_re = re.compile(r"^Scan to Paperless 1.[0-9]+.[0-9]+\+[0-9]+$")
+    creator_tesseract_re = re.compile(r"^Tesseract 4.[0-9]+.[0-9]+$")
     with pikepdf.open(pdf_filename) as pdf_:
         with pdf_.open_metadata() as meta:
-            assert creator_re.match(meta["{http://purl.org/dc/elements/1.1/}creator"])
+            assert len(meta["{http://purl.org/dc/elements/1.1/}creator"]) == 2
+            assert creator_scan_tp_paperless_re.match(meta["{http://purl.org/dc/elements/1.1/}creator"][0])
+            assert creator_tesseract_re.match(meta["{http://purl.org/dc/elements/1.1/}creator"][1])
 
     pdfinfo = process.output(["pdfinfo", pdf_filename]).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
