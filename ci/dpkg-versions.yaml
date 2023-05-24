@@ -189,7 +189,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/shadow: 4.8.1-2ubuntu2.1
   ubuntu_22_04/six: 1.16.0-3ubuntu1
   ubuntu_22_04/snowball: 2.2.0-1build1
-  ubuntu_22_04/software-properties: 0.99.22.6
+  ubuntu_22_04/software-properties: 0.99.22.7
   ubuntu_22_04/sqlite3: 3.37.2-2ubuntu0.1
   ubuntu_22_04/systemd: 249.11-0ubuntu3.9
   ubuntu_22_04/sysvinit: 3.01-1ubuntu1
@@ -398,7 +398,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/shadow: 4.8.1-2ubuntu2.1
   ubuntu_22_04/six: 1.16.0-3ubuntu1
   ubuntu_22_04/snowball: 2.2.0-1build1
-  ubuntu_22_04/software-properties: 0.99.22.6
+  ubuntu_22_04/software-properties: 0.99.22.7
   ubuntu_22_04/sqlite3: 3.37.2-2ubuntu0.1
   ubuntu_22_04/systemd: 249.11-0ubuntu3.9
   ubuntu_22_04/sysvinit: 3.01-1ubuntu1
