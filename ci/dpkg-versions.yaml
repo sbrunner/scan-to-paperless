@@ -66,7 +66,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/icu: 70.1-2
   ubuntu_22_04/ijs: 0.35-15build2
   ubuntu_22_04/init-system-helpers: '1.62'
-  ubuntu_22_04/iptables: 1.8.7-1ubuntu5
+  ubuntu_22_04/iptables: 1.8.7-1ubuntu5.1
   ubuntu_22_04/iso-codes: 4.9.0-1
   ubuntu_22_04/java-common: 0.72build2
   ubuntu_22_04/jbig2dec: 0.19-3build2
@@ -275,7 +275,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/icu: 70.1-2
   ubuntu_22_04/ijs: 0.35-15build2
   ubuntu_22_04/init-system-helpers: '1.62'
-  ubuntu_22_04/iptables: 1.8.7-1ubuntu5
+  ubuntu_22_04/iptables: 1.8.7-1ubuntu5.1
   ubuntu_22_04/iso-codes: 4.9.0-1
   ubuntu_22_04/java-common: 0.72build2
   ubuntu_22_04/jbig2dec: 0.19-3build2
