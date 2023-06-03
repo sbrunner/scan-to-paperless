@@ -2,9 +2,7 @@
 
 checks:
   versions: False
-  codespell:
-    ignore_re:
-      - poetry.lock
+  codespell: False
 
 publish:
   docker:
