@@ -109,7 +109,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libselinux: 3.3-1build2
   ubuntu_22_04/libsemanage: 3.3-1build2
   ubuntu_22_04/libsepol: 3.3-1build1
-  ubuntu_22_04/libssh: 0.9.6-2build1
+  ubuntu_22_04/libssh: 0.9.6-2ubuntu0.22.04.1
   ubuntu_22_04/libtasn1-6: 4.18.0-4build1
   ubuntu_22_04/libthai: 0.1.29-1build1
   ubuntu_22_04/libtirpc: 1.3.2-2ubuntu0.1
@@ -155,7 +155,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/pcre3: 8.39-13ubuntu0.22.04.1
   ubuntu_22_04/pcsc-lite: 1.9.5-3
   ubuntu_22_04/pdftk-java: 3.2.2-1
-  ubuntu_22_04/perl: 5.34.0-3ubuntu1.1
+  ubuntu_22_04/perl: 5.34.0-3ubuntu1.2
   ubuntu_22_04/pinentry: 1.1.1-1build2
   ubuntu_22_04/pixman: 0.40.0-1ubuntu0.22.04.1
   ubuntu_22_04/pngquant: 2.13.1-1
@@ -180,7 +180,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/python-zipp: 1.0.0-3
   ubuntu_22_04/python3-defaults: 3.10.6-1~22.04
   ubuntu_22_04/python3-stdlib-extensions: 3.10.6-1~22.04
-  ubuntu_22_04/python3.10: 3.10.6-1~22.04.2ubuntu1
+  ubuntu_22_04/python3.10: 3.10.6-1~22.04.2ubuntu1.1
   ubuntu_22_04/readline: 8.1.2-1
   ubuntu_22_04/rtmpdump: 2.4+20151223.gitfa8646d.1-2build4
   ubuntu_22_04/sed: 4.8-1ubuntu2
@@ -318,7 +318,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libselinux: 3.3-1build2
   ubuntu_22_04/libsemanage: 3.3-1build2
   ubuntu_22_04/libsepol: 3.3-1build1
-  ubuntu_22_04/libssh: 0.9.6-2build1
+  ubuntu_22_04/libssh: 0.9.6-2ubuntu0.22.04.1
   ubuntu_22_04/libtasn1-6: 4.18.0-4build1
   ubuntu_22_04/libthai: 0.1.29-1build1
   ubuntu_22_04/libtirpc: 1.3.2-2ubuntu0.1
@@ -364,7 +364,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/pcre3: 8.39-13ubuntu0.22.04.1
   ubuntu_22_04/pcsc-lite: 1.9.5-3
   ubuntu_22_04/pdftk-java: 3.2.2-1
-  ubuntu_22_04/perl: 5.34.0-3ubuntu1.1
+  ubuntu_22_04/perl: 5.34.0-3ubuntu1.2
   ubuntu_22_04/pinentry: 1.1.1-1build2
   ubuntu_22_04/pixman: 0.40.0-1ubuntu0.22.04.1
   ubuntu_22_04/pngquant: 2.13.1-1
@@ -389,7 +389,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/python-zipp: 1.0.0-3
   ubuntu_22_04/python3-defaults: 3.10.6-1~22.04
   ubuntu_22_04/python3-stdlib-extensions: 3.10.6-1~22.04
-  ubuntu_22_04/python3.10: 3.10.6-1~22.04.2ubuntu1
+  ubuntu_22_04/python3.10: 3.10.6-1~22.04.2ubuntu1.1
   ubuntu_22_04/readline: 8.1.2-1
   ubuntu_22_04/rtmpdump: 2.4+20151223.gitfa8646d.1-2build4
   ubuntu_22_04/sed: 4.8-1ubuntu2
