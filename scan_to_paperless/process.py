@@ -22,6 +22,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
+import ruamel.yaml.compat
 from deskew import determine_skew_debug_images
 from PIL import Image, ImageDraw, ImageFont
 from ruamel.yaml.main import YAML
@@ -30,6 +31,8 @@ from skimage.exposure import histogram as skimage_histogram
 from skimage.metrics import structural_similarity
 from skimage.util import img_as_ubyte
 
+import scan_to_paperless
+import scan_to_paperless.status
 from scan_to_paperless import code
 from scan_to_paperless import process_schema as schema
 
@@ -1641,7 +1644,12 @@ def save_config(config: schema.Configuration, config_file_name: str) -> None:
     os.rename(config_file_name + "_", config_file_name)
 
 
-def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = True) -> Tuple[bool, bool]:
+def _process(
+    config_file_name: str,
+    status: scan_to_paperless.status.Status,
+    dirty: bool = False,
+    print_waiting: bool = True,
+) -> Tuple[bool, bool]:
     """Process one document."""
     if not os.path.exists(config_file_name):
         return dirty, print_waiting
@@ -1656,14 +1664,12 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
     with open(config_file_name, encoding="utf-8") as config_file:
         config: schema.Configuration = yaml.load(config_file.read())
     if config is None:
-        print(config_file_name)
-        print("Empty config")
+        status.set_status(config_file_name, "Empty config")
         print_waiting = True
         return dirty, print_waiting
 
     if not is_sources_present(config["images"], root_folder):
-        print(config_file_name)
-        print("Missing images")
+        status.set_status(config_file_name, "Missing images")
         print_waiting = True
         return dirty, print_waiting
 
@@ -1679,8 +1685,7 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
             save_config(config, config_file_name)
             if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
                 os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
-            print(config_file_name)
-            print("Rerun step")
+            status.set_status(config_file_name, "Rerun step")
             print_waiting = True
             rerun = True
 
@@ -1699,20 +1704,20 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
                 return dirty, print_waiting
 
-            print(config_file_name)
+            status.set_status(config_file_name, "Processing")
             print_waiting = True
             dirty = True
 
             done = False
             next_step = None
             if step["name"] == "transform":
-                print("Transform")
+                status.set_status(config_file_name, "Transform")
                 next_step = transform(config, step, config_file_name, root_folder)
             elif step["name"] == "split":
-                print("Split")
+                status.set_status(config_file_name, "Split")
                 next_step = split(config, step, root_folder)
             elif step["name"] == "finalize":
-                print("Finalize")
+                status.set_status(config_file_name, "Finalize")
                 finalize(config, step, root_folder)
                 done = True
 
@@ -1723,9 +1728,15 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
                     config["steps"].append(next_step)
                 save_config(config, config_file_name)
                 if done:
+                    status.set_status(config_file_name, "Done")
                     with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
                         pass
                 elif not disable_remove_to_continue:
+                    status.set_status(
+                        config_file_name,
+                        "Waiting validation",
+                        "You should validate that the generate images are correct, the remove the <pre>REMOVE_TO_CONTINUE</pre> file.",
+                    )
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass
 
@@ -1749,6 +1760,9 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
         try:
             with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                 yaml.dump(out, error_file)
+            stream = ruamel.yaml.compat.StringIO()
+            yaml.dump(out, stream)
+            status.set_status(config_file_name, "Error", "<pre>" + stream.getvalue() + "</pre>")
         except Exception as exception2:
             print(exception2)
             print(traceback.format_exc())
@@ -1756,6 +1770,9 @@ def _process(config_file_name: str, dirty: bool = False, print_waiting: bool = T
             yaml.default_flow_style = False
             with open(os.path.join(root_folder, "error.yaml"), "w", encoding="utf-8") as error_file:
                 yaml.dump(out, error_file)
+            stream = ruamel.yaml.compat.StringIO()
+            yaml.dump(out, stream)
+            status.set_status(config_file_name, "Error", "<pre>" + stream.getvalue() + "</pre>")
     return dirty, print_waiting
 
 
@@ -1766,17 +1783,19 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.config:
-        _process(args.config)
+        _process(args.config, scan_to_paperless.status.Status(no_write=True))
         sys.exit()
 
     print("Welcome to scanned images document to paperless.")
     print_waiting = True
+    status = scan_to_paperless.status.Status()
+    status.update()
     while True:
         dirty = False
         for config_file_name in glob.glob(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
         ):
-            dirty, print_waiting = _process(config_file_name, dirty, print_waiting)
+            dirty, print_waiting = _process(config_file_name, status, dirty, print_waiting)
         if not dirty:
             process_code()
 
