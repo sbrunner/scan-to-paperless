@@ -1,5 +1,6 @@
 """Manage the status file of the progress."""
 
+import datetime
 import glob
 import os.path
 from typing import Dict, NamedTuple
@@ -19,6 +20,13 @@ class Status:
         self.no_write = no_write
         self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "status.html"))
         self._status: Dict[str, _Folder] = {}
+        self._global_status = "Starting..."
+
+    def set_global_status(self, status: str) -> None:
+        """Set the global status."""
+
+        self._global_status = status
+        self.update()
 
     def set_status(self, name: str, status: str, details: str = "") -> None:
         """Set the status of a folder."""
@@ -60,7 +68,7 @@ class Status:
 
         with open(self._file, "w", encoding="utf-8") as status_file:
             status_file.write(
-                """<!doctype html>
+                f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -90,6 +98,12 @@ class Status:
     />
   </head>
   <body>
+    <h1>Scan to Paperless status</h1>
+    <p>{self._global_status}</p>
+    <p>Generated at: <script>
+    window.document.write(new Date('{datetime.datetime.utcnow().replace(microsecond=0).isoformat()}Z').toLocaleString());
+    </script></p>
+    <h2>Jobs</h2>
     <table data-toggle="table">
       <thead>
         <tr>

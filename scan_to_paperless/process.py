@@ -1795,6 +1795,7 @@ def main() -> None:
         for config_file_name in glob.glob(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
         ):
+            status.set_global_status(f"Processing '{os.path.basename(os.path.dirname(config_file_name))}'...")
             dirty, print_waiting = _process(config_file_name, status, dirty, print_waiting)
         if not dirty:
             process_code()
@@ -1803,7 +1804,7 @@ def main() -> None:
         if not dirty:
             if print_waiting:
                 print_waiting = False
-                print("Waiting...")
+            status.set_global_status("Waiting...")
             time.sleep(30)
 
 
