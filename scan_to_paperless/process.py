@@ -3,6 +3,7 @@
 """Process the scanned documents."""
 
 import argparse
+import datetime.datetime
 import glob
 import json
 import logging
@@ -1787,6 +1788,8 @@ def main() -> None:
         sys.exit()
 
     print("Welcome to scanned images document to paperless.")
+    print(f"Started at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
     print_waiting = True
     status = scan_to_paperless.status.Status()
     status.update()
