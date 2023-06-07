@@ -67,7 +67,6 @@ class Status:
         if self.no_write:
             return
 
-        print(f"Write status to {self._file}")
         with open(self._file, "w", encoding="utf-8") as status_file:
             status_file.write(
                 f"""<!doctype html>
@@ -99,7 +98,7 @@ class Status:
       referrerpolicy="no-referrer"
     />
   </head>
-  <body>
+  <body class="px-5 py-4">
     <h1>Scan to Paperless status</h1>
     <p>{self._global_status}</p>
     <p>Started at: <script>
@@ -112,8 +111,8 @@ class Status:
     <table data-toggle="table">
       <thead>
         <tr>
-          <th>Folder</th>
-          <th>Status</th>
+          <th data-sortable="true">Folder</th>
+          <th data-sortable="true">Status</th>
           <th>Details</th>
         </tr>
       </thead>
@@ -123,8 +122,8 @@ class Status:
             for name, folder in self._status.items():
                 status_file.write(
                     f"""        <tr>
-          <td data-sortable="true">{name}</td>
-          <td data-sortable="true">{folder.status}</td>
+          <td>{name}</td>
+          <td>{folder.status}</td>
           <td>{folder.details}</td>
         </tr>
 """

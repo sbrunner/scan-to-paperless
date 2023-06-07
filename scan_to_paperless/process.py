@@ -1701,8 +1701,14 @@ def _process(
         if is_sources_present(step["sources"], root_folder):
             if not disable_remove_to_continue:
                 if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
+                    status.set_status(
+                        config_file_name,
+                        "Waiting validation",
+                        "You should validate that the generate images are correct, the remove the <pre>REMOVE_TO_CONTINUE</pre> file.",
+                    )
                     return dirty, print_waiting
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
+                status.set_status(config_file_name, "Done")
                 return dirty, print_waiting
 
             status.set_status(config_file_name, "Processing")
@@ -1740,6 +1746,8 @@ def _process(
                     )
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass
+        else:
+            status.set_status(config_file_name, "Missing sources")
 
     except Exception as exception:
         print(exception)
