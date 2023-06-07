@@ -3,7 +3,7 @@
 """Process the scanned documents."""
 
 import argparse
-import datetime.datetime
+import datetime
 import glob
 import json
 import logging
