@@ -1704,7 +1704,7 @@ def _process(
                     status.set_status(
                         config_file_name,
                         "Waiting validation",
-                        "You should validate that the generate images are correct, the remove the <pre>REMOVE_TO_CONTINUE</pre> file.",
+                        "You should validate that the generate images are correct, the remove the <code>REMOVE_TO_CONTINUE</code> file.",
                     )
                     return dirty, print_waiting
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
@@ -1742,7 +1742,7 @@ def _process(
                     status.set_status(
                         config_file_name,
                         "Waiting validation",
-                        "You should validate that the generate images are correct, the remove the <pre>REMOVE_TO_CONTINUE</pre> file.",
+                        "You should validate that the generate images are correct, the remove the <code>REMOVE_TO_CONTINUE</code> file.",
                     )
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass

@@ -122,7 +122,7 @@ class Status:
             for name, folder in self._status.items():
                 status_file.write(
                     f"""        <tr>
-          <td>{name}</td>
+          <td><a href="./{name}" target="_blank">{name}</a></td>
           <td>{folder.status}</td>
           <td>{folder.details}</td>
         </tr>
