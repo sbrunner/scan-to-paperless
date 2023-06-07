@@ -18,7 +18,7 @@ class Status:
         """Construct."""
 
         self.no_write = no_write
-        self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "status.html"))
+        self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
         self._status: Dict[str, _Folder] = {}
         self._global_status = "Starting..."
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
