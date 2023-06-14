@@ -174,7 +174,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/python-keyring: 23.5.0-1
   ubuntu_22_04/python-launchpadlib: 1.10.16-1
   ubuntu_22_04/python-oauthlib: 3.2.0-1ubuntu0.1
-  ubuntu_22_04/python-pip: 22.0.2+dfsg-1ubuntu0.2
+  ubuntu_22_04/python-pip: 22.0.2+dfsg-1ubuntu0.3
   ubuntu_22_04/python-secretstorage: 3.3.1-1
   ubuntu_22_04/python-wadllib: 1.3.6-1
   ubuntu_22_04/python-zipp: 1.0.0-3
@@ -383,7 +383,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/python-keyring: 23.5.0-1
   ubuntu_22_04/python-launchpadlib: 1.10.16-1
   ubuntu_22_04/python-oauthlib: 3.2.0-1ubuntu0.1
-  ubuntu_22_04/python-pip: 22.0.2+dfsg-1ubuntu0.2
+  ubuntu_22_04/python-pip: 22.0.2+dfsg-1ubuntu0.3
   ubuntu_22_04/python-secretstorage: 3.3.1-1
   ubuntu_22_04/python-wadllib: 1.3.6-1
   ubuntu_22_04/python-zipp: 1.0.0-3
