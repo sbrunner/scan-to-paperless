@@ -117,7 +117,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libunwind: 1.3.2-2build2
   ubuntu_22_04/libwebp: 1.2.2-2ubuntu0.22.04.1
   ubuntu_22_04/libwmf: 0.2.12-5ubuntu1
-  ubuntu_22_04/libx11: 2:1.7.5-1
+  ubuntu_22_04/libx11: 2:1.7.5-1ubuntu0.2
   ubuntu_22_04/libxau: 1.0.9-1build5
   ubuntu_22_04/libxcb: 1.14-3ubuntu3
   ubuntu_22_04/libxcrypt: 4.4.27-1
@@ -326,7 +326,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libunwind: 1.3.2-2build2
   ubuntu_22_04/libwebp: 1.2.2-2ubuntu0.22.04.1
   ubuntu_22_04/libwmf: 0.2.12-5ubuntu1
-  ubuntu_22_04/libx11: 2:1.7.5-1
+  ubuntu_22_04/libx11: 2:1.7.5-1ubuntu0.2
   ubuntu_22_04/libxau: 1.0.9-1build5
   ubuntu_22_04/libxcb: 1.14-3ubuntu3
   ubuntu_22_04/libxcrypt: 4.4.27-1
