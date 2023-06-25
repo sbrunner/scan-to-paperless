@@ -2,8 +2,21 @@
 
 import datetime
 import glob
+import html
 import os.path
 from typing import Dict, NamedTuple
+
+from ruamel.yaml.main import YAML
+
+WAITING_STATUS_NAME = "Waiting validation"
+WAITING_STATUS_DESCRIPTION = """You should validate that the generate images are correct.<br>
+    If the result is correct remove the <code>REMOVE_TO_CONTINUE</code> file.<br>
+    If not you can:<br>
+    <ul>
+        <li>Edit the generated image Then remove the <code>REMOVE_TO_CONTINUE</code> file.</li>
+        <li>Edit the <code>config.yaml</code> file to change the parameters, the remove the generated files to force the regeneration.</li>
+        <li>Edit the source image the remove the corresponding generated file to force the regeneration.</li>
+    </ul>"""
 
 
 class _Folder(NamedTuple):
@@ -22,12 +35,14 @@ class Status:
         self._status: Dict[str, _Folder] = {}
         self._global_status = "Starting..."
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
+        self._last_scan = datetime.datetime.utcnow()
+        self.scan()
 
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
 
         self._global_status = status
-        self.update()
+        self.write()
 
     def set_status(self, name: str, status: str, details: str = "") -> None:
         """Set the status of a folder."""
@@ -35,16 +50,20 @@ class Status:
         # Config file name
         if name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
-        self._status[name] = _Folder(status, details)
+        self._status[name] = _Folder(html.escape(status), details)
 
         if self.no_write:
             print(f"{name}: {status}")
 
         if not self.no_write:
-            self.update()
+            self.write()
 
-    def update(self) -> None:
-        """Update the status list."""
+    def scan(self) -> None:
+        """Scan for changes for waiting documents."""
+
+        for name, folder in self._status.items():
+            if folder.status == WAITING_STATUS_NAME:
+                self._update_status(name)
 
         names = []
         for config_file_name in glob.glob(
@@ -53,16 +72,57 @@ class Status:
             name = os.path.basename(os.path.dirname(config_file_name))
             names.append(name)
             if name not in self._status:
-                self._status[name] = _Folder("Not started", "")
+                self._update_status(name, force=True)
+
         for name in self._status:  # pylint: disable=consider-using-dict-items
             if name not in names:
                 del self._status[name]
 
-        if not self.no_write:
-            self.write()
+        self._last_scan = datetime.datetime.utcnow()
+
+    def _update_status(self, name: str, force: bool = False) -> None:
+        yaml = YAML(typ="safe")
+        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "error.yaml")):
+            with open(
+                os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "error.yaml"),
+                encoding="utf-8",
+            ) as error_file:
+                error = yaml.load(error_file)
+
+            self.set_status(name, "Error: " + error["error"])
+
+        with open(
+            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml"),
+            encoding="utf-8",
+        ) as config_file:
+            config = yaml.load(config_file)
+
+        if os.path.exists(
+            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "REMOVE_TO_CONTINUE")
+        ):
+            rerun = False
+            for image in config["steps"][-1]["images"]:
+                if not os.path.exists(image):
+                    rerun = True
+
+            if rerun:
+                if len(config["steps"]) >= 2:
+                    self.set_status(name, "Waiting to " + config["steps"][-2])
+                else:
+                    self.set_status(name, "Waiting to transform")
+            elif force:
+                self.set_status(name, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
+        else:
+            if len(config["steps"]) >= 1:
+                self.set_status(name, "Waiting to " + config["steps"][-1]["name"])
+            else:
+                self.set_status(name, "Waiting to transform")
 
     def write(self) -> None:
         """Write the status file."""
+
+        if self._last_scan < datetime.datetime.utcnow() - datetime.timedelta(minutes=1):
+            self.scan()
 
         if self.no_write:
             return
