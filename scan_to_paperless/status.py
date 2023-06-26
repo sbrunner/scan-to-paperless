@@ -80,6 +80,23 @@ class Status:
             if name not in self._status:
                 self._update_status(name, force=True)
 
+        for folder_name in glob.glob(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*")):
+            name = os.path.basename(folder_name)
+
+            if name not in self._status:
+                names.append(name)
+
+                self.set_status(
+                    name,
+                    "Missing config",
+                    ", ".join(
+                        glob.glob(
+                            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name, "**"),
+                            recursive=True,
+                        )
+                    ),
+                )
+
         for name in self._status:  # pylint: disable=consider-using-dict-items
             if name not in names:
                 del self._status[name]
