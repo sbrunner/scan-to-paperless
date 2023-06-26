@@ -28,6 +28,7 @@ pylint:
     - too-many-nested-blocks
     - too-many-arguments
     - too-many-return-statements
+    - too-many-instance-attributes
     - wrong-import-order
     - line-too-long
     - no-value-for-parameter

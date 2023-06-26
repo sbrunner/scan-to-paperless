@@ -1665,12 +1665,10 @@ def _process(
     with open(config_file_name, encoding="utf-8") as config_file:
         config: schema.Configuration = yaml.load(config_file.read())
     if config is None:
-        status.set_status(config_file_name, "Empty config")
         print_waiting = True
         return dirty, print_waiting
 
     if not is_sources_present(config["images"], root_folder):
-        status.set_status(config_file_name, "Missing images")
         print_waiting = True
         return dirty, print_waiting
 
@@ -1686,7 +1684,6 @@ def _process(
             save_config(config, config_file_name)
             if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
                 os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
-            status.set_status(config_file_name, "Rerun step")
             print_waiting = True
             rerun = True
 
@@ -1701,16 +1698,11 @@ def _process(
         if is_sources_present(step["sources"], root_folder):
             if not disable_remove_to_continue:
                 if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
-                    status.set_status(
-                        config_file_name,
-                        scan_to_paperless.status.WAITING_STATUS_NAME,
-                        scan_to_paperless.status.WAITING_STATUS_DESCRIPTION,
-                    )
                     return dirty, print_waiting
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
-                status.set_status(config_file_name, "Done")
                 return dirty, print_waiting
 
+            status.set_current_config(config_file_name)
             status.set_status(config_file_name, "Processing")
             print_waiting = True
             dirty = True
@@ -1735,19 +1727,13 @@ def _process(
                     config["steps"].append(next_step)
                 save_config(config, config_file_name)
                 if done:
-                    status.set_status(config_file_name, "Done")
                     with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
                         pass
                 elif not disable_remove_to_continue:
-                    status.set_status(
-                        config_file_name,
-                        scan_to_paperless.status.WAITING_STATUS_NAME,
-                        scan_to_paperless.status.WAITING_STATUS_DESCRIPTION,
-                    )
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass
-        else:
-            status.set_status(config_file_name, "Missing sources")
+            status.set_current_folder(None)
+            status.write()
 
     except Exception as exception:
         print(exception)
@@ -1771,7 +1757,6 @@ def _process(
                 yaml.dump(out, error_file)
             stream = ruamel.yaml.compat.StringIO()
             yaml.dump(out, stream)
-            status.set_status(config_file_name, "Error", "<pre>" + stream.getvalue() + "</pre>")
         except Exception as exception2:
             print(exception2)
             print(traceback.format_exc())
@@ -1781,7 +1766,6 @@ def _process(
                 yaml.dump(out, error_file)
             stream = ruamel.yaml.compat.StringIO()
             yaml.dump(out, stream)
-            status.set_status(config_file_name, "Error", "<pre>" + stream.getvalue() + "</pre>")
     return dirty, print_waiting
 
 

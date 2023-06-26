@@ -4,7 +4,7 @@ import datetime
 import glob
 import html
 import os.path
-from typing import Dict, NamedTuple
+from typing import Dict, NamedTuple, Optional
 
 from ruamel.yaml.main import YAML
 
@@ -34,15 +34,34 @@ class Status:
         self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
         self._status: Dict[str, _Folder] = {}
         self._global_status = "Starting..."
+        self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
         self._last_scan = datetime.datetime.utcnow()
+        self._current_folder: Optional[str] = None
         self.scan()
 
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
 
+        if self._global_status == status:
+            return
+
         self._global_status = status
+        self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
+
         self.write()
+
+    def set_current_folder(self, name: Optional[str]) -> None:
+        """Set the current folder."""
+
+        self._current_folder = name
+
+    def set_current_config(self, name: str) -> None:
+        """Set the current config file."""
+
+        if name.endswith("/config.yaml"):
+            name = os.path.basename(os.path.dirname(name))
+        self._current_folder = name
 
     def set_status(self, name: str, status: str, details: str = "") -> None:
         """Set the status of a folder."""
@@ -61,8 +80,8 @@ class Status:
     def scan(self) -> None:
         """Scan for changes for waiting documents."""
 
-        for name, folder in self._status.items():
-            if folder.status == WAITING_STATUS_NAME:
+        for name in self._status:
+            if name != self._current_folder:
                 self._update_status(name)
 
         names = []
@@ -73,6 +92,23 @@ class Status:
             names.append(name)
             if name not in self._status:
                 self._update_status(name, force=True)
+
+        for folder_name in glob.glob(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*")):
+            name = os.path.basename(folder_name)
+
+            if name not in self._status:
+                names.append(name)
+
+                self.set_status(
+                    name,
+                    "Missing config",
+                    ", ".join(
+                        glob.glob(
+                            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name, "**"),
+                            recursive=True,
+                        )
+                    ),
+                )
 
         for name in self._status:  # pylint: disable=consider-using-dict-items
             if name not in names:
@@ -89,13 +125,22 @@ class Status:
             ) as error_file:
                 error = yaml.load(error_file)
 
-            self.set_status(name, "Error: " + error["error"])
+            self.set_status(
+                name, "Error: " + error["error"], "<code>" + "<br />".join(error["traceback"]) + "</code>"
+            )
 
         with open(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml"),
             encoding="utf-8",
         ) as config_file:
             config = yaml.load(config_file)
+
+        if config is None:
+            self.set_status(name, "Empty config")
+            return
+
+        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "DONE")):
+            self.set_status(name, "Done")
 
         if os.path.exists(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "REMOVE_TO_CONTINUE")
@@ -160,7 +205,9 @@ class Status:
   </head>
   <body class="px-5 py-4">
     <h1>Scan to Paperless status</h1>
-    <p>{self._global_status}</p>
+    <p>{self._global_status} since <script>
+    window.document.write(new Date('{self._global_status_update.isoformat()}Z').toLocaleString());
+    </script></p>
     <p>Started at: <script>
     window.document.write(new Date('{self._start_time.isoformat()}Z').toLocaleString());
     </script></p>
@@ -180,8 +227,9 @@ class Status:
 """
             )
             for name, folder in self._status.items():
+                tr_attributes = ' class="alert alert-info"' if name == self._current_folder else ""
                 status_file.write(
-                    f"""        <tr>
+                    f"""        <tr{tr_attributes}>
           <td><a href="./{name}" target="_blank">{name}</a></td>
           <td>{folder.status}</td>
           <td>{folder.details}</td>
