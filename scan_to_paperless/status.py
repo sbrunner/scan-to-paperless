@@ -101,11 +101,14 @@ class Status:
             if name not in self._status:
                 names.append(name)
 
-                len_source_folder = (
-                    len(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source").rstrip("/"))) + 1
+                len_folder = (
+                    len(
+                        os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name).rstrip("/")
+                    )
+                    + 1
                 )
                 files = [
-                    f[len_source_folder:]
+                    f[len_folder:]
                     for f in glob.glob(
                         os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name, "**"),
                         recursive=True,
