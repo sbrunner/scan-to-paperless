@@ -112,7 +112,9 @@ class Status:
             ) as error_file:
                 error = yaml.load(error_file)
 
-            self.set_status(name, "Error: " + error["error"])
+            self.set_status(
+                name, "Error: " + error["error"], "<code>" + "<br />".join(error["traceback"]) + "</code>"
+            )
 
         with open(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml"),
