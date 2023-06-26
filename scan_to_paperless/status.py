@@ -94,21 +94,25 @@ class Status:
                 self._update_status(name, force=True)
 
         for folder_name in glob.glob(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*")):
+            if not os.path.isdir(folder_name):
+                continue
             name = os.path.basename(folder_name)
 
             if name not in self._status:
                 names.append(name)
 
-                self.set_status(
-                    name,
-                    "Missing config",
-                    ", ".join(
-                        glob.glob(
-                            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name, "**"),
-                            recursive=True,
-                        )
-                    ),
+                len_source_folder = (
+                    len(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source").rstrip("/"))) + 1
                 )
+                files = [
+                    f[len_source_folder:]
+                    for f in glob.glob(
+                        os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name, "**"),
+                        recursive=True,
+                    )
+                    if os.path.isfile(f)
+                ]
+                self.set_status(name, "Missing config", ", ".join(files))
 
         for name in self._status:  # pylint: disable=consider-using-dict-items
             if name not in names:
