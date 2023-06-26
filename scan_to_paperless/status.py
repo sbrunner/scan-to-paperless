@@ -146,7 +146,7 @@ class Status:
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "REMOVE_TO_CONTINUE")
         ):
             rerun = False
-            for image in config["steps"][-1]["images"]:
+            for image in config["steps"][-1]["sources"]:
                 if not os.path.exists(image):
                     rerun = True
 
