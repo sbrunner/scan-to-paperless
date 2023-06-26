@@ -1703,8 +1703,8 @@ def _process(
                 if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
                     status.set_status(
                         config_file_name,
-                        "Waiting validation",
-                        "You should validate that the generate images are correct, the remove the <code>REMOVE_TO_CONTINUE</code> file.",
+                        scan_to_paperless.status.WAITING_STATUS_NAME,
+                        scan_to_paperless.status.WAITING_STATUS_DESCRIPTION,
                     )
                     return dirty, print_waiting
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
@@ -1741,8 +1741,8 @@ def _process(
                 elif not disable_remove_to_continue:
                     status.set_status(
                         config_file_name,
-                        "Waiting validation",
-                        "You should validate that the generate images are correct, the remove the <code>REMOVE_TO_CONTINUE</code> file.",
+                        scan_to_paperless.status.WAITING_STATUS_NAME,
+                        scan_to_paperless.status.WAITING_STATUS_DESCRIPTION,
                     )
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass
@@ -1800,7 +1800,7 @@ def main() -> None:
 
     print_waiting = True
     status = scan_to_paperless.status.Status()
-    status.update()
+    status.write()
     while True:
         dirty = False
         for config_file_name in glob.glob(
