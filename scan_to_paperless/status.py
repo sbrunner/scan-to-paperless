@@ -34,6 +34,7 @@ class Status:
         self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
         self._status: Dict[str, _Folder] = {}
         self._global_status = "Starting..."
+        self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
         self._last_scan = datetime.datetime.utcnow()
         self.scan()
@@ -41,7 +42,12 @@ class Status:
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
 
+        if self._global_status == status:
+            return
+
         self._global_status = status
+        self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
+
         self.write()
 
     def set_status(self, name: str, status: str, details: str = "") -> None:
@@ -160,7 +166,9 @@ class Status:
   </head>
   <body class="px-5 py-4">
     <h1>Scan to Paperless status</h1>
-    <p>{self._global_status}</p>
+    <p>{self._global_status} since <script>
+    window.document.write(new Date('{self._global_status_update.isoformat()}Z').toLocaleString());
+    </script></p>
     <p>Started at: <script>
     window.document.write(new Date('{self._start_time.isoformat()}Z').toLocaleString());
     </script></p>
