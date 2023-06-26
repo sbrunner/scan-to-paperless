@@ -4,7 +4,7 @@ import datetime
 import glob
 import html
 import os.path
-from typing import Dict, NamedTuple
+from typing import Dict, NamedTuple, Optional
 
 from ruamel.yaml.main import YAML
 
@@ -37,6 +37,7 @@ class Status:
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
         self._last_scan = datetime.datetime.utcnow()
+        self._current_folder: Optional[str] = None
         self.scan()
 
     def set_global_status(self, status: str) -> None:
@@ -49,6 +50,18 @@ class Status:
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
 
         self.write()
+
+    def set_current_folder(self, name: Optional[str]) -> None:
+        """Set the current folder."""
+
+        self._current_folder = name
+
+    def set_current_config(self, name: str) -> None:
+        """Set the current config file."""
+
+        if name.endswith("/config.yaml"):
+            name = os.path.basename(os.path.dirname(name))
+        self._current_folder = name
 
     def set_status(self, name: str, status: str, details: str = "") -> None:
         """Set the status of a folder."""
@@ -67,8 +80,8 @@ class Status:
     def scan(self) -> None:
         """Scan for changes for waiting documents."""
 
-        for name, folder in self._status.items():
-            if folder.status == WAITING_STATUS_NAME:
+        for name in self._status:
+            if name != self._current_folder:
                 self._update_status(name)
 
         names = []
@@ -121,6 +134,13 @@ class Status:
             encoding="utf-8",
         ) as config_file:
             config = yaml.load(config_file)
+
+        if config is None:
+            self.set_status(name, "Empty config")
+            return
+
+        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "DONE")):
+            self.set_status(name, "Done")
 
         if os.path.exists(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "REMOVE_TO_CONTINUE")
@@ -207,8 +227,9 @@ class Status:
 """
             )
             for name, folder in self._status.items():
+                tr_attributes = ' class="alert alert-info"' if name == self._current_folder else ""
                 status_file.write(
-                    f"""        <tr>
+                    f"""        <tr{tr_attributes}>
           <td><a href="./{name}" target="_blank">{name}</a></td>
           <td>{folder.status}</td>
           <td>{folder.details}</td>
