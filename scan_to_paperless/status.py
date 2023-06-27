@@ -202,7 +202,7 @@ class Status:
   </head>
   <body class="px-5 py-4">
     <h1>Scan to Paperless status</h1>
-    <p>{self._global_status} since <script>
+    <p><em>{self._global_status}</em> since <script>
     window.document.write(new Date('{self._global_status_update.isoformat()}Z').toLocaleString());
     </script></p>
     <p>Started at: <script>

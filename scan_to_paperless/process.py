@@ -1649,28 +1649,25 @@ def _process(
     config_file_name: str,
     status: scan_to_paperless.status.Status,
     dirty: bool = False,
-    print_waiting: bool = True,
-) -> Tuple[bool, bool]:
+) -> bool:
     """Process one document."""
     if not os.path.exists(config_file_name):
-        return dirty, print_waiting
+        return dirty
 
     root_folder = os.path.dirname(config_file_name)
 
     if os.path.exists(os.path.join(root_folder, "error.yaml")):
-        return dirty, print_waiting
+        return dirty
 
     yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name, encoding="utf-8") as config_file:
         config: schema.Configuration = yaml.load(config_file.read())
     if config is None:
-        print_waiting = True
-        return dirty, print_waiting
+        return dirty
 
     if not is_sources_present(config["images"], root_folder):
-        print_waiting = True
-        return dirty, print_waiting
+        return dirty
 
     try:
         rerun = False
@@ -1684,7 +1681,6 @@ def _process(
             save_config(config, config_file_name)
             if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")):
                 os.remove(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
-            print_waiting = True
             rerun = True
 
         if "steps" not in config or not config["steps"]:
@@ -1698,13 +1694,13 @@ def _process(
         if is_sources_present(step["sources"], root_folder):
             if not disable_remove_to_continue:
                 if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
-                    return dirty, print_waiting
+                    return dirty
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
-                return dirty, print_waiting
+                return dirty
 
+            status.set_global_status(f"Processing '{os.path.basename(os.path.dirname(config_file_name))}'...")
             status.set_current_config(config_file_name)
             status.set_status(config_file_name, "Processing")
-            print_waiting = True
             dirty = True
 
             done = False
@@ -1739,7 +1735,6 @@ def _process(
         print(exception)
         trace = traceback.format_exc()
         print(trace)
-        print_waiting = True
 
         out = {"error": str(exception), "traceback": trace.split("\n")}
         for attribute in ("returncode", "cmd"):
@@ -1766,7 +1761,7 @@ def _process(
                 yaml.dump(out, error_file)
             stream = ruamel.yaml.compat.StringIO()
             yaml.dump(out, stream)
-    return dirty, print_waiting
+    return dirty
 
 
 def main() -> None:
@@ -1782,7 +1777,6 @@ def main() -> None:
     print("Welcome to scanned images document to paperless.")
     print(f"Started at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-    print_waiting = True
     status = scan_to_paperless.status.Status()
     status.write()
     while True:
@@ -1790,15 +1784,12 @@ def main() -> None:
         for config_file_name in glob.glob(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
         ):
-            status.set_global_status(f"Processing '{os.path.basename(os.path.dirname(config_file_name))}'...")
-            dirty, print_waiting = _process(config_file_name, status, dirty, print_waiting)
+            dirty = _process(config_file_name, status, dirty)
         if not dirty:
             process_code()
 
         sys.stdout.flush()
         if not dirty:
-            if print_waiting:
-                print_waiting = False
             status.set_global_status("Waiting...")
             time.sleep(30)
 
