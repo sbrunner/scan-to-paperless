@@ -179,12 +179,14 @@ class Status:
     <link
       rel="icon"
       type="image/svg"
+      color="lighthex"
       href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo.svg"
       referrerpolicy="no-referrer"
     />
     <link
       rel="icon"
       type="image/svg"
+      color="lighthex"
       media="(prefers-color-scheme: dark)"
       href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo-dark.svg"
       referrerpolicy="no-referrer"
