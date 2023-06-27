@@ -43,11 +43,9 @@ class Status:
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
 
-        if self._global_status == status:
-            return
-
-        self._global_status = status
-        self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
+        if self._global_status != status:
+            self._global_status = status
+            self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
 
         self.write()
 
