@@ -95,7 +95,7 @@ class Status:
 
         self._last_scan = datetime.datetime.utcnow()
 
-    def _update_status(self, name: str, force: bool = False) -> None:
+    def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
         if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "error.yaml")):
             with open(
@@ -153,7 +153,7 @@ class Status:
                     self.set_status(name, "Waiting to " + config["steps"][-2])
                 else:
                     self.set_status(name, "Waiting to transform")
-            elif force:
+            else:
                 self.set_status(name, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
         else:
             if len(config["steps"]) >= 1:
