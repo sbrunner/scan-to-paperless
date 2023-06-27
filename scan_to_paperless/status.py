@@ -128,6 +128,7 @@ class Status:
                 if os.path.isfile(f)
             ]
             self.set_status(name, "Missing config", ", ".join(files))
+            return
 
         with open(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml"),
