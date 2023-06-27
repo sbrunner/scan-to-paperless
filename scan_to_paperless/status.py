@@ -87,42 +87,11 @@ class Status:
                 else:
                     del self._status[name]
 
-        names = []
-        for config_file_name in glob.glob(
-            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
-        ):
-            name = os.path.basename(os.path.dirname(config_file_name))
-            names.append(name)
-            if name not in self._status:
-                self._update_status(name, force=True)
-
         for folder_name in glob.glob(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*")):
-            if not os.path.isdir(folder_name):
-                continue
-            name = os.path.basename(folder_name)
-
-            if name not in self._status:
-                names.append(name)
-
-                len_folder = (
-                    len(
-                        os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name).rstrip("/")
-                    )
-                    + 1
-                )
-                files = [
-                    f[len_folder:]
-                    for f in glob.glob(
-                        os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), folder_name, "**"),
-                        recursive=True,
-                    )
-                    if os.path.isfile(f)
-                ]
-                self.set_status(name, "Missing config", ", ".join(files))
-
-        for name in self._status:  # pylint: disable=consider-using-dict-items
-            if name not in names:
-                del self._status[name]
+            if os.path.isdir(folder_name):
+                name = os.path.basename(folder_name)
+                if name not in self._status:
+                    self._update_status(name)
 
         self._last_scan = datetime.datetime.utcnow()
 
@@ -138,6 +107,27 @@ class Status:
             self.set_status(
                 name, "Error: " + error["error"], "<code>" + "<br />".join(error["traceback"]) + "</code>"
             )
+            return
+
+        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "DONE")):
+            self.set_status(name, "Done")
+            return
+
+        if not os.path.exists(
+            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml")
+        ):
+            len_folder = (
+                len(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name).rstrip("/")) + 1
+            )
+            files = [
+                f[len_folder:]
+                for f in glob.glob(
+                    os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "**"),
+                    recursive=True,
+                )
+                if os.path.isfile(f)
+            ]
+            self.set_status(name, "Missing config", ", ".join(files))
 
         with open(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml"),
@@ -148,9 +138,6 @@ class Status:
         if config is None:
             self.set_status(name, "Empty config")
             return
-
-        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "DONE")):
-            self.set_status(name, "Done")
 
         if os.path.exists(
             os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "REMOVE_TO_CONTINUE")
