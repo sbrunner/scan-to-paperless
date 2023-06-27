@@ -176,7 +176,19 @@ class Status:
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Scan to Paperless status</title>
-
+    <link
+      rel="icon"
+      type="image/svg"
+      href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo.svg"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="icon"
+      type="image/svg"
+      media="(prefers-color-scheme: dark)"
+      href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo-dark.svg"
+      referrerpolicy="no-referrer"
+    />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
