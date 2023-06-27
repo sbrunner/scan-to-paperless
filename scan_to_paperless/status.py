@@ -82,7 +82,10 @@ class Status:
 
         for name in self._status:
             if name != self._current_folder:
-                self._update_status(name)
+                if os.path.isdir(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)):
+                    self._update_status(name)
+                else:
+                    del self._status[name]
 
         names = []
         for config_file_name in glob.glob(
