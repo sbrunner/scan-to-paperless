@@ -78,6 +78,8 @@ class Status:
     def scan(self) -> None:
         """Scan for changes for waiting documents."""
 
+        self._last_scan = datetime.datetime.utcnow()
+
         for name in self._status:  # pylint: disable=consider-using-dict-items
             if name != self._current_folder:
                 if os.path.isdir(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)):
@@ -90,8 +92,6 @@ class Status:
                 name = os.path.basename(folder_name)
                 if name not in self._status:
                     self._update_status(name)
-
-        self._last_scan = datetime.datetime.utcnow()
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
