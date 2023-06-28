@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Scan to Paperless status</title>
+    <link
+      rel="icon"
+      type="image/svg"
+      color="lighthex"
+      href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo.svg"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="icon"
+      type="image/svg"
+      color="lighthex"
+      media="(prefers-color-scheme: dark)"
+      href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo-dark.svg"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+      integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+      integrity="sha512-ZnR2wlLbSbr8/c9AgLg3jQPAattCUImNsae6NHYnS9KrIwRdcY9DxFotXhNAKIKbAXlRnujIqUWoXXwqyFOeIQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.4/bootstrap-table.min.css"
+      integrity="sha512-vaPSEKPBIWEWK+pGIwdLnPzw7S2Tr6rYVT05v+KN89YVpEJavFiY1dPzT+e1ZeyizjEPBicVxJ5QixXZw0Nopw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body class="px-5 py-4">
+    <h1>Scan to Paperless</h1>
+    <p><em>{{ global_status}</em> since <script>
+    window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
+    </script></p>
+    <p>Started at: <script>
+    window.document.write(new Date('{{ start_time.isoformat() }}Z').toLocaleString());
+    </script></p>
+    <p>Generated at: <script>
+    window.document.write(new Date('{{ datetime.datetime.utcnow().replace(microsecond=0).isoformat() }}Z').toLocaleString());
+    </script></p>
+    <h2>Jobs status</h2>
+    <table data-toggle="table" summary="Status of the current jobs">
+      <thead>
+        <tr>
+          <th data-sortable="true">Folder</th>
+          <th data-sortable="true">Status</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name, folder in status.items(): %}
+        {% tr_attributes = ' class="alert alert-info"' if name == self._current_folder else "" %}
+        <tr{{ tr_attributes }}>
+          <td><a href="./{{ name }}" target="_blank">{{ name }}</a></td>
+          <td>{{ folder.status }}</td>
+          <td>{{ folder.details }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+      integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"
+      integrity="sha512-VK2zcvntEufaimc+efOYi622VN5ZacdnufnmX7zIhCPmjhKnOi9ZDMtg1/ug5l183f19gG1/cBstPO4D8N/Img=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.4/bootstrap-table.min.js"
+      integrity="sha512-rZAhvMayqW5e/N+xdp011tYAIdxgMMJtKxUXx7scO4iBPSUXAKdkrKIPRu6tLr0O9V6Bs9QujJF3MqmgSNfYPA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+(() => {
+  'use strict'
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
+  }
+})()
+    </script>
+  </body>
+</html>
+
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">{%
+  if has_metadata %}
+  <ows:ServiceIdentification>
+    <ows:Title>{{ metadata['title'] }}</ows:Title>{%
+    if 'abstract' in metadata %}
+    <ows:Abstract>{{ metadata['abstract'] }}</ows:Abstract>{%
+    endif %}{%
+    if 'keywords' in metadata %}
+    <ows:Keywords>{%
+    for keyword in metadata['keywords'] %}
+        <ows:Keyword>{{ keyword }}</ows:Keyword>{%
+    endfor %}
+    </ows:Keywords>{%
+    endif %}
+    <ows:ServiceType>{{ metadata['servicetype'] }}</ows:ServiceType>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>{%
+    if 'fees' in metadata %}
+    <ows:Fees>{{ metadata['fees'] }}</ows:Fees>{%
+    endif %}{%
+    if 'access_constraints' in metadata %}
+    <ows:AccessConstraint>{{ metadata['access_constraints'] }}</ows:AccessConstraint>{%
+    endif %}
+  </ows:ServiceIdentification>{%
+  endif %}{%
+  if has_provider %}
+  <ows:ServiceProvider>{%
+    if 'name' in provider %}
+    <ows:ProviderName>{{ provider['name'] }}</ows:ProviderName>{%
+    endif %}{%
+    if 'url' in provider %}
+    <ows:ProviderSite>{{ provider['url'] }}</ows:ProviderSite>{%
+    endif %}{%
+    if 'contact' in provider %}
+    <ows:ServiceContact>{%
+      if 'name' in provider['contact'] %}
+      <ows:IndividualName>{{ provider['contact']['name'] }}</ows:IndividualName>{%
+      endif %}{%
+      if 'position' in provider['contact'] %}
+      <ows:PositionName>{{ provider['contact']['position'] }}</ows:PositionName>{%
+      endif %}{%
+      if 'info' in provider['contact'] %}
+      <ows:ContactInfo>{%
+        if 'phone' in provider['contact']['info'] %}
+        <ows:Phone>{%
+          if 'voice' in provider['contact']['info']['phone'] %}
+          <ows:Voice>{{ provider['contact']['info']['phone']['voice'] }}</ows:Voice>{%
+          endif %}{%
+          if 'fax' in provider['contact']['info']['phone'] %}
+          <ows:Facsimile>{{ provider['contact']['info']['phone']['fax'] }}</ows:Facsimile>{%
+          endif %}
+        </ows:Phone>{%
+        endif %}{%
+        if 'address' in provider['contact']['info'] %}
+        <ows:Address>{%
+          if 'delivery' in provider['contact']['info']['address'] %}
+          <ows:DeliveryPoint>{{ provider['contact']['info']['address']['delivery'] }}</ows:DeliveryPoint>{%
+          endif %}{%
+          if 'city' in provider['contact']['info']['address'] %}
+          <ows:City>{{ provider['contact']['info']['address']['city'] }}</ows:City>{%
+          endif %}{%
+          if 'area' in provider['contact']['info']['address'] %}
+          <ows:AdministrativeArea>{{ provider['contact']['info']['address']['area'] }}</ows:AdministrativeArea>{%
+          endif %}{%
+          if 'postal_code' in provider['contact']['info']['address'] %}
+          <ows:PostalCode>{{ provider['contact']['info']['address']['postal_code'] }}</ows:PostalCode>{%
+          endif %}{%
+          if 'country' in provider['contact']['info']['address'] %}
+          <ows:Country>{{ provider['contact']['info']['address']['country'] }}</ows:Country>{%
+          endif %}{%
+          if 'email' in provider['contact']['info']['address'] %}
+          <ows:ElectronicMailAddress>{{ provider['contact']['info']['address']['email'] }}</ows:ElectronicMailAddress>{%
+          endif %}
+        </ows:Address>{%
+        endif %}
+      </ows:ContactInfo>{%
+      endif %}
+    </ows:ServiceContact>{%
+    endif %}
+  </ows:ServiceProvider>{%
+  endif %}
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{getcapabilities}}">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>{%
+          if server %}
+          <ows:Get xlink:href="{{base_urls[0]}}{{base_url_postfix}}">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>{%
+          endif %}
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>{%
+          for base_url in base_urls %}
+          <ows:Get xlink:href="{{base_url}}{{base_url_postfix}}">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>{%
+                if server %}
+                <ows:Value>KVP</ows:Value>{%
+                endif %}
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>{%
+          endfor %}
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <!-- <ServiceMetadataURL xlink:href="" /> -->
+  <Contents>
+    {% for layername, layer in sorted(layers.items()) %}
+    <Layer>
+      <ows:Title>{{layer.get('title', layername)}}</ows:Title>
+      <ows:Identifier>{{layername}}</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>{%
+        for legend in layer_legends[layername] %}
+        <LegendURL format="{{legend['mime_type']}}" xlink:href="{{legend['href']}}" {%
+        if 'width' in legend %}width="{{legend['width']}}" {% endif %}{%
+        if 'height' in legend %}height="{{legend['height']}}" {% endif %}{%
+        if 'max_scale' in legend %}maxScaleDenominator="{{legend['max_scale']}}" {% else %}{%
+        if 'max_resolution' in legend %}maxScaleDenominator="{{legend['max_resolution'] / 0.00028}}" {%
+        endif %}{% endif %}{%
+        if 'min_scale' in legend %}minScaleDenominator="{{legend['min_scale']}}" {% else %}{%
+        if 'min_resolution' in legend %}minScaleDenominator="{{legend['min_resolution'] / 0.00028}}" {%
+        endif %}{% endif %}/>{%
+        endfor %}
+      </Style>
+      <Format>{{layer['mime_type']}}</Format>{%
+      if 'query_layers' in layer %}{%
+      for info_format in layer.get('info_formats', ['application/vnd.ogc.gml']) %}
+      <InfoFormat>{{infoformat}}</InfoFormat>{%
+      endfor %}{%
+      endif %}{%
+      for dimension in layer['dimensions'] %}
+      <Dimension>
+        <ows:Identifier>{{dimension['name']}}</ows:Identifier>
+        <Default>{{dimension['default']}}</Default>{%
+            for value in dimension['values'] %}
+        <Value>{{value}}</Value>{%
+            endfor %}
+      </Dimension>{%
+      endfor %}{%
+      for base_url in base_urls %}
+      <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
+                   template="{{base_url}}{{base_url_postfix}}1.0.0/{{layername}}/{{layer['wmts_style']}}{%
+                        for dimension in layer['dimensions']
+                            %}/{{('{' + dimension['name'] + '}')}}{%
+                        endfor
+                   %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />{%
+      endfor %}
+      <TileMatrixSetLink>
+        <TileMatrixSet>{{layer["grid"]}}</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+    {% endfor %}
+
+    {% for gridname, grid in sorted(grids.items()) %}
+    <TileMatrixSet>
+      <ows:Identifier>{{gridname}}</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:{{
+            grid['srs'].replace(':', '::')
+      }}</ows:SupportedCRS>{%
+        for i, resolution in enumerate(grid['resolutions']) %}{%
+        set width = int(ceil(
+                (grid['bbox'][2]-grid['bbox'][0]) /
+                resolution / grid['tile_size'])) %}{%
+        set height = int(ceil(
+                (grid['bbox'][3]-grid['bbox'][1]) /
+                resolution / grid['tile_size'])) %}{%
+        set left = grid['bbox'][0] %}{%
+        set top = grid['bbox'][3] %}
+      <TileMatrix>
+        <ows:Identifier>{{ get_tile_matrix_identifier(grid, resolution=resolution, zoom=i) }}</ows:Identifier>
+        <ScaleDenominator>{{resolution / 0.00028}}</ScaleDenominator>
+        <TopLeftCorner>{{left}} {{top}}</TopLeftCorner>
+        <TileWidth>{{grid['tile_size']}}</TileWidth>
+        <TileHeight>{{grid['tile_size']}}</TileHeight>
+        <MatrixWidth>{{width}}</MatrixWidth>
+        <MatrixHeight>{{height}}</MatrixHeight>
+      </TileMatrix>{%
+      endfor %}
+    </TileMatrixSet>{%
+    endfor %}
+  </Contents>
+</Capabilities>
