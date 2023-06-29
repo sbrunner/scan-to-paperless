@@ -1,4 +1,5 @@
----
+inherits:
+  - duplicated
 strictness: veryhigh
 doc-warnings: true
 max-line-length: 110
@@ -9,7 +10,6 @@ ignore-paths:
 
 pycodestyle:
   disable:
-    - E203 # whitespace before ':'
     - E501 # line too long, redundant with Black
 
 pydocstyle:
@@ -29,7 +29,6 @@ pylint:
     - too-many-arguments
     - too-many-return-statements
     - too-many-instance-attributes
-    - wrong-import-order
     - line-too-long
     - no-value-for-parameter
     - no-else-continue

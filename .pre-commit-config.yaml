@@ -46,11 +46,11 @@ repos:
     rev: 2.2.3 # Use the ref you want to point at
     hooks:
       - id: jsonschema-gentypes
-        files: |
+        files: |-
           (?x)^(
-              jsonschema-gentypes\.yaml|
-              scan_to_paperless/process_schema\.json|
-              scan_to_paperless/config_schema\.json
+            jsonschema-gentypes\.yaml
+            |scan_to_paperless/process_schema\.json
+            |scan_to_paperless/config_schema\.json
           )$
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -149,3 +149,5 @@ repos:
         args:
           - --tool=pydocstyle
           - --die-on-tool-error
+        additional_dependencies:
+          - prospector-profile-duplicated==0.1.0 # pypi

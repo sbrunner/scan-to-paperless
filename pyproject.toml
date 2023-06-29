@@ -72,6 +72,9 @@ pyroma = "4.2"
 typing-extensions = "4.7.0"
 c2cwsgiutils = { version = "5.2.2", extras = ["test_images"] }
 
+[tool.poetry.group.dev.dependencies]
+prospector-profile-duplicated = "0.1.0"
+
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
 build-backend = "poetry.core.masonry.api"
