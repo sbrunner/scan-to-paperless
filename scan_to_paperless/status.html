@@ -63,7 +63,7 @@
       </thead>
       <tbody>
         {% for name, folder in status.items(): %}
-        {% tr_attributes = ' class="alert alert-info"' if name == self._current_folder else "" %}
+        {% set tr_attributes = ' class="alert alert-info"' if name == self._current_folder else "" %}
         <tr{{ tr_attributes }}>
           <td><a href="./{{ name }}" target="_blank">{{ name }}</a></td>
           <td>{{ folder.status }}</td>
