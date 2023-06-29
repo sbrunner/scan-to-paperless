@@ -62,6 +62,7 @@ tifffile = "2023.4.12"
 deepmerge = "1.1.0"
 matplotlib = "3.7.1"
 typing-extensions = "4.5.0"
+Jinja2 = "3.1.2"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.9.0", extras = ["with_bandit", "with_mypy", "with_pyroma"] }

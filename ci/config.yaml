@@ -3,6 +3,7 @@
 checks:
   versions: False
   codespell: False
+  prettier: False
 
 publish:
   docker:
