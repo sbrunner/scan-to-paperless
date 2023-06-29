@@ -6,7 +6,7 @@ import html
 import os.path
 from typing import Dict, NamedTuple, Optional
 
-from jinja2 import Environment, PackageLoader, select_autoescape
+import jinja2
 from ruamel.yaml.main import YAML
 
 WAITING_STATUS_NAME = "Waiting validation"
@@ -170,7 +170,10 @@ class Status:
             return
 
         with open(self._file, "w", encoding="utf-8") as status_file:
-            env = Environment(loader=PackageLoader("scan_to_paperless"), autoescape=select_autoescape())
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+                autoescape=jinja2.select_autoescape(),
+            )
             template = env.get_template("status.html")
             status_file.write(
                 template.render(
