@@ -48,7 +48,7 @@ scikit-image = "0.20.0"
 opencv-contrib-python-headless = "4.7.0.72"
 deskew = "1.4.3"
 "ruamel.yaml" = "0.17.24"
-argcomplete = "3.0.8"
+argcomplete = "3.1.1"
 Pillow = "9.5.0"
 PyPDF2 = "3.0.1"
 pyzbar = "0.1.9"
@@ -61,15 +61,15 @@ pyperclip = "1.8.2"
 tifffile = "2023.4.12"
 deepmerge = "1.1.0"
 matplotlib = "3.7.1"
-typing-extensions = "4.5.0"
+typing-extensions = "4.7.0"
 Jinja2 = "3.1.2"
 
 [tool.poetry.dev-dependencies]
-prospector = { version = "1.9.0", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
-pytest = "7.3.1"
+prospector = { version = "1.10.2", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+pytest = "7.4.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.2"
-typing-extensions = "4.5.0"
+typing-extensions = "4.7.0"
 c2cwsgiutils = { version = "5.2.2", extras = ["test_images"] }
 
 [build-system]
