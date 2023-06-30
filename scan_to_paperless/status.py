@@ -21,6 +21,7 @@ WAITING_STATUS_DESCRIPTION = """You should validate that the generate images are
 
 
 class _Folder(NamedTuple):
+    mb_images: int
     status: str
     details: str
 
@@ -62,13 +63,15 @@ class Status:
             name = os.path.basename(os.path.dirname(name))
         self._current_folder = name
 
-    def set_status(self, name: str, status: str, details: str = "") -> None:
+    def set_status(self, name: str, nb_images: int, status: str, details: str = "") -> None:
         """Set the status of a folder."""
 
         # Config file name
         if name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
-        self._status[name] = _Folder(html.escape(status), details)
+        if nb_images <= 0 and name in self._status:
+            nb_images = self._status[name].nb_images
+        self._status[name] = _Folder(nb_images, html.escape(status), details)
 
         if self.no_write:
             print(f"{name}: {status}")
@@ -104,12 +107,12 @@ class Status:
                 error = yaml.load(error_file)
 
             self.set_status(
-                name, "Error: " + error["error"], "<code>" + "<br />".join(error["traceback"]) + "</code>"
+                name, -1, "Error: " + error["error"], "<code>" + "<br />".join(error["traceback"]) + "</code>"
             )
             return
 
         if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "DONE")):
-            self.set_status(name, "Done")
+            self.set_status(name, -1, "Done")
             return
 
         if not os.path.exists(
@@ -126,7 +129,7 @@ class Status:
                 )
                 if os.path.isfile(f)
             ]
-            self.set_status(name, "Missing config", ", ".join(files))
+            self.set_status(name, -1, "Missing config", ", ".join(files))
             return
 
         with open(
@@ -136,7 +139,7 @@ class Status:
             config = yaml.load(config_file)
 
         if config is None:
-            self.set_status(name, "Empty config")
+            self.set_status(name, -1, "Empty config")
             return
 
         if os.path.exists(
@@ -146,19 +149,24 @@ class Status:
             for image in config["steps"][-1]["sources"]:
                 if not os.path.exists(image):
                     rerun = True
+            nb_images = -1
+            if config.get("steps", []):
+                nb_images = len(config["steps"][-1]["sources"])
+            elif "sources" in config:
+                nb_images = len(config["sources"])
 
             if rerun:
                 if len(config["steps"]) >= 2:
-                    self.set_status(name, "Waiting to " + config["steps"][-2])
+                    self.set_status(name, nb_images, "Waiting to " + config["steps"][-2])
                 else:
-                    self.set_status(name, "Waiting to transform")
+                    self.set_status(name, nb_images, "Waiting to transform")
             else:
-                self.set_status(name, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
+                self.set_status(name, nb_images, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
         else:
             if len(config["steps"]) >= 1:
-                self.set_status(name, "Waiting to " + config["steps"][-1]["name"])
+                self.set_status(name, nb_images, "Waiting to " + config["steps"][-1]["name"])
             else:
-                self.set_status(name, "Waiting to transform")
+                self.set_status(name, nb_images, "Waiting to transform")
 
     def write(self) -> None:
         """Write the status file."""
