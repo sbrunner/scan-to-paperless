@@ -67,7 +67,7 @@
         <tr{{ tr_attributes }}>
           <td><a href="./{{ name }}" target="_blank">{{ name }}</a></td>
           <td>{{ folder.status }}</td>
-          <td>{{ folder.details }}</td>
+          <td>{{ folder.details | safe }}</td>
         </tr>
         {% endfor %}
       </tbody>
