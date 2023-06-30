@@ -129,6 +129,7 @@ class Status:
                 )
                 if os.path.isfile(f)
             ]
+            files = [f'<a href="./{name}/{f}" target="_blank">{f}</a>' for f in files]
             self.set_status(name, -1, "Missing config", ", ".join(files))
             return
 
