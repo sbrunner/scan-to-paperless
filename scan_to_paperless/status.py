@@ -4,7 +4,7 @@ import datetime
 import glob
 import html
 import os.path
-from typing import Dict, NamedTuple, Optional
+from typing import Dict, List, NamedTuple, Optional
 
 import jinja2
 from ruamel.yaml.main import YAML
@@ -35,6 +35,8 @@ class Status:
         self.no_write = no_write
         self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
         self._status: Dict[str, _Folder] = {}
+        self._codes: List[str] = []
+        self._consume: List[str] = []
         self._global_status = "Starting..."
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
@@ -84,14 +86,29 @@ class Status:
 
         self._last_scan = datetime.datetime.utcnow()
 
+        codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
+        if codes_folder[-1] != "/":
+            codes_folder += "/"
+        self._codes = [
+            f[len(codes_folder) :] for f in glob.glob(codes_folder, recursive=True) if os.path.isfile(f)
+        ]
+
+        consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
+        if consume_folder[-1] != "/":
+            consume_folder += "/"
+        self._consume = [
+            f[len(consume_folder) :] for f in glob.glob(consume_folder, recursive=True) if os.path.isfile(f)
+        ]
+
+        source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
         for name in self._status:  # pylint: disable=consider-using-dict-items
             if name != self._current_folder:
-                if os.path.isdir(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)):
+                if os.path.isdir(os.path.join(source_folder, name)):
                     self._update_status(name)
                 else:
                     del self._status[name]
 
-        for folder_name in glob.glob(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*")):
+        for folder_name in glob.glob(os.path.join(source_folder, "*")):
             if os.path.isdir(folder_name):
                 name = os.path.basename(folder_name)
                 if name not in self._status:
@@ -99,9 +116,10 @@ class Status:
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
-        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "error.yaml")):
+        source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
+        if os.path.exists(os.path.join(source_folder, name, "error.yaml")):
             with open(
-                os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "error.yaml"),
+                os.path.join(source_folder, name, "error.yaml"),
                 encoding="utf-8",
             ) as error_file:
                 error = yaml.load(error_file)
@@ -111,20 +129,16 @@ class Status:
             )
             return
 
-        if os.path.exists(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "DONE")):
+        if os.path.exists(os.path.join(source_folder, name, "DONE")):
             self.set_status(name, -1, "Done")
             return
 
-        if not os.path.exists(
-            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml")
-        ):
-            len_folder = (
-                len(os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name).rstrip("/")) + 1
-            )
+        if not os.path.exists(os.path.join(source_folder, name, "config.yaml")):
+            len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
             files = [
                 f[len_folder:]
                 for f in glob.glob(
-                    os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "**"),
+                    os.path.join(source_folder, name, "**"),
                     recursive=True,
                 )
                 if os.path.isfile(f)
@@ -134,7 +148,7 @@ class Status:
             return
 
         with open(
-            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "config.yaml"),
+            os.path.join(source_folder, name, "config.yaml"),
             encoding="utf-8",
         ) as config_file:
             config = yaml.load(config_file)
@@ -143,9 +157,7 @@ class Status:
             self.set_status(name, -1, "Empty config")
             return
 
-        if os.path.exists(
-            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name, "REMOVE_TO_CONTINUE")
-        ):
+        if os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE")):
             rerun = False
             for image in config["steps"][-1]["sources"]:
                 if not os.path.exists(image):
@@ -191,5 +203,7 @@ class Status:
                     start_time=self._start_time,
                     datetime=datetime,
                     status=self._status,
+                    codes=self._codes,
+                    consume=self._consume,
                 )
             )

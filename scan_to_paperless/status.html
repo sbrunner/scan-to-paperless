@@ -66,8 +66,8 @@
         {% set tr_attributes = ' class="alert alert-info"' if name == self._current_folder else "" %}
         <tr{{ tr_attributes }}>
           <td><a href="./{{ name }}" target="_blank">{{ name }}</a>{%
-            if folder.nb_images > 0 %}({{ folder.nb_images }} image{%
-            if folder.nb_images > 1 %}s){%
+            if folder.nb_images > 0: %}({{ folder.nb_images }} image{%
+            if folder.nb_images > 1: %}s){%
             endid %}</td>
           <td>{{ folder.status }}</td>
           <td>{{ folder.details | safe }}</td>
@@ -76,6 +76,36 @@
       </tbody>
     </table>
 
+    <h2>Waiting code scan</h2>
+    <table data-toggle="table" summary="Waiting code scan">
+      <thead>
+        <tr>
+          <th data-sortable="true">File</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name in codes: %}
+        <tr>
+          <td>{{ name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h2>Waiting to be consumed</h2>
+    <table data-toggle="table" summary="Waiting to be consumed">
+      <thead>
+        <tr>
+          <th data-sortable="true">File</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name in consume: %}
+        <tr>
+          <td>{{ name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
       integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
