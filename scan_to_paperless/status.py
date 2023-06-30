@@ -21,7 +21,7 @@ WAITING_STATUS_DESCRIPTION = """You should validate that the generate images are
 
 
 class _Folder(NamedTuple):
-    mb_images: int
+    nb_images: int
     status: str
     details: str
 
@@ -177,9 +177,9 @@ class Status:
                 self.set_status(name, nb_images, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
         else:
             if len(config["steps"]) >= 1:
-                self.set_status(name, nb_images, "Waiting to " + config["steps"][-1]["name"])
+                self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"])
             else:
-                self.set_status(name, nb_images, "Waiting to transform")
+                self.set_status(name, -1, "Waiting to transform")
 
     def write(self) -> None:
         """Write the status file."""

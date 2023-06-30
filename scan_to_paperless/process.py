@@ -1700,19 +1700,19 @@ def _process(
 
             status.set_global_status(f"Processing '{os.path.basename(os.path.dirname(config_file_name))}'...")
             status.set_current_config(config_file_name)
-            status.set_status(config_file_name, "Processing")
+            status.set_status(config_file_name, -1, "Processing")
             dirty = True
 
             done = False
             next_step = None
             if step["name"] == "transform":
-                status.set_status(config_file_name, "Transform")
+                status.set_status(config_file_name, -1, "Transform")
                 next_step = transform(config, step, config_file_name, root_folder)
             elif step["name"] == "split":
-                status.set_status(config_file_name, "Split")
+                status.set_status(config_file_name, -1, "Split")
                 next_step = split(config, step, root_folder)
             elif step["name"] == "finalize":
-                status.set_status(config_file_name, "Finalize")
+                status.set_status(config_file_name, -1, "Finalize")
                 finalize(config, step, root_folder)
                 done = True
 
