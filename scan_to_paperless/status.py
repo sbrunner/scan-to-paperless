@@ -101,7 +101,7 @@ class Status:
         ]
 
         source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
-        for name in [n for n in self._status]:  # pylint: disable=consider-using-dict-items
+        for name in list(self._status):
             if name != self._current_folder:
                 if os.path.isdir(os.path.join(source_folder, name)):
                     self._update_status(name)
