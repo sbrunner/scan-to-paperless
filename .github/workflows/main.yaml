@@ -58,7 +58,9 @@ jobs:
       - run: make build
       - run: make build-tests
       - run: make prospector
-      - name: pytest
+      - run: npm install
+      - run: mkdir -p results/status
+      - name: Pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
@@ -67,6 +69,9 @@ jobs:
           pytest --durations=0 -vv --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
       - run: sudo chmod -R go+r results || true
+        if: failure()
+      - name: Get the status images
+        run: cp tests/status/*.png results/status/
         if: failure()
       - uses: actions/upload-artifact@v3
         with:

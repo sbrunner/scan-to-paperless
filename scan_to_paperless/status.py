@@ -7,6 +7,7 @@ import os.path
 from typing import NamedTuple, Optional
 
 import jinja2
+import natsort
 from ruamel.yaml.main import YAML
 
 WAITING_STATUS_NAME = "Waiting validation"
@@ -90,14 +91,18 @@ class Status:
         if codes_folder[-1] != "/":
             codes_folder += "/"
         self._codes = [
-            f[len(codes_folder) :] for f in glob.glob(codes_folder, recursive=True) if os.path.isfile(f)
+            f[len(codes_folder) :]
+            for f in glob.glob(os.path.join(codes_folder, "**"), recursive=True)
+            if os.path.isfile(f)
         ]
 
         consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
         if consume_folder[-1] != "/":
             consume_folder += "/"
         self._consume = [
-            f[len(consume_folder) :] for f in glob.glob(consume_folder, recursive=True) if os.path.isfile(f)
+            f[len(consume_folder) :]
+            for f in glob.glob(os.path.join(consume_folder, "**"), recursive=True)
+            if os.path.isfile(f)
         ]
 
         source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
@@ -170,13 +175,13 @@ class Status:
 
             if rerun:
                 if len(config["steps"]) >= 2:
-                    self.set_status(name, nb_images, "Waiting to " + config["steps"][-2])
+                    self.set_status(name, nb_images, "Waiting to " + config["steps"][-2]["name"])
                 else:
                     self.set_status(name, nb_images, "Waiting to transform")
             else:
                 self.set_status(name, nb_images, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
         else:
-            if len(config["steps"]) >= 1:
+            if len(config.get("steps", [])) >= 1:
                 self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"])
             else:
                 self.set_status(name, -1, "Waiting to transform")
@@ -203,6 +208,7 @@ class Status:
                     start_time=self._start_time,
                     datetime=datetime,
                     status=self._status,
+                    sorted_status_key=natsort.natsorted(self._status.keys()),
                     codes=self._codes,
                     consume=self._consume,
                 )

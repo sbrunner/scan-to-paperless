@@ -7,3 +7,6 @@
 !requirements.txt
 !poetry.lock
 !pyproject.toml
+!package.json
+!package-lock.json
+!tests/screenshot.js

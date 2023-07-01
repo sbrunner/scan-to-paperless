@@ -62,6 +62,7 @@ deepmerge = "1.1.0"
 matplotlib = "3.7.1"
 typing-extensions = "4.7.0"
 Jinja2 = "3.1.2"
+natsort = "8.4.0"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.10.2", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
@@ -69,7 +70,7 @@ pytest = "7.4.0"
 pytest-profiling = "1.7.0"
 pyroma = "4.2"
 typing-extensions = "4.7.0"
-c2cwsgiutils = { version = "5.2.2", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.0.0.dev110", extras = ["test_images"] }
 
 [tool.poetry.group.dev.dependencies]
 prospector-profile-duplicated = "0.1.0"
