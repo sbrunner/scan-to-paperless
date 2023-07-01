@@ -77,7 +77,7 @@ repos:
         additional_dependencies:
           - poetry==1.4.2 # pypi
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
+    rev: v2.2.5
     hooks:
       - id: codespell
         exclude: ^(.*/)?poetry\.lock$
@@ -105,7 +105,7 @@ repos:
       - id: check-github-workflows
       - id: check-renovate
         additional_dependencies:
-          - pyjson5==1.6.2 # pypi
+          - pyjson5==1.6.3 # pypi
       - id: check-github-actions
       - id: check-jsonschema
         name: Check GitHub Workflows set timeout-minutes
