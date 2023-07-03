@@ -121,14 +121,14 @@ def _get_bar_codes_with_open_cv(
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
         try:
-            detector = cv2.barcode.BarcodeDetector()
-            retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)
-            if retval:
+            detector = cv2.barcode.BarcodeDetector()  # pylint: disable=c-extension-no-member
+            retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)  # type: ignore
+            if retval:  # type: ignore[has-type]
                 if os.environ.get("PROGRESS", "FALSE") == "TRUE":
                     base_path = os.path.dirname(image)
                     filename = ".".join(os.path.basename(image).split(".")[:-1])
                     suffix = random.randint(0, 1000)  # nosec
-                    for bbox_index, bbox in enumerate(points):
+                    for bbox_index, bbox in enumerate(points):  # type: ignore[has-type]
                         dest_filename = os.path.join(
                             base_path,
                             f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
@@ -143,9 +143,9 @@ def _get_bar_codes_with_open_cv(
                             ],
                         )
                 founds: list[_FoundCode] = []
-                for index, data in enumerate(decoded_info):
-                    bbox = points[index]
-                    type_ = decoded_type[index]
+                for index, data in enumerate(decoded_info):  # type: ignore[has-type]
+                    bbox = points[index]  # type: ignore[has-type]
+                    type_ = decoded_type[index]  # type: ignore[has-type]
                     founds.append(
                         {
                             "data": data,
@@ -210,7 +210,7 @@ def _get_qr_codes_with_open_cv(
             for index, data in enumerate(decoded_info):
                 if points[index] is not None and not data:
                     bbox = points[index]
-                    detector = cv2.wechat_qrcode_WeChatQRCode()
+                    detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
                     try:
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
@@ -220,7 +220,7 @@ def _get_qr_codes_with_open_cv(
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
                             ]
                         )
-                        for data in retval:
+                        for data in retval:  # type: ignore[attr-defined]
                             founds.append(
                                 {
                                     "data": data,
@@ -260,7 +260,7 @@ def _get_codes_with_open_cv_we_chat(
 
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
-        detector = cv2.wechat_qrcode_WeChatQRCode()
+        detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
         try:
             retval, points = detector.detectAndDecode(decoded_image)
             del points
