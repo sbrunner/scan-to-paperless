@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import Dict, List, TypedDict, Union
+from typing import TypedDict, Union
 
 APPEND_CREDIT_CARD_DEFAULT = False
 """ Default value of the field path 'Arguments append_credit_card' """
@@ -329,7 +329,7 @@ class Arguments(TypedDict, total=False):
     default: False
     """
 
-    pngquant_options: List[str]
+    pngquant_options: list[str]
     """
     Pngquant options.
 
@@ -387,7 +387,7 @@ class Arguments(TypedDict, total=False):
     default: 90
     """
 
-    background_color: List[int]
+    background_color: list[int]
     """
     Background color.
 
@@ -418,7 +418,7 @@ class Arguments(TypedDict, total=False):
 class AutoMask(TypedDict, total=False):
     """Auto mask."""
 
-    lower_hsv_color: List[int]
+    lower_hsv_color: list[int]
     """
     Lower hsv color.
 
@@ -430,7 +430,7 @@ class AutoMask(TypedDict, total=False):
       - 250
     """
 
-    upper_hsv_color: List[int]
+    upper_hsv_color: list[int]
     """
     Upper hsv color.
 
@@ -555,7 +555,7 @@ class Configuration(TypedDict, total=False):
     default: scanimage
     """
 
-    scanimage_arguments: List[str]
+    scanimage_arguments: list[str]
     """
     Scanimage arguments.
 
@@ -586,7 +586,7 @@ class Configuration(TypedDict, total=False):
     default: eog
     """
 
-    modes: Dict[str, "Mode"]
+    modes: dict[str, "Mode"]
     """
     Modes.
 
@@ -845,7 +845,7 @@ class MergeStrategies(TypedDict, total=False):
     The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies
     """
 
-    list: List[str]
+    list: list[str]
     """
     List.
 
@@ -855,7 +855,7 @@ class MergeStrategies(TypedDict, total=False):
       - override
     """
 
-    dict: List[str]
+    dict: list[str]
     """
     Dict.
 
@@ -865,7 +865,7 @@ class MergeStrategies(TypedDict, total=False):
       - merge
     """
 
-    fallback: List[str]
+    fallback: list[str]
     """
     Fallback.
 
@@ -875,7 +875,7 @@ class MergeStrategies(TypedDict, total=False):
       - override
     """
 
-    type_conflict: List[str]
+    type_conflict: list[str]
     """
     Type conflict.
 
@@ -889,7 +889,7 @@ class MergeStrategies(TypedDict, total=False):
 class Mode(TypedDict, total=False):
     """Mode."""
 
-    scanimage_arguments: List[str]
+    scanimage_arguments: list[str]
     """ Additional scanimage arguments """
 
     auto_bash: bool
@@ -1048,7 +1048,7 @@ class Rule(TypedDict, total=False):
     default: 30
     """
 
-    graduation_color: List[int]
+    graduation_color: list[int]
     """
     Rule graduation color.
 
@@ -1058,7 +1058,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_color: List[int]
+    lines_color: list[int]
     """
     Rule lines color.
 
@@ -1089,7 +1089,7 @@ class Rule(TypedDict, total=False):
     default: 17
     """
 
-    graduation_text_font_color: List[int]
+    graduation_text_font_color: list[int]
     """
     Rule graduation text font color.
 

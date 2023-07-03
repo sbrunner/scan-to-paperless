@@ -124,6 +124,16 @@ repos:
             ^thepaperlessproject-paperless-webserver.json
             |thepaperlessproject-paperless-consumer.json
           )
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.8.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py39-plus
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.0
+    hooks:
+      - id: autoflake
   - repo: https://github.com/psf/black
     rev: 23.3.0
     hooks:
@@ -132,16 +142,6 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.2.0
-    hooks:
-      - id: autoflake
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.7.0
-    hooks:
-      - id: pyupgrade
-        args:
-          - --py38-plus
   - repo: https://github.com/PyCQA/prospector
     rev: 1.10.2
     hooks:

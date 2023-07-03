@@ -1,9 +1,9 @@
 [tool.black]
 line-length = 110
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 ignore_missing_imports = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -28,7 +28,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Typing :: Typed",
 ]
 authors = ["Stéphane Brunner <stephane.brunner@gmail.com>"]
@@ -42,10 +41,10 @@ scan-process = "scan_to_paperless.process:main"
 add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
-numpy = "1.24.4"
+python = ">=3.9,<3.12"
+numpy = "1.25.0"
 scikit-image = "0.21.0"
-opencv-contrib-python-headless = "4.7.0.72"
+opencv-contrib-python-headless = "4.8.0.74"
 deskew = "1.4.3"
 "ruamel.yaml" = "0.17.32"
 argcomplete = "3.1.1"

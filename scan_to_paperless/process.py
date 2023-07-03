@@ -16,7 +16,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Optional, Protocol, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -54,7 +54,7 @@ class ScanToPaperlessException(Exception):
 
 
 def rotate_image(
-    image: NpNdarrayInt, angle: float, background: Union[int, Tuple[int, int, int]]
+    image: NpNdarrayInt, angle: float, background: Union[int, tuple[int, int, int]]
 ) -> NpNdarrayInt:
     """Rotate the image."""
     old_width, old_height = image.shape[:2]
@@ -62,7 +62,7 @@ def rotate_image(
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
     height = abs(np.sin(angle_radian) * old_width) + abs(np.cos(angle_radian) * old_height)
 
-    image_center: Tuple[Any, ...] = tuple(np.array(image.shape[1::-1]) / 2)
+    image_center: tuple[Any, ...] = tuple(np.array(image.shape[1::-1]) / 2)
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
     rot_mat[1, 2] += (width - old_width) / 2
     rot_mat[0, 2] += (height - old_height) / 2
@@ -78,7 +78,7 @@ def crop_image(  # pylint: disable=too-many-arguments
     y: int,
     width: int,
     height: int,
-    background: Union[Tuple[int], Tuple[int, int, int]],
+    background: Union[tuple[int], tuple[int, int, int]],
 ) -> NpNdarrayInt:
     """Crop the image."""
     matrice: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
@@ -216,10 +216,10 @@ class Context:  # pylint: disable=too-many-instance-attributes
         """Init the mask image used to mask the image on the crop and skew calculation."""
         self.mask = self._get_mask(self.config["args"].get("auto_mask"), "auto_mask", "mask.png")
 
-    def get_background_color(self) -> Tuple[int, int, int]:
+    def get_background_color(self) -> tuple[int, int, int]:
         """Get the background color."""
         return cast(
-            Tuple[int, int, int],
+            tuple[int, int, int],
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
         )
 
@@ -267,7 +267,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def get_px_value(self, name: str, default: Union[int, float]) -> float:
         """Get the value in px."""
         return (
-            cast(float, cast(Dict[str, Any], self.config["args"]).setdefault(name, default))
+            cast(float, cast(dict[str, Any], self.config["args"]).setdefault(name, default))
             / 10
             / 2.51
             * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
@@ -323,7 +323,7 @@ def add_intermediate_error(
     config: schema.Configuration,
     config_file_name: Optional[str],
     error: Exception,
-    traceback_: List[str],
+    traceback_: list[str],
 ) -> None:
     """Add in the config non fatal error."""
     if config_file_name is None:
@@ -331,7 +331,7 @@ def add_intermediate_error(
     if "intermediate_error" not in config:
         config["intermediate_error"] = []
 
-    old_intermediate_error: List[schema.IntermediateError] = []
+    old_intermediate_error: list[schema.IntermediateError] = []
     old_intermediate_error.extend(config["intermediate_error"])
     yaml = YAML()
     yaml.default_flow_style = False
@@ -348,7 +348,7 @@ def add_intermediate_error(
     os.rename(config_file_name + "_", config_file_name)
 
 
-def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
+def call(cmd: Union[str, list[str]], **kwargs: Any) -> None:
     """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
@@ -362,7 +362,7 @@ def call(cmd: Union[str, List[str]], **kwargs: Any) -> None:
     )
 
 
-def run(cmd: Union[str, List[str]], **kwargs: Any) -> CompletedProcess:
+def run(cmd: Union[str, list[str]], **kwargs: Any) -> CompletedProcess:
     """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
@@ -371,7 +371,7 @@ def run(cmd: Union[str, List[str]], **kwargs: Any) -> CompletedProcess:
     return subprocess.run(cmd, stderr=subprocess.PIPE, check=True, **kwargs)  # nosec
 
 
-def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
+def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
     """Verbose version of check_output."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
@@ -380,7 +380,7 @@ def output(cmd: Union[str, List[str]], **kwargs: Any) -> str:
     return cast(bytes, subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)).decode()  # nosec
 
 
-def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> Tuple[float, NpNdarrayInt]:
+def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNdarrayInt]:
     """Do a diff between images."""
     width = max(image1.shape[1], image2.shape[1])
     height = max(image1.shape[0], image2.shape[0])
@@ -476,8 +476,8 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
 
 
 def get_contour_to_crop(
-    contours: List[Tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0
-) -> Tuple[int, int, int, int]:
+    contours: list[tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0
+) -> tuple[int, int, int, int]:
     """Get the contour to crop."""
     content = [
         contours[0][0],
@@ -518,7 +518,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
         context.crop(x, y, width, height)
 
 
-def _get_level(context: Context) -> Tuple[bool, float, float]:
+def _get_level(context: Context) -> tuple[bool, float, float]:
     level_ = context.config["args"].setdefault("level", schema.LEVEL_DEFAULT)
     min_p100 = 0.0
     max_p100 = 100.0
@@ -761,8 +761,8 @@ def draw_line(  # pylint: disable=too-many-arguments
     value: Optional[int],
     name: str,
     type_: str,
-    color: Tuple[int, int, int],
-    line: Optional[Tuple[int, int, int, int]] = None,
+    color: tuple[int, int, int],
+    line: Optional[tuple[int, int, int, int]] = None,
 ) -> schema.Limit:
     """Draw a line on an image."""
     img_len = image.shape[0 if vertical else 1]
@@ -794,7 +794,7 @@ def draw_line(  # pylint: disable=too-many-arguments
     return {"name": name, "type": type_, "value": int(position), "vertical": vertical, "margin": 0}
 
 
-def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int], border: bool = True) -> None:
+def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], border: bool = True) -> None:
     """Draw a rectangle on an image."""
     color = (0, 255, 0)
     opacity = 0.1
@@ -820,7 +820,7 @@ def draw_rectangle(image: NpNdarrayInt, contour: Tuple[int, int, int, int], bord
 
 def find_lines(
     image: NpNdarrayInt, vertical: bool, config: schema.LineDetection
-) -> List[Tuple[int, int, int, int]]:
+) -> list[tuple[int, int, int, int]]:
     """Find the lines on an image."""
     edges = cv2.Canny(
         image,
@@ -844,10 +844,10 @@ def find_lines(
 
     lines = [line for line, in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
 
-    def _key(line: Tuple[int, int, int, int]) -> int:
+    def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
 
-    return cast(List[Tuple[int, int, int, int]], sorted(lines, key=_key)[:5])
+    return cast(list[tuple[int, int, int, int]], sorted(lines, key=_key)[:5])
 
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
@@ -860,8 +860,8 @@ def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
 
 
 def find_limit_contour(
-    image: NpNdarrayInt, vertical: bool, contours: List[Tuple[int, int, int, int]]
-) -> List[int]:
+    image: NpNdarrayInt, vertical: bool, contours: list[tuple[int, int, int, int]]
+) -> list[int]:
     """Find the contour for assisted split."""
     image_size = image.shape[1 if vertical else 0]
 
@@ -879,7 +879,7 @@ def find_limit_contour(
 
     ranges = zero_ranges(values)
 
-    result: List[int] = []
+    result: list[int] = []
     for ranges_ in ranges:
         if ranges_[0] != 0 and ranges_[1] != image_size:
             result.append(int(round(sum(ranges_) / 2)))
@@ -888,8 +888,8 @@ def find_limit_contour(
 
 
 def find_limits(
-    image: NpNdarrayInt, vertical: bool, context: Context, contours: List[Tuple[int, int, int, int]]
-) -> Tuple[List[int], List[Tuple[int, int, int, int]]]:
+    image: NpNdarrayInt, vertical: bool, context: Context, contours: list[tuple[int, int, int, int]]
+) -> tuple[list[int], list[tuple[int, int, int, int]]]:
     """Find the limit for assisted split."""
     contours_limits = find_limit_contour(image, vertical, contours)
     lines = find_lines(image, vertical, context.config["args"].setdefault("line_detection", {}))
@@ -897,11 +897,11 @@ def find_limits(
 
 
 def fill_limits(
-    image: NpNdarrayInt, vertical: bool, contours_limits: List[int], lines: List[Tuple[int, int, int, int]]
-) -> List[schema.Limit]:
+    image: NpNdarrayInt, vertical: bool, contours_limits: list[int], lines: list[tuple[int, int, int, int]]
+) -> list[schema.Limit]:
     """Fill the limit for assisted split."""
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
-    limits: List[schema.Limit] = []
+    limits: list[schema.Limit] = []
     prefix = "V" if vertical else "H"
     for index, line in enumerate(lines):
         limits.append(
@@ -937,12 +937,12 @@ def find_contours(
     name: str,
     prefix: str,
     default_min_box_size: int = schema.MIN_BOX_SIZE_EMPTY_DEFAULT,
-) -> List[Tuple[int, int, int, int]]:
+) -> list[tuple[int, int, int, int]]:
     """Find the contours on an image."""
     block_size = context.get_px_value(
         f"threshold_block_size_{prefix}", schema.THRESHOLD_BLOCK_SIZE_CROP_DEFAULT
     )
-    threshold_value_c = cast(Dict[str, int], context.config["args"]).setdefault(
+    threshold_value_c = cast(dict[str, int], context.config["args"]).setdefault(
         f"threshold_value_c_{prefix}", schema.THRESHOLD_VALUE_C_CROP_DEFAULT
     )
 
@@ -988,9 +988,9 @@ def find_contours(
 
 def _find_contours_thresh(
     image: NpNdarrayInt, thresh: NpNdarrayInt, context: Context, prefix: str, default_min_box_size: int = 10
-) -> List[Tuple[int, int, int, int]]:
+) -> list[tuple[int, int, int, int]]:
     min_size = context.get_px_value(f"min_box_size_{prefix}", default_min_box_size)
-    min_black = cast(Dict[str, int], context.config["args"]).setdefault(
+    min_black = cast(dict[str, int], context.config["args"]).setdefault(
         f"min_box_black_{prefix}", schema.MIN_BOX_BLACK_CROP_DEFAULT
     )
     kernel_size = context.get_px_value(
@@ -1364,7 +1364,7 @@ def split(
             if os.path.exists(image_path):
                 os.unlink(image_path)
 
-    append: Dict[Union[str, int], List[Item]] = {}
+    append: dict[Union[str, int], list[Item]] = {}
     transformed_images = []
     for assisted_split in config["assisted_split"]:
         image = assisted_split["source"]
@@ -1446,7 +1446,7 @@ def split(
         process_count = context.process_count
 
     for page_number in sorted(append.keys()):
-        items: List[Item] = append[page_number]
+        items: list[Item] = append[page_number]
         vertical = len(horizontal_limits) == 0
         if not vertical and len(vertical_limits) != 0 and len(items) > 1:
             raise ScanToPaperlessException(f"Mix of limit type for page '{page_number}'")
@@ -1627,7 +1627,7 @@ def process_code() -> None:
             _LOG.exception("Error while processing %s: %s", pdf_filename, str(exception))
 
 
-def is_sources_present(images: List[str], root_folder: str) -> bool:
+def is_sources_present(images: list[str], root_folder: str) -> bool:
     """Are sources present for the next step."""
     for image in images:
         if not os.path.exists(os.path.join(root_folder, image)):
