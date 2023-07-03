@@ -7,7 +7,7 @@ import random
 import re
 import subprocess  # nosec
 import sys
-from typing import Any, List, Optional, cast
+from typing import Any, Optional, cast
 
 import argcomplete
 import numpy as np
@@ -26,7 +26,7 @@ else:
     from scan_to_paperless import config_old as schema  # type: ignore
 
 
-def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> None:
+def call(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> None:
     """Verbose implementation of check_call."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -37,7 +37,7 @@ def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> Non
         sys.exit(1)
 
 
-def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> bytes:
+def output(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> bytes:
     """Verbose implementation of check_output."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -168,7 +168,7 @@ def main() -> None:
     os.makedirs(root_folder)
 
     try:
-        scanimage: List[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
+        scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
         scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
         scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
         mode_config = config.get("modes", {}).get(args.mode, {})

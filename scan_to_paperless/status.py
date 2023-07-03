@@ -4,7 +4,7 @@ import datetime
 import glob
 import html
 import os.path
-from typing import Dict, List, NamedTuple, Optional
+from typing import NamedTuple, Optional
 
 import jinja2
 from ruamel.yaml.main import YAML
@@ -34,9 +34,9 @@ class Status:
 
         self.no_write = no_write
         self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
-        self._status: Dict[str, _Folder] = {}
-        self._codes: List[str] = []
-        self._consume: List[str] = []
+        self._status: dict[str, _Folder] = {}
+        self._codes: list[str] = []
+        self._consume: list[str] = []
         self._global_status = "Starting..."
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)

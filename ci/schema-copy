@@ -17,7 +17,9 @@ def _main() -> None:
     with open("scan_to_paperless/process_schema.json", "w", encoding="utf-8") as process_schema_file:
         json.dump(process_schema, process_schema_file, indent=2)
 
-    subprocess.run(["pre-commit", "run", "--files=scan_to_paperless/process_schema.json"])
+    subprocess.run(
+        ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"]
+    )
 
 
 if __name__ == "__main__":

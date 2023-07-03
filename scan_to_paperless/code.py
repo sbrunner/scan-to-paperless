@@ -8,7 +8,7 @@ import os
 import random
 import subprocess  # nosec
 import tempfile
-from typing import Dict, List, Optional, Set, Tuple, TypedDict, Union
+from typing import Optional, TypedDict, Union
 
 import cv2
 import pikepdf
@@ -27,7 +27,7 @@ Image.MAX_IMAGE_PIXELS = 500000000
 class _FoundCode(TypedDict):
     data: str
     type: str
-    geometry: Optional[List[Tuple[float, float]]]
+    geometry: Optional[list[tuple[float, float]]]
 
 
 class _Code(TypedDict):
@@ -37,18 +37,18 @@ class _Code(TypedDict):
 
 
 class _AllCodes(TypedDict):
-    pages: Set[int]
+    pages: set[int]
     pos: int
 
 
 class _PageCode(TypedDict):
     pos: int
-    geometry: List[Tuple[Union[int, float], Union[int, float]]]
+    geometry: list[tuple[Union[int, float], Union[int, float]]]
 
 
 def _point(
-    point: Tuple[Union[int, float], Union[int, float]], deg_angle: float, width: int, height: int
-) -> Tuple[float, float]:
+    point: tuple[Union[int, float], Union[int, float]], deg_angle: float, width: int, height: int
+) -> tuple[float, float]:
     assert -90 <= deg_angle <= 90
     angle = math.radians(deg_angle)
     diff_x = 0.0
@@ -70,10 +70,10 @@ def _add_code(
     width: int,
     height: int,
     page: int,
-    all_codes: List[_Code],
-    added_codes: Dict[str, _AllCodes],
-    codes: List[_PageCode],
-    founds: List[_FoundCode],
+    all_codes: list[_Code],
+    added_codes: dict[str, _AllCodes],
+    codes: list[_PageCode],
+    founds: list[_FoundCode],
 ) -> None:
     for found in founds:
         data = found["data"]
@@ -109,14 +109,14 @@ def _get_bar_codes_with_open_cv(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Dict[str, _AllCodes]] = None,
-) -> List[_PageCode]:
+    all_codes: Optional[list[_Code]] = None,
+    added_codes: Optional[dict[str, _AllCodes]] = None,
+) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
         all_codes = []
-    codes: List[_PageCode] = []
+    codes: list[_PageCode] = []
 
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
@@ -142,7 +142,7 @@ def _get_bar_codes_with_open_cv(
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
                             ],
                         )
-                founds: List[_FoundCode] = []
+                founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
                     bbox = points[index]
                     type_ = decoded_type[index]
@@ -167,14 +167,14 @@ def _get_qr_codes_with_open_cv(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Dict[str, _AllCodes]] = None,
-) -> List[_PageCode]:
+    all_codes: Optional[list[_Code]] = None,
+    added_codes: Optional[dict[str, _AllCodes]] = None,
+) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
         all_codes = []
-    codes: List[_PageCode] = []
+    codes: list[_PageCode] = []
 
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
@@ -206,7 +206,7 @@ def _get_qr_codes_with_open_cv(
                         ],
                     )
 
-            founds: List[_FoundCode] = []
+            founds: list[_FoundCode] = []
             for index, data in enumerate(decoded_info):
                 if points[index] is not None and not data:
                     bbox = points[index]
@@ -249,14 +249,14 @@ def _get_codes_with_open_cv_we_chat(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Dict[str, _AllCodes]] = None,
-) -> List[_PageCode]:
+    all_codes: Optional[list[_Code]] = None,
+    added_codes: Optional[dict[str, _AllCodes]] = None,
+) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
         all_codes = []
-    codes: List[_PageCode] = []
+    codes: list[_PageCode] = []
 
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
@@ -264,7 +264,7 @@ def _get_codes_with_open_cv_we_chat(
         try:
             retval, points = detector.detectAndDecode(decoded_image)
             del points
-            founds: List[_FoundCode] = []
+            founds: list[_FoundCode] = []
             for index, data in enumerate(retval):
                 del index
                 founds.append(
@@ -288,18 +288,18 @@ def _get_codes_with_zxing(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Dict[str, _AllCodes]] = None,
-) -> List[_PageCode]:
+    all_codes: Optional[list[_Code]] = None,
+    added_codes: Optional[dict[str, _AllCodes]] = None,
+) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
         all_codes = []
-    codes: List[_PageCode] = []
+    codes: list[_PageCode] = []
 
     decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
-        founds: List[_FoundCode] = []
+        founds: list[_FoundCode] = []
         for result in zxingcpp.read_barcodes(decoded_image):  # pylint: disable=c-extension-no-member
             founds.append(
                 {
@@ -325,17 +325,17 @@ def _get_codes_with_z_bar(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[List[_Code]] = None,
-    added_codes: Optional[Dict[str, _AllCodes]] = None,
-) -> List[_PageCode]:
+    all_codes: Optional[list[_Code]] = None,
+    added_codes: Optional[dict[str, _AllCodes]] = None,
+) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
     if all_codes is None:
         all_codes = []
-    codes: List[_PageCode] = []
+    codes: list[_PageCode] = []
 
     img = Image.open(image)
-    founds: List[_FoundCode] = []
+    founds: list[_FoundCode] = []
     for output in pyzbar.decode(img):
         founds.append(
             {
@@ -361,9 +361,9 @@ def add_codes(
 ) -> None:
     """Add the QRCode and the BarCodes to a PDF in an additional page."""
     # Codes information to create the new page
-    all_codes: List[_Code] = []
+    all_codes: list[_Code] = []
     # Codes information about the already found codes
-    added_codes: Dict[str, _AllCodes] = {}
+    added_codes: dict[str, _AllCodes] = {}
 
     with open(input_filename, "rb") as input_file:
         existing_pdf = PdfReader(input_file)
@@ -388,7 +388,7 @@ def add_codes(
                 img0 = Image.open(image)
 
                 # Codes information to add the mask and number on the page
-                codes: List[_PageCode] = []
+                codes: list[_PageCode] = []
                 codes += _get_codes_with_zxing(
                     image, 0, index, img0.width, img0.height, all_codes, added_codes
                 )

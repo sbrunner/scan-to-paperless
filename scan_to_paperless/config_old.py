@@ -1,10 +1,10 @@
 """Config for old Python versions."""
 
-from typing import Any, Dict
+from typing import Any
 
 # Arguments
-Arguments = Dict[str, Any]
+Arguments = dict[str, Any]
 
 
 # Configuration
-Configuration = Dict[str, Any]
+Configuration = dict[str, Any]
