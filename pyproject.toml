@@ -43,9 +43,9 @@ add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-numpy = "1.24.4"
+numpy = "1.25.0"
 scikit-image = "0.21.0"
-opencv-contrib-python-headless = "4.7.0.72"
+opencv-contrib-python-headless = "4.8.0.74"
 deskew = "1.4.3"
 "ruamel.yaml" = "0.17.32"
 argcomplete = "3.1.1"
