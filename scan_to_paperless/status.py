@@ -10,14 +10,14 @@ import jinja2
 import natsort
 from ruamel.yaml.main import YAML
 
-WAITING_STATUS_NAME = "Waiting validation"
-WAITING_STATUS_DESCRIPTION = """You should validate that the generate images are correct.<br>
-    If the result is correct remove the <code>REMOVE_TO_CONTINUE</code> file.<br>
+_WAITING_STATUS_NAME = "Waiting validation"
+_WAITING_STATUS_DESCRIPTION = """You should validate that the generate images are correct ({generated_images}).<br>
+    If the result is correct remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.<br>
     If not you can:<br>
     <ul>
-        <li>Edit the generated image Then remove the <code>REMOVE_TO_CONTINUE</code> file.</li>
-        <li>Edit the <code>config.yaml</code> file to change the parameters, the remove the generated files to force the regeneration.</li>
-        <li>Edit the source image the remove the corresponding generated file to force the regeneration.</li>
+        <li>Edit the generated tmage Then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.</li>
+        <li>Edit the <a href="./{name}/config.yaml" target="_blank"><code>config.yaml</code></a> file to change the parameters, then remove the generated files ({generated_images}) to force the regeneration.</li>
+        <li>Edit the source images ({source_images}) then remove the corresponding generated files ({generated_images}) to force the regeneration.</li>
     </ul>"""
 
 
@@ -148,7 +148,7 @@ class Status:
                 )
                 if os.path.isfile(f)
             ]
-            files = [f'<a href="./{name}/{f}" target="_blank">{f}</a>' for f in files]
+            files = [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in files]
             self.set_status(name, -1, "Missing config", ", ".join(files))
             return
 
@@ -179,7 +179,32 @@ class Status:
                 else:
                     self.set_status(name, nb_images, "Waiting to transform")
             else:
-                self.set_status(name, nb_images, WAITING_STATUS_NAME, WAITING_STATUS_DESCRIPTION)
+                len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
+                source_images = (
+                    config["steps"][-2]["sources"] if len(config["steps"]) >= 2 else config["sources"]
+                )
+                generated_images = [f[len_folder:] for f in config["steps"][-1]["sources"]]
+                self.set_status(
+                    name,
+                    nb_images,
+                    _WAITING_STATUS_NAME,
+                    _WAITING_STATUS_DESCRIPTION.format(
+                        name=name,
+                        source_images=", ".join(
+                            [
+                                f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
+                                for f in source_images
+                            ]
+                        ),
+                        generated_images=", ".join(
+                            [
+                                f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
+                                for f in generated_images
+                            ]
+                        ),
+                    ),
+                )
+
         else:
             if len(config.get("steps", [])) >= 1:
                 self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"])
