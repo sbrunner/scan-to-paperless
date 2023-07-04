@@ -1,0 +1,9 @@
+sources:
+  - source/1.png
+steps:
+  - sources:
+      - source/1.png
+    name: transform
+  - sources:
+      - ./scan/6/1.png
+    name: finalize
