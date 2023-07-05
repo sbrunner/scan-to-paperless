@@ -93,7 +93,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
   ubuntu_22_04/libgpg-error: 1.43-3
   ubuntu_22_04/libheif: 1.12.0-2build1
-  ubuntu_22_04/libidn: 1.38-4build1
+  ubuntu_22_04/libidn: 1.38-4ubuntu1
   ubuntu_22_04/libidn2: 2.3.2-2build1
   ubuntu_22_04/libimage-exiftool-perl: 12.40+dfsg-1
   ubuntu_22_04/libimagequant: 2.17.0-1
@@ -302,7 +302,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
   ubuntu_22_04/libgpg-error: 1.43-3
   ubuntu_22_04/libheif: 1.12.0-2build1
-  ubuntu_22_04/libidn: 1.38-4build1
+  ubuntu_22_04/libidn: 1.38-4ubuntu1
   ubuntu_22_04/libidn2: 2.3.2-2build1
   ubuntu_22_04/libimage-exiftool-perl: 12.40+dfsg-1
   ubuntu_22_04/libimagequant: 2.17.0-1
