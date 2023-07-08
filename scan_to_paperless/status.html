@@ -102,7 +102,7 @@
             if folder.nb_images > 0: %} ({{ folder.nb_images }} image{%
             if folder.nb_images > 1: %}s{% endif %}){%
             endif %}</td>
-          <td>{{ folder.status }}</td>
+          <td>{{ folder.status | safe }}</td>
           <td>{{ folder.details | safe }}</td>
         </tr>
         {% endfor %}

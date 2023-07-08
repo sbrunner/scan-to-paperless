@@ -164,7 +164,12 @@ class Status:
                 error = yaml.load(error_file)
 
             self.set_status(
-                name, -1, "Error: " + error["error"], "<code>" + "<br />".join(error["traceback"]) + "</code>"
+                name,
+                -1,
+                "Error: " + error["error"],
+                "<p>Stacktrace:</p><p><code>"
+                + "<br />".join(error["traceback"])
+                + f'</code></p><p>Remove the <a href="./{name}/error.yaml" target="_blank"><code>error.yaml</code></a> file to retry.</p>',
             )
             return
 
