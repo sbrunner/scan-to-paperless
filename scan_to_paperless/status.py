@@ -25,6 +25,34 @@ _WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate
 <p>In the <a href="./{name}/crop" target="_blank"><code>crop</code></a> folder you can find the images with the detected block used by the automatic crop.</p>
 <p>In the <a href="./{name}/skew" target="_blank"><code>skew</code></a> golder you can find some images that represent the the shew detection will be based on.</p>
 <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
+_WAITING_ASSISTED_SPLIT_DESCRIPTION = """<div class="sidebar-box"><p>You are in assisted split mode, in the step where you should choose should the splitting,</p>
+<p>For that you should open the <a href="./{name}/config.yaml" target="_blank"><code>config.yaml</code></a> file,
+in the section <code>assisted_split</code> you can find the list of the images that will be split, with a configuration like that.</p>
+<pre><code>assisted_split:
+- source: /source/z-563313-h/assisted-split/image-1.png
+  destinations:
+  - 4
+  - 1
+  limits:
+  - name: VC
+    type: image center
+    value: 1777
+    vertical: true
+    margin: 0
+</code></pre>
+<ul>
+<li><code>source</code> is the path (on the server) of the image to split</li>
+<li><code>destinations</code> is the list of the destination pages of the split images</li>
+<li><code>limits</code> is the list of the limits used to split the image</li>
+<li><code>name</code> is the name of the auto detected limit that we can found on the generated image on the <a href="./{name}/" target="_blank">base</a> folder</li>
+<li><code>type</code> is the type of detection</li>
+<li><code>value</code> is the position where we will to split</li>
+<li><code>vertical</code> is a boolean that indicate if the limit is vertical or horizontal</li>
+<li><code>margin</code> is the margin of the limit, if it set we will "lost" the part of the image around the split position</li>
+</ul>
+<p>For each image we will have all the detected limits, you can choose the limit that you want to use for the split (you can modify it if needed), and remove the other entries.</p>
+<p>When you have finished to choose the limits, you should save the edited <code>config.yaml</code> file, then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file to continue the process.</p>
+<p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
 
 
 class _Folder(NamedTuple):
@@ -194,7 +222,11 @@ class Status:
                     name,
                     nb_images,
                     _WAITING_STATUS_NAME,
-                    _WAITING_STATUS_DESCRIPTION.format(
+                    (
+                        _WAITING_ASSISTED_SPLIT_DESCRIPTION
+                        if config["steps"][-1]["name"] == "split"
+                        else _WAITING_STATUS_DESCRIPTION
+                    ).format(
                         name=name,
                         source_images=", ".join(
                             [
