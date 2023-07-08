@@ -11,14 +11,14 @@ import natsort
 from ruamel.yaml.main import YAML
 
 _WAITING_STATUS_NAME = "Waiting validation"
-_WAITING_STATUS_DESCRIPTION = """You should validate that the generate images are correct ({generated_images}).<br>
+_WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate that the generate images are correct ({generated_images}).<br>
     If the result is correct remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.<br>
     If not you can:<br>
     <ul>
-        <li>Edit the generated tmage Then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.</li>
+        <li>Edit the generated image, then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.</li>
         <li>Edit the <a href="./{name}/config.yaml" target="_blank"><code>config.yaml</code></a> file to change the parameters, then remove the generated files ({generated_images}) to force the regeneration.</li>
         <li>Edit the source images ({source_images}) then remove the corresponding generated files ({generated_images}) to force the regeneration.</li>
-    </ul>"""
+    </ul>></p><p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
 
 
 class _Folder(NamedTuple):

@@ -50,6 +50,26 @@
         body a > code {
             color:  var(--bs-code-color);
         }
+
+        .sidebar-close {
+          max-height: 5em;
+          position: relative;
+          overflow: hidden;
+        }
+        .sidebar-open .read-more {
+          display: none;
+        }
+        .sidebar-box .read-more {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          text-align: center;
+          margin: 0;
+          padding: 2.2rem 0 0 0;
+          font-size: .95em;
+          background-image: linear-gradient(to bottom, transparent, var(--bs-table-bg));
+        }
     </style>
   </head>
   <body class="px-5 py-4">
@@ -144,6 +164,13 @@
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.documentElement.setAttribute('data-bs-theme', 'dark');
   }
+
+  $(".sidebar-box").addClass("sidebar-close");
+  window.operateDetails = {
+    'click .sidebar-box': function (e, value, row, index) {
+    $(e.currentTarget).removeClass("sidebar-close");
+    $(e.currentTarget).addClass("sidebar-open");
+  }};
 })()
     </script>
   </body>
