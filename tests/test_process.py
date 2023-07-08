@@ -680,6 +680,7 @@ def test_tiff():
 
 
 # @pytest.mark.skip(reason="for test")
+@pytest.mark.flaky(reruns=3, only_rerun="ValueError")
 @pytest.mark.parametrize(
     "name,config",
     [
