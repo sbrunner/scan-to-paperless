@@ -18,7 +18,13 @@ _WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate
         <li>Edit the generated image, then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.</li>
         <li>Edit the <a href="./{name}/config.yaml" target="_blank"><code>config.yaml</code></a> file to change the parameters, then remove the generated files ({generated_images}) to force the regeneration.</li>
         <li>Edit the source images ({source_images}) then remove the corresponding generated files ({generated_images}) to force the regeneration.</li>
-    </ul>></p><p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
+    </ul>>
+</p>
+<p>In th <a href="./{name}/source" target="_blank"><code>source</code></a> folder you can also find some images postfixed by <code>-skew-corrected</code> that the source image where the skew correction is applied.</p>
+<p>In the <a href="./{name}/histogram" target="_blank"><code>histogram</code></a> folder yu can find tow histogram of the source images, one of them use a logarithm scale.</p>
+<p>In the <a href="./{name}/crop" target="_blank"><code>crop</code></a> folder you can find the images with the detected block used by the automatic crop.</p>
+<p>In the <a href="./{name}/skew" target="_blank"><code>skew</code></a> golder you can find some images that represent the the shew detection will be based on.</p>
+<p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
 
 
 class _Folder(NamedTuple):
