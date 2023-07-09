@@ -24,7 +24,7 @@ def test_status():
             f'--url=file://{os.path.join(os.path.dirname(__file__), "status", "scan", "status.html")}',
             f'--output={os.path.join(os.path.dirname(__file__), "status", "status.current.png")}',
             "--width=850",
-            "--height=1500",
+            "--height=1800",
         ],
         check=True,
         cwd="/opt",
