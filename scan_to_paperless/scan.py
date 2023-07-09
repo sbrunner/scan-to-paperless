@@ -1,9 +1,9 @@
 """Scan a new document."""
 
 import argparse
+import datetime
 import glob
 import os
-import random
 import re
 import subprocess  # nosec
 import sys
@@ -158,11 +158,11 @@ def main() -> None:
         )
         sys.exit(1)
 
-    rand_int = str(random.randint(0, 999999))  # nosec
-    base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
+    now = datetime.datetime.now()
+    base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), now.strftime("%Y%m%d-%H%M%S"))
     while os.path.exists(base_folder):
-        rand_int = str(random.randint(0, 999999))  # nosec
-        base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
+        now += datetime.timedelta(seconds=1)
+        base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), now.strftime("%Y%m%d-%H%M%S"))
 
     root_folder = os.path.join(base_folder, "source")
     os.makedirs(root_folder)
