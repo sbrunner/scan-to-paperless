@@ -14,6 +14,7 @@ def test_status():
     old_cwd = os.getcwd()
     os.chdir(os.path.join(os.path.dirname(__file__), "status"))
     status_instance = status.Status()
+    status_instance.set_current_folder("7")
     status_instance.write()
     os.chdir(old_cwd)
 

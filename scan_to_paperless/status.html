@@ -51,6 +51,13 @@
             color:  var(--bs-code-color);
         }
 
+        tr.active > td {
+          background-color: rgba(0, 0, 0, .2);
+        }
+        [data-bs-theme="dark"] tr.active > td {
+          background-color: rgba(255, 255, 255, .2);
+        }
+
         .sidebar-close {
           max-height: 5em;
           position: relative;
@@ -96,8 +103,8 @@
       <tbody>
         {% for name in sorted_status_key: %}
         {% set folder = status[name] %}
-        {% set tr_attributes = ' class="alert alert-info"' if name == self._current_folder else "" %}
-        <tr{{ tr_attributes }}>
+        {% set tr_attributes = ' class="active"' if name == current_folder else "" %}
+        <tr{{ tr_attributes | safe }}>
           <td><a href="./{{ name }}" target="_blank"><code>{{ name }}</code></a>{%
             if folder.nb_images > 0: %} ({{ folder.nb_images }} image{%
             if folder.nb_images > 1: %}s{% endif %}){%

@@ -273,6 +273,7 @@ class Status:
                 template.render(
                     global_status=self._global_status,
                     global_status_update=self._global_status_update,
+                    current_folder=self._current_folder,
                     start_time=self._start_time,
                     datetime=datetime,
                     status=self._status,
