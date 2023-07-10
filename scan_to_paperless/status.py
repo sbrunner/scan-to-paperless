@@ -4,6 +4,7 @@ import datetime
 import glob
 import html
 import os.path
+from enum import Enum
 from typing import NamedTuple, Optional
 
 import jinja2
@@ -53,6 +54,10 @@ in the section <code>assisted_split</code> you can find the list of the images t
 <p>For each image we will have all the detected limits, you can choose the limit that you want to use for the split (you can modify it if needed), and remove the other entries.</p>
 <p>When you have finished to choose the limits, you should save the edited <code>config.yaml</code> file, then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file to continue the process.</p>
 <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
+_WAITING_TO_TRANSFORM_STATUS = "Waiting to transform"
+_WAITING_TO_ASSISTED_SPLIT_STATUS = "Waiting to split"
+_DONE_STATUS = "Done"
+_WAITING_TO_FINALIZE_STATUS = "Waiting to finalize"
 
 
 class _Folder(NamedTuple):
@@ -61,8 +66,22 @@ class _Folder(NamedTuple):
     details: str
 
 
+class JobType(Enum):
+    """The type of job."""
+
+    NONE = "None"
+    TRANSFORM = "transform"
+    ASSISTED_SPLIT = "assisted-split"
+    FINALIZE = "finalize"
+    DOWN = "down"
+    CODE = "code"
+
+
 class Status:
     """Manage the status file of the progress."""
+
+    current_job_type = JobType.NONE
+    current_job_list: list[str] = []
 
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
@@ -91,14 +110,14 @@ class Status:
     def set_current_folder(self, name: Optional[str]) -> None:
         """Set the current folder."""
 
-        self._current_folder = name
-
-    def set_current_config(self, name: str) -> None:
-        """Set the current config file."""
-
-        if name.endswith("/config.yaml"):
+        if name is not None and name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
+
+        write = self._current_folder != name
         self._current_folder = name
+
+        if write:
+            self.write()
 
     def set_status(self, name: str, nb_images: int, status: str, details: str = "") -> None:
         """Set the status of a folder."""
@@ -174,7 +193,7 @@ class Status:
             return
 
         if os.path.exists(os.path.join(source_folder, name, "DONE")):
-            self.set_status(name, -1, "Done")
+            self.set_status(name, -1, _DONE_STATUS)
             return
 
         if not os.path.exists(os.path.join(source_folder, name, "config.yaml")):
@@ -216,7 +235,7 @@ class Status:
                 if len(config["steps"]) >= 2:
                     self.set_status(name, nb_images, "Waiting to " + config["steps"][-2]["name"])
                 else:
-                    self.set_status(name, nb_images, "Waiting to transform")
+                    self.set_status(name, nb_images, _WAITING_TO_TRANSFORM_STATUS)
             else:
                 len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
                 source_images = (
@@ -252,7 +271,7 @@ class Status:
             if len(config.get("steps", [])) >= 1:
                 self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"])
             else:
-                self.set_status(name, -1, "Waiting to transform")
+                self.set_status(name, -1, _WAITING_TO_TRANSFORM_STATUS)
 
     def write(self) -> None:
         """Write the status file."""
@@ -282,3 +301,30 @@ class Status:
                     consume=self._consume,
                 )
             )
+
+    def get_next_job(self) -> tuple[Optional[str], JobType]:
+        """Get the next job to do."""
+
+        job_types = [
+            (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
+            (JobType.ASSISTED_SPLIT, _WAITING_TO_ASSISTED_SPLIT_STATUS),
+            (JobType.FINALIZE, _WAITING_TO_FINALIZE_STATUS),
+        ]
+        if os.environ.get("PROGRESS", "FALSE") != "TRUE":
+            job_types.append((JobType.DOWN, _DONE_STATUS))
+
+        for job_type, waiting_status in job_types:
+            if not self.current_job_list:
+                self.current_job_type = job_type
+                for name, folder in self._status.items():
+                    if folder.status == waiting_status:
+                        self.current_job_list.append(name)
+
+        if not self.current_job_list:
+            self.current_job_type = JobType.CODE
+            self.current_job_list = list(self._codes)
+
+        if not self.current_job_list:
+            self.current_job_type = JobType.NONE
+
+        return self.current_job_list.pop(0) if self.current_job_list else None, self.current_job_type

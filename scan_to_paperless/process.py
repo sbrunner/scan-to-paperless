@@ -4,7 +4,6 @@
 
 import argparse
 import datetime
-import glob
 import json
 import logging
 import math
@@ -36,6 +35,7 @@ import scan_to_paperless
 import scan_to_paperless.status
 from scan_to_paperless import code
 from scan_to_paperless import process_schema as schema
+from scan_to_paperless.status import JobType
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
@@ -1289,6 +1289,15 @@ def transform(
     plt.clf()
     plt.close("all")
 
+    disable_remove_to_continue = config["args"].setdefault(
+        "no_remove_to_continue", schema.NO_REMOVE_TO_CONTINUE_DEFAULT
+    )
+    if not disable_remove_to_continue or config["args"].setdefault(
+        "assisted_split", schema.ASSISTED_SPLIT_DEFAULT
+    ):
+        with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
+            pass
+
     return {
         "sources": images,
         "name": "split"
@@ -1596,35 +1605,37 @@ def finalize(
         call(["cp", temporary_pdf.name, destination])
 
 
-def process_code() -> None:
+def _process_code(name: str) -> None:
     """Detect ad add a page with the QR codes."""
-    for pdf_filename in glob.glob(os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), "*.pdf")):
-        destination_filename = os.path.join(
-            os.environ.get("SCAN_FINAL_FOLDER", "/destination"), os.path.basename(pdf_filename)
+
+    pdf_filename = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), name)
+
+    destination_filename = os.path.join(
+        os.environ.get("SCAN_FINAL_FOLDER", "/destination"), os.path.basename(pdf_filename)
+    )
+
+    if os.path.exists(destination_filename):
+        return
+
+    try:
+        _LOG.info("Processing codes for %s", pdf_filename)
+        code.add_codes(
+            pdf_filename,
+            destination_filename,
+            dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
+            pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
+            font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
+            font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
+            margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
+            margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
         )
-
         if os.path.exists(destination_filename):
-            continue
+            # Remove the source file on success
+            os.remove(pdf_filename)
+        _LOG.info("Down processing codes for %s", pdf_filename)
 
-        try:
-            _LOG.info("Processing codes for %s", pdf_filename)
-            code.add_codes(
-                pdf_filename,
-                destination_filename,
-                dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
-                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
-                font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
-                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
-                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
-                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
-            )
-            if os.path.exists(destination_filename):
-                # Remove the source file on success
-                os.remove(pdf_filename)
-            _LOG.info("Down processing codes for %s", pdf_filename)
-
-        except Exception as exception:
-            _LOG.exception("Error while processing %s: %s", pdf_filename, str(exception))
+    except Exception as exception:
+        _LOG.exception("Error while processing %s: %s", pdf_filename, str(exception))
 
 
 def is_sources_present(images: list[str], root_folder: str) -> bool:
@@ -1699,7 +1710,7 @@ def _process(
                 return dirty
 
             status.set_global_status(f"Processing '{os.path.basename(os.path.dirname(config_file_name))}'...")
-            status.set_current_config(config_file_name)
+            status.set_current_folder(config_file_name)
             status.set_status(config_file_name, -1, "Processing")
             dirty = True
 
@@ -1729,7 +1740,6 @@ def _process(
                     with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
                         pass
             status.set_current_folder(None)
-            status.write()
 
     except Exception as exception:
         print(exception)
@@ -1779,19 +1789,64 @@ def main() -> None:
 
     status = scan_to_paperless.status.Status()
     status.write()
-    while True:
-        dirty = False
-        for config_file_name in glob.glob(
-            os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "*/config.yaml")
-        ):
-            dirty = _process(config_file_name, status, dirty)
-        if not dirty:
-            process_code()
 
-        sys.stdout.flush()
-        if not dirty:
+    while True:
+        name, job_type = status.get_next_job()
+
+        if job_type in (JobType.TRANSFORM, JobType.ASSISTED_SPLIT, JobType.FINALIZE):
+            assert name is not None
+            status.set_global_status(f"Processing '{name}'...")
+
+            status_name = ""
+            if job_type == JobType.TRANSFORM:
+                status_name = "Transforming"
+            if job_type == JobType.ASSISTED_SPLIT:
+                status_name = "Splitting in assisted-split mode"
+            if job_type == JobType.FINALIZE:
+                status_name = "Finalizing"
+            status.set_status(name, -1, status_name)
+            status.set_current_folder(name)
+
+            root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
+            config_file_name = os.path.join(root_folder, "config.yaml")
+            yaml = YAML()
+            yaml.default_flow_style = False
+            with open(config_file_name, encoding="utf-8") as config_file:
+                config: schema.Configuration = yaml.load(config_file.read())
+
+            if "steps" not in config or not config["steps"]:
+                step: schema.Step = {
+                    "sources": config["images"],
+                    "name": "transform",
+                }
+                config["steps"] = [step]
+            step = config["steps"][-1]
+
+            next_step = None
+            if job_type == JobType.TRANSFORM:
+                next_step = transform(config, step, config_file_name, root_folder)
+            if job_type == JobType.ASSISTED_SPLIT:
+                next_step = split(config, step, root_folder)
+            if job_type == JobType.FINALIZE:
+                finalize(config, step, root_folder)
+                with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
+                    pass
+            if next_step is not None:
+                config["steps"].append(next_step)
+
+            save_config(config, config_file_name)
+
+        elif job_type == JobType.DOWN:
+            shutil.rmtree(root_folder)
+        elif job_type == JobType.CODE:
+            assert name is not None
+            _process_code(name)
+        elif job_type == JobType.NONE:
             status.set_global_status("Waiting...")
+            status.set_current_folder(None)
             time.sleep(30)
+        else:
+            raise ValueError(f"Unknown job type: {job_type}")
 
 
 if __name__ == "__main__":
