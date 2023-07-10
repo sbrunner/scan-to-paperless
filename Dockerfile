@@ -1,4 +1,6 @@
-FROM ubuntu:22.04 as base-all
+FROM ubuntu:22.04 AS upstream
+
+FROM upstream AS base-all
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
@@ -7,7 +9,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get upgrade --yes \
     && apt-get install --assume-yes --no-install-recommends python3-pip gnupg fonts-dejavu-core
 
-FROM base-all as poetry
+FROM base-all AS poetry
 
 ENV POETRY_DYNAMIC_VERSIONING_BYPASS=0.0.0.dev
 WORKDIR /tmp
@@ -25,7 +27,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends curl
 
-FROM base-all as base-dist
+FROM base-all AS base-dist
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
@@ -50,7 +52,7 @@ WORKDIR /opt
 ARG VERSION
 ENV VERSION=$VERSION
 
-FROM base-dist as tests-dist
+FROM base-dist AS tests-dist
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
@@ -61,7 +63,7 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
     python3 -m pip install --disable-pip-version-check --no-deps --requirement=/tmp/requirements-dev.txt
 
-FROM base-dist as base
+FROM base-dist AS base
 
 COPY scan_to_paperless scan_to_paperless/
 COPY pyproject.toml README.md ./
@@ -71,7 +73,31 @@ RUN --mount=type=cache,target=/root/.cache \
 
 CMD ["scan-process"]
 
-FROM tests-dist as tests
+FROM upstream AS tests-node-mobules
+
+SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
+
+WORKDIR /src
+
+RUN --mount=type=cache,target=/var/lib/apt/lists \
+    --mount=type=cache,target=/var/cache,sharing=locked \
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends apt-transport-https gnupg curl ca-certificates
+RUN . /etc/os-release \
+    && echo "deb https://deb.nodesource.com/node_18.x ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/nodesource.list \
+    && curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key > /etc/apt/sources.list.d/nodesource.gpg \
+    && apt-key add /etc/apt/sources.list.d/nodesource.gpg
+RUN --mount=type=cache,target=/var/lib/apt/lists \
+    --mount=type=cache,target=/var/cache,sharing=locked \
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends nodejs
+
+COPY package.json package-lock.json ./
+
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
+
+FROM tests-dist AS tests
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
@@ -81,11 +107,14 @@ RUN --mount=type=cache,target=/root/.cache \
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    . /etc/os-release \
-    && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends apt-transport-https gnupg curl \
-    && echo "deb https://deb.nodesource.com/node_18.x ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/nodesource.list \
-    && curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends gnupg
+
+COPY --from=tests-node-mobules /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/
+
+RUN --mount=type=cache,target=/var/lib/apt/lists \
+    --mount=type=cache,target=/var/cache,sharing=locked \
+    apt-key add /etc/apt/sources.list.d/nodesource.gpg \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends nodejs \
     && echo "For Chrome installed by Pupetter" \
@@ -95,8 +124,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3.0 libxcb-dri3-0 libgbm1 libxshmfence1
 
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm \
-    npm install
+COPY --from=tests-node-mobules /src/node_modules ./node_modules
+COPY --from=tests-node-mobules /root/.cache/puppeteer /root/.cache/puppeteer
 COPY tests/screenshot.js ./
 
 FROM base as all
