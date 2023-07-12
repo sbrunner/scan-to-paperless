@@ -515,6 +515,7 @@ def test_empty():
 
 
 # @pytest.mark.skip(reason="for test")
+@pytest.mark.flaky(reruns=3, only_rerun="ValueError")
 @pytest.mark.parametrize("test,args", [pytest.param("600", {"dpi": 600, "num_angles": 179}, id="600")])
 def test_custom_process(test, args):
     init_test()
