@@ -304,6 +304,7 @@ class Status:
     def get_next_job(self) -> tuple[Optional[str], JobType]:
         """Get the next job to do."""
 
+        self.write()
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
             (JobType.ASSISTED_SPLIT, _WAITING_TO_ASSISTED_SPLIT_STATUS),
