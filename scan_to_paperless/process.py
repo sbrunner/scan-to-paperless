@@ -1840,7 +1840,13 @@ def main() -> None:
             shutil.rmtree(root_folder)
         elif job_type == JobType.CODE:
             assert name is not None
-            _process_code(name)
+            print(f"Process code '{name}'")
+            try:
+                _process_code(name)
+            except Exception as exception:
+                print(exception)
+                trace = traceback.format_exc()
+                print(trace)
         elif job_type == JobType.NONE:
             status.set_global_status("Waiting...")
             status.set_current_folder(None)
