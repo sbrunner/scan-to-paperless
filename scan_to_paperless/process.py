@@ -1791,7 +1791,7 @@ def main() -> None:
     status.write()
 
     while True:
-        name, job_type = status.get_next_job()
+        name, job_type, step = status.get_next_job()
 
         if job_type in (JobType.TRANSFORM, JobType.ASSISTED_SPLIT, JobType.FINALIZE):
             assert name is not None
@@ -1815,12 +1815,12 @@ def main() -> None:
                 config: schema.Configuration = yaml.load(config_file.read())
 
             if "steps" not in config or not config["steps"]:
-                step: schema.Step = {
+                step = {
                     "sources": config["images"],
                     "name": "transform",
                 }
                 config["steps"] = [step]
-            step = config["steps"][-1]
+            assert step is not None
 
             next_step = None
             if job_type == JobType.TRANSFORM:
