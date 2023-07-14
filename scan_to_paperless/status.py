@@ -11,6 +11,8 @@ import jinja2
 import natsort
 from ruamel.yaml.main import YAML
 
+from scan_to_paperless import process_schema
+
 _WAITING_STATUS_NAME = "Waiting validation"
 _WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate that the generate images are correct ({generated_images}).<br />
     If the result is correct remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file.</p>
@@ -63,6 +65,7 @@ class _Folder(NamedTuple):
     nb_images: int
     status: str
     details: str
+    step: Optional[process_schema.Step]
 
 
 class JobType(Enum):
@@ -79,9 +82,6 @@ class JobType(Enum):
 class Status:
     """Manage the status file of the progress."""
 
-    current_job_type = JobType.NONE
-    current_job_list: list[str] = []
-
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
 
@@ -93,7 +93,6 @@ class Status:
         self._global_status = "Starting..."
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
-        self._last_scan = datetime.datetime.utcnow()
         self._current_folder: Optional[str] = None
         self.scan()
 
@@ -118,7 +117,14 @@ class Status:
         if write:
             self.write()
 
-    def set_status(self, name: str, nb_images: int, status: str, details: str = "") -> None:
+    def set_status(
+        self,
+        name: str,
+        nb_images: int,
+        status: str,
+        details: str = "",
+        step: Optional[process_schema.Step] = None,
+    ) -> None:
         """Set the status of a folder."""
 
         # Config file name
@@ -126,7 +132,7 @@ class Status:
             name = os.path.basename(os.path.dirname(name))
         if nb_images <= 0 and name in self._status:
             nb_images = self._status[name].nb_images
-        self._status[name] = _Folder(nb_images, html.escape(status), details)
+        self._status[name] = _Folder(nb_images, html.escape(status), details, step)
 
         if self.no_write:
             print(f"{name}: {status}")
@@ -136,8 +142,6 @@ class Status:
 
     def scan(self) -> None:
         """Scan for changes for waiting documents."""
-
-        self._last_scan = datetime.datetime.utcnow()
 
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
         if codes_folder[-1] != "/":
@@ -267,16 +271,23 @@ class Status:
                 )
 
         else:
+            status_from_step = False
             if len(config.get("steps", [])) >= 1:
-                self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"])
-            else:
+                for step in reversed(config["steps"]):
+                    all_present = True
+                    for source in step["sources"]:
+                        if not os.path.exists(source):
+                            all_present = False
+                            break
+                    if all_present:
+                        self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"], step=step)
+                        status_from_step = True
+                        break
+            if not status_from_step:
                 self.set_status(name, -1, _WAITING_TO_TRANSFORM_STATUS)
 
     def write(self) -> None:
         """Write the status file."""
-
-        if self._last_scan < datetime.datetime.utcnow() - datetime.timedelta(minutes=1):
-            self.scan()
 
         if self.no_write:
             return
@@ -301,9 +312,10 @@ class Status:
                 )
             )
 
-    def get_next_job(self) -> tuple[Optional[str], JobType]:
+    def get_next_job(self) -> tuple[Optional[str], JobType, Optional[process_schema.Step]]:
         """Get the next job to do."""
 
+        self.scan()
         self.write()
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
@@ -314,17 +326,8 @@ class Status:
             job_types.append((JobType.DOWN, _DONE_STATUS))
 
         for job_type, waiting_status in job_types:
-            if not self.current_job_list:
-                self.current_job_type = job_type
-                for name, folder in self._status.items():
-                    if folder.status == waiting_status:
-                        self.current_job_list.append(name)
+            for name, folder in self._status.items():
+                if folder.status == waiting_status:
+                    return name, job_type, folder.step
 
-        if not self.current_job_list:
-            self.current_job_type = JobType.CODE
-            self.current_job_list = list(self._codes)
-
-        if not self.current_job_list:
-            self.current_job_type = JobType.NONE
-
-        return self.current_job_list.pop(0) if self.current_job_list else None, self.current_job_type
+        return None, JobType.NONE, None
