@@ -239,12 +239,12 @@ class Status:
             if all_present:
                 run_step = step
                 break
-        nb_images = -1
         if run_step is None:
             run_step = {
                 "sources": config["images"],
                 "name": "transform",
             }
+        nb_images = len(run_step["sources"])
 
         if rerun or not os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE")):
             self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
