@@ -35,7 +35,6 @@ import scan_to_paperless
 import scan_to_paperless.status
 from scan_to_paperless import code
 from scan_to_paperless import process_schema as schema
-from scan_to_paperless.status import JobType
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
@@ -1300,9 +1299,9 @@ def transform(
 
     return {
         "sources": images,
-        "name": "split"
+        "name": scan_to_paperless.status.STATUS_ASSISTED_SPLIT
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT)
-        else "finalize",
+        else scan_to_paperless.status.STATUS_FINALIZE,
         "process_count": process_count,
     }
 
@@ -1479,7 +1478,11 @@ def split(
             transformed_images.append(img2)
     process_count += 1
 
-    return {"sources": transformed_images, "name": "finalize", "process_count": process_count}
+    return {
+        "sources": transformed_images,
+        "name": scan_to_paperless.status.STATUS_FINALIZE,
+        "process_count": process_count,
+    }
 
 
 def finalize(
@@ -1716,13 +1719,13 @@ def _process(
 
             done = False
             next_step = None
-            if step["name"] == "transform":
+            if step["name"] == scan_to_paperless.status.STATUS_TRANSFORM:
                 status.set_status(config_file_name, -1, "Transform")
                 next_step = transform(config, step, config_file_name, root_folder)
-            elif step["name"] == "split":
+            elif step["name"] == scan_to_paperless.status.STATUS_ASSISTED_SPLIT:
                 status.set_status(config_file_name, -1, "Split")
                 next_step = split(config, step, root_folder)
-            elif step["name"] == "finalize":
+            elif step["name"] == scan_to_paperless.status.STATUS_FINALIZE:
                 status.set_status(config_file_name, -1, "Finalize")
                 finalize(config, step, root_folder)
                 done = True
@@ -1793,16 +1796,22 @@ def main() -> None:
     while True:
         name, job_type, step = status.get_next_job()
 
-        if job_type in (JobType.TRANSFORM, JobType.ASSISTED_SPLIT, JobType.FINALIZE):
+        if job_type in (
+            scan_to_paperless.status.JobType.TRANSFORM,
+            scan_to_paperless.status.JobType.ASSISTED_SPLIT,
+            scan_to_paperless.status.JobType.FINALIZE,
+        ):
             assert name is not None
+            assert step is not None
+
             status.set_global_status(f"Processing '{name}'...")
 
             status_name = ""
-            if job_type == JobType.TRANSFORM:
+            if job_type == scan_to_paperless.status.JobType.TRANSFORM:
                 status_name = "Transforming"
-            if job_type == JobType.ASSISTED_SPLIT:
+            if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
                 status_name = "Splitting in assisted-split mode"
-            if job_type == JobType.FINALIZE:
+            if job_type == scan_to_paperless.status.JobType.FINALIZE:
                 status_name = "Finalizing"
             status.set_status(name, -1, status_name)
             status.set_current_folder(name)
@@ -1815,19 +1824,15 @@ def main() -> None:
                 config: schema.Configuration = yaml.load(config_file.read())
 
             if "steps" not in config or not config["steps"]:
-                step = {
-                    "sources": config["images"],
-                    "name": "transform",
-                }
                 config["steps"] = [step]
             assert step is not None
 
             next_step = None
-            if job_type == JobType.TRANSFORM:
+            if job_type == scan_to_paperless.status.JobType.TRANSFORM:
                 next_step = transform(config, step, config_file_name, root_folder)
-            if job_type == JobType.ASSISTED_SPLIT:
+            if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
                 next_step = split(config, step, root_folder)
-            if job_type == JobType.FINALIZE:
+            if job_type == scan_to_paperless.status.JobType.FINALIZE:
                 finalize(config, step, root_folder)
                 with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
                     pass
@@ -1836,9 +1841,9 @@ def main() -> None:
 
             save_config(config, config_file_name)
 
-        elif job_type == JobType.DOWN:
+        elif job_type == scan_to_paperless.status.JobType.DOWN:
             shutil.rmtree(root_folder)
-        elif job_type == JobType.CODE:
+        elif job_type == scan_to_paperless.status.JobType.CODE:
             assert name is not None
             print(f"Process code '{name}'")
             try:
@@ -1847,7 +1852,7 @@ def main() -> None:
                 print(exception)
                 trace = traceback.format_exc()
                 print(trace)
-        elif job_type == JobType.NONE:
+        elif job_type == scan_to_paperless.status.JobType.NONE:
             status.set_global_status("Waiting...")
             status.set_current_folder(None)
             time.sleep(30)

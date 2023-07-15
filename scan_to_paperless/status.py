@@ -55,10 +55,14 @@ in the section <code>assisted_split</code> you can find the list of the images t
 <p>For each image we will have all the detected limits, you can choose the limit that you want to use for the split (you can modify it if needed), and remove the other entries.</p>
 <p>When you have finished to choose the limits, you should save the edited <code>config.yaml</code> file, then remove the <a href="./{name}/REMOVE_TO_CONTINUE" target="_blank"><code>REMOVE_TO_CONTINUE</code></a> file to continue the process.</p>
 <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>"""
-_WAITING_TO_TRANSFORM_STATUS = "Waiting to transform"
-_WAITING_TO_ASSISTED_SPLIT_STATUS = "Waiting to split"
+_WAITING_TO_STATUS = "Waiting to {}"
+STATUS_TRANSFORM = "transform"
+STATUS_ASSISTED_SPLIT = "split"
+STATUS_FINALIZE = "finalize"
+_WAITING_TO_TRANSFORM_STATUS = _WAITING_TO_STATUS.format(STATUS_TRANSFORM)
+_WAITING_TO_ASSISTED_SPLIT_STATUS = _WAITING_TO_STATUS.format(STATUS_ASSISTED_SPLIT)
 _DONE_STATUS = "Done"
-_WAITING_TO_FINALIZE_STATUS = "Waiting to finalize"
+_WAITING_TO_FINALIZE_STATUS = _WAITING_TO_STATUS.format(STATUS_FINALIZE)
 
 
 class _Folder(NamedTuple):
@@ -223,68 +227,55 @@ class Status:
             self.set_status(name, -1, "Empty config")
             return
 
-        if os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE")):
-            rerun = False
-            for image in config["steps"][-1]["sources"]:
-                if not os.path.exists(image):
+        run_step: Optional[process_schema.Step] = None
+        rerun = False
+        for step in reversed(config.get("steps", [])):
+            all_present = True
+            for source in step["sources"]:
+                if not os.path.exists(source):
                     rerun = True
-            nb_images = -1
-            if config.get("steps", []):
-                nb_images = len(config["steps"][-1]["sources"])
-            elif "sources" in config:
-                nb_images = len(config["sources"])
+                    all_present = False
+                    break
+            if all_present:
+                run_step = step
+                break
+        nb_images = -1
+        if run_step is None:
+            run_step = {
+                "sources": config["images"],
+                "name": "transform",
+            }
 
-            if rerun:
-                if len(config["steps"]) >= 2:
-                    self.set_status(name, nb_images, "Waiting to " + config["steps"][-2]["name"])
-                else:
-                    self.set_status(name, nb_images, _WAITING_TO_TRANSFORM_STATUS)
-            else:
-                len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
-                source_images = (
-                    config["steps"][-2]["sources"] if len(config["steps"]) >= 2 else config["sources"]
-                )
-                generated_images = [f[len_folder:] for f in config["steps"][-1]["sources"]]
-                self.set_status(
-                    name,
-                    nb_images,
-                    _WAITING_STATUS_NAME,
-                    (
-                        _WAITING_ASSISTED_SPLIT_DESCRIPTION
-                        if config["steps"][-1]["name"] == "split"
-                        else _WAITING_STATUS_DESCRIPTION
-                    ).format(
-                        name=name,
-                        source_images=", ".join(
-                            [
-                                f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
-                                for f in source_images
-                            ]
-                        ),
-                        generated_images=", ".join(
-                            [
-                                f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
-                                for f in generated_images
-                            ]
-                        ),
-                    ),
-                )
-
+        if rerun or not os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE")):
+            self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
         else:
-            status_from_step = False
-            if len(config.get("steps", [])) >= 1:
-                for step in reversed(config["steps"]):
-                    all_present = True
-                    for source in step["sources"]:
-                        if not os.path.exists(source):
-                            all_present = False
-                            break
-                    if all_present:
-                        self.set_status(name, -1, "Waiting to " + config["steps"][-1]["name"], step=step)
-                        status_from_step = True
-                        break
-            if not status_from_step:
-                self.set_status(name, -1, _WAITING_TO_TRANSFORM_STATUS)
+            len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
+            source_images = config["steps"][-2]["sources"] if len(config["steps"]) >= 2 else config["sources"]
+            generated_images = [f[len_folder:] for f in config["steps"][-1]["sources"]]
+            self.set_status(
+                name,
+                nb_images,
+                _WAITING_STATUS_NAME,
+                (
+                    _WAITING_ASSISTED_SPLIT_DESCRIPTION
+                    if config["steps"][-1]["name"] == "split"
+                    else _WAITING_STATUS_DESCRIPTION
+                ).format(
+                    name=name,
+                    source_images=", ".join(
+                        [
+                            f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
+                            for f in source_images
+                        ]
+                    ),
+                    generated_images=", ".join(
+                        [
+                            f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
+                            for f in generated_images
+                        ]
+                    ),
+                ),
+            )
 
     def write(self) -> None:
         """Write the status file."""
