@@ -1794,6 +1794,7 @@ def main() -> None:
     status.write()
 
     while True:
+        status.set_current_folder(None)
         name, job_type, step = status.get_next_job()
 
         if job_type in (
