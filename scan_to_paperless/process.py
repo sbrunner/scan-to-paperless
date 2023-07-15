@@ -1842,6 +1842,8 @@ def main() -> None:
             save_config(config, config_file_name)
 
         elif job_type == scan_to_paperless.status.JobType.DOWN:
+            assert name is not None
+            root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
             shutil.rmtree(root_folder)
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert name is not None
