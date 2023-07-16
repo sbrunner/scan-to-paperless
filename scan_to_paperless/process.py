@@ -1826,6 +1826,15 @@ def main() -> None:
 
             if "steps" not in config or not config["steps"]:
                 config["steps"] = [step]
+            else:
+                used_index = -1
+                for index, test_step in enumerate(config["steps"]):
+                    if step["name"] == test_step["name"]:
+                        used_index = index
+                        break
+                if used_index != -1:
+                    config["steps"] = config["steps"][: used_index + 1]
+
             assert step is not None
 
             next_step = None
