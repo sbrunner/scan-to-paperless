@@ -98,7 +98,7 @@ class Status:
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
         self._current_folder: Optional[str] = None
-        self.scan()
+        self._scan()
 
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
@@ -107,7 +107,7 @@ class Status:
             self._global_status = status
             self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
 
-        self.write()
+            self.write()
 
     def set_current_folder(self, name: Optional[str]) -> None:
         """Set the current folder."""
@@ -128,6 +128,7 @@ class Status:
         status: str,
         details: str = "",
         step: Optional[process_schema.Step] = None,
+        write: bool = False,
     ) -> None:
         """Set the status of a folder."""
 
@@ -141,10 +142,10 @@ class Status:
         if self.no_write:
             print(f"{name}: {status}")
 
-        if not self.no_write:
+        if write:
             self.write()
 
-    def scan(self) -> None:
+    def _scan(self) -> None:
         """Scan for changes for waiting documents."""
 
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
@@ -178,6 +179,8 @@ class Status:
                 name = os.path.basename(folder_name)
                 if name not in self._status:
                     self._update_status(name)
+
+        self.write()
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
@@ -306,8 +309,7 @@ class Status:
     def get_next_job(self) -> tuple[Optional[str], JobType, Optional[process_schema.Step]]:
         """Get the next job to do."""
 
-        self.scan()
-        self.write()
+        self._scan()
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
             (JobType.ASSISTED_SPLIT, _WAITING_TO_ASSISTED_SPLIT_STATUS),

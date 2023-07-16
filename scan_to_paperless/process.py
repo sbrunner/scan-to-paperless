@@ -1033,6 +1033,7 @@ def transform(
     step: schema.Step,
     config_file_name: str,
     root_folder: str,
+    status: Optional[scan_to_paperless.status.Status] = None,
 ) -> schema.Step:
     """Apply the transforms on a document."""
     if "intermediate_error" in config:
@@ -1045,6 +1046,8 @@ def transform(
         config["assisted_split"] = []
 
     for index, image in enumerate(step["sources"]):
+        if status is not None:
+            status.set_status(config_file_name, -1, f"Transform ({os.path.basename(image)})", write=True)
         image_name = f"{os.path.basename(image).rsplit('.')[0]}.png"
         context = Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
@@ -1489,15 +1492,16 @@ def finalize(
     config: schema.Configuration,
     step: schema.Step,
     root_folder: str,
+    status: Optional[scan_to_paperless.status.Status] = None,
 ) -> None:
     """
     Do final step on document generation.
 
     convert in one pdf and copy with the right name in the consume folder
     """
-    destination = os.path.join(
-        os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), f"{os.path.basename(root_folder)}.pdf"
-    )
+
+    name = os.path.basename(root_folder)
+    destination = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), f"{name}.pdf")
 
     if os.path.exists(destination):
         return
@@ -1505,6 +1509,8 @@ def finalize(
     images = step["sources"]
 
     if config["args"].setdefault("append_credit_card", schema.APPEND_CREDIT_CARD_DEFAULT):
+        if status is not None:
+            status.set_status(name, -1, "Finalize (credit card append)", write=True)
         images2 = []
         for image in images:
             if os.path.exists(image):
@@ -1520,6 +1526,8 @@ def finalize(
 
     pdf = []
     for image in images:
+        if status is not None:
+            status.set_status(name, -1, f"Finalize ({os.path.basename(image)})", write=True)
         if os.path.exists(image):
             name = os.path.splitext(os.path.basename(image))[0]
             file_name = os.path.join(root_folder, f"{name}.pdf")
@@ -1543,6 +1551,9 @@ def finalize(
             else:
                 call(CONVERT + [image, "+repage", file_name])
             pdf.append(file_name)
+
+    if status is not None:
+        status.set_status(name, -1, "Finalize (optimize)", write=True)
 
     tesseract_producer = None
     if pdf:
@@ -1720,14 +1731,12 @@ def _process(
             done = False
             next_step = None
             if step["name"] == scan_to_paperless.status.STATUS_TRANSFORM:
-                status.set_status(config_file_name, -1, "Transform")
-                next_step = transform(config, step, config_file_name, root_folder)
+                next_step = transform(config, step, config_file_name, root_folder, status=status)
             elif step["name"] == scan_to_paperless.status.STATUS_ASSISTED_SPLIT:
                 status.set_status(config_file_name, -1, "Split")
                 next_step = split(config, step, root_folder)
             elif step["name"] == scan_to_paperless.status.STATUS_FINALIZE:
-                status.set_status(config_file_name, -1, "Finalize")
-                finalize(config, step, root_folder)
+                finalize(config, step, root_folder, status=status)
                 done = True
 
             if done and os.environ.get("PROGRESS", "FALSE") != "TRUE":
@@ -1806,15 +1815,6 @@ def main() -> None:
             assert step is not None
 
             status.set_global_status(f"Processing '{name}'...")
-
-            status_name = ""
-            if job_type == scan_to_paperless.status.JobType.TRANSFORM:
-                status_name = "Transforming"
-            if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
-                status_name = "Splitting in assisted-split mode"
-            if job_type == scan_to_paperless.status.JobType.FINALIZE:
-                status_name = "Finalizing"
-            status.set_status(name, -1, status_name)
             status.set_current_folder(name)
 
             root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
@@ -1839,11 +1839,12 @@ def main() -> None:
 
             next_step = None
             if job_type == scan_to_paperless.status.JobType.TRANSFORM:
-                next_step = transform(config, step, config_file_name, root_folder)
+                next_step = transform(config, step, config_file_name, root_folder, status=status)
             if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
+                status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
                 next_step = split(config, step, root_folder)
             if job_type == scan_to_paperless.status.JobType.FINALIZE:
-                finalize(config, step, root_folder)
+                finalize(config, step, root_folder, status=status)
                 with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
                     pass
             if next_step is not None:
