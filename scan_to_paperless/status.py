@@ -323,4 +323,7 @@ class Status:
                 if folder.status == waiting_status:
                     return name, job_type, folder.step
 
+        if self._codes:
+            return self._codes[0], JobType.CODE, None
+
         return None, JobType.NONE, None
