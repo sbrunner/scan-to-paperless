@@ -1859,6 +1859,8 @@ def main() -> None:
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert name is not None
             print(f"Process code '{name}'")
+            status.set_global_status(f"Process code '{name}'...")
+            status.set_current_folder(name)
             try:
                 _process_code(name)
             except Exception as exception:

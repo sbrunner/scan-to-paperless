@@ -125,7 +125,8 @@
       </thead>
       <tbody>
         {% for name in codes: %}
-        <tr>
+        {% set tr_attributes = ' class="active"' if name == current_folder else "" %}
+        <tr{{ tr_attributes | safe }}>
           <td><code>{{ name }}</code></td>
         </tr>
         {% endfor %}
