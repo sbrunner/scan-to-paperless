@@ -74,12 +74,6 @@
       separateMajorMinor: false,
       separateMinorPatch: false,
     },
-    /** Accept only the patch on stabilization branches */
-    {
-      matchBaseBranches: ['master'],
-      matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
-      enabled: false,
-    },
     /** Update dpkg versions at any time */
     {
       matchPaths: ['ci/dpkg-versions.yaml'],
