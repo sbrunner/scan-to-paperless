@@ -74,12 +74,6 @@
       separateMajorMinor: false,
       separateMinorPatch: false,
     },
-    /** No c2cciutils on master branch */
-    {
-      matchBaseBranches: ['master'],
-      matchPackageNames: ['c2cciutils'],
-      enabled: false,
-    },
     /** Accept only the patch on stabilization branches */
     {
       matchBaseBranches: ['master'],
