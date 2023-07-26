@@ -42,7 +42,7 @@ add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-numpy = "1.25.0"
+numpy = "1.25.1"
 scikit-image = "0.21.0"
 opencv-contrib-python-headless = "4.8.0.74"
 deskew = "1.4.3"
@@ -59,8 +59,8 @@ zxing-cpp = "2.0.0"
 pyperclip = "1.8.2"
 tifffile = "2023.4.12"
 deepmerge = "1.1.0"
-matplotlib = "3.7.1"
-typing-extensions = "4.7.0"
+matplotlib = "3.7.2"
+typing-extensions = "4.7.1"
 Jinja2 = "3.1.2"
 natsort = "8.4.0"
 
@@ -70,8 +70,8 @@ pytest = "7.4.0"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "12.0"
 pyroma = "4.2"
-typing-extensions = "4.7.0"
-c2cwsgiutils = { version = "6.0.0.dev110", extras = ["test_images"] }
+typing-extensions = "4.7.1"
+c2cwsgiutils = { version = "6.0.0.dev129", extras = ["test_images"] }
 
 [tool.poetry.group.dev.dependencies]
 prospector-profile-duplicated = "0.1.0"
