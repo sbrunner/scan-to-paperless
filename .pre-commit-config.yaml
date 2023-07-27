@@ -1,3 +1,7 @@
+ci:
+  skip:
+    - ripsecrets
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -20,7 +24,10 @@ repos:
     rev: v2.2.5
     hooks:
       - id: codespell
-        exclude: ^(.*/)?poetry\.lock$
+        exclude: |
+          (?x)^(
+            (.*/)?poetry\.lock
+          )$
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
