@@ -63,6 +63,7 @@ pyperclip = "1.8.2"
 tifffile = "2023.1.23.1"
 deepmerge = "1.1.0"
 matplotlib = "3.6.3"
+certifi = "2023.7.22"
 
 [tool.poetry.dev-dependencies]
 prospector = { version = "1.8.4", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
