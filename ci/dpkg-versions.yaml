@@ -153,7 +153,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/pango1.0: 1.50.6+ds-2ubuntu1
   ubuntu_22_04/pcre2: 10.39-3ubuntu0.1
   ubuntu_22_04/pcre3: 8.39-13ubuntu0.22.04.1
-  ubuntu_22_04/pcsc-lite: 1.9.5-3
+  ubuntu_22_04/pcsc-lite: 1.9.5-3ubuntu1
   ubuntu_22_04/pdftk-java: 3.2.2-1
   ubuntu_22_04/perl: 5.34.0-3ubuntu1.2
   ubuntu_22_04/pinentry: 1.1.1-1build2
@@ -362,7 +362,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/pango1.0: 1.50.6+ds-2ubuntu1
   ubuntu_22_04/pcre2: 10.39-3ubuntu0.1
   ubuntu_22_04/pcre3: 8.39-13ubuntu0.22.04.1
-  ubuntu_22_04/pcsc-lite: 1.9.5-3
+  ubuntu_22_04/pcsc-lite: 1.9.5-3ubuntu1
   ubuntu_22_04/pdftk-java: 3.2.2-1
   ubuntu_22_04/perl: 5.34.0-3ubuntu1.2
   ubuntu_22_04/pinentry: 1.1.1-1build2
