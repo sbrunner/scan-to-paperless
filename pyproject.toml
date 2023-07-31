@@ -17,7 +17,7 @@ pytest_plugins = ["pytest_profiling"]
 [tool.poetry]
 name = "scan-to-paperless"
 version = "0.0.0"
-description = "Tool to scan and process documents to paperless"
+description = "Tool to scan and process documents to Paperless"
 readme = "README.md"
 keywords = ["scan", "paperless"]
 license = "BSD-2-Clause"
@@ -44,37 +44,56 @@ add-codes-page = "scan_to_paperless.code:main"
 python = ">=3.9,<3.12"
 numpy = "1.25.2"
 scikit-image = "0.21.0"
-opencv-contrib-python-headless = "4.8.0.74"
-deskew = "1.4.3"
+opencv-contrib-python-headless = { version = "4.8.0.74", optional = true }
+deskew = { version = "1.4.3", optional = true }
 "ruamel.yaml" = "0.17.32"
 argcomplete = "3.1.1"
-Pillow = "10.0.0"
-PyPDF2 = "3.0.1"
-pyzbar = "0.1.9"
-reportlab = "4.0.4"
-weasyprint = "59.0"
-cffi = "1.15.1"
-pikepdf = "8.2.3"
-zxing-cpp = "2.1.0"
+Pillow = { version = "10.0.0", optional = true }
+PyPDF2 = { version = "3.0.1", optional = true }
+pyzbar = { version = "0.1.9", optional = true }
+reportlab = { version = "4.0.4", optional = true }
+weasyprint = { version = "59.0", optional = true }
+cffi = { version = "1.15.1", optional = true }
+pikepdf = { version = "8.2.3", optional = true }
+zxing-cpp = { version = "2.1.0", optional = true }
 pyperclip = "1.8.2"
 tifffile = "2023.7.18"
-deepmerge = "1.1.0"
-matplotlib = "3.7.2"
-typing-extensions = "4.7.1"
-Jinja2 = "3.1.2"
-natsort = "8.4.0"
+deepmerge = { version = "1.1.0", optional = true }
+matplotlib = { version = "3.7.2", optional = true }
+typing-extensions = { version = "4.7.1", optional = true }
+Jinja2 = { version = "3.1.2", optional = true }
+natsort = { version = "8.4.0", optional = true }
+nbformat = { version = "5.9.2", optional = true }
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.extras]
+process = [
+    "opencv-contrib-python-headless",
+    "deskew",
+    "Pillow",
+    "PyPDF2",
+    "pyzbar",
+    "reportlab",
+    "weasyprint",
+    "cffi",
+    "pikepdf",
+    "zxing-cpp",
+    "deepmerge",
+    "matplotlib",
+    "typing-extensions",
+    "Jinja2",
+    "natsort",
+    "nbformat"
+]
+
+[tool.poetry.group.dev.dependencies]
 prospector = { version = "1.10.2", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+prospector-profile-duplicated = "0.1.0"
 pytest = "7.4.0"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "12.0"
 pyroma = "4.2"
 typing-extensions = "4.7.1"
 c2cwsgiutils = { version = "6.0.0.dev142", extras = ["test_images"] }
-
-[tool.poetry.group.dev.dependencies]
-prospector-profile-duplicated = "0.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]

@@ -20,6 +20,7 @@ from typing import IO, TYPE_CHECKING, Any, Optional, Protocol, TypedDict, Union,
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 import matplotlib.pyplot as plt
+import nbformat
 import numpy as np
 import pikepdf
 import ruamel.yaml.compat
@@ -694,8 +695,7 @@ def deskew(context: Context) -> None:
     """Deskew an image."""
 
     images_config = context.config.setdefault("images_config", {})
-    assert context.image_name
-    image_config = images_config.setdefault(context.image_name, {})
+    image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
     image_status = image_config.setdefault("status", {})
     angle = image_config.setdefault("angle", None)
     if angle is None:
@@ -719,12 +719,12 @@ def deskew(context: Context) -> None:
             image_status["angle"] = float(skew_angle)
             angle = float(skew_angle)
 
-        assert context.root_folder
         process_count = context.get_process_count()
         for name, image in debug_images:
             context.save_progress_images("skew", image, name, process_count, True)
 
     if angle:
+        assert context.image_name is not None
         context.rotate(angle)
 
         image_name_split = os.path.splitext(context.image_name)
@@ -1370,6 +1370,218 @@ def _update_config(config: schema.Configuration) -> None:
         del old_config["args"]["rule"]["enable"]
 
 
+def _create_jupyter_notebook(root_folder: str, context: Context, step: schema.Step) -> None:
+    # Jupyter notebook
+    dest_folder = os.path.join(root_folder, "jupyter")
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
+    with open(os.path.join(dest_folder, "README.txt"), "w", encoding="utf-8") as readme_file:
+        readme_file.write(
+            """# Jupyter notebook
+
+Install dependencies:
+pip install scan-to-paperless[process] jupyterlab Pillow
+
+Run:
+jupyter lab
+
+Open the notebook file.
+"""
+        )
+
+    notebook = nbformat.v4.new_notebook()  # type: ignore[no-untyped-call]
+
+    notebook["cells"] = []
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """# Transform
+
+This notebook show the transformation applied on the image.
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """import os
+import cv2
+import numpy as np
+from IPython.display import (  # convert color from CV2 BGR back to RGB
+    clear_output,
+    display,
+)
+from PIL import Image
+
+from scan_to_paperless import process
+"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """import IPython
+
+base_folder = os.path.dirname(os.path.dirname(IPython.extract_module_locals()[1]['__vsc_ipynb_file__']))
+"""
+        )
+    )
+    other_images_open = [f'# context.image = cv2.imread("../{image}")' for image in step["sources"][1:]]
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""# Open Source image
+context = process.Context({{"args": {{}}}}, {{}})
+
+# Open one of the images
+context.image = cv2.imread(os.join(base_folder, {step["sources"][0]})
+{other_images_open}
+
+# Get the top of the image
+context.image = context.image[0:500, :, :]
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+
+    auto_mask = context.config["args"].get("auto_mask", {})
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""auto_mask = {{
+    "lower_hsv_color": {auto_mask.get("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)},
+    "upper_hsv_color": {auto_mask.get("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)},
+    "de_noise_size": {auto_mask.get("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)},
+    "buffer_size": {auto_mask.get("buffer_size", schema.BUFFER_SIZE_DEFAULT)},
+    "buffer_level": {auto_mask.get("buffer_level", schema.BUFFER_LEVEL_DEFAULT)},
+}}
+
+# Print in HSV some point of the image
+hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
+print("Pixel 10:10: ", hsv[10, 10])
+print("Pixel 100:100: ", hsv[100, 100])
+
+context.init_mask()
+display(Image.fromarray(cv2.cvtColor(context.get_masked(), cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
+    "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
+    "cut_white": {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
+    "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
+}}
+process.histogram(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "auto_level": {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
+    "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
+}}
+process.level(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "cut_white": {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
+    "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
+}}
+process.color_cut(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+
+    auto_cut = context.config["args"].get("auto_cut", {})
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "auto_cut": {{
+        "lower_hsv_color": {auto_cut.get("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)},
+        "upper_hsv_color": {auto_cut.get("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)},
+        "de_noise_size": {auto_cut.get("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)},
+        "buffer_size": {auto_cut.get("buffer_size", schema.BUFFER_SIZE_DEFAULT)},
+        "buffer_level": {auto_cut.get("buffer_level", schema.BUFFER_LEVEL_DEFAULT)},
+    }},
+    "background_color": [255, 255, 255],
+}}
+
+# Print in HSV some point of the image
+hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
+print("Pixel 10:10: ", hsv[10, 10])
+print("Pixel 100:100: ", hsv[100, 100])
+
+process.cut(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
+    "deskew": {json.dumps(context.config["args"].get("deskew", {}), indent=4)},
+    }},
+}}
+# The angle can be forced in config.images_config.<image_name>.angle.
+process.deskew(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "crop": {json.dumps(context.config["args"].get("crop", {}), indent=4)},
+    "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
+    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
+}}
+process.docrop(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "sharpen": {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)},
+}}
+process.sharpen(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"] = {{
+    "dither": {context.config["args"].get("dither", schema.DITHER_DEFAULT)},
+}}
+process.dither(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """# Requires Tesseract
+context.config["args"] = {}
+# process.autorotate(context)
+display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+"""
+        )
+    )
+
+    with open(os.path.join(dest_folder, "jupyter.ipynb"), "w", encoding="utf-8") as jupyter_file:
+        nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]
+
+
 def transform(
     config: schema.Configuration,
     step: schema.Step,
@@ -1575,6 +1787,8 @@ def transform(
             cv2.imwrite(img2, context.image)
             images.append(img2)
         process_count = context.process_count
+
+    _create_jupyter_notebook(root_folder, context, step)
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
 
