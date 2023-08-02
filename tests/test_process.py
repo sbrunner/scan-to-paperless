@@ -32,9 +32,9 @@ def test_find_lines():
 
 # @pytest.mark.skip(reason="for test")
 def test_find_limit_contour():
-    context = process.Context({"args": {"min_box_size_empty": 40}}, {})
+    context = process.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
-    contours = process.find_contours(context.image, context, context.get_process_count(), "limits", "limit")
+    contours = process.find_contours(context.image, context, context.get_process_count(), "limit", {})
     limits = process.find_limit_contour(context.image, True, contours)
     assert limits == [1589]
 
@@ -171,12 +171,15 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
     config = {
         "args": {
             "assisted_split": True,
-            "tesseract": False,
-            "num_angles": 179,
-            "threshold_block_size_crop": 20,
-            "threshold_value_c_crop": 20,
+            "tesseract": {
+                "enabled": False,
+            },
+            "deskew": {
+                "num_angles": 179,
+            },
+            "crop": {"contour": {"threshold_block_size": 20, "threshold_value_c": 20}},
             "cut_white": cut_white,
-            "no_auto_rotate": True,
+            "auto_rotate": {"enabled": False},
         },
     }
     step = {
@@ -188,6 +191,7 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
     images = step["sources"]
     assert len(images) == 1
     assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
+    print(f"Compare '{images[0]}' with expected image 'assisted-split-{type_}-1.expected.png'.")
     check_image_file(
         root_folder,
         images[0],
@@ -203,12 +207,14 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
     step = process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalize"
+    print(f"Compare '{step['sources'][0]}' with expected image 'assisted-split-{type_}-3.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][0],
         os.path.join(os.path.dirname(__file__), f"assisted-split-{type_}-3.expected.png"),
         generate_expected_image=REGENERATE,
     )
+    print(f"Compare '{step['sources'][1]}' with expected image 'assisted-split-{type_}-4.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][1],
@@ -231,6 +237,9 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
             "+adjoin",
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
+    )
+    print(
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'assisted-split-{type_}-5.expected.png'."
     )
     check_image_file(
         root_folder,
@@ -256,7 +265,12 @@ def test_assisted_split_join_full():
         )
 
     config = {
-        "args": {"assisted_split": True, "level": True, "tesseract": False, "num_angles": 179},
+        "args": {
+            "assisted_split": True,
+            "level": True,
+            "tesseract": {"enabled": False},
+            "deskew": {"num_angles": 179},
+        },
         "destination": os.path.join(root_folder, "final.pdf"),
     }
     step = {
@@ -280,6 +294,7 @@ def test_assisted_split_join_full():
     step = process.split(config, step, root_folder)
     assert step["name"] == "finalize"
     assert len(step["sources"]) == 1
+    print(f"Compare '{step['sources'][0]}' with expected image 'assisted-split-join-1.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][0],
@@ -303,6 +318,9 @@ def test_assisted_split_join_full():
             "+adjoin",
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
+    )
+    print(
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'assisted-split-join-2.expected.png'."
     )
     check_image_file(
         root_folder,
@@ -330,10 +348,12 @@ def test_assisted_split_booth():
         "args": {
             "assisted_split": True,
             "level": False,
-            "no_crop": True,
-            "tesseract": False,
-            "margin_horizontal": 0,
-            "margin_vertical": 0,
+            "crop": {
+                "enabled": False,
+            },
+            "tesseract": {
+                "enabled": False,
+            },
         },
         "destination": os.path.join(root_folder, "final.pdf"),
         "assisted_split": [
@@ -355,24 +375,28 @@ def test_assisted_split_booth():
     step = process.split(config, step, root_folder)
     assert step["name"] == "finalize"
     assert len(step["sources"]) == 4
+    print(f"Compare '{step['sources'][0]}' with expected image 'assisted-split-booth-1.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][0],
         os.path.join(os.path.dirname(__file__), "assisted-split-booth-1.expected.png"),
         generate_expected_image=REGENERATE,
     )
+    print(f"Compare '{step['sources'][1]}' with expected image 'assisted-split-booth-2.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][1],
         os.path.join(os.path.dirname(__file__), "assisted-split-booth-2.expected.png"),
         generate_expected_image=REGENERATE,
     )
+    print(f"Compare '{step['sources'][2]}' with expected image 'assisted-split-booth-3.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][2],
         os.path.join(os.path.dirname(__file__), "assisted-split-booth-3.expected.png"),
         generate_expected_image=REGENERATE,
     )
+    print(f"Compare '{step['sources'][3]}' with expected image 'assisted-split-booth-4.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][3],
@@ -397,6 +421,7 @@ def test_full(progress):
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
+    print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][0],
@@ -439,6 +464,9 @@ def test_full(progress):
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
+    print(
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'all-2.expected.png'."
+    )
     check_image_file(
         root_folder,
         os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
@@ -456,7 +484,13 @@ def test_credit_card_full():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"append_credit_card": True, "num_angles": 179, "cut_white": 200},
+        "args": {
+            "append_credit_card": True,
+            "deskew": {"num_angles": 179},
+            "cut_white": 200,
+            "auto_mask": {},
+            "auto_rotate": {"enabled": False},
+        },
     }
     step = {
         "sources": [
@@ -484,6 +518,9 @@ def test_credit_card_full():
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
         ]
     )
+    print(
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'credit-card-1.expected.png'."
+    )
     check_image_file(
         root_folder,
         os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
@@ -501,7 +538,7 @@ def test_empty():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True},
+        "args": {"level": True, "auto_mask": {}},
     }
     step = {
         "sources": [
@@ -516,7 +553,9 @@ def test_empty():
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.flaky(reruns=3, only_rerun="ValueError")
-@pytest.mark.parametrize("test,args", [pytest.param("600", {"dpi": 600, "num_angles": 179}, id="600")])
+@pytest.mark.parametrize(
+    "test,args", [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
+)
 def test_custom_process(test, args):
     init_test()
     root_folder = f"/results/600"
@@ -528,6 +567,7 @@ def test_custom_process(test, args):
     step = {"sources": [os.path.join(os.path.dirname(__file__), f"{test}.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
+    print(f"Compare '{step['sources'][0]}' with expected image '{test}.expected.png'.")
     check_image_file(
         root_folder,
         step["sources"][0],
@@ -714,7 +754,7 @@ def test_tiff():
 )
 def test_auto_mask(config, name):
     init_test()
-    context = process.Context({"args": {"auto_mask": config}}, {})
+    context = process.Context({"args": {"auto_mask": {"auto_mask": config}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
     check_image(
@@ -779,12 +819,14 @@ def test_histogram():
     context.image_name = "histogram.png"
     context.root_folder = "/tmp"
     process.histogram(context)
+    print(f"Compare '/results/histogram/histogram.png' with expected image 'histogram.expected.png'.")
     check_image_file(
         "/results/histogram/",
         "/tmp/histogram/histogram.png",
         os.path.join(os.path.dirname(__file__), "histogram.expected.png"),
         generate_expected_image=REGENERATE,
     )
+    print(f"Compare '/results/histogram/log-histogram.png' with expected image 'histogram-log.expected.png'.")
     check_image_file(
         "/results/histogram/",
         "/tmp/histogram/log-histogram.png",

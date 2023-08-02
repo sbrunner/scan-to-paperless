@@ -135,7 +135,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
                 de_noise_size,
                 cv2.BORDER_REPLICATE,
             )
-            if auto_mask_config.get("de_noise_morphology", True):
+            if auto_mask_config.setdefault("de_noise_morphology", schema.DE_NOISE_MORPHOLOGY_DEFAULT):
                 mask = cv2.morphologyEx(
                     mask,
                     cv2.MORPH_CLOSE,
@@ -153,7 +153,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
                     cv2.THRESH_BINARY,
                 )
 
-            inverse_mask = auto_mask_config.get("inverse_mask", False)
+            inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
             if not inverse_mask:
                 mask = cv2.bitwise_not(mask)
 
@@ -169,19 +169,15 @@ class Context:  # pylint: disable=too-many-instance-attributes
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
             if self.root_folder:
-                mask_file: Optional[str] = os.path.join(self.root_folder, default_file_name)
+                mask_file: str = os.path.join(self.root_folder, default_file_name)
                 assert mask_file
                 if not os.path.exists(mask_file):
                     base_folder = os.path.dirname(self.root_folder)
                     assert base_folder
                     mask_file = os.path.join(base_folder, default_file_name)
                     if not os.path.exists(mask_file):
-                        mask_file = None
-                mask_file = (
-                    auto_mask_config.setdefault("additional_filename", mask_file)
-                    if mask_file
-                    else auto_mask_config.get("additional_filename")
-                )
+                        mask_file = ""
+                mask_file = auto_mask_config.setdefault("additional_filename", mask_file)
                 if mask_file and os.path.exists(mask_file):
                     mask = cv2.add(
                         mask,
@@ -213,7 +209,19 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
-        self.mask = self._get_mask(self.config["args"].get("auto_mask"), "auto_mask", "mask.png")
+
+        auto_mask_config = self.config["args"].setdefault(
+            "auto_mask", cast(schema.AutoMaskOperation, schema.AUTO_MASK_OPERATION_DEFAULT)
+        )
+        self.mask = (
+            self._get_mask(
+                auto_mask_config.setdefault("auto_mask", {}),
+                "auto_mask",
+                "mask.png",
+            )
+            if auto_mask_config.setdefault("enabled", schema.AUTO_MASK_ENABLED_DEFAULT)
+            else None
+        )
 
     def get_background_color(self) -> tuple[int, int, int]:
         """Get the background color."""
@@ -226,7 +234,13 @@ class Context:  # pylint: disable=too-many-instance-attributes
         """Definitively mask the original image."""
         if "auto_cut" in self.config["args"]:
             assert self.image is not None
-            mask = self._get_mask(self.config["args"].get("auto_cut"), "auto_cut", "cut.png")
+            mask = self._get_mask(
+                self.config["args"]
+                .setdefault("auto_cut", cast(schema.AutoCut, schema.AUTO_CUT_DEFAULT))
+                .setdefault("auto_mask", {}),
+                "auto_cut",
+                "cut.png",
+            )
             self.image[mask == 0] = self.get_background_color()
 
     def get_process_count(self) -> int:
@@ -263,14 +277,9 @@ class Context:  # pylint: disable=too-many-instance-attributes
         if self.mask is not None:
             self.mask = rotate_image(self.mask, angle, 0)
 
-    def get_px_value(self, name: str, default: Union[int, float]) -> float:
+    def get_px_value(self, value: Union[int, float]) -> float:
         """Get the value in px."""
-        return (
-            cast(float, cast(dict[str, Any], self.config["args"]).setdefault(name, default))
-            / 10
-            / 2.51
-            * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
-        )
+        return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
 
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
@@ -506,7 +515,13 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     """
     image = context.get_masked()
     process_count = context.get_process_count()
-    contours = find_contours(image, context, process_count, "crop", "crop", schema.MIN_BOX_SIZE_CROP_DEFAULT)
+    contours = find_contours(
+        image,
+        context,
+        process_count,
+        "crop",
+        context.config["args"].setdefault("crop", {}).setdefault("contour", {}),
+    )
 
     if contours:
         for contour in contours:
@@ -707,17 +722,27 @@ def deskew(context: Context) -> None:
 def docrop(context: Context) -> None:
     """Crop an image."""
     # Margin in mm
-    if context.config["args"].setdefault("no_crop", schema.NO_CROP_DEFAULT):
+    crop_config = context.config["args"].setdefault("crop", {})
+    if not crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
         return
-    margin_horizontal = context.get_px_value("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT)
-    margin_vertical = context.get_px_value("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT)
+    margin_horizontal = context.get_px_value(
+        crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT)
+    )
+    margin_vertical = context.get_px_value(
+        crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT)
+    )
     crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
 
 
 @Process("sharpen")
 def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
-    if context.config["args"].setdefault("sharpen", schema.SHARPEN_DEFAULT) is False:
+    if (
+        context.config["args"]
+        .setdefault("sharpen", cast(schema.Sharpen, schema.SHARPEN_DEFAULT))
+        .setdefault("enabled", schema.SHARPEN_ENABLED_DEFAULT)
+        is False
+    ):
         return None
     if context.image is None:
         raise ScanToPaperlessException("The image is required")
@@ -729,7 +754,13 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
 @external
 def dither(context: Context, source: str, destination: str) -> None:
     """Dither an image."""
-    if context.config["args"].setdefault("dither", schema.DITHER_DEFAULT) is False:
+
+    if (
+        context.config["args"]
+        .setdefault("dither", cast(schema.Dither, schema.DITHER_DEFAULT))
+        .setdefault("enabled", schema.DITHER_ENABLED_DEFAULT)
+        is False
+    ):
         return
     call(CONVERT + ["+dither", source, destination])
 
@@ -741,7 +772,9 @@ def autorotate(context: Context) -> None:
 
     Put the text in the right position.
     """
-    if context.config["args"].setdefault("no_auto_rotate", schema.NO_AUTO_ROTATE_DEFAULT):
+
+    auto_rotate_configuration = context.config["args"].setdefault("auto_rotate", {})
+    if not auto_rotate_configuration.setdefault("enabled", schema.AUTO_ROTATE_ENABLED_DEFAULT):
         return
     with tempfile.NamedTemporaryFile(suffix=".png") as source:
         cv2.imwrite(source.name, context.get_masked())
@@ -891,7 +924,9 @@ def find_limits(
 ) -> tuple[list[int], list[tuple[int, int, int, int]]]:
     """Find the limit for assisted split."""
     contours_limits = find_limit_contour(image, vertical, contours)
-    lines = find_lines(image, vertical, context.config["args"].setdefault("line_detection", {}))
+    lines = find_lines(
+        image, vertical, context.config["args"].setdefault("limit_detection", {}).setdefault("line", {})
+    )
     return contours_limits, lines
 
 
@@ -934,21 +969,18 @@ def find_contours(
     context: Context,
     progress_count: int,
     name: str,
-    prefix: str,
-    default_min_box_size: int = schema.MIN_BOX_SIZE_EMPTY_DEFAULT,
+    config: schema.Contour,
 ) -> list[tuple[int, int, int, int]]:
     """Find the contours on an image."""
     block_size = context.get_px_value(
-        f"threshold_block_size_{prefix}", schema.THRESHOLD_BLOCK_SIZE_CROP_DEFAULT
+        config.setdefault("threshold_block_size", schema.THRESHOLD_BLOCK_SIZE_DEFAULT)
     )
-    threshold_value_c = cast(dict[str, int], context.config["args"]).setdefault(
-        f"threshold_value_c_{prefix}", schema.THRESHOLD_VALUE_C_CROP_DEFAULT
-    )
+    threshold_value_c = config.setdefault("threshold_value_c", schema.THRESHOLD_VALUE_C_DEFAULT)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     block_size = int(round(block_size / 2) * 2)
 
-    # Clean the image using otsu method with the inversed binarized image
+    # Clean the image using method with the inverted binarized image
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
@@ -969,7 +1001,7 @@ def find_contours(
                     block_size2 + 1,
                     threshold_value_c2,
                 )
-                contours = _find_contours_thresh(image, thresh2, context, prefix, default_min_box_size)
+                contours = _find_contours_thresh(image, thresh2, context, name, config)
                 thresh2 = cv2.cvtColor(thresh2, cv2.COLOR_GRAY2BGR)
                 if contours:
                     for contour in contours:
@@ -978,22 +1010,24 @@ def find_contours(
                 context.save_progress_images(
                     f"{name}-threshold",
                     thresh2,
-                    f"block_size_{prefix}-{block_size2}-value_c_{prefix}-{threshold_value_c2}-",
+                    f"block_size_{name}-{block_size2}-value_c_{name}-{threshold_value_c2}-",
                     progress_count,
                 )
 
-    return _find_contours_thresh(image, thresh, context, prefix, default_min_box_size)
+    return _find_contours_thresh(image, thresh, context, name, config)
 
 
 def _find_contours_thresh(
-    image: NpNdarrayInt, thresh: NpNdarrayInt, context: Context, prefix: str, default_min_box_size: int = 10
+    image: NpNdarrayInt,
+    thresh: NpNdarrayInt,
+    context: Context,
+    name: str,
+    config: schema.Contour,
 ) -> list[tuple[int, int, int, int]]:
-    min_size = context.get_px_value(f"min_box_size_{prefix}", default_min_box_size)
-    min_black = cast(dict[str, int], context.config["args"]).setdefault(
-        f"min_box_black_{prefix}", schema.MIN_BOX_BLACK_CROP_DEFAULT
-    )
+    min_size = context.get_px_value(config.setdefault("min_box_size", schema.MIN_BOX_SIZE_DEFAULT[name]))
+    min_black = config.setdefault("min_box_black", schema.MIN_BOX_BLACK_DEFAULT)
     kernel_size = context.get_px_value(
-        f"contour_kernel_size_{prefix}", schema.CONTOUR_KERNEL_SIZE_CROP_DEFAULT
+        config.setdefault("contour_kernel_size", schema.CONTOUR_KERNEL_SIZE_DEFAULT)
     )
 
     kernel_size = int(round(kernel_size / 2))
@@ -1070,12 +1104,18 @@ def transform(
         autorotate(context)
 
         # Is empty ?
-        contours = find_contours(
-            context.get_masked(), context, context.get_process_count(), "is-empty", "empty"
-        )
-        if not contours:
-            print(f"Ignore image with no content: {image}")
-            continue
+        empty_config = config["args"].setdefault("empty", {})
+        if empty_config.setdefault("enabled", schema.EMPTY_ENABLED_DEFAULT):
+            contours = find_contours(
+                context.get_masked(),
+                context,
+                context.get_process_count(),
+                "empty",
+                empty_config.setdefault("contour", {}),
+            )
+            if not contours:
+                print(f"Ignore image with no content: {image}")
+                continue
 
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
             assisted_split: schema.AssistedSplit = {}
@@ -1093,7 +1133,13 @@ def transform(
             limits = []
             assert context.image is not None
 
-            contours = find_contours(context.image, context, context.get_process_count(), "limits", "limit")
+            contours = find_contours(
+                context.image,
+                context,
+                context.get_process_count(),
+                "limit",
+                config["args"].setdefault("limit_detection", {}).setdefault("contour", {}),
+            )
             vertical_limits_context = find_limits(context.image, True, context, contours)
             horizontal_limits_context = find_limits(context.image, False, context, contours)
 
@@ -1104,7 +1150,7 @@ def transform(
             assisted_split["limits"] = limits
 
             rule_config = config["args"].setdefault("rule", {})
-            if rule_config.setdefault("enable", schema.RULE_ENABLE_DEFAULT):
+            if rule_config.setdefault("enabled", schema.RULE_ENABLE_DEFAULT):
                 minor_graduation_space = rule_config.setdefault(
                     "minor_graduation_space", schema.RULE_MINOR_GRADUATION_SPACE_DEFAULT
                 )
@@ -1235,16 +1281,17 @@ def transform(
             if progress:
                 _save_progress(context.root_folder, count, "colors", os.path.basename(image), image)
 
-    if not config["args"].setdefault("jpeg", False) and config["args"].setdefault(
-        "run_pngquant", schema.RUN_PNGQUANT_DEFAULT
-    ):
+    pngquant_config = config["args"].setdefault("pngquant", cast(schema.Pngquant, schema.PNGQUANT_DEFAULT))
+    if not config["args"].setdefault("jpeg", cast(schema.Jpeg, schema.JPEG_DEFAULT)).setdefault(
+        "enabled", schema.JPEG_ENABLED_DEFAULT
+    ) and pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT):
         count = context.get_process_count()
         for image in images:
             with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
                 call(
                     ["pngquant", f"--output={temp_file.name}"]
-                    + config["args"].setdefault(
-                        "pngquant_options",
+                    + pngquant_config.setdefault(
+                        "options",
                         schema.PNGQUANT_OPTIONS_DEFAULT,
                     )
                     + ["--", image],
@@ -1255,8 +1302,10 @@ def transform(
             if progress:
                 _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
 
-    if not config["args"].setdefault("jpeg", schema.JPEG_DEFAULT) and config["args"].setdefault(
-        "run_optipng", not config["args"]["run_pngquant"]
+    if not config["args"].setdefault("jpeg", {}).setdefault(
+        "enabled", schema.JPEG_ENABLED_DEFAULT
+    ) and config["args"].setdefault("optipng", {}).setdefault(
+        "enabled", not pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT)
     ):
         count = context.get_process_count()
         for image in images:
@@ -1264,7 +1313,7 @@ def transform(
             if progress:
                 _save_progress(context.root_folder, count, "optipng", os.path.basename(image), image)
 
-    if config["args"].setdefault("jpeg", schema.JPEG_DEFAULT):
+    if config["args"].setdefault("jpeg", {}).setdefault("enabled", schema.JPEG_ENABLED_DEFAULT):
         count = context.get_process_count()
         new_images = []
         for image in images:
@@ -1276,7 +1325,11 @@ def transform(
                     "convert",
                     image,
                     "-quality",
-                    str(config["args"].setdefault("jpeg_quality", schema.JPEG_QUALITY_DEFAULT)),
+                    str(
+                        config["args"]
+                        .setdefault("jpeg", {})
+                        .setdefault("quality", schema.JPEG_QUALITY_DEFAULT)
+                    ),
                     jpeg_img,
                 ],
                 check=True,
@@ -1437,12 +1490,15 @@ def split(
                         page_pos = 0
 
                     save(context, root_folder, process_file.name, f"{context.get_process_count()}-split")
+                    crop_config = context.config["args"].setdefault("crop", {})
                     margin_horizontal = context.get_px_value(
-                        "margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT
+                        crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT)
                     )
-                    margin_vertical = context.get_px_value("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT)
+                    margin_vertical = context.get_px_value(
+                        crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT)
+                    )
                     context.image = cv2.imread(process_file.name)
-                    if not context.config["args"].setdefault("no_crop", schema.NO_CROP_DEFAULT):
+                    if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                         crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png"
@@ -1531,7 +1587,8 @@ def finalize(
         if os.path.exists(image):
             name = os.path.splitext(os.path.basename(image))[0]
             file_name = os.path.join(root_folder, f"{name}.pdf")
-            if config["args"].setdefault("tesseract", schema.TESSERACT_DEFAULT):
+            tesseract_configuration = config["args"].setdefault("tesseract", {})
+            if tesseract_configuration.setdefault("enabled", schema.TESSERACT_ENABLED_DEFAULT):
                 with open(file_name, "w", encoding="utf8") as output_file:
                     process = run(
                         [
@@ -1539,7 +1596,7 @@ def finalize(
                             "--dpi",
                             str(config["args"].setdefault("dpi", schema.DPI_DEFAULT)),
                             "-l",
-                            config["args"].setdefault("tesseract_lang", schema.TESSERACT_LANG_DEFAULT),
+                            tesseract_configuration.setdefault("lang", schema.TESSERACT_LANG_DEFAULT),
                             image,
                             "stdout",
                             "pdf",
@@ -1590,13 +1647,21 @@ def finalize(
             call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pdftk.pdf")])
             count += 1
 
-        if config["args"].setdefault("run_exiftool", schema.RUN_EXIFTOOL_DEFAULT):
+        if (
+            config["args"]
+            .setdefault("exiftool", cast(schema.Exiftool, schema.EXIFTOOL_DEFAULT))
+            .setdefault("enabled", schema.EXIFTOOL_ENABLED_DEFAULT)
+        ):
             call(["exiftool", "-overwrite_original_in_place", temporary_pdf.name])
             if progress:
                 call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-exiftool.pdf")])
                 count += 1
 
-        if config["args"].setdefault("run_ps2pdf", schema.RUN_PS2PDF_DEFAULT):
+        if (
+            config["args"]
+            .setdefault("ps2pdf", cast(schema.Ps2Pdf, schema.PS2PDF_DEFAULT))
+            .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
+        ):
             with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
                 call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
