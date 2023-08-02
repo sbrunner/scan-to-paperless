@@ -2564,13 +2564,13 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "tifffile"
-version = "2023.4.12"
+version = "2023.7.18"
 description = "Read and write TIFF files"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "tifffile-2023.4.12-py3-none-any.whl", hash = "sha256:3161954746fe32c4f4244d0fb2eb0a272f3a3760b78882a42faa83ac5e6e0b74"},
-    {file = "tifffile-2023.4.12.tar.gz", hash = "sha256:2fa99f9890caab919d932a0acaa9d0f5843dc2ef3594e212963932e20713badd"},
+    {file = "tifffile-2023.7.18-py3-none-any.whl", hash = "sha256:a9449ab688b82b69f3ddf80e4e0b4de7b5b02549974a56e112061b816b3c5585"},
+    {file = "tifffile-2023.7.18.tar.gz", hash = "sha256:5a5a624b2f7ab7f37e9ec4174ae2df1805b9658f89013f9b4b5550672f65f2a1"},
 ]
 
 [package.dependencies]
@@ -2989,27 +2989,27 @@ test = ["pytest"]
 
 [[package]]
 name = "zxing-cpp"
-version = "2.0.0"
+version = "2.1.0"
 description = "Python bindings for the zxing-cpp barcode library"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "zxing-cpp-2.0.0.tar.gz", hash = "sha256:1b67b221aae15aad9b5609d99c38d57875bc0a4fef864142d7ca37e9ee7880b0"},
-    {file = "zxing_cpp-2.0.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:54282d0e5c573754049113a0cdbf14cc1c6b986432a367d8a788112afa92a1d5"},
-    {file = "zxing_cpp-2.0.0-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:76caafb8fc1e12c2e5ec33ce4f340a0e15e9a2aabfbfeaec170e8a2b405b8a77"},
-    {file = "zxing_cpp-2.0.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95dd06dc559f53c1ca0eb59dbaebd802ebc839937baaf2f8d2b3def3e814c07f"},
-    {file = "zxing_cpp-2.0.0-cp310-cp310-win32.whl", hash = "sha256:ea54fd242f93eea7bf039a68287e5e57fdf77d78e3bd5b4cbb2d289bb3380d63"},
-    {file = "zxing_cpp-2.0.0-cp310-cp310-win_amd64.whl", hash = "sha256:8da9c912cca5829eedb2800ce3eaa1b1e52742f536aa9e798be69bf09639f399"},
-    {file = "zxing_cpp-2.0.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f70eefa5dc1fd9238087c024ef22f3d99ba79cb932a2c5bc5b0f1e152037722e"},
-    {file = "zxing_cpp-2.0.0-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:97919f07c62edf1c8e0722fd64893057ce636b7067cf47bd593e98cc7e404d74"},
-    {file = "zxing_cpp-2.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5fd89065f620d6b78281308c6abfb760d95760a1c9b88eb7ac612b52b331bd41"},
-    {file = "zxing_cpp-2.0.0-cp311-cp311-win32.whl", hash = "sha256:631a0c783ad233c85295e0cf4cd7740f1fe2853124c61b1ef6bcf7eb5d2fa5e6"},
-    {file = "zxing_cpp-2.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:9f0c2c03f5df470ef71a7590be5042161e7590da767d4260a6d0d61a3fa80b88"},
-    {file = "zxing_cpp-2.0.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:5ce391f21763f00d5be3431e16d075e263e4b9205c2cf55d708625cb234b1f15"},
-    {file = "zxing_cpp-2.0.0-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f0eefdfad91e15e3f5b7ed16d83806a36f96ca482f4b042baa6297784a58b0b3"},
-    {file = "zxing_cpp-2.0.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1d665c45029346c70ae3df5dbc36f6335ffe4f275e98dc43772fa32a65844196"},
-    {file = "zxing_cpp-2.0.0-cp39-cp39-win32.whl", hash = "sha256:214a6a0e49b92fda8d2761c74f5bfd24a677b9bf1d0ef0e083412486af97faa9"},
-    {file = "zxing_cpp-2.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:a788551ddf3a6ba1152ff9a0b81d57018a3cc586544087c39d881428745faf1f"},
+    {file = "zxing-cpp-2.1.0.tar.gz", hash = "sha256:7a8a468b420bf391707431d5a0dd881cb41033ae15f87820d93d5707c7bc55bc"},
+    {file = "zxing_cpp-2.1.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:26d27f61d627c06cc3e91b1ce816bd780c9227fd10b7ca961264f67bfb3bdf66"},
+    {file = "zxing_cpp-2.1.0-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4d9655c7d682ce252fe5c25f22c6fafe4c5ac493830fa8a2c062c85d061ce3b4"},
+    {file = "zxing_cpp-2.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:313bac052bd38bd2cedaa2610d880b3d62254dd6d8be01795559b73872c54ed0"},
+    {file = "zxing_cpp-2.1.0-cp310-cp310-win32.whl", hash = "sha256:0a178683b66422ac01ae35f749d58c50b271f9ab18def1c286f5fc61bcf81fa7"},
+    {file = "zxing_cpp-2.1.0-cp310-cp310-win_amd64.whl", hash = "sha256:650d8f6731f11c04f4662a48f1efa9dc26c97bbdfa4f9b14b4683f43b7ccde4d"},
+    {file = "zxing_cpp-2.1.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:4163d72975191d40c879bc130d5e8aa1eef5d5e6bfe820d94b5c9a2cb10d664e"},
+    {file = "zxing_cpp-2.1.0-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:843f72a1f2a8c397b4d92f757488b03d8597031e907442382d5662fd96b0fd21"},
+    {file = "zxing_cpp-2.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:66d01d40bacc7e5b40e9fa474dab64f2e75a091c6e7c9d4a6b539b5a724127e3"},
+    {file = "zxing_cpp-2.1.0-cp311-cp311-win32.whl", hash = "sha256:8397ce7e1a7a92cd8f0045a4c64e4fcd97f4aaa51441d27bcb76eeda0a1917bc"},
+    {file = "zxing_cpp-2.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:a54cd56c0898cb63a08517b7d630484690a9bad4da1e443aebe64b7077444d90"},
+    {file = "zxing_cpp-2.1.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:ab8fff5791e1d858390e45325500f6a17d5d3b6ac0237ae84ceda6f5b7a3685a"},
+    {file = "zxing_cpp-2.1.0-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ba91ba2af0cc75c9e53bf95963f409c6fa26aa7df38469e2cdcb5b38a6c7c1c7"},
+    {file = "zxing_cpp-2.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d7ba898e4f5ee9cd426d4271ff8b26911e3346b1cb4262f06fdc917e42b7c123"},
+    {file = "zxing_cpp-2.1.0-cp39-cp39-win32.whl", hash = "sha256:da081b763032b05326ddc53d3ad28a8b7603d662ccce2ff29fd204d587d3cac9"},
+    {file = "zxing_cpp-2.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:7245e551fc30e9708c0fd0f4d0d15f29c0b85075d20c18ddc53b87956a469544"},
 ]
 
 [package.dependencies]
@@ -3018,4 +3018,4 @@ numpy = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "9636151502baff3f88e1fa9c7e54867f7a0a8987cff422bc538a769d1f0c3fca"
+content-hash = "b6230beefd96f79273ffcba399f312cc86836a138472f873da15ee902383c23c"
