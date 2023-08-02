@@ -1559,7 +1559,7 @@ def finalize(
     if pdf:
         with pikepdf.open(pdf[0]) as pdf_:
             if tesseract_producer is None and pdf_.docinfo.get("/Producer") is not None:
-                tesseract_producer = json.loads(pdf_.docinfo.get("/Producer").to_json())  # type: ignore
+                tesseract_producer = json.loads(pdf_.docinfo.get("/Producer").to_json())
                 if "tesseract" not in tesseract_producer.lower():
                     tesseract_producer = None
                 elif tesseract_producer.startswith("u:"):
