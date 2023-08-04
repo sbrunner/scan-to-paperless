@@ -165,7 +165,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/pygobject: 3.42.1-0ubuntu1
   ubuntu_22_04/pyjwt: 2.3.0-1ubuntu0.2
   ubuntu_22_04/pyparsing: 2.4.7-1
-  ubuntu_22_04/python-apt: 2.4.0ubuntu1
+  ubuntu_22_04/python-apt: 2.4.0ubuntu2
   ubuntu_22_04/python-cffi: 1.15.0-1build2
   ubuntu_22_04/python-cryptography: 3.4.8-1ubuntu2
   ubuntu_22_04/python-distro: 1.7.0-1
@@ -374,7 +374,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/pygobject: 3.42.1-0ubuntu1
   ubuntu_22_04/pyjwt: 2.3.0-1ubuntu0.2
   ubuntu_22_04/pyparsing: 2.4.7-1
-  ubuntu_22_04/python-apt: 2.4.0ubuntu1
+  ubuntu_22_04/python-apt: 2.4.0ubuntu2
   ubuntu_22_04/python-cffi: 1.15.0-1build2
   ubuntu_22_04/python-cryptography: 3.4.8-1ubuntu2
   ubuntu_22_04/python-distro: 1.7.0-1
