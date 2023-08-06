@@ -56,6 +56,7 @@ def rotate_image(
     image: NpNdarrayInt, angle: float, background: Union[int, tuple[int, int, int]]
 ) -> NpNdarrayInt:
     """Rotate the image."""
+
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
@@ -80,6 +81,7 @@ def crop_image(  # pylint: disable=too-many-arguments
     background: Union[tuple[int], tuple[int, int, int]],
 ) -> NpNdarrayInt:
     """Crop the image."""
+
     matrice: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         NpNdarrayInt,
@@ -99,6 +101,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         image_name: Optional[str] = None,
     ) -> None:
         """Initialize."""
+
         self.config = config
         self.step = step
         self.config_file_name = config_file_name
@@ -115,6 +118,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         default_file_name: str,
     ) -> Optional[NpNdarrayInt]:
         """Init the mask."""
+
         if auto_mask_config is not None:
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
@@ -225,6 +229,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def get_background_color(self) -> tuple[int, int, int]:
         """Get the background color."""
+
         return cast(
             tuple[int, int, int],
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
@@ -232,6 +237,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
+
         if "auto_cut" in self.config["args"]:
             assert self.image is not None
             mask = self._get_mask(
@@ -245,6 +251,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def get_process_count(self) -> int:
         """Get the step number."""
+
         try:
             return self.process_count
         finally:
@@ -252,6 +259,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def get_masked(self) -> NpNdarrayInt:
         """Get the mask."""
+
         if self.image is None:
             raise ScanToPaperlessException("The image is None")
         if self.mask is None:
@@ -263,6 +271,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def crop(self, x: int, y: int, width: int, height: int) -> None:
         """Crop the image."""
+
         if self.image is None:
             raise ScanToPaperlessException("The image is None")
         self.image = crop_image(self.image, x, y, width, height, self.get_background_color())
@@ -271,6 +280,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def rotate(self, angle: float) -> None:
         """Rotate the image."""
+
         if self.image is None:
             raise ScanToPaperlessException("The image is None")
         self.image = rotate_image(self.image, angle, self.get_background_color())
@@ -279,10 +289,12 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
     def get_px_value(self, value: Union[int, float]) -> float:
         """Get the value in px."""
+
         return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
 
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
+
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
             "progress", schema.PROGRESS_DEFAULT
         )
@@ -296,6 +308,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
         force: bool = False,
     ) -> Optional[str]:
         """Save the intermediate images."""
+
         if process_count is None:
             process_count = self.get_process_count()
         if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
@@ -334,6 +347,7 @@ def add_intermediate_error(
     traceback_: list[str],
 ) -> None:
     """Add in the config non fatal error."""
+
     if config_file_name is None:
         raise ScanToPaperlessException("The config file name is required") from error
     if "intermediate_error" not in config:
@@ -358,6 +372,7 @@ def add_intermediate_error(
 
 def call(cmd: Union[str, list[str]], **kwargs: Any) -> None:
     """Verbose version of check_output with no returns."""
+
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -372,6 +387,7 @@ def call(cmd: Union[str, list[str]], **kwargs: Any) -> None:
 
 def run(cmd: Union[str, list[str]], **kwargs: Any) -> CompletedProcess:
     """Verbose version of check_output with no returns."""
+
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -381,6 +397,7 @@ def run(cmd: Union[str, list[str]], **kwargs: Any) -> CompletedProcess:
 
 def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
     """Verbose version of check_output."""
+
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -390,6 +407,7 @@ def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
 
 def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNdarrayInt]:
     """Do a diff between images."""
+
     width = max(image1.shape[1], image2.shape[1])
     height = max(image1.shape[0], image2.shape[0])
     image1 = cv2.resize(image1, (width, height))
@@ -487,6 +505,7 @@ def get_contour_to_crop(
     contours: list[tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0
 ) -> tuple[int, int, int, int]:
     """Get the contour to crop."""
+
     content = [
         contours[0][0],
         contours[0][1],
@@ -513,6 +532,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
 
     Margin in px
     """
+
     image = context.get_masked()
     process_count = context.get_process_count()
     contours = find_contours(
@@ -614,6 +634,7 @@ def _histogram(
 @Process("histogram", progress=False)
 def histogram(context: Context) -> None:
     """Create an image with the histogram of the current image."""
+
     noisy_image = img_as_ubyte(context.image)
     histogram_data, histogram_centers = skimage_histogram(noisy_image)
     histogram_max = max(histogram_data)
@@ -626,6 +647,7 @@ def histogram(context: Context) -> None:
 @Process("level")
 def level(context: Context) -> NpNdarrayInt:
     """Do the level on an image."""
+
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
     if context.config["args"].setdefault("auto_level", schema.AUTO_LEVEL_DEFAULT):
@@ -646,6 +668,7 @@ def level(context: Context) -> NpNdarrayInt:
 @Process("color-cut")
 def color_cut(context: Context) -> None:
     """Set the near white to white and near black to black."""
+
     assert context.image is not None
     grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
 
@@ -662,12 +685,14 @@ def color_cut(context: Context) -> None:
 @Process("mask-cut")
 def cut(context: Context) -> None:
     """Mask the image with the cut mask."""
+
     context.do_initial_cut()
 
 
 @Process("deskew")
 def deskew(context: Context) -> None:
     """Deskew an image."""
+
     images_config = context.config.setdefault("images_config", {})
     assert context.image_name
     image_config = images_config.setdefault(context.image_name, {})
@@ -721,6 +746,7 @@ def deskew(context: Context) -> None:
 @Process("docrop")
 def docrop(context: Context) -> None:
     """Crop an image."""
+
     # Margin in mm
     crop_config = context.config["args"].setdefault("crop", {})
     if not crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
@@ -737,6 +763,7 @@ def docrop(context: Context) -> None:
 @Process("sharpen")
 def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
+
     if (
         context.config["args"]
         .setdefault("sharpen", cast(schema.Sharpen, schema.SHARPEN_DEFAULT))
@@ -797,6 +824,7 @@ def draw_line(  # pylint: disable=too-many-arguments
     line: Optional[tuple[int, int, int, int]] = None,
 ) -> schema.Limit:
     """Draw a line on an image."""
+
     img_len = image.shape[0 if vertical else 1]
     if line is None:
         assert position is not None
@@ -828,6 +856,7 @@ def draw_line(  # pylint: disable=too-many-arguments
 
 def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], border: bool = True) -> None:
     """Draw a rectangle on an image."""
+
     color = (0, 255, 0)
     opacity = 0.1
     x, y, width, height = contour
@@ -854,6 +883,7 @@ def find_lines(
     image: NpNdarrayInt, vertical: bool, config: schema.LineDetection
 ) -> list[tuple[int, int, int, int]]:
     """Find the lines on an image."""
+
     edges = cv2.Canny(
         image,
         config.setdefault("high_threshold", schema.LINE_DETECTION_HIGH_THRESHOLD_DEFAULT),
@@ -884,10 +914,11 @@ def find_lines(
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
-    iszero: NpNdarrayInt = np.concatenate([[0], np.equal(values, 0).view(np.int8), [0]])
-    absdiff = np.abs(np.diff(iszero))
-    # Runs start and end where absdiff is 1.
-    ranges = np.where(absdiff == 1)[0].reshape(-1, 2)
+
+    is_zero: NpNdarrayInt = np.concatenate([[0], np.equal(values, 0).view(np.int8), [0]])
+    abs_diff = np.abs(np.diff(is_zero))
+    # Runs start and end where abs_diff is 1.
+    ranges = np.where(abs_diff == 1)[0].reshape(-1, 2)
     return cast(NpNdarrayInt, ranges)
 
 
@@ -895,6 +926,7 @@ def find_limit_contour(
     image: NpNdarrayInt, vertical: bool, contours: list[tuple[int, int, int, int]]
 ) -> list[int]:
     """Find the contour for assisted split."""
+
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -1062,6 +1094,282 @@ def _find_contours_thresh(
     return result
 
 
+def _update_config(config: schema.Configuration) -> None:
+    """Convert the old configuration to the new one."""
+
+    old_config = cast(dict[str, Any], config)
+    # no_crop => crop.enabled (inverted)
+    if "no_crop" in old_config["args"]:
+        config["args"].setdefault("crop", {}).setdefault("enabled", not old_config["args"]["no_crop"])
+        del old_config["args"]["no_crop"]
+    # margin_horizontal => crop.margin_horizontal
+    if "margin_horizontal" in old_config["args"]:
+        config["args"].setdefault("crop", {}).setdefault(
+            "margin_horizontal", old_config["args"]["margin_horizontal"]
+        )
+        del old_config["args"]["margin_horizontal"]
+    # margin_vertical => crop.margin_vertical
+    if "margin_vertical" in old_config["args"]:
+        config["args"].setdefault("crop", {}).setdefault(
+            "margin_vertical", old_config["args"]["margin_vertical"]
+        )
+        del old_config["args"]["margin_vertical"]
+    # crop.min_box_size => crop.contour.min_box_size
+    if "min_box_size" in old_config["args"].get("crop", {}):
+        config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
+            "min_box_size", old_config["args"]["crop"]["min_box_size"]
+        )
+        del old_config["args"]["crop"]["min_box_size"]
+    # crop.min_box_black => crop.contour.min_box_black
+    if "min_box_black" in old_config["args"].get("crop", {}):
+        config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
+            "min_box_black", old_config["args"]["crop"]["min_box_black"]
+        )
+        del old_config["args"]["crop"]["min_box_black"]
+    # crop.contour_kernel_size => crop.contour.contour_kernel_size
+    if "contour_kernel_size" in old_config["args"].get("crop", {}):
+        config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
+            "contour_kernel_size", old_config["args"]["crop"]["contour_kernel_size"]
+        )
+        del old_config["args"]["crop"]["contour_kernel_size"]
+    # crop.threshold_block_size => crop.contour.threshold_block_size
+    if "threshold_block_size" in old_config["args"].get("crop", {}):
+        config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
+            "threshold_block_size", old_config["args"]["crop"]["threshold_block_size"]
+        )
+        del old_config["args"]["crop"]["threshold_block_size"]
+    # crop.threshold_value_c => crop.contour.threshold_value_c
+    if "threshold_value_c" in old_config["args"].get("crop", {}):
+        config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
+            "threshold_value_c", old_config["args"]["crop"]["threshold_value_c"]
+        )
+        del old_config["args"]["crop"]["threshold_value_c"]
+    # min_box_size_empty => empty.contour.min_box_size
+    if "min_box_size_empty" in old_config["args"]:
+        config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
+            "min_box_size", old_config["args"]["min_box_size_empty"]
+        )
+        del old_config["args"]["min_box_size_empty"]
+    # min_box_black_empty => empty.contour.min_box_black
+    if "min_box_black_empty" in old_config["args"]:
+        config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
+            "min_box_black", old_config["args"]["min_box_black_empty"]
+        )
+        del old_config["args"]["min_box_black_empty"]
+    # contour_kernel_size_empty => empty.contour.contour_kernel_size
+    if "contour_kernel_size_empty" in old_config["args"]:
+        config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
+            "contour_kernel_size", old_config["args"]["contour_kernel_size_empty"]
+        )
+        del old_config["args"]["contour_kernel_size_empty"]
+    # threshold_block_size_empty => empty.contour.threshold_block_size
+    if "threshold_block_size_empty" in old_config["args"]:
+        config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
+            "threshold_block_size", old_config["args"]["threshold_block_size_empty"]
+        )
+        del old_config["args"]["threshold_block_size_empty"]
+    # threshold_value_c_empty => empty.contour.threshold_value_c
+    if "threshold_value_c_empty" in old_config["args"]:
+        config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
+            "threshold_value_c", old_config["args"]["threshold_value_c_empty"]
+        )
+        del old_config["args"]["threshold_value_c_empty"]
+    # min_box_size_limit => limit_detection.contour.min_box_size
+    if "min_box_size_limit" in old_config["args"]:
+        config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
+            "min_box_size", old_config["args"]["min_box_size_limit"]
+        )
+        del old_config["args"]["min_box_size_limit"]
+    # min_box_black_limit => limit_detection.contour.min_box_black
+    if "min_box_black_limit" in old_config["args"]:
+        config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
+            "min_box_black", old_config["args"]["min_box_black_limit"]
+        )
+        del old_config["args"]["min_box_black_limit"]
+    # contour_kernel_size_limit => limit_detection.contour.contour_kernel_size
+    if "contour_kernel_size_limit" in old_config["args"]:
+        config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
+            "contour_kernel_size", old_config["args"]["contour_kernel_size_limit"]
+        )
+        del old_config["args"]["contour_kernel_size_limit"]
+    # threshold_block_size_limit => limit_detection.contour.threshold_block_size
+    if "threshold_block_size_limit" in old_config["args"]:
+        config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
+            "threshold_block_size", old_config["args"]["threshold_block_size_limit"]
+        )
+        del old_config["args"]["threshold_block_size_limit"]
+    # threshold_value_c_limit => limit_detection.contour.threshold_value_c
+    if "threshold_value_c_limit" in old_config["args"]:
+        config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
+            "threshold_value_c", old_config["args"]["threshold_value_c_limit"]
+        )
+        del old_config["args"]["threshold_value_c_limit"]
+    # auto_mask.lower_hsv_color => auto_mask.auto_mask.lower_hsv_color
+    if "lower_hsv_color" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "lower_hsv_color", old_config["args"]["auto_mask"]["lower_hsv_color"]
+        )
+        del old_config["args"]["auto_mask"]["lower_hsv_color"]
+    # auto_mask.upper_hsv_color => auto_mask.auto_mask.upper_hsv_color
+    if "upper_hsv_color" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "upper_hsv_color", old_config["args"]["auto_mask"]["upper_hsv_color"]
+        )
+        del old_config["args"]["auto_mask"]["upper_hsv_color"]
+    # auto_mask.de_noise_morphology => auto_mask.auto_mask.de_noise_morphology
+    if "de_noise_morphology" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "de_noise_morphology", old_config["args"]["auto_mask"]["de_noise_morphology"]
+        )
+        del old_config["args"]["auto_mask"]["de_noise_morphology"]
+    # auto_mask.inverse_mask => auto_mask.auto_mask.inverse_mask
+    if "inverse_mask" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "inverse_mask", old_config["args"]["auto_mask"]["inverse_mask"]
+        )
+        del old_config["args"]["auto_mask"]["inverse_mask"]
+    # auto_mask.de_noise_size => auto_mask.auto_mask.de_noise_size
+    if "de_noise_size" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "de_noise_size", old_config["args"]["auto_mask"]["de_noise_size"]
+        )
+        del old_config["args"]["auto_mask"]["de_noise_size"]
+    # auto_mask.de_noise_level => auto_mask.auto_mask.de_noise_level
+    if "de_noise_level" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "de_noise_level", old_config["args"]["auto_mask"]["de_noise_level"]
+        )
+        del old_config["args"]["auto_mask"]["de_noise_level"]
+    # auto_mask.buffer_size => auto_mask.auto_mask.buffer_size
+    if "buffer_size" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "buffer_size", old_config["args"]["auto_mask"]["buffer_size"]
+        )
+        del old_config["args"]["auto_mask"]["buffer_size"]
+    # auto_mask.buffer_level => auto_mask.auto_mask.buffer_level
+    if "buffer_level" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "buffer_level", old_config["args"]["auto_mask"]["buffer_level"]
+        )
+        del old_config["args"]["auto_mask"]["buffer_level"]
+    # auto_mask.additional_filename => auto_mask.auto_mask.additional_filename
+    if "additional_filename" in old_config["args"].get("auto_mask", {}):
+        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+            "additional_filename", old_config["args"]["auto_mask"]["additional_filename"]
+        )
+        del old_config["args"]["auto_mask"]["additional_filename"]
+    # auto_cut.lower_hsv_color => auto_cut.auto_mask.lower_hsv_color
+    if "lower_hsv_color" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "lower_hsv_color", old_config["args"]["auto_cut"]["lower_hsv_color"]
+        )
+        del old_config["args"]["auto_cut"]["lower_hsv_color"]
+    # auto_cut.upper_hsv_color => auto_cut.auto_mask.upper_hsv_color
+    if "upper_hsv_color" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "upper_hsv_color", old_config["args"]["auto_cut"]["upper_hsv_color"]
+        )
+        del old_config["args"]["auto_cut"]["upper_hsv_color"]
+    # auto_cut.de_noise_morphology => auto_cut.auto_mask.de_noise_morphology
+    if "de_noise_morphology" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "de_noise_morphology", old_config["args"]["auto_cut"]["de_noise_morphology"]
+        )
+        del old_config["args"]["auto_cut"]["de_noise_morphology"]
+    # auto_cut.inverse_mask => auto_cut.auto_mask.inverse_mask
+    if "inverse_mask" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "inverse_mask", old_config["args"]["auto_cut"]["inverse_mask"]
+        )
+        del old_config["args"]["auto_cut"]["inverse_mask"]
+    # auto_cut.de_noise_size => auto_cut.auto_mask.de_noise_size
+    if "de_noise_size" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "de_noise_size", old_config["args"]["auto_cut"]["de_noise_size"]
+        )
+        del old_config["args"]["auto_cut"]["de_noise_size"]
+    # auto_cut.de_noise_level => auto_cut.auto_mask.de_noise_level
+    if "de_noise_level" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "de_noise_level", old_config["args"]["auto_cut"]["de_noise_level"]
+        )
+        del old_config["args"]["auto_cut"]["de_noise_level"]
+    # auto_cut.buffer_size => auto_cut.auto_mask.buffer_size
+    if "buffer_size" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "buffer_size", old_config["args"]["auto_cut"]["buffer_size"]
+        )
+        del old_config["args"]["auto_cut"]["buffer_size"]
+    # auto_cut.buffer_level => auto_cut.auto_mask.buffer_level
+    if "buffer_level" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "buffer_level", old_config["args"]["auto_cut"]["buffer_level"]
+        )
+        del old_config["args"]["auto_cut"]["buffer_level"]
+    # auto_cut.additional_filename => auto_cut.auto_mask.additional_filename
+    if "additional_filename" in old_config["args"].get("auto_cut", {}):
+        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+            "additional_filename", old_config["args"]["auto_cut"]["additional_filename"]
+        )
+        del old_config["args"]["auto_cut"]["additional_filename"]
+    # run_optipng => optipng.enabled
+    if "run_optipng" in old_config["args"]:
+        config["args"].setdefault("optipng", {}).setdefault("enabled", old_config["args"]["run_optipng"])
+        del old_config["args"]["run_optipng"]
+    # run_pngquant => pngquant.enabled
+    if "run_pngquant" in old_config["args"]:
+        config["args"].setdefault("pngquant", {}).setdefault("enabled", old_config["args"]["run_pngquant"])
+        del old_config["args"]["run_pngquant"]
+    # pngquant_options => pngquant.options
+    if "pngquant_options" in old_config["args"]:
+        config["args"].setdefault("pngquant", {}).setdefault(
+            "options", old_config["args"]["pngquant_options"]
+        )
+        del old_config["args"]["pngquant_options"]
+    # run_exiftool => exiftool.enabled
+    if "run_exiftool" in old_config["args"]:
+        config["args"].setdefault("exiftool", {}).setdefault("enabled", old_config["args"]["run_exiftool"])
+        del old_config["args"]["run_exiftool"]
+    # run_ps2pdf => ps2pdf.enabled
+    if "run_ps2pdf" in old_config["args"]:
+        config["args"].setdefault("ps2pdf", {}).setdefault("enabled", old_config["args"]["run_ps2pdf"])
+        del old_config["args"]["run_ps2pdf"]
+    # jpeg => jpeg.enabled
+    if "jpeg" in old_config["args"]:
+        config["args"].setdefault("jpeg", {}).setdefault("enabled", old_config["args"]["jpeg"])
+        del old_config["args"]["jpeg"]
+    # jpeg_quality => jpeg.quality
+    if "jpeg_quality" in old_config["args"]:
+        config["args"].setdefault("jpeg", {}).setdefault("quality", old_config["args"]["jpeg_quality"])
+        del old_config["args"]["jpeg_quality"]
+    # tesseract => tesseract.enabled
+    if "tesseract" in old_config["args"]:
+        config["args"].setdefault("tesseract", {}).setdefault("enabled", old_config["args"]["tesseract"])
+        del old_config["args"]["tesseract"]
+    # tesseract_lang => tesseract.lang
+    if "tesseract_lang" in old_config["args"]:
+        config["args"].setdefault("tesseract", {}).setdefault("lang", old_config["args"]["tesseract_lang"])
+        del old_config["args"]["tesseract_lang"]
+    # no_auto_rotate= auto_rotate.enabled (inverted)
+    if "no_auto_rotate" in old_config["args"]:
+        config["args"].setdefault("auto_rotate", {}).setdefault(
+            "enabled", not old_config["args"]["no_auto_rotate"]
+        )
+        del old_config["args"]["no_auto_rotate"]
+    # sharpen => sharpen.enabled
+    if "sharpen" in old_config["args"]:
+        config["args"].setdefault("sharpen", {}).setdefault("enabled", old_config["args"]["sharpen"])
+        del old_config["args"]["sharpen"]
+    # dither => dither.enabled
+    if "dither" in old_config["args"]:
+        config["args"].setdefault("dither", {}).setdefault("enabled", old_config["args"]["dither"])
+        del old_config["args"]["dither"]
+    # rule.enable => rule.enabled
+    if "enable" in old_config["args"].get("rule", {}):
+        config["args"].setdefault("rule", {}).setdefault("enabled", old_config["args"]["rule"]["enable"])
+        del old_config["args"]["rule"]["enable"]
+
+
 def transform(
     config: schema.Configuration,
     step: schema.Step,
@@ -1070,6 +1378,7 @@ def transform(
     status: Optional[scan_to_paperless.status.Status] = None,
 ) -> schema.Step:
     """Apply the transforms on a document."""
+
     if "intermediate_error" in config:
         del config["intermediate_error"]
 
@@ -1377,6 +1686,7 @@ def _save_progress(root_folder: Optional[str], count: int, name: str, image_name
 
 def save(context: Context, root_folder: str, image: str, folder: str, force: bool = False) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
+
     if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
@@ -1404,6 +1714,7 @@ def split(
     root_folder: str,
 ) -> schema.Step:
     """Split an image using the assisted split instructions."""
+
     process_count = 0
     for assisted_split in config["assisted_split"]:
         if assisted_split["limits"]:
@@ -1719,6 +2030,7 @@ def _process_code(name: str) -> None:
 
 def is_sources_present(images: list[str], root_folder: str) -> bool:
     """Are sources present for the next step."""
+
     for image in images:
         if not os.path.exists(os.path.join(root_folder, image)):
             print(f"Missing {root_folder} - {image}")
@@ -1728,6 +2040,7 @@ def is_sources_present(images: list[str], root_folder: str) -> bool:
 
 def save_config(config: schema.Configuration, config_file_name: str) -> None:
     """Save the configuration."""
+
     yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
@@ -1741,6 +2054,7 @@ def _process(
     dirty: bool = False,
 ) -> bool:
     """Process one document."""
+
     if not os.path.exists(config_file_name):
         return dirty
 
@@ -1796,6 +2110,7 @@ def _process(
             done = False
             next_step = None
             if step["name"] == scan_to_paperless.status.STATUS_TRANSFORM:
+                _update_config(config)
                 next_step = transform(config, step, config_file_name, root_folder, status=status)
             elif step["name"] == scan_to_paperless.status.STATUS_ASSISTED_SPLIT:
                 status.set_status(config_file_name, -1, "Split")
@@ -1853,6 +2168,7 @@ def _process(
 
 def main() -> None:
     """Process the scanned documents."""
+
     parser = argparse.ArgumentParser("Process the scanned documents.")
     parser.add_argument("config", nargs="?", help="The config file to process.")
     args = parser.parse_args()

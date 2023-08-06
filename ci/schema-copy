@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import json
-import subprocess
+import subprocess  # nosec
 
 
 def _main() -> None:
@@ -17,7 +17,7 @@ def _main() -> None:
     with open("scan_to_paperless/process_schema.json", "w", encoding="utf-8") as process_schema_file:
         json.dump(process_schema, process_schema_file, indent=2)
 
-    subprocess.run(
+    subprocess.run(  # nosec
         ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"]
     )
 
