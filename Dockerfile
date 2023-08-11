@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/root/.cache \
     && rm requirements.txt
 
 COPY poetry.lock pyproject.toml ./
-RUN poetry export --output=requirements.txt \
+RUN poetry export --extras=process --output=requirements.txt \
     && poetry export --with=dev --output=requirements-dev.txt
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \

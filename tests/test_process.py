@@ -538,7 +538,10 @@ def test_empty():
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": True, "auto_mask": {}},
+        "args": {
+            "level": True,
+            "auto_mask": {},
+        }
     }
     step = {
         "sources": [
@@ -561,9 +564,7 @@ def test_custom_process(test, args):
     root_folder = f"/results/600"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
-    config = {
-        "args": args,
-    }
+    config = {"args": args}
     step = {"sources": [os.path.join(os.path.dirname(__file__), f"{test}.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1

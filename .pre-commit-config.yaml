@@ -94,7 +94,7 @@ repos:
           - '@prettier/plugin-xml@0.12.0' # npm
         exclude: ^scan_to_paperless/status\.html$
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.2
+    rev: v0.9.0.5
     hooks:
       - id: shellcheck
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
