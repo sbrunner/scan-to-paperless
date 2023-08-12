@@ -724,23 +724,23 @@ def deskew(context: Context) -> None:
             context.save_progress_images("skew", image, name, process_count, True)
 
     if angle:
-        assert context.image_name is not None
         context.rotate(angle)
 
-        image_name_split = os.path.splitext(context.image_name)
-        sources = [img for img in context.config.get("images", []) if f"{image_name_split[0]}." in img]
-        if len(sources) == 1:
-            assert context.root_folder
-            image = rotate_image(
-                cv2.imread(os.path.join(context.root_folder, sources[0])),
-                angle,
-                context.get_background_color(),
-            )
-            source_split = os.path.splitext(sources[0])
-            cv2.imwrite(
-                os.path.join(context.root_folder, source_split[0] + "-skew-corrected" + source_split[1]),
-                image,
-            )
+        if context.image_name is not None:
+            image_name_split = os.path.splitext(context.image_name)
+            sources = [img for img in context.config.get("images", []) if f"{image_name_split[0]}." in img]
+            if len(sources) == 1:
+                assert context.root_folder
+                image = rotate_image(
+                    cv2.imread(os.path.join(context.root_folder, sources[0])),
+                    angle,
+                    context.get_background_color(),
+                )
+                source_split = os.path.splitext(sources[0])
+                cv2.imwrite(
+                    os.path.join(context.root_folder, source_split[0] + "-skew-corrected" + source_split[1]),
+                    image,
+                )
 
 
 @Process("docrop")
@@ -1421,6 +1421,22 @@ def _update_config(config: schema.Configuration) -> None:
         del old_config["args"]["rule"]["enable"]
 
 
+def _pretty_ref(value: Any, prefix: str = "") -> str:
+    if isinstance(value, dict):
+        return "\n".join(
+            [
+                prefix + "{",
+                *[
+                    prefix + "    " + key + ": " + _pretty_ref(value, prefix + "    ")
+                    for key, value in value.items()
+                ],
+                prefix + "}",
+            ]
+        )
+
+    return repr(value)
+
+
 def _create_jupyter_notebook(root_folder: str, context: Context, step: schema.Step) -> None:
     # Jupyter notebook
     dest_folder = os.path.join(root_folder, "jupyter")
@@ -1475,14 +1491,19 @@ base_folder = os.path.dirname(os.path.dirname(IPython.extract_module_locals()[1]
 """
         )
     )
-    other_images_open = [f'# context.image = cv2.imread("../{image}")' for image in step["sources"][1:]]
+    other_images_open = "\n".join(
+        [
+            f'# context.image = cv2.imread(os.path.join(base_folder, "{image}"))'
+            for image in step["sources"][1:]
+        ]
+    )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""# Open Source image
 context = process.Context({{"args": {{}}}}, {{}})
 
 # Open one of the images
-context.image = cv2.imread(os.join(base_folder, {step["sources"][0]})
+context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
 # Get the top of the image
@@ -1578,8 +1599,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-    "deskew": {json.dumps(context.config["args"].get("deskew", {}), indent=4)},
-    }},
+    "deskew": {_pretty_ref(context.config["args"].get("deskew", {}))},
 }}
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
@@ -1590,7 +1610,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
-    "crop": {json.dumps(context.config["args"].get("crop", {}), indent=4)},
+    "crop": {_pretty_ref(context.config["args"].get("crop", {}))},
     "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
 }}
