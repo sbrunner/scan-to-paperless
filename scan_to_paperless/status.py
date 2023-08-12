@@ -4,6 +4,7 @@ import datetime
 import glob
 import html
 import os.path
+import traceback
 from enum import Enum
 from typing import NamedTuple, Optional
 
@@ -171,7 +172,16 @@ class Status:
         for name in list(self._status):
             if name != self._current_folder:
                 if os.path.isdir(os.path.join(source_folder, name)):
-                    self._update_status(name)
+                    try:
+                        self._update_status(name)
+                    except Exception as exception:
+                        trace = traceback.format_exc().split("\n")
+                        self.set_status(
+                            name,
+                            -1,
+                            f"Error: {exception}",
+                            f"<p>Stacktrace:</p><p><code>{'<br />'.join(trace)}</code></p>",
+                        )
                 else:
                     del self._status[name]
 
@@ -179,7 +189,16 @@ class Status:
             if os.path.isdir(folder_name):
                 name = os.path.basename(folder_name)
                 if name not in self._status:
-                    self._update_status(name)
+                    try:
+                        self._update_status(name)
+                    except Exception as exception:
+                        trace = traceback.format_exc().split("\n")
+                        self.set_status(
+                            name,
+                            -1,
+                            f"Error: {exception}",
+                            f"<p>Stacktrace:</p><p><code>{'<br />'.join(trace)}</code></p>",
+                        )
 
         self.write()
 
