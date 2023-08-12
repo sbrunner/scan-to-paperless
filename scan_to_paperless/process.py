@@ -2399,9 +2399,7 @@ def _process(
             status.set_current_folder(None)
 
     except Exception as exception:
-        print(exception)
         trace = traceback.format_exc()
-        print(trace)
 
         out = {"error": str(exception), "traceback": trace.split("\n")}
         for attribute in ("returncode", "cmd"):
