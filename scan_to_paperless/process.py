@@ -766,7 +766,7 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
 
     if (
         context.config["args"]
-        .setdefault("sharpen", schema.SHARPEN_DEFAULT)
+        .setdefault("sharpen", cast(schema.Sharpen, schema.SHARPEN_DEFAULT))
         .setdefault("enabled", schema.SHARPEN_ENABLED_DEFAULT)
         is False
     ):
@@ -1225,57 +1225,66 @@ def _update_config(config: schema.Configuration) -> None:
     # auto_mask.lower_hsv_color => auto_mask.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "lower_hsv_color", old_config["args"]["auto_mask"]["lower_hsv_color"]
+            "lower_hsv_color",
+            old_config["args"]["auto_mask"]["lower_hsv_color"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["lower_hsv_color"]
+        del old_config["args"]["auto_mask"]["lower_hsv_color"]  # type: ignore[union-attr]
     # auto_mask.upper_hsv_color => auto_mask.auto_mask.upper_hsv_color
     if "upper_hsv_color" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "upper_hsv_color", old_config["args"]["auto_mask"]["upper_hsv_color"]
+            "upper_hsv_color",
+            old_config["args"]["auto_mask"]["upper_hsv_color"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["upper_hsv_color"]
+        del old_config["args"]["auto_mask"]["upper_hsv_color"]  # type: ignore[union-attr]
     # auto_mask.de_noise_morphology => auto_mask.auto_mask.de_noise_morphology
     if "de_noise_morphology" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "de_noise_morphology", old_config["args"]["auto_mask"]["de_noise_morphology"]
+            "de_noise_morphology",
+            old_config["args"]["auto_mask"]["de_noise_morphology"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["de_noise_morphology"]
+        del old_config["args"]["auto_mask"]["de_noise_morphology"]  # type: ignore[union-attr]
     # auto_mask.inverse_mask => auto_mask.auto_mask.inverse_mask
     if "inverse_mask" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "inverse_mask", old_config["args"]["auto_mask"]["inverse_mask"]
+            "inverse_mask",
+            old_config["args"]["auto_mask"]["inverse_mask"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["inverse_mask"]
+        del old_config["args"]["auto_mask"]["inverse_mask"]  # type: ignore[union-attr]
     # auto_mask.de_noise_size => auto_mask.auto_mask.de_noise_size
     if "de_noise_size" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "de_noise_size", old_config["args"]["auto_mask"]["de_noise_size"]
+            "de_noise_size",
+            old_config["args"]["auto_mask"]["de_noise_size"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["de_noise_size"]
+        del old_config["args"]["auto_mask"]["de_noise_size"]  # type: ignore[union-attr]
     # auto_mask.de_noise_level => auto_mask.auto_mask.de_noise_level
     if "de_noise_level" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "de_noise_level", old_config["args"]["auto_mask"]["de_noise_level"]
+            "de_noise_level",
+            old_config["args"]["auto_mask"]["de_noise_level"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["de_noise_level"]
-    # auto_mask.buffer_size => auto_mask.auto_mask.buffer_size
+        del old_config["args"]["auto_mask"]["de_noise_level"]  # type: ignore[union-attr]
+    # auto_mask.buffer_size => auto_mask.auto_mask.buffer_size  # type: ignore[union-attr]
     if "buffer_size" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "buffer_size", old_config["args"]["auto_mask"]["buffer_size"]
+            "buffer_size",
+            old_config["args"]["auto_mask"]["buffer_size"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["buffer_size"]
+        del old_config["args"]["auto_mask"]["buffer_size"]  # type: ignore[union-attr]
     # auto_mask.buffer_level => auto_mask.auto_mask.buffer_level
     if "buffer_level" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "buffer_level", old_config["args"]["auto_mask"]["buffer_level"]
+            "buffer_level",
+            old_config["args"]["auto_mask"]["buffer_level"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["buffer_level"]
+        del old_config["args"]["auto_mask"]["buffer_level"]  # type: ignore[union-attr]
     # auto_mask.additional_filename => auto_mask.auto_mask.additional_filename
     if "additional_filename" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
-            "additional_filename", old_config["args"]["auto_mask"]["additional_filename"]
+            "additional_filename",
+            old_config["args"]["auto_mask"]["additional_filename"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_mask"]["additional_filename"]
+        del old_config["args"]["auto_mask"]["additional_filename"]  # type: ignore[union-attr]
     # auto_cut: null => auto_cut.enabled: false
     if (
         "auto_cut" in old_config["args"]
@@ -1288,57 +1297,66 @@ def _update_config(config: schema.Configuration) -> None:
     # auto_cut.lower_hsv_color => auto_cut.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "lower_hsv_color", old_config["args"]["auto_cut"]["lower_hsv_color"]
+            "lower_hsv_color",
+            old_config["args"]["auto_cut"]["lower_hsv_color"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["lower_hsv_color"]
+        del old_config["args"]["auto_cut"]["lower_hsv_color"]  # type: ignore[union-attr]
     # auto_cut.upper_hsv_color => auto_cut.auto_mask.upper_hsv_color
     if "upper_hsv_color" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "upper_hsv_color", old_config["args"]["auto_cut"]["upper_hsv_color"]
+            "upper_hsv_color",
+            old_config["args"]["auto_cut"]["upper_hsv_color"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["upper_hsv_color"]
+        del old_config["args"]["auto_cut"]["upper_hsv_color"]  # type: ignore[union-attr]
     # auto_cut.de_noise_morphology => auto_cut.auto_mask.de_noise_morphology
     if "de_noise_morphology" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "de_noise_morphology", old_config["args"]["auto_cut"]["de_noise_morphology"]
+            "de_noise_morphology",
+            old_config["args"]["auto_cut"]["de_noise_morphology"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["de_noise_morphology"]
+        del old_config["args"]["auto_cut"]["de_noise_morphology"]  # type: ignore[union-attr]
     # auto_cut.inverse_mask => auto_cut.auto_mask.inverse_mask
     if "inverse_mask" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "inverse_mask", old_config["args"]["auto_cut"]["inverse_mask"]
+            "inverse_mask",
+            old_config["args"]["auto_cut"]["inverse_mask"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["inverse_mask"]
+        del old_config["args"]["auto_cut"]["inverse_mask"]  # type: ignore[union-attr]
     # auto_cut.de_noise_size => auto_cut.auto_mask.de_noise_size
     if "de_noise_size" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "de_noise_size", old_config["args"]["auto_cut"]["de_noise_size"]
+            "de_noise_size",
+            old_config["args"]["auto_cut"]["de_noise_size"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["de_noise_size"]
+        del old_config["args"]["auto_cut"]["de_noise_size"]  # type: ignore[union-attr]
     # auto_cut.de_noise_level => auto_cut.auto_mask.de_noise_level
     if "de_noise_level" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "de_noise_level", old_config["args"]["auto_cut"]["de_noise_level"]
+            "de_noise_level",
+            old_config["args"]["auto_cut"]["de_noise_level"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["de_noise_level"]
+        del old_config["args"]["auto_cut"]["de_noise_level"]  # type: ignore[union-attr]
     # auto_cut.buffer_size => auto_cut.auto_mask.buffer_size
     if "buffer_size" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "buffer_size", old_config["args"]["auto_cut"]["buffer_size"]
+            "buffer_size",
+            old_config["args"]["auto_cut"]["buffer_size"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["buffer_size"]
+        del old_config["args"]["auto_cut"]["buffer_size"]  # type: ignore[union-attr]
     # auto_cut.buffer_level => auto_cut.auto_mask.buffer_level
     if "buffer_level" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "buffer_level", old_config["args"]["auto_cut"]["buffer_level"]
+            "buffer_level",
+            old_config["args"]["auto_cut"]["buffer_level"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["buffer_level"]
+        del old_config["args"]["auto_cut"]["buffer_level"]  # type: ignore[union-attr]
     # auto_cut.additional_filename => auto_cut.auto_mask.additional_filename
     if "additional_filename" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
-            "additional_filename", old_config["args"]["auto_cut"]["additional_filename"]
+            "additional_filename",
+            old_config["args"]["auto_cut"]["additional_filename"],  # type: ignore[index]
         )
-        del old_config["args"]["auto_cut"]["additional_filename"]
+        del old_config["args"]["auto_cut"]["additional_filename"]  # type: ignore[union-attr]
     # run_optipng => optipng.enabled
     if "run_optipng" in old_config["args"]:
         config["args"].setdefault("optipng", {}).setdefault("enabled", old_config["args"]["run_optipng"])
