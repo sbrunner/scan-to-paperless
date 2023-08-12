@@ -766,7 +766,7 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
 
     if (
         context.config["args"]
-        .setdefault("sharpen", cast(schema.Sharpen, schema.SHARPEN_DEFAULT))
+        .setdefault("sharpen", schema.SHARPEN_DEFAULT)
         .setdefault("enabled", schema.SHARPEN_ENABLED_DEFAULT)
         is False
     ):
@@ -1144,6 +1144,15 @@ def _update_config(config: schema.Configuration) -> None:
             "threshold_value_c", old_config["args"]["crop"]["threshold_value_c"]
         )
         del old_config["args"]["crop"]["threshold_value_c"]
+    # empty: null => empty.enabled: false
+    if (
+        "empty" in old_config["args"]
+        and old_config["args"]["empty"] is True
+        or old_config["args"]["empty"] is False
+    ):
+        config["args"]["empty"] = {"enabled": old_config["args"]["empty"]}
+    if "empty" in old_config["args"] and old_config["args"]["empty"] is None:
+        config["args"]["empty"] = {"enabled": False}
     # min_box_size_empty => empty.contour.min_box_size
     if "min_box_size_empty" in old_config["args"]:
         config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
@@ -1204,6 +1213,15 @@ def _update_config(config: schema.Configuration) -> None:
             "threshold_value_c", old_config["args"]["threshold_value_c_limit"]
         )
         del old_config["args"]["threshold_value_c_limit"]
+    # auto_mask: null => auto_mask.enabled: false
+    if (
+        "auto_mask" in old_config["args"]
+        and old_config["args"]["auto_mask"] is True
+        or old_config["args"]["auto_mask"] is False
+    ):
+        config["args"]["auto_mask"] = {"enabled": old_config["args"]["auto_mask"]}
+    if "auto_mask" in old_config["args"] and old_config["args"]["auto_mask"] is None:
+        config["args"]["auto_mask"] = {"enabled": False}
     # auto_mask.lower_hsv_color => auto_mask.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
@@ -1258,6 +1276,15 @@ def _update_config(config: schema.Configuration) -> None:
             "additional_filename", old_config["args"]["auto_mask"]["additional_filename"]
         )
         del old_config["args"]["auto_mask"]["additional_filename"]
+    # auto_cut: null => auto_cut.enabled: false
+    if (
+        "auto_cut" in old_config["args"]
+        and old_config["args"]["auto_cut"] is True
+        or old_config["args"]["auto_cut"] is False
+    ):
+        config["args"]["auto_cut"] = {"enabled": old_config["args"]["auto_cut"]}
+    if "auto_cut" in old_config["args"] and old_config["args"]["auto_cut"] is None:
+        config["args"]["auto_cut"] = {"enabled": False}
     # auto_cut.lower_hsv_color => auto_cut.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
@@ -1335,17 +1362,27 @@ def _update_config(config: schema.Configuration) -> None:
         config["args"].setdefault("ps2pdf", {}).setdefault("enabled", old_config["args"]["run_ps2pdf"])
         del old_config["args"]["run_ps2pdf"]
     # jpeg => jpeg.enabled
-    if "jpeg" in old_config["args"]:
-        config["args"].setdefault("jpeg", {}).setdefault("enabled", old_config["args"]["jpeg"])
-        del old_config["args"]["jpeg"]
+    if (
+        "jpeg" in old_config["args"]
+        and old_config["args"]["jpeg"] is True
+        or old_config["args"]["jpeg"] is False
+    ):
+        config["args"]["jpeg"] = {"enabled": old_config["args"]["jpeg"]}
+    if "jpeg" in old_config["args"] and old_config["args"]["jpeg"] is None:
+        config["args"]["jpeg"] = {"enabled": False}
     # jpeg_quality => jpeg.quality
     if "jpeg_quality" in old_config["args"]:
         config["args"].setdefault("jpeg", {}).setdefault("quality", old_config["args"]["jpeg_quality"])
         del old_config["args"]["jpeg_quality"]
     # tesseract => tesseract.enabled
-    if "tesseract" in old_config["args"]:
-        config["args"].setdefault("tesseract", {}).setdefault("enabled", old_config["args"]["tesseract"])
-        del old_config["args"]["tesseract"]
+    if (
+        "tesseract" in old_config["args"]
+        and old_config["args"]["tesseract"] is True
+        or old_config["args"]["tesseract"] is False
+    ):
+        config["args"]["tesseract"] = {"enabled": old_config["args"]["tesseract"]}
+    if "tesseract" in old_config["args"] and old_config["args"]["tesseract"] is None:
+        config["args"]["tesseract"] = {"enabled": False}
     # tesseract_lang => tesseract.lang
     if "tesseract_lang" in old_config["args"]:
         config["args"].setdefault("tesseract", {}).setdefault("lang", old_config["args"]["tesseract_lang"])
@@ -1357,13 +1394,23 @@ def _update_config(config: schema.Configuration) -> None:
         )
         del old_config["args"]["no_auto_rotate"]
     # sharpen => sharpen.enabled
-    if "sharpen" in old_config["args"]:
-        config["args"].setdefault("sharpen", {}).setdefault("enabled", old_config["args"]["sharpen"])
-        del old_config["args"]["sharpen"]
+    if (
+        "sharpen" in old_config["args"]
+        and old_config["args"]["sharpen"] is True
+        or old_config["args"]["sharpen"] is False
+    ):
+        config["args"]["sharpen"] = {"enabled": old_config["args"]["sharpen"]}
+    if "sharpen" in old_config["args"] and old_config["args"]["sharpen"] is None:
+        config["args"]["sharpen"] = {"enabled": False}
     # dither => dither.enabled
-    if "dither" in old_config["args"]:
-        config["args"].setdefault("dither", {}).setdefault("enabled", old_config["args"]["dither"])
-        del old_config["args"]["dither"]
+    if (
+        "dither" in old_config["args"]
+        and old_config["args"]["dither"] is True
+        or old_config["args"]["dither"] is False
+    ):
+        config["args"]["dither"] = {"enabled": old_config["args"]["dither"]}
+    if "dither" in old_config["args"] and old_config["args"]["dither"] is None:
+        config["args"]["dither"] = {"enabled": False}
     # rule.enable => rule.enabled
     if "enable" in old_config["args"].get("rule", {}):
         config["args"].setdefault("rule", {}).setdefault("enabled", old_config["args"]["rule"]["enable"])
