@@ -310,6 +310,15 @@ class Context:  # pylint: disable=too-many-instance-attributes
     ) -> Optional[str]:
         """Save the intermediate images."""
 
+        if _is_ipython():
+            if image is None:
+                return None
+
+            from IPython.display import display  # pylint: disable=import-outside-toplevel,import-error
+
+            display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
+            return None
+
         if process_count is None:
             process_count = self.get_process_count()
         if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
@@ -624,12 +633,17 @@ def _histogram(
 
     plt.tight_layout()
     with tempfile.NamedTemporaryFile(suffix=".png") as file:
-        plt.savefig(file.name)
-        subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
-        image = cv2.imread(file.name)
-        context.save_progress_images(
-            "histogram", image, image_prefix="log-" if log else "", process_count=process_count, force=True
-        )
+        if not _is_ipython():
+            plt.savefig(file.name)
+            subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
+            image = cv2.imread(file.name)
+            context.save_progress_images(
+                "histogram",
+                image,
+                image_prefix="log-" if log else "",
+                process_count=process_count,
+                force=True,
+            )
 
 
 @Process("histogram", progress=False)
@@ -719,9 +733,10 @@ def deskew(context: Context) -> None:
             image_status["angle"] = float(skew_angle)
             angle = float(skew_angle)
 
-        process_count = context.get_process_count()
-        for name, image in debug_images:
-            context.save_progress_images("skew", image, name, process_count, True)
+        if not _is_ipython():
+            process_count = context.get_process_count()
+            for name, image in debug_images:
+                context.save_progress_images("skew", image, name, process_count, True)
 
     if angle:
         context.rotate(angle)
@@ -1016,7 +1031,7 @@ def find_contours(
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
-    if context.is_progress() and context.root_folder and context.image_name:
+    if (context.is_progress() or _is_ipython()) and context.root_folder and context.image_name:
         context.save_progress_images("threshold", thresh)
 
         block_size_list = (block_size, 1.5, 5, 10, 15, 20, 50, 100, 200)
@@ -1437,6 +1452,14 @@ def _pretty_ref(value: Any, prefix: str = "") -> str:
     return repr(value)
 
 
+def _is_ipython() -> bool:
+    try:
+        __IPYTHON__  # type: ignore[name-defined] # pylint: disable=pointless-statement
+        return True
+    except NameError:
+        return False
+
+
 def _create_jupyter_notebook(root_folder: str, context: Context, step: schema.Step) -> None:
     # Jupyter notebook
     dest_folder = os.path.join(root_folder, "jupyter")
@@ -1506,9 +1529,15 @@ context = process.Context({{"args": {{}}}}, {{}})
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
-# Get the top of the image
-context.image = context.image[0:500, :, :]
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+
+# Get a part of the image to display, by default, the top of the image
+index = np.ix_(
+    np.arange(0, 500),
+    np.arange(0, context.image.shape[1]),
+    np.arange(0, context.image.shape[2]),
+)
+
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1523,6 +1552,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "buffer_size": {auto_mask.get("buffer_size", schema.BUFFER_SIZE_DEFAULT)},
     "buffer_level": {auto_mask.get("buffer_level", schema.BUFFER_LEVEL_DEFAULT)},
 }}
+context.config["args"] = {{"auto_mask": auto_mask}}
 
 # Print in HSV some point of the image
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
@@ -1530,7 +1560,9 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 context.init_mask()
-display(Image.fromarray(cv2.cvtColor(context.get_masked(), cv2.COLOR_BGR2RGB)))
+if context.mask is not None:
+    display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[index]))
+display(Image.fromarray(cv2.cvtColor(context.get_masked()[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1543,7 +1575,7 @@ display(Image.fromarray(cv2.cvtColor(context.get_masked(), cv2.COLOR_BGR2RGB)))
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
 process.histogram(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1554,7 +1586,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
 }}
 process.level(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1565,7 +1597,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
 process.color_cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1590,7 +1622,7 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 process.cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1603,7 +1635,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
 }}
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1615,7 +1647,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
 }}
 process.docrop(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1625,7 +1657,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "sharpen": {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)},
 }}
 process.sharpen(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1635,7 +1667,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "dither": {context.config["args"].get("dither", schema.DITHER_DEFAULT)},
 }}
 process.dither(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1644,7 +1676,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
             """# Requires Tesseract
 context.config["args"] = {}
 # process.autorotate(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
