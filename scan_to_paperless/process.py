@@ -1212,10 +1212,8 @@ def _update_config(config: schema.Configuration) -> None:
         )
         del old_config["args"]["threshold_value_c_limit"]
     # auto_mask: null => auto_mask.enabled: false
-    if (
-        "auto_mask" in old_config["args"]
-        and old_config["args"]["auto_mask"] is True
-        or old_config["args"]["auto_mask"] is False
+    if "auto_mask" in old_config["args"] and (
+        old_config["args"]["auto_mask"] is True or old_config["args"]["auto_mask"] is False
     ):
         config["args"]["auto_mask"] = {"enabled": old_config["args"]["auto_mask"]}
     if "auto_mask" in old_config["args"] and old_config["args"]["auto_mask"] is None:
@@ -1284,10 +1282,8 @@ def _update_config(config: schema.Configuration) -> None:
         )
         del old_config["args"]["auto_mask"]["additional_filename"]  # type: ignore[union-attr]
     # auto_cut: null => auto_cut.enabled: false
-    if (
-        "auto_cut" in old_config["args"]
-        and old_config["args"]["auto_cut"] is True
-        or old_config["args"]["auto_cut"] is False
+    if "auto_cut" in old_config["args"] and (
+        old_config["args"]["auto_cut"] is True or old_config["args"]["auto_cut"] is False
     ):
         config["args"]["auto_cut"] = {"enabled": old_config["args"]["auto_cut"]}
     if "auto_cut" in old_config["args"] and old_config["args"]["auto_cut"] is None:
@@ -1378,10 +1374,8 @@ def _update_config(config: schema.Configuration) -> None:
         config["args"].setdefault("ps2pdf", {}).setdefault("enabled", old_config["args"]["run_ps2pdf"])
         del old_config["args"]["run_ps2pdf"]
     # jpeg => jpeg.enabled
-    if (
-        "jpeg" in old_config["args"]
-        and old_config["args"]["jpeg"] is True
-        or old_config["args"]["jpeg"] is False
+    if "jpeg" in old_config["args"] and (
+        old_config["args"]["jpeg"] is True or old_config["args"]["jpeg"] is False
     ):
         config["args"]["jpeg"] = {"enabled": old_config["args"]["jpeg"]}
     if "jpeg" in old_config["args"] and old_config["args"]["jpeg"] is None:
@@ -1391,10 +1385,8 @@ def _update_config(config: schema.Configuration) -> None:
         config["args"].setdefault("jpeg", {}).setdefault("quality", old_config["args"]["jpeg_quality"])
         del old_config["args"]["jpeg_quality"]
     # tesseract => tesseract.enabled
-    if (
-        "tesseract" in old_config["args"]
-        and old_config["args"]["tesseract"] is True
-        or old_config["args"]["tesseract"] is False
+    if "tesseract" in old_config["args"] and (
+        old_config["args"]["tesseract"] is True or old_config["args"]["tesseract"] is False
     ):
         config["args"]["tesseract"] = {"enabled": old_config["args"]["tesseract"]}
     if "tesseract" in old_config["args"] and old_config["args"]["tesseract"] is None:
@@ -1410,19 +1402,15 @@ def _update_config(config: schema.Configuration) -> None:
         )
         del old_config["args"]["no_auto_rotate"]
     # sharpen => sharpen.enabled
-    if (
-        "sharpen" in old_config["args"]
-        and old_config["args"]["sharpen"] is True
-        or old_config["args"]["sharpen"] is False
+    if "sharpen" in old_config["args"] and (
+        old_config["args"]["sharpen"] is True or old_config["args"]["sharpen"] is False
     ):
         config["args"]["sharpen"] = {"enabled": old_config["args"]["sharpen"]}
     if "sharpen" in old_config["args"] and old_config["args"]["sharpen"] is None:
         config["args"]["sharpen"] = {"enabled": False}
     # dither => dither.enabled
-    if (
-        "dither" in old_config["args"]
-        and old_config["args"]["dither"] is True
-        or old_config["args"]["dither"] is False
+    if "dither" in old_config["args"] and (
+        old_config["args"]["dither"] is True or old_config["args"]["dither"] is False
     ):
         config["args"]["dither"] = {"enabled": old_config["args"]["dither"]}
     if "dither" in old_config["args"] and old_config["args"]["dither"] is None:
