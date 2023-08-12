@@ -2499,6 +2499,7 @@ def main() -> None:
 
             next_step = None
             if job_type == scan_to_paperless.status.JobType.TRANSFORM:
+                _update_config(config)
                 next_step = transform(config, step, config_file_name, root_folder, status=status)
             if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
                 status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
