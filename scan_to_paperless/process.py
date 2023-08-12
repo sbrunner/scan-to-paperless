@@ -1145,10 +1145,8 @@ def _update_config(config: schema.Configuration) -> None:
         )
         del old_config["args"]["crop"]["threshold_value_c"]
     # empty: null => empty.enabled: false
-    if (
-        "empty" in old_config["args"]
-        and old_config["args"]["empty"] is True
-        or old_config["args"]["empty"] is False
+    if "empty" in old_config["args"] and (
+        old_config["args"]["empty"] is True or old_config["args"]["empty"] is False
     ):
         config["args"]["empty"] = {"enabled": old_config["args"]["empty"]}
     if "empty" in old_config["args"] and old_config["args"]["empty"] is None:
