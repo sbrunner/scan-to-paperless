@@ -310,6 +310,15 @@ class Context:  # pylint: disable=too-many-instance-attributes
     ) -> Optional[str]:
         """Save the intermediate images."""
 
+        if _is_ipython():
+            if image is None:
+                return None
+
+            from IPython.display import display  # pylint: disable=import-outside-toplevel,import-error
+
+            display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
+            return None
+
         if process_count is None:
             process_count = self.get_process_count()
         if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
@@ -624,12 +633,17 @@ def _histogram(
 
     plt.tight_layout()
     with tempfile.NamedTemporaryFile(suffix=".png") as file:
-        plt.savefig(file.name)
-        subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
-        image = cv2.imread(file.name)
-        context.save_progress_images(
-            "histogram", image, image_prefix="log-" if log else "", process_count=process_count, force=True
-        )
+        if not _is_ipython():
+            plt.savefig(file.name)
+            subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
+            image = cv2.imread(file.name)
+            context.save_progress_images(
+                "histogram",
+                image,
+                image_prefix="log-" if log else "",
+                process_count=process_count,
+                force=True,
+            )
 
 
 @Process("histogram", progress=False)
@@ -719,9 +733,10 @@ def deskew(context: Context) -> None:
             image_status["angle"] = float(skew_angle)
             angle = float(skew_angle)
 
-        process_count = context.get_process_count()
-        for name, image in debug_images:
-            context.save_progress_images("skew", image, name, process_count, True)
+        if not _is_ipython():
+            process_count = context.get_process_count()
+            for name, image in debug_images:
+                context.save_progress_images("skew", image, name, process_count, True)
 
     if angle:
         context.rotate(angle)
@@ -1016,7 +1031,7 @@ def find_contours(
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
-    if context.is_progress() and context.root_folder and context.image_name:
+    if (context.is_progress() or _is_ipython()) and context.root_folder and context.image_name:
         context.save_progress_images("threshold", thresh)
 
         block_size_list = (block_size, 1.5, 5, 10, 15, 20, 50, 100, 200)
@@ -1435,6 +1450,14 @@ def _pretty_ref(value: Any, prefix: str = "") -> str:
         )
 
     return repr(value)
+
+
+def _is_ipython() -> bool:
+    try:
+        __IPYTHON__  # type: ignore[name-defined] # pylint: disable=pointless-statement
+        return True
+    except NameError:
+        return False
 
 
 def _create_jupyter_notebook(root_folder: str, context: Context, step: schema.Step) -> None:
