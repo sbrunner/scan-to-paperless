@@ -1506,6 +1506,7 @@ context = process.Context({{"args": {{}}}}, {{}})
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
+
 # Get a part of the image to display, by default, the top of the image
 index = np.ix_(
     np.arange(0, 500),
@@ -1528,6 +1529,7 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
     "buffer_size": {auto_mask.get("buffer_size", schema.BUFFER_SIZE_DEFAULT)},
     "buffer_level": {auto_mask.get("buffer_level", schema.BUFFER_LEVEL_DEFAULT)},
 }}
+context.config["args"] = {{"auto_mask": auto_mask}}
 
 # Print in HSV some point of the image
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
@@ -1535,7 +1537,9 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 context.init_mask()
-display(Image.fromarray(cv2.cvtColor(context.get_masked(), cv2.COLOR_BGR2RGB)))
+if context.mask is not None:
+    display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[index]))
+display(Image.fromarray(cv2.cvtColor(context.get_masked()[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
