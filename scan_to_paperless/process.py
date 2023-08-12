@@ -1506,9 +1506,14 @@ context = process.Context({{"args": {{}}}}, {{}})
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
-# Get the top of the image
-context.image = context.image[0:500, :, :]
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+# Get a part of the image to display, by default, the top of the image
+index = np.ix_(
+    np.arange(0, 500),
+    np.arange(0, context.image.shape[1]),
+    np.arange(0, context.image.shape[2]),
+)
+
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1543,7 +1548,7 @@ display(Image.fromarray(cv2.cvtColor(context.get_masked(), cv2.COLOR_BGR2RGB)))
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
 process.histogram(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1554,7 +1559,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
 }}
 process.level(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1565,7 +1570,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
 process.color_cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1590,7 +1595,7 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 process.cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1603,7 +1608,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
 }}
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1615,7 +1620,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
 }}
 process.docrop(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1625,7 +1630,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "sharpen": {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)},
 }}
 process.sharpen(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1635,7 +1640,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
     "dither": {context.config["args"].get("dither", schema.DITHER_DEFAULT)},
 }}
 process.dither(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
@@ -1644,7 +1649,7 @@ display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
             """# Requires Tesseract
 context.config["args"] = {}
 # process.autorotate(context)
-display(Image.fromarray(cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)))
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 """
         )
     )
