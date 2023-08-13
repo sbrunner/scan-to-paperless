@@ -1481,14 +1481,20 @@ Open the notebook file.
 
     notebook = nbformat.v4.new_notebook()  # type: ignore[no-untyped-call]
 
-    notebook["cells"] = []
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """# Transform
+            """# Scan to Paperless
 
-This notebook show the transformation applied on the image.
-"""
+This notebook show the transformation applied on the images of the document.
+
+At the start of each step, se set some values on the `context.config["args"]` dict,
+you can change the values to see the impact on the result,
+then yon can all those changes in the `config.yaml` file."""
         )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("Do the required imports.")  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -1501,17 +1507,26 @@ from IPython.display import (  # convert color from CV2 BGR back to RGB
 )
 from PIL import Image
 
-from scan_to_paperless import process
-"""
+from scan_to_paperless import process"""
         )
     )
 
     notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Calculate the base folder of the document."""
+        )
+    )
+    notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             """import IPython
 
-base_folder = os.path.dirname(os.path.dirname(IPython.extract_module_locals()[1]['__vsc_ipynb_file__']))
-"""
+base_folder = os.path.dirname(os.path.dirname(IPython.extract_module_locals()[1]['__vsc_ipynb_file__']))"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Open on of the source images, you can change it by uncommenting the corresponding line."""
         )
     )
     other_images_open = "\n".join(
@@ -1527,9 +1542,18 @@ context = process.Context({{"args": {{}}}}, {{}})
 
 # Open one of the images
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
-{other_images_open}
+{other_images_open}"""
+        )
+    )
 
-
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Get the index that represent the part of the image we want to see."""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """
 # Get a part of the image to display, by default, the top of the image
 index = np.ix_(
     np.arange(0, 500),
@@ -1537,11 +1561,20 @@ index = np.ix_(
     np.arange(0, context.image.shape[2]),
 )
 
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
         )
     )
 
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Calculate the image mask, the mask is used to hide some part of the image when we calculate the image skew and the image auto crop (based on the content).
+
+The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
+the `de_noise_size` is used to remove noise from the image,
+the `buffer_size` is used to add a buffer around the image and
+the `buffer_level` is used to define the level of the buffer (0.0 to 1.0)."""
+        )
+    )
     auto_mask = context.config["args"].get("auto_mask", {})
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -1562,9 +1595,12 @@ print("Pixel 100:100: ", hsv[100, 100])
 context.init_mask()
 if context.mask is not None:
     display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[index]))
-display(Image.fromarray(cv2.cvtColor(context.get_masked()[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.get_masked()[index], cv2.COLOR_BGR2RGB)))"""
         )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("Display the image histogram.")  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -1575,8 +1611,15 @@ display(Image.fromarray(cv2.cvtColor(context.get_masked()[index], cv2.COLOR_BGR2
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
 process.histogram(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image level correction.
+
+Some of the used values are displayed in the histogram chart."""
         )
     )
     notebook["cells"].append(
@@ -1586,8 +1629,15 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
     "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
 }}
 process.level(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image level cut correction.
+
+Some of the used values are displayed in the histogram chart."""
         )
     )
     notebook["cells"].append(
@@ -1597,11 +1647,22 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
 process.color_cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
         )
     )
 
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Cut some part of the image by auto removing a part of the image.
+
+The needed of this step is to remove some part of the image that represent the part that is out of the page, witch is gray with some scanner.
+
+The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
+the `de_noise_size` is used to remove noise from the image,
+the `buffer_size` is used to add a buffer around the image and
+the `buffer_level` is used to define the level of the buffer (0.0 to 1.0)."""
+        )
+    )
     auto_cut = context.config["args"].get("auto_cut", {})
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -1622,11 +1683,13 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 process.cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
         )
     )
 
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("Do the image skew correction.")  # type: ignore[no-untyped-call]
+    )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
@@ -1635,8 +1698,13 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
 }}
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image auto crop base on the image content."""
         )
     )
     notebook["cells"].append(
@@ -1647,9 +1715,12 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
 }}
 process.docrop(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
         )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("Do the image sharpen correction.")  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -1657,9 +1728,12 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
     "sharpen": {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)},
 }}
 process.sharpen(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
         )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("Do the image dither correction.")  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -1667,17 +1741,26 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
     "dither": {context.config["args"].get("dither", schema.DITHER_DEFAULT)},
 }}
 process.dither(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image auto rotate correction, based on the text orientation.
+
+This require Tesseract to be installed."""
         )
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """# Requires Tesseract
-context.config["args"] = {}
-# process.autorotate(context)
-display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
-"""
+            """context.config["args"] = {}
+
+try:
+    process.autorotate(context)
+    display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))
+except FileNotFoundError as e:
+    print("Tesseract not found, skipping autorotate: ", e)"""
         )
     )
 
