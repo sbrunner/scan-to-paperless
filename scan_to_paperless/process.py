@@ -548,7 +548,6 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
     contours = find_contours(
         image,
         context,
-        process_count,
         "crop",
         context.config["args"].setdefault("crop", {}).setdefault("contour", {}),
     )
@@ -1014,7 +1013,6 @@ def fill_limits(
 def find_contours(
     image: NpNdarrayInt,
     context: Context,
-    progress_count: int,
     name: str,
     config: schema.Contour,
 ) -> list[tuple[int, int, int, int]]:
@@ -1031,35 +1029,10 @@ def find_contours(
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
-    if (context.is_progress() or _is_ipython()) and context.root_folder and context.image_name:
+    if context.is_progress() or _is_ipython():
+        if _is_ipython():
+            print("Threshold")
         context.save_progress_images("threshold", thresh)
-
-        block_size_list = (block_size, 1.5, 5, 10, 15, 20, 50, 100, 200)
-        threshold_value_c_list = (threshold_value_c, 20, 50, 100)
-
-        for block_size2 in block_size_list:
-            for threshold_value_c2 in threshold_value_c_list:
-                block_size2 = int(round(block_size2 / 2) * 2)
-                thresh2 = cv2.adaptiveThreshold(
-                    gray,
-                    255,
-                    cv2.ADAPTIVE_THRESH_MEAN_C,
-                    cv2.THRESH_BINARY_INV,
-                    block_size2 + 1,
-                    threshold_value_c2,
-                )
-                contours = _find_contours_thresh(image, thresh2, context, name, config)
-                thresh2 = cv2.cvtColor(thresh2, cv2.COLOR_GRAY2BGR)
-                if contours:
-                    for contour in contours:
-                        draw_rectangle(thresh2, contour)
-
-                context.save_progress_images(
-                    f"{name}-threshold",
-                    thresh2,
-                    f"block_size_{name}-{block_size2}-value_c_{name}-{threshold_value_c2}-",
-                    progress_count,
-                )
 
     return _find_contours_thresh(image, thresh, context, name, config)
 
@@ -1816,7 +1789,6 @@ def transform(
             contours = find_contours(
                 context.get_masked(),
                 context,
-                context.get_process_count(),
                 "empty",
                 empty_config.setdefault("contour", {}),
             )
@@ -1843,7 +1815,6 @@ def transform(
             contours = find_contours(
                 context.image,
                 context,
-                context.get_process_count(),
                 "limit",
                 config["args"].setdefault("limit_detection", {}).setdefault("contour", {}),
             )

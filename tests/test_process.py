@@ -34,7 +34,7 @@ def test_find_lines():
 def test_find_limit_contour():
     context = process.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
-    contours = process.find_contours(context.image, context, context.get_process_count(), "limit", {})
+    contours = process.find_contours(context.image, context, "limit", {})
     limits = process.find_limit_contour(context.image, True, contours)
     assert limits == [1589]
 
