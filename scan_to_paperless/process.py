@@ -1440,9 +1440,9 @@ def _pretty_ref(value: Any, prefix: str = "") -> str:
     if isinstance(value, dict):
         return "\n".join(
             [
-                prefix + "{",
+                "{",
                 *[
-                    prefix + "    " + key + ": " + _pretty_ref(value, prefix + "    ")
+                    f'{prefix}    "{key}": {_pretty_ref(value, prefix + "    ")},'
                     for key, value in value.items()
                 ],
                 prefix + "}",
@@ -1694,7 +1694,7 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-    "deskew": {_pretty_ref(context.config["args"].get("deskew", {}))},
+    "deskew": {_pretty_ref(context.config["args"].get("deskew", {}), "    ")},
 }}
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
@@ -1710,7 +1710,7 @@ display(Image.fromarray(cv2.cvtColor(context.image[index], cv2.COLOR_BGR2RGB)))"
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
-    "crop": {_pretty_ref(context.config["args"].get("crop", {}))},
+    "crop": {_pretty_ref(context.config["args"].get("crop", {}), "    ")},
     "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
 }}
