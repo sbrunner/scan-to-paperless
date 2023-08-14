@@ -119,7 +119,7 @@
   - **`auto_cut`** _(object)_: The auto mask configuration, the mask is used to definitively mask the source image. Default: `{"enabled": false}`.
     - **`enabled`** _(boolean)_: Enable the auto cut. Default: `true`.
     - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-  - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the pdf. Default: `false`.
+  - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
   - **`deskew`** _(object)_: The deskew configuration.
     - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
     - **`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `45`.
@@ -144,3 +144,9 @@
     - **`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
       - **Items** _(integer)_
     - **`graduation_text_margin`** _(integer)_: Default: `6`.
+  - **`rest_upload`** _(object)_: Upload the final PDF via Paperless REST API.
+    - **`enabled`** _(boolean)_: Enable the upload of the PDF via REST API. Default: `false`.
+    - **`api_url`** _(string, required)_: The URL address of the REST API, usually http://server.name/api.
+    - **`api_token`** _(string, required)_: The API token.
+  - **`consume_folder`** _(object)_: Send the final PDF to Paperless using the consume folder.
+    - **`enabled`** _(boolean)_: Enable using the consume folder. Default: `true`.

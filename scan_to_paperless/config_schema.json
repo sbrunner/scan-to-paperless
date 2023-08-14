@@ -443,7 +443,7 @@
         "no_remove_to_continue": {
           "type": "boolean",
           "default": false,
-          "description": "Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the pdf.",
+          "description": "Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF.",
           "title": "No REMOVE_TO_CONTINUE"
         },
         "deskew": {
@@ -488,7 +488,6 @@
             }
           }
         },
-
         "rule": {
           "type": "object",
           "title": "Rule",
@@ -567,6 +566,43 @@
               "title": "Rule graduation text margin",
               "type": "integer",
               "default": 6
+            }
+          }
+        },
+        "rest_upload": {
+          "type": "object",
+          "title": "REST upload",
+          "description": "Upload the final PDF via Paperless REST API",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable the upload of the PDF via REST API",
+              "title": "REST upload enabled"
+            },
+            "api_url": {
+              "type": "string",
+              "description": "The URL address of the REST API, usually http://server.name/api",
+              "title": "REST upload API url"
+            },
+            "api_token": {
+              "type": "string",
+              "description": "The API token",
+              "title": "REST upload API token"
+            }
+          },
+          "required": ["api_url", "api_token"]
+        },
+        "consume_folder": {
+          "type": "object",
+          "title": "Consume folder",
+          "description": "Send the final PDF to Paperless using the consume folder",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable using the consume folder",
+              "title": "Consume folder enabled"
             }
           }
         }
