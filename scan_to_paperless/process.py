@@ -1415,13 +1415,13 @@ def _update_config(config: schema.Configuration) -> None:
         del old_config["args"]["rule"]["enable"]
 
 
-def _pretty_ref(value: Any, prefix: str = "") -> str:
+def _pretty_repr(value: Any, prefix: str = "") -> str:
     if isinstance(value, dict):
         return "\n".join(
             [
                 "{",
                 *[
-                    f'{prefix}    "{key}": {_pretty_ref(value, prefix + "    ")},'
+                    f'{prefix}    "{key}": {_pretty_repr(value, prefix + "    ")},'
                     for key, value in value.items()
                 ],
                 prefix + "}",
@@ -1521,7 +1521,24 @@ context = process.Context({{"args": {{}}}}, {{}})
 
 # Open one of the images
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
-{other_images_open}"""
+{other_images_open}
+
+images_context = {{"original": context.image.clone()}}
+"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Set the values that's used by more than one step."""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """context.config["args"] = {
+    "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
+    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
+}"""
         )
     )
 
@@ -1540,7 +1557,7 @@ context.index = np.ix_(
     np.arange(0, context.image.shape[2]),
 )
 
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(images_context["original"][context.index], cv2.COLOR_BGR2RGB)))"""
         )
     )
 
@@ -1551,30 +1568,53 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
 The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
 the `de_noise_size` is used to remove noise from the image,
 the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
+the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).
+
+To remove the gray background from the scanner, on document I use the following values:
+```yaml
+lower_hsv_color: [0, 0, 250]
+upper_hsv_color: [255, 10, 255]
+```
+On leaflet I use the following values:
+```yaml
+lower_hsv_color: [0, 20, 0]
+upper_hsv_color: [255, 255, 255]
+```
+"""
         )
     )
-    auto_mask = context.config["args"].get("auto_mask", {})
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""auto_mask = {{
-    "lower_hsv_color": {auto_mask.get("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)},
-    "upper_hsv_color": {auto_mask.get("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)},
-    "de_noise_size": {auto_mask.get("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)},
-    "buffer_size": {auto_mask.get("buffer_size", schema.BUFFER_SIZE_DEFAULT)},
-    "buffer_level": {auto_mask.get("buffer_level", schema.BUFFER_LEVEL_DEFAULT)},
-}}
-context.config["args"] = {{"auto_mask": auto_mask}}
+            f"""context.image = images_context["original"]
 
-# Print in HSV some point of the image
+context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}), "    ")}
+
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
-print("Pixel 10:10: ", hsv[10, 10])
-print("Pixel 100:100: ", hsv[100, 100])
+print("Hue (h)")
+display(Image.fromarray(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB)[context.index]))
+print("Saturation (s)")
+display(Image.fromarray(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB)[context.index]))
+print("Value (v)")
+display(Image.fromarray(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB)[context.index]))
+
+# Print the HSV value on some point of the image
+points = [
+    [10, 10],
+    [100, 100],
+]
+image = context.image.copy()
+for x, y in points:
+    print(f"Pixel: {{x}}:{{y}}, with value: {{hsv[y, x, :]}}")
+    cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
+display(Image.fromarray(cv2.cvtColor(image[context.index], cv2.COLOR_BGR2RGB)))
 
 context.init_mask()
 if context.mask is not None:
     display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[context.index]))
-display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["auto_mask"] = context.image.clone()
+"""
         )
     )
 
@@ -1583,12 +1623,12 @@ display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.CO
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-    "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
-    "cut_white": {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
-    "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
-}}
+            f"""context.image = images_context["auto_mask"]
+
+context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
+context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
+context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
+
 process.histogram(context)"""
         )
     )
@@ -1602,12 +1642,15 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "auto_level": {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
-    "level": {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
-}}
+            f"""context.image = images_context["auto_mask"]
+
+context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
+context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
+
 process.level(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["level"] = context.image.clone()"""
         )
     )
 
@@ -1620,12 +1663,15 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "cut_white": {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
-    "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
-}}
+            f"""context.image = images_context["level"]
+
+print(f"Use cut_white: {context.config["args"]["cut_white"]}")
+print(f"Use cut_black: {context.config["args"]["cut_black"]}")
+
 process.color_cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["color_cut"] = context.image.clone()"""
         )
     )
 
@@ -1641,19 +1687,11 @@ the `buffer_size` is used to add a buffer around the image and
 the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
         )
     )
-    auto_cut = context.config["args"].get("auto_cut", {})
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "auto_cut": {{
-        "lower_hsv_color": {auto_cut.get("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)},
-        "upper_hsv_color": {auto_cut.get("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)},
-        "de_noise_size": {auto_cut.get("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)},
-        "buffer_size": {auto_cut.get("buffer_size", schema.BUFFER_SIZE_DEFAULT)},
-        "buffer_level": {auto_cut.get("buffer_level", schema.BUFFER_LEVEL_DEFAULT)},
-    }},
-    "background_color": [255, 255, 255],
-}}
+            f"""context.image = images_context["color_cut"]
+
+context.config["args"]["auto_cut"] = {_pretty_repr(context.config["args"].get("auto_cut", {}), "    ")}"
 
 # Print in HSV some point of the image
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
@@ -1661,7 +1699,9 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 process.cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["cut"] = context.image.clone()"""
         )
     )
 
@@ -1670,10 +1710,10 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-    "deskew": {_pretty_ref(context.config["args"].get("deskew", {}), "    ")},
-}}
+            f"""context.image = images_context["cut"]
+
+context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}), "    ")}
+
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
@@ -1687,13 +1727,14 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "crop": {_pretty_ref(context.config["args"].get("crop", {}), "    ")},
-    "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
-    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-}}
+            f"""context.image = images_context["deskew"]
+
+context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}), "    ")}
+
 process.docrop(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["crop"] = context.image.clone()"""
         )
     )
 
@@ -1702,11 +1743,14 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "sharpen": {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)},
-}}
+            f"""context.image = images_context["crop"]
+
+context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
+
 process.sharpen(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["sharpen"] = context.image.clone()"""
         )
     )
 
@@ -1715,11 +1759,14 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "dither": {context.config["args"].get("dither", schema.DITHER_DEFAULT)},
-}}
+            f"""context.image = images_context["sharpen"]
+
+context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
+
 process.dither(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+
+images_context["dither"] = context.image.clone()"""
         )
     )
 
@@ -1732,7 +1779,7 @@ This require Tesseract to be installed."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """context.config["args"] = {}
+            """context.image = images_context["dither"]
 
 try:
     process.autorotate(context)
