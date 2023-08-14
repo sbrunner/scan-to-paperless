@@ -1551,7 +1551,19 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
 The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
 the `de_noise_size` is used to remove noise from the image,
 the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
+the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).
+
+To remove the gray background from the scanner, on document I use the following values:
+```yaml
+lower_hsv_color: [0, 0, 250]
+upper_hsv_color: [255, 10, 255]
+```
+On leaflet I use the following values:
+```yaml
+lower_hsv_color: [0, 20, 0]
+upper_hsv_color: [255, 255, 255]
+```
+"""
         )
     )
     auto_mask = context.config["args"].get("auto_mask", {})
@@ -1566,10 +1578,25 @@ the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).""
 }}
 context.config["args"] = {{"auto_mask": auto_mask}}
 
-# Print in HSV some point of the image
+
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
-print("Pixel 10:10: ", hsv[10, 10])
-print("Pixel 100:100: ", hsv[100, 100])
+print("Hue (h)")
+display(Image.fromarray(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB)[context.index]))
+print("Saturation (s)")
+display(Image.fromarray(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB)[context.index]))
+print("Value (v)")
+display(Image.fromarray(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB)[context.index]))
+
+# Print in HSV some point of the image
+points = [
+    [10, 10],
+    [500, 30]
+]
+image = context.image.copy()
+for x, y in points:
+    print(f"Pixel: {x}:{y}, with value: {hsv[y, x, :]}")
+    cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
+display(Image.fromarray(cv2.cvtColor(image[context.index], cv2.COLOR_BGR2RGB)))
 
 context.init_mask()
 if context.mask is not None:
