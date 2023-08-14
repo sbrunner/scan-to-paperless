@@ -81,5 +81,9 @@
       groupName: 'dpkg',
       automerge: true,
     },
+    {
+      matchPackageNames: ['shellcheck-py/shellcheck-py'],
+      versioning: 'regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$',
+    },
   ],
 }
