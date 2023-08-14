@@ -479,12 +479,13 @@ class Process:  # pylint: disable=too-few-public-methods
                         context.image = new_image
                 except Exception as exception:
                     print(exception)
-                    add_intermediate_error(
-                        context.config,
-                        context.config_file_name,
-                        exception,
-                        traceback.format_exc().split("\n"),
-                    )
+                    if not _is_ipython():
+                        add_intermediate_error(
+                            context.config,
+                            context.config_file_name,
+                            exception,
+                            traceback.format_exc().split("\n"),
+                        )
             else:
                 new_image = func(context)
                 if new_image is not None:
@@ -1467,7 +1468,7 @@ This notebook show the transformation applied on the images of the document.
 
 At the start of each step, se set some values on the `context.config["args"]` dict,
 you can change the values to see the impact on the result,
-then yon can all those changes in the `config.yaml` file."""
+then yon can all those changes in the `config.yaml` file, in the `args` section."""
         )
     )
 
@@ -1550,7 +1551,7 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
 The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
 the `de_noise_size` is used to remove noise from the image,
 the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (0.0 to 1.0)."""
+the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
         )
     )
     auto_mask = context.config["args"].get("auto_mask", {})
@@ -1588,8 +1589,7 @@ display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.CO
     "cut_white": {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
     "cut_black": {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
 }}
-process.histogram(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+process.histogram(context)"""
         )
     )
 
@@ -1638,7 +1638,7 @@ The needed of this step is to remove some part of the image that represent the p
 The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
 the `de_noise_size` is used to remove noise from the image,
 the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (0.0 to 1.0)."""
+the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
         )
     )
     auto_cut = context.config["args"].get("auto_cut", {})
