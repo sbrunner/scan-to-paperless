@@ -1524,8 +1524,7 @@ context = process.Context({{"args": {{}}}}, {{}})
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
-images_context = {{"original": context.image.copy()}}
-"""
+images_context = {{"original": context.image}}"""
         )
     )
 
@@ -1614,8 +1613,7 @@ if context.mask is not None:
     display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[context.index]))
 display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["auto_mask"] = context.image.copy()
-"""
+images_context["auto_mask"] = context.image"""
         )
     )
 
@@ -1651,7 +1649,7 @@ context.config["args"]["level"] = {context.config["args"].get("level", schema.LE
 process.level(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["level"] = context.image.copy()"""
+images_context["level"] = context.image"""
         )
     )
 
@@ -1672,7 +1670,7 @@ print(f"Use cut_black: {context.config["args"]["cut_black"]}")
 process.color_cut(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["color_cut"] = context.image.copy()"""
+images_context["color_cut"] = context.image"""
         )
     )
 
@@ -1702,7 +1700,7 @@ print("Pixel 100:100: ", hsv[100, 100])
 process.cut(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["cut"] = context.image.copy()"""
+images_context["cut"] = context.image"""
         )
     )
 
@@ -1735,7 +1733,7 @@ context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop"
 process.docrop(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["crop"] = context.image.copy()"""
+images_context["crop"] = context.image"""
         )
     )
 
@@ -1751,7 +1749,7 @@ context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schem
 process.sharpen(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["sharpen"] = context.image.copy()"""
+images_context["sharpen"] = context.image"""
         )
     )
 
@@ -1767,7 +1765,7 @@ context.config["args"]["dither"] = {context.config["args"].get("dither", schema.
 process.dither(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["dither"] = context.image.copy()"""
+images_context["dither"] = context.image"""
         )
     )
 
