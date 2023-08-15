@@ -1535,10 +1535,10 @@ images_context = {{"original": context.image}}"""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """context.config["args"] = {
+            f"""context.config["args"] = {{
     "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
     "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-}"""
+}}"""
         )
     )
 
