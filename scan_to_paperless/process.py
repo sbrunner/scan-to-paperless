@@ -1524,7 +1524,7 @@ context = process.Context({{"args": {{}}}}, {{}})
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
-images_context = {{"original": context.image.clone()}}
+images_context = {{"original": context.image.copy()}}
 """
         )
     )
@@ -1586,7 +1586,7 @@ upper_hsv_color: [255, 255, 255]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["original"]
+            f"""context.image = images_context["original"].copy()
 
 context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}), "    ")}
 
@@ -1614,7 +1614,7 @@ if context.mask is not None:
     display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[context.index]))
 display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["auto_mask"] = context.image.clone()
+images_context["auto_mask"] = context.image.copy()
 """
         )
     )
@@ -1624,7 +1624,7 @@ images_context["auto_mask"] = context.image.clone()
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["auto_mask"]
+            f"""context.image = images_context["auto_mask"].copy()
 
 context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
@@ -1643,7 +1643,7 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["auto_mask"]
+            f"""context.image = images_context["auto_mask"].copy()
 
 context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
 context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
@@ -1651,7 +1651,7 @@ context.config["args"]["level"] = {context.config["args"].get("level", schema.LE
 process.level(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["level"] = context.image.clone()"""
+images_context["level"] = context.image.copy()"""
         )
     )
 
@@ -1664,7 +1664,7 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["level"]
+            f"""context.image = images_context["level"].copy()
 
 print(f"Use cut_white: {context.config["args"]["cut_white"]}")
 print(f"Use cut_black: {context.config["args"]["cut_black"]}")
@@ -1672,7 +1672,7 @@ print(f"Use cut_black: {context.config["args"]["cut_black"]}")
 process.color_cut(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["color_cut"] = context.image.clone()"""
+images_context["color_cut"] = context.image.copy()"""
         )
     )
 
@@ -1690,7 +1690,7 @@ the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["color_cut"]
+            f"""context.image = images_context["color_cut"].copy()
 
 context.config["args"]["auto_cut"] = {_pretty_repr(context.config["args"].get("auto_cut", {}), "    ")}"
 
@@ -1702,7 +1702,7 @@ print("Pixel 100:100: ", hsv[100, 100])
 process.cut(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["cut"] = context.image.clone()"""
+images_context["cut"] = context.image.copy()"""
         )
     )
 
@@ -1711,7 +1711,7 @@ images_context["cut"] = context.image.clone()"""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["cut"]
+            f"""context.image = images_context["cut"].copy()
 
 context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}), "    ")}
 
@@ -1728,14 +1728,14 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["deskew"]
+            f"""context.image = images_context["deskew"].copy()
 
 context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}), "    ")}
 
 process.docrop(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["crop"] = context.image.clone()"""
+images_context["crop"] = context.image.copy()"""
         )
     )
 
@@ -1744,14 +1744,14 @@ images_context["crop"] = context.image.clone()"""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["crop"]
+            f"""context.image = images_context["crop"].copy()
 
 context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
 
 process.sharpen(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["sharpen"] = context.image.clone()"""
+images_context["sharpen"] = context.image.copy()"""
         )
     )
 
@@ -1760,14 +1760,14 @@ images_context["sharpen"] = context.image.clone()"""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["sharpen"]
+            f"""context.image = images_context["sharpen"].copy()
 
 context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
 
 process.dither(context)
 display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
 
-images_context["dither"] = context.image.clone()"""
+images_context["dither"] = context.image.copy()"""
         )
     )
 
@@ -1780,7 +1780,7 @@ This require Tesseract to be installed."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """context.image = images_context["dither"]
+            """context.image = images_context["dither"].copy()
 
 try:
     process.autorotate(context)
