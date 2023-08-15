@@ -6,7 +6,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/apache-pom: 18-1
   ubuntu_22_04/apparmor: 3.0.4-2ubuntu2.2
   ubuntu_22_04/appstream: 0.15.2-2
-  ubuntu_22_04/apt: 2.4.9
+  ubuntu_22_04/apt: 2.4.10
   ubuntu_22_04/argon2: 0~20171227-0.3
   ubuntu_22_04/attr: 2.5.1-1build1
   ubuntu_22_04/audit: 3.0.7-1build1
@@ -215,7 +215,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/apache-pom: 18-1
   ubuntu_22_04/apparmor: 3.0.4-2ubuntu2.2
   ubuntu_22_04/appstream: 0.15.2-2
-  ubuntu_22_04/apt: 2.4.9
+  ubuntu_22_04/apt: 2.4.10
   ubuntu_22_04/argon2: 0~20171227-0.3
   ubuntu_22_04/attr: 2.5.1-1build1
   ubuntu_22_04/audit: 3.0.7-1build1
