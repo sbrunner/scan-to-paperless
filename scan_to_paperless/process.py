@@ -15,7 +15,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Optional, Protocol, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Callable, Optional, Protocol, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -111,7 +111,14 @@ class Context:  # pylint: disable=too-many-instance-attributes
         self.image_name = image_name
         self.image: Optional[NpNdarrayInt] = None
         self.mask: Optional[NpNdarrayInt] = None
-        self.index: Optional[tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...]] = None
+        self.get_index: Callable[
+            [NpNdarrayInt], Optional[tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...]]
+        ] = lambda image: np.ix_(
+            np.arange(0, image.shape[1]),
+            np.arange(0, image.shape[1]),
+            np.arange(0, image.shape[2]),
+        )
+
         self.process_count = self.step.get("process_count", 0)
 
     def _get_mask(
@@ -351,6 +358,14 @@ class Context:  # pylint: disable=too-many-instance-attributes
                     print(exception)
         return None
 
+    def display_image(self, image: NpNdarrayInt) -> None:
+        """Display the image."""
+
+        if _is_ipython():
+            from IPython.display import display  # pylint: disable=import-outside-toplevel,import-error
+
+            display(Image.fromarray(cv2.cvtColor(image[self.get_index(image)], cv2.COLOR_BGR2RGB)))
+
 
 def add_intermediate_error(
     config: schema.Configuration,
@@ -559,7 +574,10 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
         for contour in contours:
             draw_rectangle(image, contour)
         context.save_progress_images(
-            "crop", image[context.index] if _is_ipython() else image, process_count=process_count, force=True
+            "crop",
+            image[context.get_index(image)] if _is_ipython() else image,
+            process_count=process_count,
+            force=True,
         )
 
         x, y, width, height = get_contour_to_crop(contours, margin_horizontal, margin_vertical)
@@ -1037,8 +1055,9 @@ def find_contours(
     if context.is_progress() or _is_ipython():
         if _is_ipython():
             print("Threshold")
+        thresh_rgb = cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB)
         context.save_progress_images(
-            "threshold", cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB)[context.index] if _is_ipython() else thresh
+            "threshold", thresh_rgb[context.get_index(thresh_rgb)] if _is_ipython() else thresh
         )
 
     return _find_contours_thresh(image, thresh, context, name, config)
@@ -1481,11 +1500,6 @@ then yon can all those changes in the `config.yaml` file, in the `args` section.
             """import os
 import cv2
 import numpy as np
-from IPython.display import (  # convert color from CV2 BGR back to RGB
-    clear_output,
-    display,
-)
-from PIL import Image
 
 from scan_to_paperless import process"""
         )
@@ -1551,13 +1565,13 @@ images_context = {{"original": context.image}}"""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             """
 # Get a part of the image to display, by default, the top of the image
-context.index = np.ix_(
-    np.arange(0, 500),
-    np.arange(0, context.image.shape[1]),
-    np.arange(0, context.image.shape[2]),
+context.get_index = lambda image: np.ix_(
+    np.arange(0, min(image.shape[1], 500)),
+    np.arange(0, image.shape[1]),
+    np.arange(0, image.shape[2]),
 )
 
-display(Image.fromarray(cv2.cvtColor(images_context["original"][context.index], cv2.COLOR_BGR2RGB)))"""
+context.display_image(images_context["original"])"""
         )
     )
 
@@ -1587,15 +1601,15 @@ upper_hsv_color: [255, 255, 255]
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["original"].copy()
 
-context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}), "    ")}
+context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}))}
 
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
 print("Hue (h)")
-display(Image.fromarray(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB)[context.index]))
+context.display_image(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB))
 print("Saturation (s)")
-display(Image.fromarray(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB)[context.index]))
+context.display_image(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB))
 print("Value (v)")
-display(Image.fromarray(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB)[context.index]))
+context.display_image(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB))
 
 # Print the HSV value on some point of the image
 points = [
@@ -1606,12 +1620,12 @@ image = context.image.copy()
 for x, y in points:
     print(f"Pixel: {{x}}:{{y}}, with value: {{hsv[y, x, :]}}")
     cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
-display(Image.fromarray(cv2.cvtColor(image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(image)
 
 context.init_mask()
 if context.mask is not None:
-    display(Image.fromarray(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB)[context.index]))
-display(Image.fromarray(cv2.cvtColor(context.get_masked()[context.index], cv2.COLOR_BGR2RGB)))
+    context.display_image(context.mask)
+context.display_image(context.get_masked())
 
 images_context["auto_mask"] = context.image"""
         )
@@ -1624,9 +1638,9 @@ images_context["auto_mask"] = context.image"""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["auto_mask"].copy()
 
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
-context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)},
-context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)},
+context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
+context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
+context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
 process.histogram(context)"""
         )
@@ -1647,7 +1661,7 @@ context.config["args"]["auto_level"] = {context.config["args"].get("auto_level",
 context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
 
 process.level(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(context.image)
 
 images_context["level"] = context.image"""
         )
@@ -1668,7 +1682,7 @@ print(f"Use cut_white: {context.config["args"]["cut_white"]}")
 print(f"Use cut_black: {context.config["args"]["cut_black"]}")
 
 process.color_cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(context.image)
 
 images_context["color_cut"] = context.image"""
         )
@@ -1690,7 +1704,7 @@ the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["color_cut"].copy()
 
-context.config["args"]["auto_cut"] = {_pretty_repr(context.config["args"].get("auto_cut", {}), "    ")}"
+context.config["args"]["auto_cut"] = {_pretty_repr(context.config["args"].get("auto_cut", {}))}
 
 # Print in HSV some point of the image
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
@@ -1698,7 +1712,7 @@ print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
 process.cut(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(context.image)
 
 images_context["cut"] = context.image"""
         )
@@ -1711,11 +1725,13 @@ images_context["cut"] = context.image"""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["cut"].copy()
 
-context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}), "    ")}
+context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}))}
 
 # The angle can be forced in config.images_config.<image_name>.angle.
 process.deskew(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))"""
+context.display_image(context.image)
+
+images_context["deskew"] = context.image"""
         )
     )
 
@@ -1728,10 +1744,10 @@ display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["deskew"].copy()
 
-context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}), "    ")}
+context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}))}
 
 process.docrop(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(context.image)
 
 images_context["crop"] = context.image"""
         )
@@ -1747,7 +1763,7 @@ images_context["crop"] = context.image"""
 context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
 
 process.sharpen(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(context.image)
 
 images_context["sharpen"] = context.image"""
         )
@@ -1763,7 +1779,7 @@ images_context["sharpen"] = context.image"""
 context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
 
 process.dither(context)
-display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+context.display_image(context.image)
 
 images_context["dither"] = context.image"""
         )
@@ -1782,7 +1798,7 @@ This require Tesseract to be installed."""
 
 try:
     process.autorotate(context)
-    display(Image.fromarray(cv2.cvtColor(context.image[context.index], cv2.COLOR_BGR2RGB)))
+    context.display_image(context.image)
 except FileNotFoundError as e:
     print("Tesseract not found, skipping autorotate: ", e)"""
         )
@@ -1819,11 +1835,6 @@ def transform(
             raise ScanToPaperlessException("Image name is required")
         context.image = cv2.imread(os.path.join(root_folder, image))
         assert context.image is not None
-        context.index = np.ix_(
-            np.arange(0, context.image.shape[0]),
-            np.arange(0, context.image.shape[1]),
-            np.arange(0, context.image.shape[2]),
-        )
         images_config = context.config.setdefault("images_config", {})
         image_config = images_config.setdefault(context.image_name, {})
         image_status = image_config.setdefault("status", {})
