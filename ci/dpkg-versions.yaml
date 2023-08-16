@@ -196,7 +196,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/tar: 1.34+dfsg-1ubuntu0.1.22.04.1
   ubuntu_22_04/tesseract: 4.1.1-2.1build1
   ubuntu_22_04/tesseract-lang: 4.00~git30-7274cfa-1.1
-  ubuntu_22_04/tiff: 4.3.0-6ubuntu0.4
+  ubuntu_22_04/tiff: 4.3.0-6ubuntu0.5
   ubuntu_22_04/ubuntu-keyring: 2021.03.26
   ubuntu_22_04/ucf: '3.0043'
   ubuntu_22_04/usrmerge: 25ubuntu2
@@ -405,7 +405,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/tar: 1.34+dfsg-1ubuntu0.1.22.04.1
   ubuntu_22_04/tesseract: 4.1.1-2.1build1
   ubuntu_22_04/tesseract-lang: 4.00~git30-7274cfa-1.1
-  ubuntu_22_04/tiff: 4.3.0-6ubuntu0.4
+  ubuntu_22_04/tiff: 4.3.0-6ubuntu0.5
   ubuntu_22_04/ubuntu-keyring: 2021.03.26
   ubuntu_22_04/ucf: '3.0043'
   ubuntu_22_04/usrmerge: 25ubuntu2
