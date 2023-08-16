@@ -95,7 +95,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 COPY package.json package-lock.json ./
 
 RUN --mount=type=cache,target=/root/.npm \
-    npm install
+    npm install --ignore-scripts
 
 FROM tests-dist AS tests
 
