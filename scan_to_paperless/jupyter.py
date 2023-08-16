@@ -93,7 +93,8 @@ from scan_to_paperless import process, process_utils"""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             """import IPython
 
-base_folder = os.path.dirname(os.path.dirname(IPython.extract_module_locals()[1]['__vsc_ipynb_file__']))"""
+jupyter_locals = IPython.extract_module_locals()[1]
+base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__']) if '' in jupyter_locals else os.getcwd())"""
         )
     )
 
@@ -145,7 +146,7 @@ images_context = {{"original": context.image}}"""
             """
 # Get a part of the image to display, by default, the top of the image
 context.get_index = lambda image: np.ix_(
-    np.arange(0, min(image.shape[1], 500)),
+    np.arange(0, min(image.shape[0], 500)),
     np.arange(0, image.shape[1]),
     np.arange(0, image.shape[2]),
 )

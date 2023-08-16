@@ -5,11 +5,13 @@ import shutil
 import subprocess
 
 import cv2
+import nbformat
 import pikepdf
 import pytest
 import skimage.color
 import skimage.io
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
+from nbconvert.preprocessors import ExecutePreprocessor
 
 from scan_to_paperless import code, process, process_utils
 
@@ -701,7 +703,7 @@ def test_multi_code():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_tiff():
+def test_tiff_jupyter():
     init_test()
     root_folder = "/results/tiff"
     source_folder = os.path.join(root_folder, "source")
@@ -723,7 +725,12 @@ def test_tiff():
     config_file_name = os.path.join(root_folder, "config.yaml")
     step = process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
-    assert list(glob.glob(f"{root_folder}/**/*.tiff")) == ["/results/tiff/source/image-1.tiff"]
+    assert list(glob.glob(f"{root_folder}/**/*.tiff")) == [os.path.join(root_folder, "source/image-1.tiff")]
+
+    with open("/results/tiff/jupyter/jupyter.ipynb") as f:
+        nb = nbformat.read(f, as_version=4)
+    ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+    ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
 
 
 # @pytest.mark.skip(reason="for test")
