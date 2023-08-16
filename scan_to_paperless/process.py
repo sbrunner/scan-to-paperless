@@ -1624,7 +1624,7 @@ context.display_image(image)
 
 context.init_mask()
 if context.mask is not None:
-    context.display_image(context.mask)
+    context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
 context.display_image(context.get_masked())
 
 images_context["auto_mask"] = context.image"""

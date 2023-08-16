@@ -73,7 +73,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 CMD ["scan-process"]
 
-FROM upstream AS tests-node-mobules
+FROM upstream AS tests-node-modules
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
@@ -110,7 +110,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends gnupg
 
-COPY --from=tests-node-mobules /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/
+COPY --from=tests-node-modules /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
@@ -124,8 +124,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3.0 libxcb-dri3-0 libgbm1 libxshmfence1
 
 COPY package.json package-lock.json ./
-COPY --from=tests-node-mobules /src/node_modules ./node_modules
-COPY --from=tests-node-mobules /root/.cache/puppeteer /root/.cache/puppeteer
+COPY --from=tests-node-modules /src/node_modules ./node_modules
+COPY --from=tests-node-modules /root/.cache/puppeteer /root/.cache/puppeteer
 COPY tests/screenshot.js ./
 
 FROM base as all
