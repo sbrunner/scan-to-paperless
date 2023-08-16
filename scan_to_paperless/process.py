@@ -6,7 +6,6 @@ import argparse
 import datetime
 import json
 import logging
-import math
 import os
 import re
 import shutil
@@ -15,12 +14,11 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Callable, Optional, Protocol, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Optional, Protocol, TypedDict, Union, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 import matplotlib.pyplot as plt
-import nbformat
 import numpy as np
 import pikepdf
 import requests
@@ -35,8 +33,9 @@ from skimage.util import img_as_ubyte
 
 import scan_to_paperless
 import scan_to_paperless.status
-from scan_to_paperless import code
+from scan_to_paperless import code, jupyter_utils
 from scan_to_paperless import process_schema as schema
+from scan_to_paperless import process_utils
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
@@ -50,323 +49,6 @@ CONVERT = ["gm", "convert"]
 _LOG = logging.getLogger(__name__)
 
 
-class ScanToPaperlessException(Exception):
-    """Base exception for this module."""
-
-
-def rotate_image(
-    image: NpNdarrayInt, angle: float, background: Union[int, tuple[int, int, int]]
-) -> NpNdarrayInt:
-    """Rotate the image."""
-
-    old_width, old_height = image.shape[:2]
-    angle_radian = math.radians(angle)
-    width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
-    height = abs(np.sin(angle_radian) * old_width) + abs(np.cos(angle_radian) * old_height)
-
-    image_center: tuple[Any, ...] = tuple(np.array(image.shape[1::-1]) / 2)
-    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-    rot_mat[1, 2] += (width - old_width) / 2
-    rot_mat[0, 2] += (height - old_height) / 2
-    return cast(
-        NpNdarrayInt,
-        cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background),
-    )
-
-
-def crop_image(  # pylint: disable=too-many-arguments
-    image: NpNdarrayInt,
-    x: int,
-    y: int,
-    width: int,
-    height: int,
-    background: Union[tuple[int], tuple[int, int, int]],
-) -> NpNdarrayInt:
-    """Crop the image."""
-
-    matrice: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
-    return cast(
-        NpNdarrayInt,
-        cv2.warpAffine(image, matrice, (int(round(width)), int(round(height))), borderValue=background),
-    )
-
-
-class Context:  # pylint: disable=too-many-instance-attributes
-    """All the context of the current image with his mask."""
-
-    def __init__(  # pylint: disable=too-many-arguments
-        self,
-        config: schema.Configuration,
-        step: schema.Step,
-        config_file_name: Optional[str] = None,
-        root_folder: Optional[str] = None,
-        image_name: Optional[str] = None,
-    ) -> None:
-        """Initialize."""
-
-        self.config = config
-        self.step = step
-        self.config_file_name = config_file_name
-        self.root_folder = root_folder
-        self.image_name = image_name
-        self.image: Optional[NpNdarrayInt] = None
-        self.mask: Optional[NpNdarrayInt] = None
-        self.get_index: Callable[
-            [NpNdarrayInt], Optional[tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...]]
-        ] = lambda image: np.ix_(
-            np.arange(0, image.shape[1]),
-            np.arange(0, image.shape[1]),
-            np.arange(0, image.shape[2]),
-        )
-
-        self.process_count = self.step.get("process_count", 0)
-
-    def _get_mask(
-        self,
-        auto_mask_config: Optional[schema.AutoMask],
-        config_section: str,
-        default_file_name: str,
-    ) -> Optional[NpNdarrayInt]:
-        """Init the mask."""
-
-        if auto_mask_config is not None:
-            hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
-
-            lower_val = np.array(
-                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)
-            )
-            upper_val = np.array(
-                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)
-            )
-            mask = cv2.inRange(hsv, lower_val, upper_val)
-
-            de_noise_size = auto_mask_config.setdefault("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)
-            mask = cv2.copyMakeBorder(
-                mask,
-                de_noise_size,
-                de_noise_size,
-                de_noise_size,
-                de_noise_size,
-                cv2.BORDER_REPLICATE,
-            )
-            if auto_mask_config.setdefault("de_noise_morphology", schema.DE_NOISE_MORPHOLOGY_DEFAULT):
-                mask = cv2.morphologyEx(
-                    mask,
-                    cv2.MORPH_CLOSE,
-                    cv2.getStructuringElement(cv2.MORPH_RECT, (de_noise_size, de_noise_size)),
-                )
-            else:
-                blur = cv2.blur(
-                    mask,
-                    (de_noise_size, de_noise_size),
-                )
-                _, mask = cv2.threshold(
-                    blur,
-                    auto_mask_config.setdefault("de_noise_level", schema.DE_NOISE_LEVEL_DEFAULT),
-                    255,
-                    cv2.THRESH_BINARY,
-                )
-
-            inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
-            if not inverse_mask:
-                mask = cv2.bitwise_not(mask)
-
-            buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
-            blur = cv2.blur(mask, (buffer_size, buffer_size))
-            _, mask = cv2.threshold(
-                blur,
-                auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
-                255,
-                cv2.THRESH_BINARY,
-            )
-
-            mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
-
-            if self.root_folder:
-                mask_file: str = os.path.join(self.root_folder, default_file_name)
-                assert mask_file
-                if not os.path.exists(mask_file):
-                    base_folder = os.path.dirname(self.root_folder)
-                    assert base_folder
-                    mask_file = os.path.join(base_folder, default_file_name)
-                    if not os.path.exists(mask_file):
-                        mask_file = ""
-                mask_file = auto_mask_config.setdefault("additional_filename", mask_file)
-                if mask_file and os.path.exists(mask_file):
-                    mask = cv2.add(
-                        mask,
-                        cv2.bitwise_not(
-                            cv2.resize(
-                                cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE),
-                                (mask.shape[1], mask.shape[0]),
-                            )
-                        ),
-                    )
-
-            final_mask = cv2.bitwise_not(mask)
-
-            if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
-                self.save_progress_images(config_section.replace("_", "-"), final_mask)
-        elif self.root_folder:
-            mask_file = os.path.join(self.root_folder, default_file_name)
-            if not os.path.exists(mask_file):
-                base_folder = os.path.dirname(self.root_folder)
-                assert base_folder
-                mask_file = os.path.join(base_folder, default_file_name)
-                if not os.path.exists(mask_file):
-                    return None
-
-            final_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
-            if self.image is not None and final_mask is not None:
-                return cast(NpNdarrayInt, cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])))
-        return cast(NpNdarrayInt, final_mask)
-
-    def init_mask(self) -> None:
-        """Init the mask image used to mask the image on the crop and skew calculation."""
-
-        auto_mask_config = self.config["args"].setdefault(
-            "auto_mask", cast(schema.AutoMaskOperation, schema.AUTO_MASK_OPERATION_DEFAULT)
-        )
-        self.mask = (
-            self._get_mask(
-                auto_mask_config.setdefault("auto_mask", {}),
-                "auto_mask",
-                "mask.png",
-            )
-            if auto_mask_config.setdefault("enabled", schema.AUTO_MASK_ENABLED_DEFAULT)
-            else None
-        )
-
-    def get_background_color(self) -> tuple[int, int, int]:
-        """Get the background color."""
-
-        return cast(
-            tuple[int, int, int],
-            self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
-        )
-
-    def do_initial_cut(self) -> None:
-        """Definitively mask the original image."""
-
-        if "auto_cut" in self.config["args"]:
-            assert self.image is not None
-            mask = self._get_mask(
-                self.config["args"]
-                .setdefault("auto_cut", cast(schema.AutoCut, schema.AUTO_CUT_DEFAULT))
-                .setdefault("auto_mask", {}),
-                "auto_cut",
-                "cut.png",
-            )
-            self.image[mask == 0] = self.get_background_color()
-
-    def get_process_count(self) -> int:
-        """Get the step number."""
-
-        try:
-            return self.process_count
-        finally:
-            self.process_count += 1
-
-    def get_masked(self) -> NpNdarrayInt:
-        """Get the mask."""
-
-        if self.image is None:
-            raise ScanToPaperlessException("The image is None")
-        if self.mask is None:
-            return self.image.copy()
-
-        image = self.image.copy()
-        image[self.mask == 0] = self.get_background_color()
-        return image
-
-    def crop(self, x: int, y: int, width: int, height: int) -> None:
-        """Crop the image."""
-
-        if self.image is None:
-            raise ScanToPaperlessException("The image is None")
-        self.image = crop_image(self.image, x, y, width, height, self.get_background_color())
-        if self.mask is not None:
-            self.mask = crop_image(self.mask, x, y, width, height, (0,))
-
-    def rotate(self, angle: float) -> None:
-        """Rotate the image."""
-
-        if self.image is None:
-            raise ScanToPaperlessException("The image is None")
-        self.image = rotate_image(self.image, angle, self.get_background_color())
-        if self.mask is not None:
-            self.mask = rotate_image(self.mask, angle, 0)
-
-    def get_px_value(self, value: Union[int, float]) -> float:
-        """Get the value in px."""
-
-        return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
-
-    def is_progress(self) -> bool:
-        """Return we want to have the intermediate files."""
-
-        return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
-            "progress", schema.PROGRESS_DEFAULT
-        )
-
-    def save_progress_images(
-        self,
-        name: str,
-        image: Optional[NpNdarrayInt] = None,
-        image_prefix: str = "",
-        process_count: Optional[int] = None,
-        force: bool = False,
-    ) -> Optional[str]:
-        """Save the intermediate images."""
-
-        if _is_ipython():
-            if image is None:
-                return None
-
-            from IPython.display import display  # pylint: disable=import-outside-toplevel,import-error
-
-            display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
-            return None
-
-        if process_count is None:
-            process_count = self.get_process_count()
-        if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
-            name = f"{process_count}-{name}" if self.is_progress() else name
-            dest_folder = os.path.join(self.root_folder, name)
-            if not os.path.exists(dest_folder):
-                os.makedirs(dest_folder)
-            dest_image = os.path.join(dest_folder, image_prefix + self.image_name)
-            if image is not None:
-                try:
-                    cv2.imwrite(dest_image, image)
-                    return dest_image
-                except Exception as exception:
-                    print(exception)
-            else:
-                try:
-                    cv2.imwrite(dest_image, self.image)
-                except Exception as exception:
-                    print(exception)
-                dest_image = os.path.join(dest_folder, "mask-" + self.image_name)
-                try:
-                    dest_image = os.path.join(dest_folder, "masked-" + self.image_name)
-                except Exception as exception:
-                    print(exception)
-                try:
-                    cv2.imwrite(dest_image, self.get_masked())
-                except Exception as exception:
-                    print(exception)
-        return None
-
-    def display_image(self, image: NpNdarrayInt) -> None:
-        """Display the image."""
-
-        if _is_ipython():
-            from IPython.display import display  # pylint: disable=import-outside-toplevel,import-error
-
-            display(Image.fromarray(cv2.cvtColor(image[self.get_index(image)], cv2.COLOR_BGR2RGB)))
-
-
 def add_intermediate_error(
     config: schema.Configuration,
     config_file_name: Optional[str],
@@ -376,7 +58,7 @@ def add_intermediate_error(
     """Add in the config non fatal error."""
 
     if config_file_name is None:
-        raise ScanToPaperlessException("The config file name is required") from error
+        raise scan_to_paperless.ScanToPaperlessException("The config file name is required") from error
     if "intermediate_error" not in config:
         config["intermediate_error"] = []
 
@@ -451,21 +133,21 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNda
 class FunctionWithContextReturnsImage(Protocol):
     """Function with context and returns an image."""
 
-    def __call__(self, context: Context) -> Optional[NpNdarrayInt]:
+    def __call__(self, context: process_utils.Context) -> Optional[NpNdarrayInt]:
         """Call the function."""
 
 
 class FunctionWithContextReturnsNone(Protocol):
     """Function with context and no return."""
 
-    def __call__(self, context: Context) -> None:
+    def __call__(self, context: process_utils.Context) -> None:
         """Call the function."""
 
 
 class ExternalFunction(Protocol):
     """Function that call an external tool."""
 
-    def __call__(self, context: Context, source: str, destination: str) -> None:
+    def __call__(self, context: process_utils.Context, source: str, destination: str) -> None:
         """Call the function."""
 
 
@@ -486,7 +168,7 @@ class Process:  # pylint: disable=too-few-public-methods
     def __call__(self, func: FunctionWithContextReturnsImage) -> FunctionWithContextReturnsNone:
         """Call the function."""
 
-        def wrapper(context: Context) -> None:
+        def wrapper(context: process_utils.Context) -> None:
             start_time = time.perf_counter()
             if self.ignore_error:
                 try:
@@ -495,7 +177,7 @@ class Process:  # pylint: disable=too-few-public-methods
                         context.image = new_image
                 except Exception as exception:
                     print(exception)
-                    if not _is_ipython():
+                    if not jupyter_utils.is_ipython():
                         add_intermediate_error(
                             context.config,
                             context.config_file_name,
@@ -519,7 +201,7 @@ class Process:  # pylint: disable=too-few-public-methods
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
-    def wrapper(context: Context) -> Optional[NpNdarrayInt]:
+    def wrapper(context: process_utils.Context) -> Optional[NpNdarrayInt]:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
             cv2.imwrite(source.name, context.image)
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
@@ -554,7 +236,7 @@ def get_contour_to_crop(
     )
 
 
-def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None:
+def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical: int) -> None:
     """
     Do a crop on an image.
 
@@ -575,7 +257,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
             draw_rectangle(image, contour)
         context.save_progress_images(
             "crop",
-            image[context.get_index(image)] if _is_ipython() else image,
+            image[context.get_index(image)] if jupyter_utils.is_ipython() else image,
             process_count=process_count,
             force=True,
         )
@@ -584,7 +266,7 @@ def crop(context: Context, margin_horizontal: int, margin_vertical: int) -> None
         context.crop(x, y, width, height)
 
 
-def _get_level(context: Context) -> tuple[bool, float, float]:
+def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
     level_ = context.config["args"].setdefault("level", schema.LEVEL_DEFAULT)
     min_p100 = 0.0
     max_p100 = 100.0
@@ -604,7 +286,7 @@ def _get_level(context: Context) -> tuple[bool, float, float]:
 
 
 def _histogram(
-    context: Context,
+    context: process_utils.Context,
     histogram_data: Any,
     histogram_centers: Any,
     histogram_max: Any,
@@ -655,7 +337,7 @@ def _histogram(
 
     plt.tight_layout()
     with tempfile.NamedTemporaryFile(suffix=".png") as file:
-        if not _is_ipython():
+        if not jupyter_utils.is_ipython():
             plt.savefig(file.name)
             subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
             image = cv2.imread(file.name)
@@ -669,7 +351,7 @@ def _histogram(
 
 
 @Process("histogram", progress=False)
-def histogram(context: Context) -> None:
+def histogram(context: process_utils.Context) -> None:
     """Create an image with the histogram of the current image."""
 
     noisy_image = img_as_ubyte(context.image)
@@ -682,7 +364,7 @@ def histogram(context: Context) -> None:
 
 
 @Process("level")
-def level(context: Context) -> NpNdarrayInt:
+def level(context: process_utils.Context) -> NpNdarrayInt:
     """Do the level on an image."""
 
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
@@ -703,7 +385,7 @@ def level(context: Context) -> NpNdarrayInt:
 
 
 @Process("color-cut")
-def color_cut(context: Context) -> None:
+def color_cut(context: process_utils.Context) -> None:
     """Set the near white to white and near black to black."""
 
     assert context.image is not None
@@ -720,14 +402,14 @@ def color_cut(context: Context) -> None:
 
 
 @Process("mask-cut")
-def cut(context: Context) -> None:
+def cut(context: process_utils.Context) -> None:
     """Mask the image with the cut mask."""
 
     context.do_initial_cut()
 
 
 @Process("deskew")
-def deskew(context: Context) -> None:
+def deskew(context: process_utils.Context) -> None:
     """Deskew an image."""
 
     images_config = context.config.setdefault("images_config", {})
@@ -755,7 +437,7 @@ def deskew(context: Context) -> None:
             image_status["angle"] = float(skew_angle)
             angle = float(skew_angle)
 
-        if not _is_ipython():
+        if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
             for name, image in debug_images:
                 context.save_progress_images("skew", image, name, process_count, True)
@@ -768,7 +450,7 @@ def deskew(context: Context) -> None:
             sources = [img for img in context.config.get("images", []) if f"{image_name_split[0]}." in img]
             if len(sources) == 1:
                 assert context.root_folder
-                image = rotate_image(
+                image = process_utils.rotate_image(
                     cv2.imread(os.path.join(context.root_folder, sources[0])),
                     angle,
                     context.get_background_color(),
@@ -781,7 +463,7 @@ def deskew(context: Context) -> None:
 
 
 @Process("docrop")
-def docrop(context: Context) -> None:
+def docrop(context: process_utils.Context) -> None:
     """Crop an image."""
 
     # Margin in mm
@@ -798,7 +480,7 @@ def docrop(context: Context) -> None:
 
 
 @Process("sharpen")
-def sharpen(context: Context) -> Optional[NpNdarrayInt]:
+def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
 
     if (
@@ -809,14 +491,14 @@ def sharpen(context: Context) -> Optional[NpNdarrayInt]:
     ):
         return None
     if context.image is None:
-        raise ScanToPaperlessException("The image is required")
+        raise scan_to_paperless.ScanToPaperlessException("The image is required")
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
     return cast(NpNdarrayInt, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
 
 
 @Process("dither")
 @external
-def dither(context: Context, source: str, destination: str) -> None:
+def dither(context: process_utils.Context, source: str, destination: str) -> None:
     """Dither an image."""
 
     if (
@@ -830,7 +512,7 @@ def dither(context: Context, source: str, destination: str) -> None:
 
 
 @Process("autorotate", True)
-def autorotate(context: Context) -> None:
+def autorotate(context: process_utils.Context) -> None:
     """
     Auto rotate an image.
 
@@ -989,7 +671,10 @@ def find_limit_contour(
 
 
 def find_limits(
-    image: NpNdarrayInt, vertical: bool, context: Context, contours: list[tuple[int, int, int, int]]
+    image: NpNdarrayInt,
+    vertical: bool,
+    context: process_utils.Context,
+    contours: list[tuple[int, int, int, int]],
 ) -> tuple[list[int], list[tuple[int, int, int, int]]]:
     """Find the limit for assisted split."""
     contours_limits = find_limit_contour(image, vertical, contours)
@@ -1035,7 +720,7 @@ def fill_limits(
 
 def find_contours(
     image: NpNdarrayInt,
-    context: Context,
+    context: process_utils.Context,
     name: str,
     config: schema.Contour,
 ) -> list[tuple[int, int, int, int]]:
@@ -1052,12 +737,13 @@ def find_contours(
     thresh = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c
     )
-    if context.is_progress() or _is_ipython():
-        if _is_ipython():
+    if context.is_progress() or jupyter_utils.is_ipython():
+        if jupyter_utils.is_ipython():
             print("Threshold")
         thresh_rgb = cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB)
         context.save_progress_images(
-            "threshold", thresh_rgb[context.get_index(thresh_rgb)] if _is_ipython() else thresh
+            "threshold",
+            thresh_rgb[context.get_index(thresh_rgb)] if jupyter_utils.is_ipython() else thresh,
         )
 
     return _find_contours_thresh(image, thresh, context, name, config)
@@ -1066,7 +752,7 @@ def find_contours(
 def _find_contours_thresh(
     image: NpNdarrayInt,
     thresh: NpNdarrayInt,
-    context: Context,
+    context: process_utils.Context,
     name: str,
     config: schema.Contour,
 ) -> list[tuple[int, int, int, int]]:
@@ -1088,7 +774,9 @@ def _find_contours_thresh(
     for cnt in contours:
         x, y, width, height = cv2.boundingRect(cnt)
         if width > min_size and height > min_size:
-            contour_image = crop_image(image, x, y, width, height, context.get_background_color())
+            contour_image = process_utils.crop_image(
+                image, x, y, width, height, context.get_background_color()
+            )
             imagergb = (
                 rgba2rgb(contour_image)
                 if len(contour_image.shape) == 3 and contour_image.shape[2] == 4
@@ -1435,379 +1123,6 @@ def _update_config(config: schema.Configuration) -> None:
         del old_config["args"]["rule"]["enable"]
 
 
-def _pretty_repr(value: Any, prefix: str = "") -> str:
-    if isinstance(value, dict):
-        return "\n".join(
-            [
-                "{",
-                *[
-                    f'{prefix}    "{key}": {_pretty_repr(value, prefix + "    ")},'
-                    for key, value in value.items()
-                ],
-                prefix + "}",
-            ]
-        )
-
-    return repr(value)
-
-
-def _is_ipython() -> bool:
-    try:
-        __IPYTHON__  # type: ignore[name-defined] # pylint: disable=pointless-statement
-        return True
-    except NameError:
-        return False
-
-
-def _create_jupyter_notebook(root_folder: str, context: Context, step: schema.Step) -> None:
-    # Jupyter notebook
-    dest_folder = os.path.join(root_folder, "jupyter")
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder)
-    with open(os.path.join(dest_folder, "README.txt"), "w", encoding="utf-8") as readme_file:
-        readme_file.write(
-            """# Jupyter notebook
-
-Install dependencies:
-pip install scan-to-paperless[process] jupyterlab Pillow
-
-Run:
-jupyter lab
-
-Open the notebook file.
-"""
-        )
-
-    notebook = nbformat.v4.new_notebook()  # type: ignore[no-untyped-call]
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """# Scan to Paperless
-
-This notebook show the transformation applied on the images of the document.
-
-At the start of each step, se set some values on the `context.config["args"]` dict,
-you can change the values to see the impact on the result,
-then yon can all those changes in the `config.yaml` file, in the `args` section."""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the required imports.")  # type: ignore[no-untyped-call]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """import os
-import cv2
-import numpy as np
-
-from scan_to_paperless import process"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Calculate the base folder of the document."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """import IPython
-
-base_folder = os.path.dirname(os.path.dirname(IPython.extract_module_locals()[1]['__vsc_ipynb_file__']))"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Open on of the source images, you can change it by uncommenting the corresponding line."""
-        )
-    )
-    other_images_open = "\n".join(
-        [
-            f'# context.image = cv2.imread(os.path.join(base_folder, "{image}"))'
-            for image in step["sources"][1:]
-        ]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""# Open Source image
-context = process.Context({{"args": {{}}}}, {{}})
-
-# Open one of the images
-context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
-{other_images_open}
-
-images_context = {{"original": context.image}}"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Set the values that's used by more than one step."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"] = {{
-    "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
-    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
-}}"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Get the index that represent the part of the image we want to see."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """
-# Get a part of the image to display, by default, the top of the image
-context.get_index = lambda image: np.ix_(
-    np.arange(0, min(image.shape[1], 500)),
-    np.arange(0, image.shape[1]),
-    np.arange(0, image.shape[2]),
-)
-
-context.display_image(images_context["original"])"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Calculate the image mask, the mask is used to hide some part of the image when we calculate the image skew and the image auto crop (based on the content).
-
-The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
-the `de_noise_size` is used to remove noise from the image,
-the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).
-
-To remove the gray background from the scanner, on document I use the following values:
-```yaml
-lower_hsv_color: [0, 0, 250]
-upper_hsv_color: [255, 10, 255]
-```
-On leaflet I use the following values:
-```yaml
-lower_hsv_color: [0, 20, 0]
-upper_hsv_color: [255, 255, 255]
-```
-"""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["original"].copy()
-
-context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}))}
-
-hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
-print("Hue (h)")
-context.display_image(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB))
-print("Saturation (s)")
-context.display_image(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB))
-print("Value (v)")
-context.display_image(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB))
-
-# Print the HSV value on some point of the image
-points = [
-    [10, 10],
-    [100, 100],
-]
-image = context.image.copy()
-for x, y in points:
-    print(f"Pixel: {{x}}:{{y}}, with value: {{hsv[y, x, :]}}")
-    cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
-context.display_image(image)
-
-context.init_mask()
-if context.mask is not None:
-    context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
-context.display_image(context.get_masked())
-
-images_context["auto_mask"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Display the image histogram.")  # type: ignore[no-untyped-call]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["auto_mask"].copy()
-
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
-context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
-context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
-
-process.histogram(context)"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image level correction.
-
-Some of the used values are displayed in the histogram chart."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["auto_mask"].copy()
-
-context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
-
-process.level(context)
-context.display_image(context.image)
-
-images_context["level"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image level cut correction.
-
-Some of the used values are displayed in the histogram chart."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["level"].copy()
-
-print(f"Use cut_white: {context.config["args"]["cut_white"]}")
-print(f"Use cut_black: {context.config["args"]["cut_black"]}")
-
-process.color_cut(context)
-context.display_image(context.image)
-
-images_context["color_cut"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Cut some part of the image by auto removing a part of the image.
-
-The needed of this step is to remove some part of the image that represent the part that is out of the page, witch is gray with some scanner.
-
-The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
-the `de_noise_size` is used to remove noise from the image,
-the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["color_cut"].copy()
-
-context.config["args"]["auto_cut"] = {_pretty_repr(context.config["args"].get("auto_cut", {}))}
-
-# Print in HSV some point of the image
-hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
-print("Pixel 10:10: ", hsv[10, 10])
-print("Pixel 100:100: ", hsv[100, 100])
-
-process.cut(context)
-context.display_image(context.image)
-
-images_context["cut"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the image skew correction.")  # type: ignore[no-untyped-call]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["cut"].copy()
-
-context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}))}
-
-# The angle can be forced in config.images_config.<image_name>.angle.
-process.deskew(context)
-context.display_image(context.image)
-
-images_context["deskew"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image auto crop base on the image content."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["deskew"].copy()
-
-context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}))}
-
-process.docrop(context)
-context.display_image(context.image)
-
-images_context["crop"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the image sharpen correction.")  # type: ignore[no-untyped-call]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["crop"].copy()
-
-context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
-
-process.sharpen(context)
-context.display_image(context.image)
-
-images_context["sharpen"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the image dither correction.")  # type: ignore[no-untyped-call]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["sharpen"].copy()
-
-context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
-
-process.dither(context)
-context.display_image(context.image)
-
-images_context["dither"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image auto rotate correction, based on the text orientation.
-
-This require Tesseract to be installed."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """context.image = images_context["dither"].copy()
-
-try:
-    process.autorotate(context)
-    context.display_image(context.image)
-except FileNotFoundError as e:
-    print("Tesseract not found, skipping autorotate: ", e)"""
-        )
-    )
-
-    with open(os.path.join(dest_folder, "jupyter.ipynb"), "w", encoding="utf-8") as jupyter_file:
-        nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]
-
-
 def transform(
     config: schema.Configuration,
     step: schema.Step,
@@ -1830,9 +1145,9 @@ def transform(
         if status is not None:
             status.set_status(config_file_name, -1, f"Transform ({os.path.basename(image)})", write=True)
         image_name = f"{os.path.basename(image).rsplit('.')[0]}.png"
-        context = Context(config, step, config_file_name, root_folder, image_name)
+        context = process_utils.Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
-            raise ScanToPaperlessException("Image name is required")
+            raise scan_to_paperless.ScanToPaperlessException("Image name is required")
         context.image = cv2.imread(os.path.join(root_folder, image))
         assert context.image is not None
         images_config = context.config.setdefault("images_config", {})
@@ -2013,7 +1328,9 @@ def transform(
             images.append(img2)
         process_count = context.process_count
 
-    _create_jupyter_notebook(root_folder, context, step)
+    from scan_to_paperless import jupyter  # pylint: disable=import-outside-toplevel
+
+    jupyter.create_transform_notebook(root_folder, context, step)
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
 
@@ -2123,7 +1440,9 @@ def _save_progress(root_folder: Optional[str], count: int, name: str, image_name
         print(exception)
 
 
-def save(context: Context, root_folder: str, image: str, folder: str, force: bool = False) -> str:
+def save(
+    context: process_utils.Context, root_folder: str, image: str, folder: str, force: bool = False
+) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
 
     if force or context.is_progress():
@@ -2167,7 +1486,7 @@ def split(
                     nb_horizontal += 1
 
             if nb_vertical * nb_horizontal != len(assisted_split["destinations"]):
-                raise ScanToPaperlessException(
+                raise scan_to_paperless.ScanToPaperlessException(
                     f"Wrong number of destinations ({len(assisted_split['destinations'])}), "
                     f"vertical: {nb_horizontal}, height: {nb_vertical}, image: '{assisted_split['source']}'"
                 )
@@ -2182,7 +1501,7 @@ def split(
     transformed_images = []
     for assisted_split in config["assisted_split"]:
         image = assisted_split["source"]
-        context = Context(config, step)
+        context = process_utils.Context(config, step)
         width, height = (
             int(e) for e in output(CONVERT + [image, "-format", "%w %h", "info:-"]).strip().split(" ")
         )
@@ -2266,7 +1585,7 @@ def split(
         items: list[Item] = append[page_number]
         vertical = len(horizontal_limits) == 0
         if not vertical and len(vertical_limits) != 0 and len(items) > 1:
-            raise ScanToPaperlessException(f"Mix of limit type for page '{page_number}'")
+            raise scan_to_paperless.ScanToPaperlessException(f"Mix of limit type for page '{page_number}'")
 
         with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
             call(
@@ -2454,7 +1773,7 @@ def finalize(
                 data = {"title": title}
                 response = requests.post(url, headers=headers, data=data, files=files, timeout=120)
                 if not response.ok:
-                    raise ScanToPaperlessException(
+                    raise scan_to_paperless.ScanToPaperlessException(
                         f"Failed ({response.status_code}) upload to "
                         f"'{url}' with token '{token}'\n{response.text}"
                     )

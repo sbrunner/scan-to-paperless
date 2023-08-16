@@ -23,6 +23,10 @@ else:
 CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILENAME)
 
 
+class ScanToPaperlessException(Exception):
+    """Base exception for this module."""
+
+
 def get_config(config_filename: str) -> schema.Configuration:
     """Get the configuration."""
     if os.path.exists(config_filename):
