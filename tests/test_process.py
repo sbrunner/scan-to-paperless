@@ -5,13 +5,15 @@ import shutil
 import subprocess
 
 import cv2
+import nbformat
 import pikepdf
 import pytest
 import skimage.color
 import skimage.io
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
+from nbconvert.preprocessors import ExecutePreprocessor
 
-from scan_to_paperless import code, process
+from scan_to_paperless import code, process, process_utils
 
 REGENERATE = False
 
@@ -32,7 +34,7 @@ def test_find_lines():
 
 # @pytest.mark.skip(reason="for test")
 def test_find_limit_contour():
-    context = process.Context({"args": {}}, {})
+    context = process_utils.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
     contours = process.find_contours(context.image, context, "limit", {})
     limits = process.find_limit_contour(context.image, True, contours)
@@ -47,37 +49,41 @@ def test_crop():
         os.makedirs(root_folder)
     check_image(
         root_folder,
-        cv2.cvtColor(process.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "crop-1.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.crop_image(image, 0, 100, 300, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.crop_image(image, 0, 100, 300, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "crop-2.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(
+            process_utils.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB
+        ),
         os.path.join(os.path.dirname(__file__), "crop-3.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(
+            process_utils.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB
+        ),
         os.path.join(os.path.dirname(__file__), "crop-4.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.crop_image(image, 100, 200, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.crop_image(image, 100, 200, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "crop-5.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.crop_image(image, 200, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.crop_image(image, 200, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "crop-6.expected.png"),
         generate_expected_image=REGENERATE,
     )
@@ -90,40 +96,40 @@ def test_rotate():
     root_folder = "/results/rotate"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
-    image = process.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
+    image = process_utils.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
     check_image(
         root_folder,
-        cv2.cvtColor(process.rotate_image(image, 10, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.rotate_image(image, 10, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "rotate-1.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.rotate_image(image, -10, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.rotate_image(image, -10, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "rotate-2.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.rotate_image(image, 90, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.rotate_image(image, 90, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "rotate-3.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.rotate_image(image, -90, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.rotate_image(image, -90, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "rotate-4.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.rotate_image(image, 270, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.rotate_image(image, 270, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "rotate-4.expected.png"),
         generate_expected_image=REGENERATE,
     )
     check_image(
         root_folder,
-        cv2.cvtColor(process.rotate_image(image, 180, (255, 255, 255)), cv2.COLOR_BGR2RGB),
+        cv2.cvtColor(process_utils.rotate_image(image, 180, (255, 255, 255)), cv2.COLOR_BGR2RGB),
         os.path.join(os.path.dirname(__file__), "rotate-5.expected.png"),
         generate_expected_image=REGENERATE,
     )
@@ -697,7 +703,7 @@ def test_multi_code():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_tiff():
+def test_tiff_jupyter():
     init_test()
     root_folder = "/results/tiff"
     source_folder = os.path.join(root_folder, "source")
@@ -719,7 +725,12 @@ def test_tiff():
     config_file_name = os.path.join(root_folder, "config.yaml")
     step = process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
-    assert list(glob.glob(f"{root_folder}/**/*.tiff")) == ["/results/tiff/source/image-1.tiff"]
+    assert list(glob.glob(f"{root_folder}/**/*.tiff")) == [os.path.join(root_folder, "source/image-1.tiff")]
+
+    with open("/results/tiff/jupyter/jupyter.ipynb") as f:
+        nb = nbformat.read(f, as_version=4)
+    ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
+    ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
 
 
 # @pytest.mark.skip(reason="for test")
@@ -756,7 +767,7 @@ def test_tiff():
 )
 def test_auto_mask(config, name):
     init_test()
-    context = process.Context({"args": {"auto_mask": {"auto_mask": config}}}, {})
+    context = process_utils.Context({"args": {"auto_mask": {"auto_mask": config}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
     check_image(
@@ -770,7 +781,7 @@ def test_auto_mask(config, name):
 # @pytest.mark.skip(reason="for test")
 def test_auto_mask_combine():
     init_test()
-    context = process.Context({"args": {"auto_mask": {}}}, {})
+    context = process_utils.Context({"args": {"auto_mask": {}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
     context.image_name = "image.png"
@@ -786,7 +797,7 @@ def test_auto_mask_combine():
 # @pytest.mark.skip(reason="for test")
 def test_auto_cut():
     init_test()
-    context = process.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
+    context = process_utils.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.do_initial_cut()
     check_image(
@@ -800,7 +811,7 @@ def test_auto_cut():
 # @pytest.mark.skip(reason="for test")
 def test_color_cut():
     init_test()
-    context = process.Context({"args": {"cut_white": 200}}, {})
+    context = process_utils.Context({"args": {"cut_white": 200}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
     process.color_cut(context)
     check_image(
@@ -814,7 +825,7 @@ def test_color_cut():
 # @pytest.mark.skip(reason="for test")
 def test_histogram():
     init_test()
-    context = process.Context(
+    context = process_utils.Context(
         {"args": {"level": True, "min_level": 10, "max_level": 90, "cut_black": 20, "cut_white": 200}}, {}
     )
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
