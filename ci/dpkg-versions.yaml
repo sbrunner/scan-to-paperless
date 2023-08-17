@@ -48,7 +48,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/fribidi: 1.0.8-2ubuntu3.1
   ubuntu_22_04/gcc-12: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/gdbm: 1.23-1
-  ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.3
+  ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.4
   ubuntu_22_04/giflib: 5.1.9-2build2
   ubuntu_22_04/glib2.0: 2.72.4-0ubuntu2.2
   ubuntu_22_04/glibc: 2.35-0ubuntu3.1
@@ -257,7 +257,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/fribidi: 1.0.8-2ubuntu3.1
   ubuntu_22_04/gcc-12: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/gdbm: 1.23-1
-  ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.3
+  ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.4
   ubuntu_22_04/giflib: 5.1.9-2build2
   ubuntu_22_04/glib2.0: 2.72.4-0ubuntu2.2
   ubuntu_22_04/glibc: 2.35-0ubuntu3.1
