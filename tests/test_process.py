@@ -495,7 +495,7 @@ def test_credit_card_full():
             "append_credit_card": True,
             "deskew": {"num_angles": 179},
             "cut_white": 200,
-            "auto_mask": {},
+            "mask": {},
             "auto_rotate": {"enabled": False},
         },
     }
@@ -547,7 +547,7 @@ def test_empty():
     config = {
         "args": {
             "level": True,
-            "auto_mask": {},
+            "mask": {},
         }
     }
     step = {
@@ -767,7 +767,7 @@ def test_tiff_jupyter():
 )
 def test_auto_mask(config, name):
     init_test()
-    context = process_utils.Context({"args": {"auto_mask": {"auto_mask": config}}}, {})
+    context = process_utils.Context({"args": {"mask": {"auto_mask": config}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.init_mask()
     check_image(
@@ -781,7 +781,7 @@ def test_auto_mask(config, name):
 # @pytest.mark.skip(reason="for test")
 def test_auto_mask_combine():
     init_test()
-    context = process_utils.Context({"args": {"auto_mask": {}}}, {})
+    context = process_utils.Context({"args": {"mask": {}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
     context.image_name = "image.png"
@@ -797,7 +797,7 @@ def test_auto_mask_combine():
 # @pytest.mark.skip(reason="for test")
 def test_auto_cut():
     init_test()
-    context = process_utils.Context({"args": {"auto_cut": {}, "background_color": [255, 0, 0]}}, {})
+    context = process_utils.Context({"args": {"cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
     context.do_initial_cut()
     check_image(

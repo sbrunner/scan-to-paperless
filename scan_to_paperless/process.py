@@ -917,68 +917,68 @@ def _update_config(config: schema.Configuration) -> None:
     if "auto_mask" in old_config["args"] and (
         old_config["args"]["auto_mask"] is True or old_config["args"]["auto_mask"] is False
     ):
-        config["args"]["auto_mask"] = {"enabled": old_config["args"]["auto_mask"]}
+        config["args"]["mask"] = {"enabled": old_config["args"]["auto_mask"]}
     if "auto_mask" in old_config["args"] and old_config["args"]["auto_mask"] is None:
-        config["args"]["auto_mask"] = {"enabled": False}
+        config["args"]["mask"] = {"enabled": False}
     # auto_mask.lower_hsv_color => auto_mask.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "lower_hsv_color",
             old_config["args"]["auto_mask"]["lower_hsv_color"],
         )
         del old_config["args"]["auto_mask"]["lower_hsv_color"]
     # auto_mask.upper_hsv_color => auto_mask.auto_mask.upper_hsv_color
     if "upper_hsv_color" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "upper_hsv_color",
             old_config["args"]["auto_mask"]["upper_hsv_color"],
         )
         del old_config["args"]["auto_mask"]["upper_hsv_color"]
     # auto_mask.de_noise_morphology => auto_mask.auto_mask.de_noise_morphology
     if "de_noise_morphology" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "de_noise_morphology",
             old_config["args"]["auto_mask"]["de_noise_morphology"],
         )
         del old_config["args"]["auto_mask"]["de_noise_morphology"]
     # auto_mask.inverse_mask => auto_mask.auto_mask.inverse_mask
     if "inverse_mask" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "inverse_mask",
             old_config["args"]["auto_mask"]["inverse_mask"],
         )
         del old_config["args"]["auto_mask"]["inverse_mask"]
     # auto_mask.de_noise_size => auto_mask.auto_mask.de_noise_size
     if "de_noise_size" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "de_noise_size",
             old_config["args"]["auto_mask"]["de_noise_size"],
         )
         del old_config["args"]["auto_mask"]["de_noise_size"]
     # auto_mask.de_noise_level => auto_mask.auto_mask.de_noise_level
     if "de_noise_level" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "de_noise_level",
             old_config["args"]["auto_mask"]["de_noise_level"],
         )
         del old_config["args"]["auto_mask"]["de_noise_level"]
     # auto_mask.buffer_size => auto_mask.auto_mask.buffer_size
     if "buffer_size" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "buffer_size",
             old_config["args"]["auto_mask"]["buffer_size"],
         )
         del old_config["args"]["auto_mask"]["buffer_size"]
     # auto_mask.buffer_level => auto_mask.auto_mask.buffer_level
     if "buffer_level" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
             "buffer_level",
             old_config["args"]["auto_mask"]["buffer_level"],
         )
         del old_config["args"]["auto_mask"]["buffer_level"]
     # auto_mask.additional_filename => auto_mask.auto_mask.additional_filename
     if "additional_filename" in old_config["args"].get("auto_mask", {}):
-        config["args"].setdefault("auto_mask", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("mask", {}).setdefault(
             "additional_filename",
             old_config["args"]["auto_mask"]["additional_filename"],
         )
@@ -987,68 +987,68 @@ def _update_config(config: schema.Configuration) -> None:
     if "auto_cut" in old_config["args"] and (
         old_config["args"]["auto_cut"] is True or old_config["args"]["auto_cut"] is False
     ):
-        config["args"]["auto_cut"] = {"enabled": old_config["args"]["auto_cut"]}
+        config["args"]["cut"] = {"enabled": old_config["args"]["auto_cut"]}
     if "auto_cut" in old_config["args"] and old_config["args"]["auto_cut"] is None:
-        config["args"]["auto_cut"] = {"enabled": False}
+        config["args"]["cut"] = {"enabled": False}
     # auto_cut.lower_hsv_color => auto_cut.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "lower_hsv_color",
             old_config["args"]["auto_cut"]["lower_hsv_color"],
         )
         del old_config["args"]["auto_cut"]["lower_hsv_color"]
     # auto_cut.upper_hsv_color => auto_cut.auto_mask.upper_hsv_color
     if "upper_hsv_color" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "upper_hsv_color",
             old_config["args"]["auto_cut"]["upper_hsv_color"],
         )
         del old_config["args"]["auto_cut"]["upper_hsv_color"]
     # auto_cut.de_noise_morphology => auto_cut.auto_mask.de_noise_morphology
     if "de_noise_morphology" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "de_noise_morphology",
             old_config["args"]["auto_cut"]["de_noise_morphology"],
         )
         del old_config["args"]["auto_cut"]["de_noise_morphology"]
     # auto_cut.inverse_mask => auto_cut.auto_mask.inverse_mask
     if "inverse_mask" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "inverse_mask",
             old_config["args"]["auto_cut"]["inverse_mask"],
         )
         del old_config["args"]["auto_cut"]["inverse_mask"]
     # auto_cut.de_noise_size => auto_cut.auto_mask.de_noise_size
     if "de_noise_size" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "de_noise_size",
             old_config["args"]["auto_cut"]["de_noise_size"],
         )
         del old_config["args"]["auto_cut"]["de_noise_size"]
     # auto_cut.de_noise_level => auto_cut.auto_mask.de_noise_level
     if "de_noise_level" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "de_noise_level",
             old_config["args"]["auto_cut"]["de_noise_level"],
         )
         del old_config["args"]["auto_cut"]["de_noise_level"]
     # auto_cut.buffer_size => auto_cut.auto_mask.buffer_size
     if "buffer_size" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "buffer_size",
             old_config["args"]["auto_cut"]["buffer_size"],
         )
         del old_config["args"]["auto_cut"]["buffer_size"]
     # auto_cut.buffer_level => auto_cut.auto_mask.buffer_level
     if "buffer_level" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
             "buffer_level",
             old_config["args"]["auto_cut"]["buffer_level"],
         )
         del old_config["args"]["auto_cut"]["buffer_level"]
     # auto_cut.additional_filename => auto_cut.auto_mask.additional_filename
     if "additional_filename" in old_config["args"].get("auto_cut", {}):
-        config["args"].setdefault("auto_cut", {}).setdefault("auto_mask", {}).setdefault(
+        config["args"].setdefault("cut", {}).setdefault(
             "additional_filename",
             old_config["args"]["auto_cut"]["additional_filename"],
         )

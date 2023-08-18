@@ -29,6 +29,7 @@
 ## Definitions
 
 - <a id="definitions/auto_mask"></a>**`auto_mask`** _(object)_
+  - **`enabled`** _(boolean)_: Enable the auto detection of the mask. Default: `true`.
   - **`lower_hsv_color`** _(array)_: The lower color in HSV representation. Default: `[0, 0, 250]`.
     - **Items** _(integer)_
   - **`upper_hsv_color`** _(array)_: The upper color in HSV representation. Default: `[255, 10, 255]`.
@@ -39,7 +40,6 @@
   - **`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
   - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
   - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
-  - **`additional_filename`** _(string)_: An image file used to add on the mask.
 - <a id="definitions/args"></a>**`args`** _(object)_: Cannot contain additional properties.
   - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
   - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `false`.
@@ -93,12 +93,14 @@
     - **`quality`** _(integer)_: The JPEG quality. Default: `90`.
   - **`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.
     - **Items** _(integer)_
-  - **`auto_mask`** _(object)_: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Enable the auto mask. Default: `true`.
+  - **`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Enable the mask. Default: `true`.
     - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-  - **`auto_cut`** _(object)_: The auto mask configuration, the mask is used to definitively mask the source image. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Enable the auto cut. Default: `true`.
+    - **`additional_filename`** _(string)_: An image file used to add on the mask.
+  - **`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Enable the cut. Default: `true`.
     - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+    - **`additional_filename`** _(string)_: An image file used to add on the mask.
   - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
   - **`deskew`** _(object)_: The deskew configuration.
     - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.

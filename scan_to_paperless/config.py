@@ -18,24 +18,16 @@ AUTO_BASH_DEFAULT = False
 """ Default value of the field path 'Mode auto_bash' """
 
 
-AUTO_CUT_DEFAULT = {"enabled": False}
-""" Default value of the field path 'Arguments auto_cut' """
-
-
 AUTO_CUT_ENABLED_DEFAULT = True
-""" Default value of the field path 'Auto cut enabled' """
+""" Default value of the field path 'Cut operation enabled' """
+
+
+AUTO_DETECTION_ENABLED_DEFAULT = True
+""" Default value of the field path 'Auto mask enabled' """
 
 
 AUTO_LEVEL_DEFAULT = False
 """ Default value of the field path 'Arguments auto_level' """
-
-
-AUTO_MASK_ENABLED_DEFAULT = True
-""" Default value of the field path 'Auto mask operation enabled' """
-
-
-AUTO_MASK_OPERATION_DEFAULT = {"enabled": False}
-""" Default value of the field path 'Arguments auto_mask' """
 
 
 AUTO_ROTATE_ENABLED_DEFAULT = True
@@ -159,8 +151,8 @@ class Arguments(TypedDict, total=False):
       - 255
     """
 
-    auto_mask: "AutoMaskOperation"
-    auto_cut: "AutoCut"
+    mask: "MaskOperation"
+    cut: "CutOperation"
     no_remove_to_continue: bool
     """
     No REMOVE_TO_CONTINUE.
@@ -176,30 +168,17 @@ class Arguments(TypedDict, total=False):
     consume_folder: "ConsumeFolder"
 
 
-class AutoCut(TypedDict, total=False):
-    """
-    Auto cut.
-
-    The auto mask configuration, the mask is used to definitively mask the source image
-
-    default:
-      enabled: false
-    """
+class AutoMask(TypedDict, total=False):
+    """Auto mask."""
 
     enabled: bool
     """
-    Auto cut enabled.
+    Auto detection enabled.
 
-    Enable the auto cut
+    Enable the auto detection of the mask
 
     default: True
     """
-
-    auto_mask: "AutoMask"
-
-
-class AutoMask(TypedDict, total=False):
-    """Auto mask."""
 
     lower_hsv_color: list[int]
     """
@@ -279,31 +258,6 @@ class AutoMask(TypedDict, total=False):
     default: 20
     """
 
-    additional_filename: str
-    """ An image file used to add on the mask """
-
-
-class AutoMaskOperation(TypedDict, total=False):
-    """
-    Auto mask operation.
-
-    The auto mask configuration, the mask is used to mask the image on crop and skew calculation
-
-    default:
-      enabled: false
-    """
-
-    enabled: bool
-    """
-    Auto mask enabled.
-
-    Enable the auto mask
-
-    default: True
-    """
-
-    auto_mask: "AutoMask"
-
 
 class AutoRotate(TypedDict, total=False):
     """
@@ -352,6 +306,10 @@ CROP_ENABLED_DEFAULT = True
 
 CUT_BLACK_DEFAULT = 0
 """ Default value of the field path 'Arguments cut_black' """
+
+
+CUT_OPERATION_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments cut' """
 
 
 CUT_WHITE_DEFAULT = 255
@@ -540,6 +498,30 @@ class Crop(TypedDict, total=False):
     """
 
     contour: "Contour"
+
+
+class CutOperation(TypedDict, total=False):
+    """
+    Cut operation.
+
+    The cut configuration, a mask is used to definitively mask the source image
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Auto cut enabled.
+
+    Enable the cut
+
+    default: True
+    """
+
+    auto_mask: "AutoMask"
+    additional_filename: str
+    """ An image file used to add on the mask """
 
 
 DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
@@ -848,6 +830,14 @@ MARGIN_VERTICAL_DEFAULT = 6
 """ Default value of the field path 'Crop margin_vertical' """
 
 
+MASK_ENABLED_DEFAULT = True
+""" Default value of the field path 'Mask operation enabled' """
+
+
+MASK_OPERATION_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments mask' """
+
+
 MAX_LEVEL_DEFAULT = 100
 """ Default value of the field path 'Arguments max_level' """
 
@@ -871,6 +861,30 @@ MODES_DEFAULT = {
     "one": {"scanimage_arguments": ["--batch-count=1"]},
 }
 """ Default value of the field path 'Configuration modes' """
+
+
+class MaskOperation(TypedDict, total=False):
+    """
+    Mask operation.
+
+    The mask configuration, the a is used to mask the image on crop and skew calculation
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    mask enabled.
+
+    Enable the mask
+
+    default: True
+    """
+
+    auto_mask: "AutoMask"
+    additional_filename: str
+    """ An image file used to add on the mask """
 
 
 class MergeStrategies(TypedDict, total=False):
