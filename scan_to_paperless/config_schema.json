@@ -9,6 +9,12 @@
       "type": "object",
       "title": "Auto mask",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the auto detection of the mask",
+          "title": "Auto detection enabled"
+        },
         "lower_hsv_color": {
           "type": "array",
           "description": "The lower color in HSV representation",
@@ -62,10 +68,6 @@
           "description": "The threshold level used in buffer on the blurry image",
           "default": 20,
           "title": "Buffer level"
-        },
-        "additional_filename": {
-          "type": "string",
-          "description": "An image file used to add on the mask"
         }
       }
     },
@@ -402,10 +404,10 @@
           },
           "title": "Background color"
         },
-        "auto_mask": {
+        "mask": {
           "type": "object",
-          "title": "Auto mask operation",
-          "description": "The auto mask configuration, the mask is used to mask the image on crop and skew calculation",
+          "title": "Mask operation",
+          "description": "The mask configuration, the a is used to mask the image on crop and skew calculation",
           "default": {
             "enabled": false
           },
@@ -413,18 +415,22 @@
             "enabled": {
               "type": "boolean",
               "default": true,
-              "description": "Enable the auto mask",
-              "title": "Auto mask enabled"
+              "description": "Enable the mask",
+              "title": "mask enabled"
             },
             "auto_mask": {
               "$ref": "#/definitions/auto_mask"
+            },
+            "additional_filename": {
+              "type": "string",
+              "description": "An image file used to add on the mask"
             }
           }
         },
-        "auto_cut": {
+        "cut": {
           "type": "object",
-          "title": "Auto cut",
-          "description": "The auto mask configuration, the mask is used to definitively mask the source image",
+          "title": "Cut operation",
+          "description": "The cut configuration, a mask is used to definitively mask the source image",
           "default": {
             "enabled": false
           },
@@ -432,11 +438,15 @@
             "enabled": {
               "type": "boolean",
               "default": true,
-              "description": "Enable the auto cut",
+              "description": "Enable the cut",
               "title": "Auto cut enabled"
             },
             "auto_mask": {
               "$ref": "#/definitions/auto_mask"
+            },
+            "additional_filename": {
+              "type": "string",
+              "description": "An image file used to add on the mask"
             }
           }
         },

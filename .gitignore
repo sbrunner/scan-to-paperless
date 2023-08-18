@@ -1,6 +1,7 @@
 /results/
 /dist/
 __pycache__
+/.mypy_cache/
 /scan_to_paperless.egg-info/
 /tests/prof/
 /.github/changelog-generator-cache

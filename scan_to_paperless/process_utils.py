@@ -89,11 +89,23 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
         self.process_count = self.step.get("process_count", 0)
 
+    def _get_default_mask_file(self, default_file_name: str) -> str:
+        if not self.root_folder:
+            return ""
+        mask_file = os.path.join(self.root_folder, default_file_name)
+        if not os.path.exists(mask_file):
+            base_folder = os.path.dirname(self.root_folder)
+            assert base_folder
+            mask_file = os.path.join(base_folder, default_file_name)
+            if not os.path.exists(mask_file):
+                return ""
+        return mask_file
+
     def _get_mask(
         self,
         auto_mask_config: Optional[schema.AutoMask],
         config_section: str,
-        default_file_name: str,
+        mask_file: Optional[str] = None,
     ) -> Optional[NpNdarrayInt]:
         """Init the mask."""
 
@@ -151,15 +163,6 @@ class Context:  # pylint: disable=too-many-instance-attributes
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
             if self.root_folder:
-                mask_file: str = os.path.join(self.root_folder, default_file_name)
-                assert mask_file
-                if not os.path.exists(mask_file):
-                    base_folder = os.path.dirname(self.root_folder)
-                    assert base_folder
-                    mask_file = os.path.join(base_folder, default_file_name)
-                    if not os.path.exists(mask_file):
-                        mask_file = ""
-                mask_file = auto_mask_config.setdefault("additional_filename", mask_file)
                 if mask_file and os.path.exists(mask_file):
                     mask = cv2.add(
                         mask,
@@ -175,15 +178,7 @@ class Context:  # pylint: disable=too-many-instance-attributes
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 self.save_progress_images(config_section.replace("_", "-"), final_mask)
-        elif self.root_folder:
-            mask_file = os.path.join(self.root_folder, default_file_name)
-            if not os.path.exists(mask_file):
-                base_folder = os.path.dirname(self.root_folder)
-                assert base_folder
-                mask_file = os.path.join(base_folder, default_file_name)
-                if not os.path.exists(mask_file):
-                    return None
-
+        elif self.root_folder and mask_file:
             final_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
             if self.image is not None and final_mask is not None:
                 return cast(NpNdarrayInt, cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])))
@@ -192,16 +187,16 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
 
-        auto_mask_config = self.config["args"].setdefault(
-            "auto_mask", cast(schema.AutoMaskOperation, schema.AUTO_MASK_OPERATION_DEFAULT)
+        mask_config = self.config["args"].setdefault(
+            "mask", cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT)
         )
         self.mask = (
             self._get_mask(
-                auto_mask_config.setdefault("auto_mask", {}),
-                "auto_mask",
-                "mask.png",
+                mask_config.setdefault("auto_mask", {}),
+                "mask",
+                mask_config.setdefault("additional_filename", self._get_default_mask_file("mask.png")),
             )
-            if auto_mask_config.setdefault("enabled", schema.AUTO_MASK_ENABLED_DEFAULT)
+            if mask_config.setdefault("enabled", schema.MASK_ENABLED_DEFAULT)
             else None
         )
 
@@ -216,14 +211,13 @@ class Context:  # pylint: disable=too-many-instance-attributes
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
 
-        if "auto_cut" in self.config["args"]:
+        cut_config = self.config["args"].get("cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT))
+        if cut_config.get("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
             mask = self._get_mask(
-                self.config["args"]
-                .setdefault("auto_cut", cast(schema.AutoCut, schema.AUTO_CUT_DEFAULT))
-                .setdefault("auto_mask", {}),
+                cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
-                "cut.png",
+                cut_config.setdefault("additional_filename", self._get_default_mask_file("cut.png")),
             )
             self.image[mask == 0] = self.get_background_color()
 
