@@ -81,15 +81,17 @@
   </head>
   <body class="px-5 py-4">
     <h1>Scan to Paperless</h1>
-    <p><em>{{ global_status }}</em> since <script>
-    window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
-    </script></p>
-    <p>Started at: <script>
-    window.document.write(new Date('{{ start_time.isoformat() }}Z').toLocaleString());
-    </script></p>
-    <p>Generated at: <script>
-    window.document.write(new Date('{{ datetime.datetime.utcnow().replace(microsecond=0).isoformat() }}Z').toLocaleString());
-    </script></p>
+    <div class="sidebar-box">
+        <p><em>{{ global_status }}</em> since <script>
+        window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
+        </script></p>
+        <p>Started at: <script>
+        window.document.write(new Date('{{ start_time.isoformat() }}Z').toLocaleString());
+        </script></p>
+        <p>Generated at: <script>
+        window.document.write(new Date('{{ datetime.datetime.utcnow().replace(microsecond=0).isoformat() }}Z').toLocaleString());
+        </script></p>
+    <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>
 
     <h2>Jobs status</h2>
     <table data-toggle="table" summary="Status of the current jobs">
