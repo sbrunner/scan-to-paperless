@@ -181,7 +181,7 @@ upper_hsv_color: [255, 255, 255]
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["original"].copy()
 
-context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}))}
+context.config["args"]["mask"] = {_pretty_repr(context.config["args"].get("mask", {}))}
 
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
 print("Hue (h)")
@@ -207,7 +207,7 @@ if context.mask is not None:
     context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
 context.display_image(context.get_masked())
 
-images_context["auto_mask"] = context.image"""
+images_context["mask"] = context.image"""
         )
     )
 
@@ -216,7 +216,7 @@ images_context["auto_mask"] = context.image"""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["auto_mask"].copy()
+            f"""context.image = images_context["mask"].copy()
 
 context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
@@ -235,7 +235,7 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["auto_mask"].copy()
+            f"""context.image = images_context["mask"].copy()
 
 context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
 context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
@@ -284,7 +284,7 @@ the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["color_cut"].copy()
 
-context.config["args"]["auto_cut"] = {_pretty_repr(context.config["args"].get("auto_cut", {}))}
+context.config["args"]["cut"] = {_pretty_repr(context.config["args"].get("cut", {}))}
 
 # Print in HSV some point of the image
 hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
