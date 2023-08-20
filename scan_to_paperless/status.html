@@ -169,6 +169,7 @@
     <script>
 (() => {
   'use strict'
+  let reload = true;
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.documentElement.setAttribute('data-bs-theme', 'dark');
   }
@@ -176,9 +177,21 @@
   $(".sidebar-box").addClass("sidebar-close");
   window.operateDetails = {
     'click .sidebar-box': function (e, value, row, index) {
+        reload = false;
     $(e.currentTarget).removeClass("sidebar-close");
     $(e.currentTarget).addClass("sidebar-open");
   }};
+  setTimeout(()=> {
+    if (reload) {
+      window.location.reload();
+    }
+  }, 10000);
+  window.onblur = ()=> {
+    reload = false;
+  };
+  window.onfocus = ()=> {
+    window.location.reload();
+  };
 })()
     </script>
   </body>
