@@ -123,15 +123,12 @@ images_context = {{"original": context.image}}"""
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Set the values that's used by more than one step."""
-        )
+        nbformat.v4.new_markdown_cell("""Defined the used DPI.""")  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
     "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
-    "background_color": {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)},
 }}"""
         )
     )
@@ -147,11 +144,38 @@ images_context = {{"original": context.image}}"""
 # Get a part of the image to display, by default, the top of the image
 context.get_index = lambda image: np.ix_(
     np.arange(0, min(image.shape[0], 500)),
-    np.arange(0, image.shape[1]),
-    np.arange(0, image.shape[2]),
+    np.arange(0, min(image.shape[1], 999999)),
+    np.arange(0, min(image.shape[2], 999999)),
 )
 
 context.display_image(images_context["original"])"""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("""Defined the background color.""")  # type: ignore[no-untyped-call]
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.config["args"]["background_color"] = {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)}
+
+min_x = 100
+max_x = 200
+min_y = 100
+max_y = 200
+
+temp_image = images_context["original"].copy()
+sub_image = temp_image[min_x:max_x, min_y:max_y, :]
+print(f"Background color: {{repr(list(sub_image.mean(axis=(0, 1))))}}")
+
+cv2.rectangle(temp_image, [min_x, min_y, max_x, max_y], context.config["args"]["background_color"])
+marker_color = [255, 0, 0]
+cv2.line(temp_image, [min_x, min_y], [min_x ,max_x], marker_color)
+cv2.line(temp_image, [min_x, min_y], [max_x ,min_x], marker_color)
+cv2.line(temp_image, [max_x, min_y], [max_x ,max_x], marker_color)
+cv2.line(temp_image, [min_x, max_y], [max_x ,max_x], marker_color)
+
+context.display_image(temp_image)
+            """
         )
     )
 
