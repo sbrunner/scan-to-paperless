@@ -384,5 +384,31 @@ except FileNotFoundError as e:
         )
     )
 
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """When you are happy with the result set `save` to `True`, and run this step."""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """from ruamel.yaml.main import YAML
+
+save = False
+if save:
+    yaml = YAML()
+    yaml.default_flow_style = False
+
+    config_file_name = os.path.join(base_folder, "config.yaml")
+    with open(config_file_name, encoding="utf-8") as config_file:
+        config = yaml.load(config_file.read())
+    config["args"].update(context.config["args"])
+    with open(config_file_name, "w", encoding="utf-8") as config_file:
+        config = yaml.load(config_file)
+
+    for image in config["steps"][-1]["sources"]:
+        os.remove(os.path.join(base_folder, os.path.basename(image)))"""
+        )
+    )
+
     with open(os.path.join(dest_folder, "jupyter.ipynb"), "w", encoding="utf-8") as jupyter_file:
         nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]
