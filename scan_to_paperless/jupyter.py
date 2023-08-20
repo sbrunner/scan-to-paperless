@@ -157,6 +157,34 @@ context.display_image(images_context["original"])"""
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Display images and values useful for the next step."""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """hsv = cv2.cvtColor(images_context["original"].copy(), cv2.COLOR_BGR2HSV)
+print("Hue (h)")
+context.display_image(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB))
+print("Saturation (s)")
+context.display_image(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB))
+print("Value (v)")
+context.display_image(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB))
+
+# Print the HSV value on some point of the image
+points = [
+    [10, 10],
+    [100, 100],
+]
+image = context.image.copy()
+for x, y in points:
+    print(f"Pixel: {{x}}:{{y}}, with value: {{hsv[y, x, :]}}")
+    cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
+context.display_image(image)"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
             """Calculate the image mask, the mask is used to hide some part of the image when we calculate the image skew and the image auto crop (based on the content).
 
 The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
@@ -182,25 +210,6 @@ upper_hsv_color: [255, 255, 255]
             f"""context.image = images_context["original"].copy()
 
 context.config["args"]["auto_mask"] = {_pretty_repr(context.config["args"].get("auto_mask", {}))}
-
-hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
-print("Hue (h)")
-context.display_image(cv2.cvtColor(hsv[:, :, 0], cv2.COLOR_GRAY2RGB))
-print("Saturation (s)")
-context.display_image(cv2.cvtColor(hsv[:, :, 1], cv2.COLOR_GRAY2RGB))
-print("Value (v)")
-context.display_image(cv2.cvtColor(hsv[:, :, 2], cv2.COLOR_GRAY2RGB))
-
-# Print the HSV value on some point of the image
-points = [
-    [10, 10],
-    [100, 100],
-]
-image = context.image.copy()
-for x, y in points:
-    print(f"Pixel: {{x}}:{{y}}, with value: {{hsv[y, x, :]}}")
-    cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
-context.display_image(image)
 
 context.init_mask()
 if context.mask is not None:
