@@ -71,6 +71,7 @@ RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable . \
     && pip freeze --all > /requirements.txt
 
+ENV SCHEMA_BRANCH=master
 CMD ["scan-process"]
 
 FROM upstream AS tests-node-modules
@@ -128,7 +129,7 @@ COPY --from=tests-node-modules /src/node_modules ./node_modules
 COPY --from=tests-node-modules /root/.cache/puppeteer /root/.cache/puppeteer
 COPY tests/screenshot.js ./
 
-FROM base as all
+FROM base AS all
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
