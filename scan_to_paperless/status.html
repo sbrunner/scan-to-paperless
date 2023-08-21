@@ -83,6 +83,14 @@
     </style>
   </head>
   <body class="px-5 py-4">
+    <script>
+        (() => {
+          'use strict'
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+          }
+        })()
+    </script>
     <h1>Scan to Paperless</h1>
     <div class="sidebar-box status-header">
         <p><em>{{ global_status }}</em> since <script>
@@ -175,9 +183,6 @@
 (() => {
   'use strict'
   let reload = true;
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-bs-theme', 'dark');
-  }
 
   $(".status-header").on("click", function (e) {
     reload = false;
