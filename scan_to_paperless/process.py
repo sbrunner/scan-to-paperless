@@ -1851,7 +1851,7 @@ def _process(
     yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name, encoding="utf-8") as config_file:
-        config: schema.Configuration = yaml.load(config_file.read())
+        config: schema.Configuration = yaml.load(config_file)
     if config is None:
         return dirty
 
@@ -1986,7 +1986,12 @@ def main() -> None:
             yaml = YAML()
             yaml.default_flow_style = False
             with open(config_file_name, encoding="utf-8") as config_file:
-                config: schema.Configuration = yaml.load(config_file.read())
+                config: schema.Configuration = yaml.load(config_file)
+                config.yaml_set_start_comment(  # type: ignore[attr-defined]
+                    "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/"
+                    f"scan-to-paperless/{os.environ.get('SCHEMA_BRANCH', 'master')}/scan_to_paperless/"
+                    "process_schema.json\n\n"
+                )
 
             if "steps" not in config or not config["steps"]:
                 config["steps"] = [step]
