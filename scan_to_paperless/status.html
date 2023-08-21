@@ -63,6 +63,9 @@
           position: relative;
           overflow: hidden;
         }
+        .status-header.sidebar-close {
+          max-height: 2em;
+        }
         .sidebar-open .read-more {
           display: none;
         }
@@ -81,7 +84,7 @@
   </head>
   <body class="px-5 py-4">
     <h1>Scan to Paperless</h1>
-    <div class="sidebar-box">
+    <div class="sidebar-box status-header">
         <p><em>{{ global_status }}</em> since <script>
         window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
         </script></p>
@@ -176,6 +179,11 @@
     document.documentElement.setAttribute('data-bs-theme', 'dark');
   }
 
+  $(".status-header").on("click", function (e) {
+    reload = false;
+    $(e.currentTarget).removeClass("sidebar-close");
+    $(e.currentTarget).addClass("sidebar-open");
+  });
   $(".sidebar-box").addClass("sidebar-close");
   window.operateDetails = {
     'click .sidebar-box': function (e, value, row, index) {
@@ -187,7 +195,7 @@
     if (reload) {
       window.location.reload();
     }
-  }, 10000);
+  }, 60000);
   window.onblur = ()=> {
     reload = false;
   };
