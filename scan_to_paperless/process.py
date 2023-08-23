@@ -1155,10 +1155,10 @@ def transform(
         image_status = image_config.setdefault("status", {})
         assert context.image is not None
         image_status["size"] = list(context.image.shape[:2][::-1])
-        context.init_mask()
         histogram(context)
         level(context)
         color_cut(context)
+        context.init_mask()
         cut(context)
         deskew(context)
         docrop(context)
