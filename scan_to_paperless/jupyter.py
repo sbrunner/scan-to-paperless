@@ -151,6 +151,64 @@ context.get_index = lambda image: np.ix_(
 context.display_image(images_context["original"])"""
         )
     )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell("Display the image histogram.")  # type: ignore[no-untyped-call]
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.image = images_context["original"].copy()
+
+context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
+context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
+context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
+
+process.histogram(context)"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image level correction.
+
+Some of the used values are displayed in the histogram chart."""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.image = images_context["original"].copy()
+
+context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
+context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
+
+process.level(context)
+context.display_image(context.image)
+
+images_context["level"] = context.image"""
+        )
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image level cut correction.
+
+Some of the used values are displayed in the histogram chart."""
+        )
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.image = images_context["level"].copy()
+
+print(f"Use cut_white: {context.config["args"]["cut_white"]}")
+print(f"Use cut_black: {context.config["args"]["cut_black"]}")
+
+process.color_cut(context)
+context.display_image(context.image)
+
+images_context["color_cut"] = context.image"""
+        )
+    )
+
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell("""Defined the background color.""")  # type: ignore[no-untyped-call]
     )
@@ -163,7 +221,7 @@ max_x = 200
 min_y = 100
 max_y = 200
 
-temp_image = images_context["original"].copy()
+temp_image = images_context["color_cut"].copy()
 sub_image = temp_image[min_x:max_x, min_y:max_y, :]
 print(f"Background color: {{repr(list(sub_image.mean(axis=(0, 1))))}}")
 
@@ -241,63 +299,6 @@ if context.mask is not None:
 context.display_image(context.get_masked())
 
 images_context["mask"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Display the image histogram.")  # type: ignore[no-untyped-call]
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["mask"].copy()
-
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
-context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
-context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
-
-process.histogram(context)"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image level correction.
-
-Some of the used values are displayed in the histogram chart."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["mask"].copy()
-
-context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
-
-process.level(context)
-context.display_image(context.image)
-
-images_context["level"] = context.image"""
-        )
-    )
-
-    notebook["cells"].append(
-        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image level cut correction.
-
-Some of the used values are displayed in the histogram chart."""
-        )
-    )
-    notebook["cells"].append(
-        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["level"].copy()
-
-print(f"Use cut_white: {context.config["args"]["cut_white"]}")
-print(f"Use cut_black: {context.config["args"]["cut_black"]}")
-
-process.color_cut(context)
-context.display_image(context.image)
-
-images_context["color_cut"] = context.image"""
         )
     )
 
