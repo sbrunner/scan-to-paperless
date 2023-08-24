@@ -159,7 +159,7 @@ context.display_image(images_context["original"])"""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["original"].copy()
 
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
+context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("level", {}))}
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
@@ -176,12 +176,10 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["original"].copy()
+            """context.image = images_context["original"].copy()
 
-context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)}
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
-context.config["args"]["min_level"] = {context.config["args"].get("min_level", schema.MIN_LEVEL_DEFAULT)}
-context.config["args"]["max_level"] = {context.config["args"].get("max_level", schema.MAX_LEVEL_DEFAULT)}
+print("Use config:")
+print(context.config["args"]["level"])
 
 process.level(context)
 context.display_image(context.image)
@@ -199,10 +197,10 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.image = images_context["level"].copy()
+            """context.image = images_context["level"].copy()
 
-print(f"Use cut_white: {context.config["args"]["cut_white"]}")
-print(f"Use cut_black: {context.config["args"]["cut_black"]}")
+print(f'Use cut_white: {context.config["args"]["cut_white"]}')
+print(f'Use cut_black: {context.config["args"]["cut_black"]}')
 
 process.color_cut(context)
 context.display_image(context.image)

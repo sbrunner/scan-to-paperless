@@ -267,7 +267,8 @@ def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical
 
 
 def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
-    level_ = context.config["args"].setdefault("level", schema.LEVEL_DEFAULT)
+    level_config = context.config["args"].setdefault("level", {})
+    level_ = level_config.setdefault("value", schema.LEVEL_VALUE_DEFAULT)
     min_p100 = 0.0
     max_p100 = 100.0
     if level_ is True:
@@ -277,8 +278,8 @@ def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
         min_p100 = 0.0 + level_
         max_p100 = 100.0 - level_
     if level_ is not False:
-        min_p100 = context.config["args"].setdefault("min_level", min_p100)
-        max_p100 = context.config["args"].setdefault("max_level", max_p100)
+        min_p100 = level_config.setdefault("min", min_p100)
+        max_p100 = level_config.setdefault("max", max_p100)
 
     min_ = min_p100 / 100.0 * 255.0
     max_ = max_p100 / 100.0 * 255.0
@@ -369,7 +370,7 @@ def level(context: process_utils.Context) -> NpNdarrayInt:
 
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
-    if context.config["args"].setdefault("auto_level", schema.AUTO_LEVEL_DEFAULT):
+    if context.config["args"].setdefault("level", {}).setdefault("auto", schema.AUTO_LEVEL_DEFAULT):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
         return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
@@ -1121,6 +1122,21 @@ def _update_config(config: schema.Configuration) -> None:
     if "enable" in old_config["args"].get("rule", {}):
         config["args"].setdefault("rule", {}).setdefault("enabled", old_config["args"]["rule"]["enable"])
         del old_config["args"]["rule"]["enable"]
+    # level => level.value
+    if "level" in old_config["args"] and not isinstance(old_config["args"]["level"], dict):
+        config["args"]["level"] = {"value": old_config["args"]["level"]}
+    # auto_level => level.auto
+    if "auto_level" in old_config["args"]:
+        config["args"].setdefault("level", {}).setdefault("auto", old_config["args"]["auto_level"])
+        del old_config["args"]["auto_level"]
+    # min_level => level.min
+    if "min_level" in old_config["args"]:
+        config["args"].setdefault("level", {}).setdefault("min", old_config["args"]["min_level"])
+        del old_config["args"]["min_level"]
+    # max_level => level.max
+    if "max_level" in old_config["args"]:
+        config["args"].setdefault("level", {}).setdefault("max", old_config["args"]["max_level"])
+        del old_config["args"]["max_level"]
 
 
 def transform(

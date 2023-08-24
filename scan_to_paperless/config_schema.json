@@ -77,28 +77,35 @@
       "title": "Arguments",
       "properties": {
         "level": {
-          "type": ["boolean", "integer"],
-          "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%",
+          "type": "object",
           "title": "Level",
-          "default": false
-        },
-        "auto_level": {
-          "type": "boolean",
-          "description": "If no level specified, do auto level",
-          "default": false,
-          "title": "Auto level"
-        },
-        "min_level": {
-          "type": "number",
-          "description": "Min level if no level end no auto-level",
-          "default": 0,
-          "title": "Min level"
-        },
-        "max_level": {
-          "type": "number",
-          "description": "Max level if no level end no auto-level",
-          "default": 100,
-          "title": "Max level"
+          "description": "The level configuration",
+          "properties": {
+            "value": {
+              "type": ["boolean", "integer"],
+              "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%",
+              "title": "Level value",
+              "default": false
+            },
+            "auto": {
+              "type": "boolean",
+              "description": "If no level specified, do auto level",
+              "default": false,
+              "title": "Auto level"
+            },
+            "min": {
+              "type": "number",
+              "description": "Min level if no level end no auto-level",
+              "default": 0,
+              "title": "Min level"
+            },
+            "max": {
+              "type": "number",
+              "description": "Max level if no level end no auto-level",
+              "default": 100,
+              "title": "Max level"
+            }
+          }
         },
         "cut_white": {
           "type": "number",

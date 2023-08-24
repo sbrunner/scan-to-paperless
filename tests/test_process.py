@@ -273,7 +273,7 @@ def test_assisted_split_join_full():
     config = {
         "args": {
             "assisted_split": True,
-            "level": True,
+            "level": {"value": True},
             "tesseract": {"enabled": False},
             "deskew": {"num_angles": 179},
         },
@@ -353,7 +353,7 @@ def test_assisted_split_booth():
     config = {
         "args": {
             "assisted_split": True,
-            "level": False,
+            "level": {"value": False},
             "crop": {
                 "enabled": False,
             },
@@ -421,7 +421,7 @@ def test_full(progress):
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {
-        "args": {"level": 15, "cut_white": 200},
+        "args": {"level": {"value": 15}, "cut_white": 200},
         "images": [os.path.join(os.path.dirname(__file__), "all-1.png")],
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
@@ -546,7 +546,7 @@ def test_empty():
         os.makedirs(root_folder)
     config = {
         "args": {
-            "level": True,
+            "level": {"value": True},
             "mask": {},
         }
     }
@@ -826,7 +826,14 @@ def test_color_cut():
 def test_histogram():
     init_test()
     context = process_utils.Context(
-        {"args": {"level": True, "min_level": 10, "max_level": 90, "cut_black": 20, "cut_white": 200}}, {}
+        {
+            "args": {
+                "level": {"value": True, "min": 10, "max": 90},
+                "cut_black": 20,
+                "cut_white": 200,
+            }
+        },
+        {},
     )
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
     context.image_name = "histogram.png"
