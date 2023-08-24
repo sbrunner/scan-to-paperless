@@ -178,8 +178,10 @@ Some of the used values are displayed in the histogram chart."""
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["original"].copy()
 
-context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)},
-context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)},
+context.config["args"]["auto_level"] = {context.config["args"].get("auto_level", schema.AUTO_LEVEL_DEFAULT)}
+context.config["args"]["level"] = {context.config["args"].get("level", schema.LEVEL_DEFAULT)}
+context.config["args"]["min_level"] = {context.config["args"].get("min_level", schema.MIN_LEVEL_DEFAULT)}
+context.config["args"]["max_level"] = {context.config["args"].get("max_level", schema.MAX_LEVEL_DEFAULT)}
 
 process.level(context)
 context.display_image(context.image)
@@ -259,7 +261,7 @@ points = [
 ]
 image = context.image.copy()
 for x, y in points:
-    print(f"Pixel: {{x}}:{{y}}, with value: {{hsv[y, x, :]}}")
+    print(f"Pixel: {x}:{y}, with value: {hsv[y, x, :]}")
     cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
 context.display_image(image)"""
         )
