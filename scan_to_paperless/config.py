@@ -27,7 +27,7 @@ AUTO_DETECTION_ENABLED_DEFAULT = True
 
 
 AUTO_LEVEL_DEFAULT = False
-""" Default value of the field path 'Arguments auto_level' """
+""" Default value of the field path 'Level auto' """
 
 
 AUTO_ROTATE_ENABLED_DEFAULT = True
@@ -37,42 +37,7 @@ AUTO_ROTATE_ENABLED_DEFAULT = True
 class Arguments(TypedDict, total=False):
     """Arguments."""
 
-    level: Union[bool, int]
-    """
-    Level.
-
-    true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
-
-    default: False
-    """
-
-    auto_level: bool
-    """
-    Auto level.
-
-    If no level specified, do auto level
-
-    default: False
-    """
-
-    min_level: Union[int, float]
-    """
-    Min level.
-
-    Min level if no level end no auto-level
-
-    default: 0
-    """
-
-    max_level: Union[int, float]
-    """
-    Max level.
-
-    Max level if no level end no auto-level
-
-    default: 100
-    """
-
+    level: "Level"
     cut_white: Union[int, float]
     """
     Cut white.
@@ -700,8 +665,8 @@ class Jpeg(TypedDict, total=False):
     """
 
 
-LEVEL_DEFAULT = False
-""" Default value of the field path 'Arguments level' """
+LEVEL_VALUE_DEFAULT = False
+""" Default value of the field path 'Level value' """
 
 
 LINE_DETECTION_APERTURE_SIZE_DEFAULT = 3
@@ -738,6 +703,50 @@ LIST_DEFAULT = ["override"]
 
 LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
 """ Default value of the field path 'Auto mask lower_hsv_color' """
+
+
+class Level(TypedDict, total=False):
+    """
+    Level.
+
+    The level configuration
+    """
+
+    value: Union[bool, int]
+    """
+    Level value.
+
+    true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
+
+    default: False
+    """
+
+    auto: bool
+    """
+    Auto level.
+
+    If no level specified, do auto level
+
+    default: False
+    """
+
+    min: Union[int, float]
+    """
+    Min level.
+
+    Min level if no level end no auto-level
+
+    default: 0
+    """
+
+    max: Union[int, float]
+    """
+    Max level.
+
+    Max level if no level end no auto-level
+
+    default: 100
+    """
 
 
 class LimitDetection(TypedDict, total=False):
@@ -839,7 +848,7 @@ MASK_OPERATION_DEFAULT = {"enabled": False}
 
 
 MAX_LEVEL_DEFAULT = 100
-""" Default value of the field path 'Arguments max_level' """
+""" Default value of the field path 'Level max' """
 
 
 MIN_BOX_BLACK_DEFAULT = 2
@@ -851,7 +860,7 @@ MIN_BOX_SIZE_DEFAULT = {"crop": 3, "empty": 10, "limit": 10}
 
 
 MIN_LEVEL_DEFAULT = 0
-""" Default value of the field path 'Arguments min_level' """
+""" Default value of the field path 'Level min' """
 
 
 MODES_DEFAULT = {

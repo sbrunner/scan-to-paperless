@@ -41,10 +41,11 @@
   - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
   - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
 - <a id="definitions/args"></a>**`args`** _(object)_: Cannot contain additional properties.
-  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
-  - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `false`.
-  - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `0`.
-  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `100`.
+  - **`level`** _(object)_: The level configuration.
+    - **`value`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
+    - **`auto`** _(boolean)_: If no level specified, do auto level. Default: `false`.
+    - **`min`** _(number)_: Min level if no level end no auto-level. Default: `0`.
+    - **`max`** _(number)_: Max level if no level end no auto-level. Default: `100`.
   - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `255`.
   - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
   - **`crop`** _(object)_: The crop configuration.
