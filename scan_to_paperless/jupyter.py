@@ -436,7 +436,7 @@ if save:
         config = yaml.load(config_file.read())
     config["args"].update(context.config["args"])
     with open(config_file_name, "w", encoding="utf-8") as config_file:
-        config = yaml.load(config_file)
+        yaml.dump(config, config_file)
 
     for image in config["steps"][-1]["sources"]:
         os.remove(os.path.join(base_folder, os.path.basename(image)))"""
