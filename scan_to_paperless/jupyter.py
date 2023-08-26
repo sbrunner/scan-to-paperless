@@ -94,7 +94,7 @@ from scan_to_paperless import process, process_utils"""
             """import IPython
 
 jupyter_locals = IPython.extract_module_locals()[1]
-base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__']) if '' in jupyter_locals else os.getcwd())"""
+base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__']) if '__vsc_ipynb_file__' in jupyter_locals else os.getcwd())"""
         )
     )
 
