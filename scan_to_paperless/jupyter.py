@@ -176,10 +176,9 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """context.image = images_context["original"].copy()
+            f"""context.image = images_context["original"].copy()
 
-print("Use config:")
-print(context.config["args"]["level"])
+context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("level", {}))}
 
 process.level(context)
 context.display_image(context.image)
@@ -197,10 +196,10 @@ Some of the used values are displayed in the histogram chart."""
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """context.image = images_context["level"].copy()
+            f"""context.image = images_context["level"].copy()
 
-print(f'Use cut_white: {context.config["args"]["cut_white"]}')
-print(f'Use cut_black: {context.config["args"]["cut_black"]}')
+context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
+context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
 process.color_cut(context)
 context.display_image(context.image)
