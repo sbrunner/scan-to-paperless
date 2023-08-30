@@ -142,7 +142,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/nspr: 4.32-3build1
   ubuntu_22_04/nss: 3.68.2-0ubuntu1.2
   ubuntu_22_04/numactl: 2.0.14-3ubuntu2
-  ubuntu_22_04/openjdk-lts: 11.0.20+8-1ubuntu1~22.04
+  ubuntu_22_04/openjdk-lts: 11.0.20.1+1-0ubuntu1~22.04
   ubuntu_22_04/openjpeg2: 2.4.0-6
   ubuntu_22_04/openldap: 2.5.16+dfsg-0ubuntu0.22.04.1
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.9
@@ -351,7 +351,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/nspr: 4.32-3build1
   ubuntu_22_04/nss: 3.68.2-0ubuntu1.2
   ubuntu_22_04/numactl: 2.0.14-3ubuntu2
-  ubuntu_22_04/openjdk-lts: 11.0.20+8-1ubuntu1~22.04
+  ubuntu_22_04/openjdk-lts: 11.0.20.1+1-0ubuntu1~22.04
   ubuntu_22_04/openjpeg2: 2.4.0-6
   ubuntu_22_04/openldap: 2.5.16+dfsg-0ubuntu0.22.04.1
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.9
