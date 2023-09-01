@@ -71,7 +71,7 @@ pytest = "7.2.2"
 pytest-profiling = "1.7.0"
 pyroma = "4.1"
 typing-extensions = "4.4.0"
-c2cwsgiutils = { version = "5.1.6", extras = ["test_images"] }
+c2cwsgiutils = { version = "5.1.7", extras = ["test_images"] }
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
