@@ -48,7 +48,7 @@ add-codes-page = "scan_to_paperless.code:main"
 python = ">=3.9,<3.12"
 numpy = "1.25.2"
 scikit-image = "0.21.0"
-opencv-contrib-python-headless = { version = "4.8.0.74", optional = true }
+opencv-contrib-python-headless = { version = "4.8.0.76", optional = true }
 deskew = { version = "1.4.3", optional = true }
 "ruamel.yaml" = "0.17.32"
 argcomplete = "3.1.1"
@@ -99,9 +99,9 @@ pytest-profiling = "1.7.0"
 pytest-rerunfailures = "12.0"
 pyroma = "4.2"
 typing-extensions = "4.7.1"
-c2cwsgiutils = { version = "6.0.0.dev142", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.0.0.dev162", extras = ["test_images"] }
 types-requests = "2.31.0.2"
-nbconvert = "7.7.3"
+nbconvert = "7.7.4"
 ipykernel = "6.25.1"
 
 
