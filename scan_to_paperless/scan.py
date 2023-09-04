@@ -217,7 +217,9 @@ def main() -> None:
                 continue
             if "dpi" not in args_ and config["extension"] in ("tiff", "tif"):
                 with tifffile.TiffFile(os.path.join(root_folder, img)) as tiff:
-                    args_["dpi"] = tiff.pages[0].tags["XResolution"].value[0]
+                    page = tiff.pages[0]
+                    if isinstance(page, tifffile.TiffPage):
+                        args_["dpi"] = page.tags["XResolution"].value[0]
 
     print(base_folder)
     subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec
