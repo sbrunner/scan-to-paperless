@@ -38,6 +38,12 @@ class Arguments(TypedDict, total=False):
     """Arguments."""
 
     level: "Level"
+    """
+    Level.
+
+    The level configuration
+    """
+
     cut_white: Union[int, float]
     """
     Cut white.
@@ -57,6 +63,12 @@ class Arguments(TypedDict, total=False):
     """
 
     crop: "Crop"
+    """
+    Crop.
+
+    The crop configuration
+    """
+
     dpi: Union[int, float]
     """
     Dpi.
@@ -67,8 +79,32 @@ class Arguments(TypedDict, total=False):
     """
 
     sharpen: "Sharpen"
+    """
+    Sharpen.
+
+    Sharpen configuration
+
+    default:
+      enabled: false
+    """
+
     dither: "Dither"
+    """
+    Dither.
+
+    The dither configuration
+
+    default:
+      enabled: false
+    """
+
     tesseract: "Tesseract"
+    """
+    Tesseract.
+
+    The Tesseract configuration
+    """
+
     append_credit_card: bool
     """
     Append credit card.
@@ -88,7 +124,19 @@ class Arguments(TypedDict, total=False):
     """
 
     empty: "Empty"
+    """
+    Empty.
+
+    The empty page detection configuration
+    """
+
     limit_detection: "LimitDetection"
+    """
+    Limit detection.
+
+    The limit page detection configuration
+    """
+
     colors: int
     """
     Colors.
@@ -99,11 +147,59 @@ class Arguments(TypedDict, total=False):
     """
 
     optipng: "Optipng"
+    """
+    Optipng.
+
+    The optipng optimization tool configuration
+    """
+
     pngquant: "Pngquant"
+    """
+    Pngquant.
+
+    The pngquant optimization tool configuration
+
+    default:
+      enabled: false
+    """
+
     exiftool: "Exiftool"
+    """
+    Exiftool.
+
+    The exiftool optimization tool configuration
+
+    default:
+      enabled: false
+    """
+
     ps2pdf: "Ps2Pdf"
+    """
+    Ps2pdf.
+
+    The ps2pdf optimization tool configuration
+
+    default:
+      enabled: false
+    """
+
     auto_rotate: "AutoRotate"
+    """
+    Auto rotate.
+
+    The auto rotate configuration
+    """
+
     jpeg: "Jpeg"
+    """
+    Jpeg.
+
+    Convert images to JPEG configuration
+
+    default:
+      enabled: false
+    """
+
     background_color: list[int]
     """
     Background color.
@@ -117,7 +213,25 @@ class Arguments(TypedDict, total=False):
     """
 
     mask: "MaskOperation"
+    """
+    Mask operation.
+
+    The mask configuration, the a is used to mask the image on crop and skew calculation
+
+    default:
+      enabled: false
+    """
+
     cut: "CutOperation"
+    """
+    Cut operation.
+
+    The cut configuration, a mask is used to definitively mask the source image
+
+    default:
+      enabled: false
+    """
+
     no_remove_to_continue: bool
     """
     No REMOVE_TO_CONTINUE.
@@ -128,9 +242,28 @@ class Arguments(TypedDict, total=False):
     """
 
     deskew: "_ArgumentsDeskew"
+    """ The deskew configuration """
+
     rule: "Rule"
+    """
+    Rule.
+
+    Configuration of rule displayed in assisted split images
+    """
+
     rest_upload: "RestUpload"
+    """
+    REST upload.
+
+    Upload the final PDF via Paperless REST API
+    """
+
     consume_folder: "ConsumeFolder"
+    """
+    Consume folder.
+
+    Send the final PDF to Paperless using the consume folder
+    """
 
 
 class AutoMask(TypedDict, total=False):
@@ -288,6 +421,12 @@ class Configuration(TypedDict, total=False):
     """ The configuration to extends """
 
     merge_strategies: "MergeStrategies"
+    """
+    Merge strategies.
+
+    The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies
+    """
+
     scan_folder: str
     """ This should be shared with the process container in 'source'. """
 
@@ -322,6 +461,8 @@ class Configuration(TypedDict, total=False):
     """
 
     default_args: "Arguments"
+    """ Arguments. """
+
     viewer: str
     """
     Viewer.
@@ -463,6 +604,11 @@ class Crop(TypedDict, total=False):
     """
 
     contour: "Contour"
+    """
+    Contour.
+
+    The configuration used to find the contour
+    """
 
 
 class CutOperation(TypedDict, total=False):
@@ -485,6 +631,8 @@ class CutOperation(TypedDict, total=False):
     """
 
     auto_mask: "AutoMask"
+    """ Auto mask. """
+
     additional_filename: str
     """ An image file used to add on the mask """
 
@@ -594,6 +742,11 @@ class Empty(TypedDict, total=False):
     """
 
     contour: "Contour"
+    """
+    Contour.
+
+    The configuration used to find the contour
+    """
 
 
 class Exiftool(TypedDict, total=False):
@@ -712,7 +865,7 @@ class Level(TypedDict, total=False):
     The level configuration
     """
 
-    value: Union[bool, int]
+    value: "LevelValue"
     """
     Level value.
 
@@ -749,6 +902,16 @@ class Level(TypedDict, total=False):
     """
 
 
+LevelValue = Union[bool, int]
+"""
+Level value.
+
+true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
+
+default: False
+"""
+
+
 class LimitDetection(TypedDict, total=False):
     """
     Limit detection.
@@ -757,7 +920,18 @@ class LimitDetection(TypedDict, total=False):
     """
 
     contour: "Contour"
+    """
+    Contour.
+
+    The configuration used to find the contour
+    """
+
     line: "LineDetection"
+    """
+    Line detection.
+
+    The line detection used in assisted split
+    """
 
 
 class LineDetection(TypedDict, total=False):
@@ -892,6 +1066,8 @@ class MaskOperation(TypedDict, total=False):
     """
 
     auto_mask: "AutoMask"
+    """ Auto mask. """
+
     additional_filename: str
     """ An image file used to add on the mask """
 
