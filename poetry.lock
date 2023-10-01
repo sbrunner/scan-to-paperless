@@ -3783,13 +3783,13 @@ files = [
 
 [[package]]
 name = "weasyprint"
-version = "59.0"
+version = "60.1"
 description = "The Awesome Document Factory"
 optional = true
 python-versions = ">=3.7"
 files = [
-    {file = "weasyprint-59.0-py3-none-any.whl", hash = "sha256:a308d67c5e99f536b15527baaad4e91be0cf307317e0f66e8d934a0bc99bfb38"},
-    {file = "weasyprint-59.0.tar.gz", hash = "sha256:223a76636b3744eaa4ab8a2885f50cf46cf8ebb1acb99b5276d02feccf507492"},
+    {file = "weasyprint-60.1-py3-none-any.whl", hash = "sha256:55227e5e44f5f34bc9cec651329bd38d063ef7d29151d4b058d4af1ca943d4a7"},
+    {file = "weasyprint-60.1.tar.gz", hash = "sha256:56b9812280118357b0f63b1efe18199e08343d4a56a3393c1d475ab878cea26a"},
 ]
 
 [package.dependencies]
@@ -3798,7 +3798,7 @@ cssselect2 = ">=0.1"
 fonttools = {version = ">=4.0.0", extras = ["woff"]}
 html5lib = ">=1.1"
 Pillow = ">=9.1.0"
-pydyf = ">=0.6.0"
+pydyf = ">=0.8.0"
 Pyphen = ">=0.9.1"
 tinycss2 = ">=1.0.0"
 
@@ -4103,4 +4103,4 @@ process = ["Jinja2", "Pillow", "PyPDF2", "cffi", "deepmerge", "deskew", "matplot
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "edb75b4087e332d8057da2e0ad760cef072e121abe297272c292128beeefd95f"
+content-hash = "d835dd36e3a47942e99289e272426d8fc8444b16f43530fe5bfdda57abe38adc"
