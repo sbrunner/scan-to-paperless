@@ -48,17 +48,17 @@ add-codes-page = "scan_to_paperless.code:main"
 python = ">=3.9,<3.12"
 numpy = "1.26.0"
 scikit-image = "0.21.0"
-opencv-contrib-python-headless = { version = "4.8.0.76", optional = true }
+opencv-contrib-python-headless = { version = "4.8.1.78", optional = true }
 deskew = { version = "1.4.3", optional = true }
-"ruamel.yaml" = "0.17.32"
-argcomplete = "3.1.1"
-Pillow = { version = "10.0.0", optional = true }
+"ruamel.yaml" = "0.17.33"
+argcomplete = "3.1.2"
+Pillow = { version = "10.0.1", optional = true }
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
-reportlab = { version = "4.0.4", optional = true }
+reportlab = { version = "4.0.5", optional = true }
 weasyprint = { version = "60.1", optional = true }
 cffi = { version = "1.16.0", optional = true }
-pikepdf = { version = "8.4.0", optional = true }
+pikepdf = { version = "8.4.1", optional = true }
 zxing-cpp = { version = "2.1.0", optional = true }
 pyperclip = "1.8.2"
 tifffile = "2023.9.26"
@@ -94,15 +94,15 @@ process = [
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.10.2", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 prospector-profile-duplicated = "0.3.0"
-pytest = "7.4.0"
+pytest = "7.4.2"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "12.0"
 pyroma = "4.2"
 typing-extensions = "4.8.0"
-c2cwsgiutils = { version = "6.0.0.dev162", extras = ["test_images"] }
-types-requests = "2.31.0.2"
+c2cwsgiutils = { version = "6.0.4", extras = ["test_images"] }
+types-requests = "2.31.0.7"
 nbconvert = "7.8.0"
-ipykernel = "6.25.1"
+ipykernel = "6.25.2"
 
 
 [build-system]
