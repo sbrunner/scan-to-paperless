@@ -37,6 +37,12 @@
       datasourceTemplate: 'repology',
       versioningTemplate: 'loose',
     },
+    {
+      fileMatch: ['^ci/dpkg-versions\\.yaml$'],
+      matchStrings: [" *(?<depName>[^'\\s]+): '?(?<currentValue>[^'\\s/]*[0-9][^'\\s/]*)'?"],
+      datasourceTemplate: 'repology',
+      versioningTemplate: 'loose',
+    },
   ],
   packageRules: [
     /** Automerge the patch, the minor and the dev dependency */
