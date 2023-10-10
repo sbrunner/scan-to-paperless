@@ -5,9 +5,10 @@ on:
   pull_request:
     types:
       - closed
+
 jobs:
   clean:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: Clean docker hub tags
     timeout-minutes: 5
 
@@ -19,7 +20,7 @@ jobs:
       - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
-      - name: Clean docker hub tags
+      - name: Clean Docker hub tags
         run: c2cciutils-clean
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
