@@ -20,10 +20,12 @@
     automerge: true,
   },
   regexManagers: [
+    /** Do updates on pre-commit additional dependencies */
     {
       fileMatch: ['^\\.pre\\-commit\\-config\\.yaml$'],
       matchStrings: [" +- '?(?<depName>[^' @=]+)(@|==)(?<currentValue>[^' @=]+)'? # (?<datasource>.+)"],
     },
+    /** Do update on the schema present in the ci/config.yaml */
     {
       fileMatch: ['^ci/config\\.yaml$'],
       matchStrings: [
@@ -31,8 +33,9 @@
       ],
       datasourceTemplate: 'github-tags',
     },
+    /** Do update on packages update (trigger a rebuild) */
     {
-      fileMatch: ['^ci/dpkg-versions.yaml$'],
+      fileMatch: ['^ci/dpkg\\-versions\\.yaml$'],
       matchStrings: [" *(?<depName>[^'\\s]+): '?(?<currentValue>[^'\\s/]*[0-9][^'\\s/]*)'?"],
       datasourceTemplate: 'repology',
       versioningTemplate: 'loose',
@@ -45,17 +48,18 @@
     },
   ],
   packageRules: [
-    /** Automerge the patch, the minor and the dev dependency */
+    /** Auto merge the dev dependency update */
     {
       matchDepTypes: ['devDependencies'],
       automerge: true,
     },
-    /** Group the patch and the minor */
+    /** Group and auto merge the patch updates */
     {
       matchUpdateTypes: ['patch'],
       groupName: 'all patch versions',
       automerge: true,
     },
+    /** Group and auto merge the minor updates */
     {
       matchUpdateTypes: ['minor'],
       groupName: 'all minor versions',
@@ -65,7 +69,7 @@
       matchPackageNames: ['scikit-image'],
       groupName: 'scikit-image',
     },
-    /** Accept only the patch on the stabilization branches */
+    /** Accept only the patch on stabilization branches */
     {
       matchBaseBranches: ['master'],
       matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
@@ -82,11 +86,13 @@
     },
     /** Update dpkg versions at any time */
     {
-      matchPaths: ['ci/dpkg-versions.yaml'],
+      matchBaseBranches: ['master'],
+      matchPaths: ['^ci/dpkg\\-versions\\.yaml$'],
       schedule: ['at any time'],
       groupName: 'dpkg',
       automerge: true,
     },
+    /** Support the 4 parts of shellcheck-py version with a v prefix */
     {
       matchPackageNames: ['shellcheck-py/shellcheck-py'],
       versioning: 'regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$',
