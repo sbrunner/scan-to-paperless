@@ -6,8 +6,8 @@ on:
 
 jobs:
   rebuild:
-    runs-on: ubuntu-22.04
     name: Rebuild
+    runs-on: ubuntu-22.04
     timeout-minutes: 50
 
     strategy:
