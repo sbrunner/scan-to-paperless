@@ -1,0 +1,9 @@
+images:
+  - source/1.png
+steps:
+  - sources:
+      - source/1.png
+    name: transform
+  - sources:
+      - ./scan/9/1.png
+    name: split

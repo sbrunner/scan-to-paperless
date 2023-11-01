@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Scan to Paperless status</title>
+    <link
+      rel="icon"
+      type="image/svg"
+      color="lighthex"
+      href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo.svg"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="icon"
+      type="image/svg"
+      color="lighthex"
+      media="(prefers-color-scheme: dark)"
+      href="https://raw.githubusercontent.com/sbrunner/scan-to-paperless/test/logo-dark.svg"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+      integrity="sha512-oAvZuuYVzkcTc2dH5z1ZJup5OmSQ000qlfRvuoTTiyTBjwX1faoyearj8KdMq0LgsBTHMrRuMek7s+CxF8yE+w=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.22.1/bootstrap-table.min.css"
+      integrity="sha512-CcTkIsZd9q6wsVUGBewW5P1uXFcuI6mAsjEn+T+TJKLebXneMQPj1GpwU9O/dkajlHJj/40UBugBAcWN+eFo+g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+        h2, .h2 {
+            margin-top: 1.5rem;
+        }
+        body a {
+            text-decoration: none;
+        }
+        body a > code {
+            color:  var(--bs-code-color);
+        }
+
+        tr.active > td {
+          background-color: rgba(0, 0, 0, .2);
+        }
+        [data-bs-theme="dark"] tr.active > td {
+          background-color: rgba(255, 255, 255, .2);
+        }
+
+        .sidebar-close {
+          max-height: 5em;
+          position: relative;
+          overflow: hidden;
+        }
+        .status-header.sidebar-close {
+          max-height: 2em;
+        }
+        .sidebar-open .read-more {
+          display: none;
+        }
+        .sidebar-box .read-more {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          text-align: center;
+          margin: 0;
+          padding: 2.2rem 0 0 0;
+          font-size: .95em;
+          background-image: linear-gradient(to bottom, transparent, var(--bs-table-bg));
+        }
+    </style>
+  </head>
+  <body class="px-5 py-4">
+    <script>
+        (() => {
+          'use strict'
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+          }
+        })()
+    </script>
+    <h1>Scan to Paperless</h1>
+    <div class="sidebar-box status-header">
+        <p><em>{{ global_status }}</em> since <script>
+        window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
+        </script></p>
+        <p>Started at: <script>
+        window.document.write(new Date('{{ start_time.isoformat() }}Z').toLocaleString());
+        </script></p>
+        <p>Generated at: <script>
+        window.document.write(new Date('{{ datetime.datetime.utcnow().replace(microsecond=0).isoformat() }}Z').toLocaleString());
+        </script></p>
+    <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>
+
+    <h2>Jobs status</h2>
+    <table data-toggle="table" summary="Status of the current jobs">
+      <thead>
+        <tr>
+          <th data-sortable="true">Folder</th>
+          <th data-sortable="true">Status</th>
+          <th data-events="operateDetails">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name in sorted_status_key: %}
+        {% set folder = status[name] %}
+        {% set tr_attributes = ' class="active"' if name == current_folder else "" %}
+        <tr{{ tr_attributes | safe }}>
+          <td><a href="./{{ name }}" target="_blank"><code>{{ name }}</code></a>{%
+            if folder.nb_images > 0: %} ({{ folder.nb_images }} image{%
+            if folder.nb_images > 1: %}s{% endif %}){%
+            endif %}</td>
+          <td>{{ folder.status | safe }}</td>
+          <td>{{ folder.details | safe }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Waiting code scan</h2>
+    <table data-toggle="table" summary="Waiting code scan">
+      <thead>
+        <tr>
+          <th data-sortable="true">File</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name in codes: %}
+        {% set tr_attributes = ' class="active"' if name == current_folder else "" %}
+        <tr{{ tr_attributes | safe }}>
+          <td><code>{{ name }}</code></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Waiting to be consumed</h2>
+    <table data-toggle="table" summary="Waiting to be consumed">
+      <thead>
+        <tr>
+          <th data-sortable="true">File</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for name in consume: %}
+        <tr>
+          <td><code>{{ name }}</code></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+      integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"
+      integrity="sha512-X/YkDZyjTf4wyc2Vy16YGCPHwAY8rZJY+POgokZjQB2mhIRFJCckEGc6YyX9eNsPfn0PzThEuNs+uaomE5CO6A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.22.1/bootstrap-table.min.js"
+      integrity="sha512-lsdhisF0ecOfmcKWuClZj9aIMVQe8x8FuoFT2PGqNmoObSYQ2p304H4vSL45ZAX6+fLDCqtepKYzGl+kP+L9EQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+(() => {
+  'use strict'
+  let reload = true;
+
+  $(".status-header").on("click", function (e) {
+    reload = false;
+    $(e.currentTarget).removeClass("sidebar-close");
+    $(e.currentTarget).addClass("sidebar-open");
+  });
+  $(".sidebar-box").addClass("sidebar-close");
+  window.operateDetails = {
+    'click .sidebar-box': function (e, value, row, index) {
+        reload = false;
+    $(e.currentTarget).removeClass("sidebar-close");
+    $(e.currentTarget).addClass("sidebar-open");
+  }};
+  setTimeout(()=> {
+    if (reload) {
+      window.location.reload();
+    }
+  }, 60000);
+  window.onblur = ()=> {
+    reload = false;
+  };
+  window.onfocus = ()=> {
+    window.location.reload();
+  };
+})()
+    </script>
+  </body>
+</html>

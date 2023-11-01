@@ -21,10 +21,9 @@ jobs:
 
     steps:
       - run: docker system prune --all --force
-
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: env.HAS_SECRETS != 'HAS_SECRETS'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.TOKEN }}
           fetch-depth: 0
@@ -39,28 +38,27 @@ jobs:
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: "pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}\npre-commit-"
       - run: pre-commit run --all-files
-      - name: Checks
-        run: c2cciutils-checks
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SKIP: poetry-lock
+      - run: git diff && false
+        if: failure()
+
+      - name: Print environment information
+        run: c2cciutils-env
 
       - name: GitHub event
         run: echo ${GITHUB_EVENT} | python3 -m json.tool
         env:
           GITHUB_EVENT: ${{ toJson(github) }}
 
-          # the if the generated files are up to date
-      - run: make jsonschema
-      - run: git diff --quiet
-      - run: git diff
-        if: failure()
-
       - run: poetry-dynamic-versioning
 
       - run: make build
       - run: make build-tests
       - run: make prospector
-      - name: pytest
+      - run: npm install
+      - run: mkdir -p results/status
+      - name: Pytest
         run: >
           docker run --rm --env=PYTHONPATH=/opt/
           --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
@@ -69,6 +67,9 @@ jobs:
           pytest --durations=0 -vv --color=yes
           --profile --profile-svg --junitxml=/results/test-reports/junit.xml .'
       - run: sudo chmod -R go+r results || true
+        if: failure()
+      - name: Get the status images
+        run: cp tests/status/*.png results/status/
         if: failure()
       - uses: actions/upload-artifact@v3
         with:
@@ -81,11 +82,10 @@ jobs:
       - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
 
       - name: Init pypi
-        run: |
+        run: |-
           echo "[pypi]" > ~/.pypirc
           echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
           echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
-          pip install --user wheel twine
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - name: Init Git
@@ -99,7 +99,7 @@ jobs:
         if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - run: make build-all
 
@@ -109,4 +109,4 @@ jobs:
         if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN_NEW }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}

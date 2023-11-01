@@ -4,8 +4,8 @@
 
 - **`images`** _(array)_: The images.
   - **Items** _(string)_
-- **`args`**: Refer to _#/definitions/args_.
-- **`progress`** _(boolean)_: Run in progress mode. Default: `False`.
+- **`args`**: Refer to _[#/definitions/args](#definitions/args)_.
+- **`progress`** _(boolean)_: Run in progress mode. Default: `false`.
 - **`steps`** _(array)_: The carried out steps description.
   - **Items** _(object)_: Cannot contain additional properties.
     - **`name`** _(string)_: The step name.
@@ -42,81 +42,96 @@
 
 ## Definitions
 
-- **`auto_mask`** _(object)_
+- <a id="definitions/contour"></a>**`contour`** _(object)_
+  - **`min_box_size`** _(number)_: The minimum box size to find the content [mm]. Default: `{"crop": 3, "empty": 10, "limit": 10}`.
+  - **`min_box_black`** _(number)_: The minimum black in a box on content find [%]. Default: `2`.
+  - **`contour_kernel_size`** _(number)_: The block size used in a box on content find [mm]. Default: `1.5`.
+  - **`threshold_block_size`** _(number)_: The block size used in a box on threshold for content find [mm]. Default: `1.5`.
+  - **`threshold_value_c`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
+- <a id="definitions/auto_mask"></a>**`auto_mask`** _(object)_
+  - **`enabled`** _(boolean)_: Enable the auto detection of the mask. Default: `true`.
   - **`lower_hsv_color`** _(array)_: The lower color in HSV representation. Default: `[0, 0, 250]`.
     - **Items** _(integer)_
   - **`upper_hsv_color`** _(array)_: The upper color in HSV representation. Default: `[255, 10, 255]`.
     - **Items** _(integer)_
-  - **`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `True`.
-  - **`inverse_mask`** _(boolean)_: Inverse the mask. Default: `False`.
+  - **`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `true`.
+  - **`inverse_mask`** _(boolean)_: Inverse the mask. Default: `false`.
   - **`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `1000`.
   - **`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
   - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
   - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
-  - **`additional_filename`** _(string)_: An image file used to add on the mask.
-- **`args`** _(object)_
-  - **`level`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `False`.
-  - **`auto_level`** _(boolean)_: If no level specified, do auto level. Default: `False`.
-  - **`min_level`** _(number)_: Min level if no level end no auto-level. Default: `0`.
-  - **`max_level`** _(number)_: Max level if no level end no auto-level. Default: `100`.
+- <a id="definitions/args"></a>**`args`** _(object)_
+  - **`level`** _(object)_: The level configuration.
+    - **`value`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
+    - **`auto`** _(boolean)_: If no level specified, do auto level. Default: `false`.
+    - **`min`** _(number)_: Min level if no level end no auto-level. Default: `0`.
+    - **`max`** _(number)_: Max level if no level end no auto-level. Default: `100`.
   - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `255`.
   - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
-  - **`no_crop`** _(boolean)_: Don't do any crop. Default: `False`.
-  - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
-  - **`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
+  - **`crop`** _(object)_: The crop configuration.
+    - **`enabled`** _(boolean)_: Enable the crop. Default: `true`.
+    - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
+    - **`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
+    - **`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
   - **`dpi`** _(number)_: The DPI used to convert the mm to pixel. Default: `300`.
-  - **`sharpen`** _(boolean)_: Do the sharpen. Default: `False`.
-  - **`dither`** _(boolean)_: Do the dither. Default: `False`.
-  - **`tesseract`** _(boolean)_: Use tesseract to to an OCR on the document. Default: `True`.
-  - **`tesseract_lang`** _(string)_: The used language for tesseract. Default: `fra+eng`.
-  - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `False`.
-  - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `False`.
-  - **`min_box_size_crop`** _(number)_: The minimum box size to find the content on witch one we will crop [mm]. Default: `3`.
-  - **`min_box_black_crop`** _(number)_: The minimum black in a box on content find on witch one we will crop [%]. Default: `2`.
-  - **`contour_kernel_size_crop`** _(number)_: The block size used in a box on content find on witch one we will crop [mm]. Default: `1.5`.
-  - **`threshold_block_size_crop`** _(number)_: The block size used in a box on threshold for content find on witch one we will crop [mm]. Default: `1.5`.
-  - **`threshold_value_c_crop`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
-  - **`min_box_size_empty`** _(number)_: The minimum box size to find the content to determine if the page is empty [mm]. Default: `10`.
-  - **`min_box_black_empty`** _(number)_: The minimum black in a box on content find if the page is empty [%]. Default: `2`.
-  - **`contour_kernel_size_empty`** _(number)_: The block size used in a box on content find if the page is empty [mm]. Default: `1.5`.
-  - **`threshold_block_size_empty`** _(number)_: The block size used in a box on threshold for content find if the page is empty [mm]. Default: `1.5`.
-  - **`threshold_value_c_empty`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty. Default: `70`.
-  - **`min_box_size_limit`** _(number)_: The minimum box size to find the limits based on content [mm]. Default: `10`.
-  - **`min_box_black_limit`** _(number)_: The minimum black in a box on content find the limits based on content [%]. Default: `2`.
-  - **`contour_kernel_size_limit`** _(number)_: The block size used in a box on content find the limits based on content [mm]. Default: `1.5`.
-  - **`threshold_block_size_limit`** _(number)_: The block size used in a box on threshold for content find the limits based on content [mm]. Default: `1.5`.
-  - **`threshold_value_c_limit`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content. Default: `70`.
+  - **`sharpen`** _(object)_: Sharpen configuration. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Enable the sharpen. Default: `true`.
+  - **`dither`** _(object)_: The dither configuration. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Enable the dither. Default: `true`.
+  - **`tesseract`** _(object)_: The Tesseract configuration.
+    - **`enabled`** _(boolean)_: Use Tesseract to to an OCR on the document. Default: `true`.
+    - **`lang`** _(string)_: The used language for tesseract. Default: `"fra+eng"`.
+  - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `false`.
+  - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `false`.
+  - **`empty`** _(object)_: The empty page detection configuration.
+    - **`enabled`** _(boolean)_: Enable the empty page detection. Default: `true`.
+    - **`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
+  - **`limit_detection`** _(object)_: The limit page detection configuration.
+    - **`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
+    - **`line`** _(object)_: The line detection used in assisted split.
+      - **`low_threshold`** _(integer)_: The low threshold used in the Canny edge detector. Default: `0`.
+      - **`high_threshold`** _(integer)_: The high threshold used in the Canny edge detector. Default: `1000`.
+      - **`aperture_size`** _(integer)_: The aperture size used in the Canny edge detector. Default: `3`.
+      - **`rho`** _(integer)_: The rho used in the Hough transform. Default: `1`.
+      - **`threshold`** _(integer)_: The threshold used in the Hough transform. Default: `100`.
+      - **`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
+      - **`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.
   - **`colors`** _(integer)_: The number of colors in the png. Default: `0`.
-  - **`run_optipng`** _(boolean)_: Run the optipng optimizer. Default: `True`.
-  - **`run_pngquant`** _(boolean)_: Run the pngquant optimizer. Default: `False`.
-  - **`pngquant_options`** _(array)_: The pngquant options. Default: `['--force', '--speed=1', '--strip', '--quality=0-32']`.
-    - **Items** _(string)_
-  - **`run_exiftool`** _(boolean)_: Run the exiftool optimizer. Default: `False`.
-  - **`run_ps2pdf`** _(boolean)_: Run the ps2pdf optimizer (=> JPEG). Default: `False`.
-  - **`no_auto_rotate`** _(boolean)_: Run the auto rotate detected by Tesseract. Default: `False`.
-  - **`jpeg`** _(boolean)_: Convert images to JPEG. Default: `False`.
-  - **`jpeg_quality`** _(integer)_: The JPEG quality. Default: `90`.
+  - **`optipng`** _(object)_: The optipng optimization tool configuration.
+    - **`enabled`** _(boolean)_: Use the optipng optimizer. Default: `true`.
+  - **`pngquant`** _(object)_: The pngquant optimization tool configuration. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Use the pngquant optimizer. Default: `true`.
+    - **`options`** _(array)_: The pngquant options. Default: `["--force", "--speed=1", "--strip", "--quality=0-32"]`.
+      - **Items** _(string)_
+  - **`exiftool`** _(object)_: The exiftool optimization tool configuration. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Use the exiftool optimizer. Default: `true`.
+  - **`ps2pdf`** _(object)_: The ps2pdf optimization tool configuration. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Use the ps2pdf optimizer (=> JPEG). Default: `true`.
+  - **`auto_rotate`** _(object)_: The auto rotate configuration.
+    - **`enabled`** _(boolean)_: Enable the auto rotate detected by Tesseract. Default: `true`.
+  - **`jpeg`** _(object)_: Convert images to JPEG configuration. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Convert images to JPEG. Default: `true`.
+    - **`quality`** _(integer)_: The JPEG quality. Default: `90`.
   - **`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.
     - **Items** _(integer)_
-  - **`auto_mask`**: The auto mask configuration, the mask is used to mask the image on crop and skew calculation. Refer to _#/definitions/auto_mask_.
-  - **`auto_cut`**: The auto mask configuration, the mask is used to definitively mask the source image. Refer to _#/definitions/auto_mask_.
+  - **`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Enable the mask. Default: `true`.
+    - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+    - **`additional_filename`** _(string)_: An image file used to add on the mask.
+  - **`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
+    - **`enabled`** _(boolean)_: Enable the cut. Default: `true`.
+    - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+    - **`additional_filename`** _(string)_: An image file used to add on the mask.
+  - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
   - **`deskew`** _(object)_: The deskew configuration.
     - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
     - **`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `45`.
     - **`angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.
     - **`sigma`** _(number)_: Used in the `canny` function. Default: `3.0`.
     - **`num_peaks`** _(integer)_: number of peaks we ask for. Default: `20`.
-    - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `False`.
-  - **`line_detection`** _(object)_: The line detection used in assisted split.
-    - **`low_threshold`** _(integer)_: The low threshold used in the Canny edge detector. Default: `0`.
-    - **`high_threshold`** _(integer)_: The high threshold used in the Canny edge detector. Default: `1000`.
-    - **`aperture_size`** _(integer)_: The aperture size used in the Canny edge detector. Default: `3`.
-    - **`rho`** _(integer)_: The rho used in the Hough transform. Default: `1`.
-    - **`threshold`** _(integer)_: The threshold used in the Hough transform. Default: `100`.
-    - **`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
-    - **`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.
+    - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `false`.
   - **`rule`** _(object)_: Configuration of rule displayed in assisted split images.
-    - **`enable`** _(boolean)_: Default: `True`.
+    - **`enabled`** _(boolean)_: Default: `true`.
     - **`minor_graduation_space`** _(integer)_: Default: `10`.
     - **`major_graduation_space`** _(integer)_: Default: `100`.
     - **`lines_space`** _(integer)_: Default: `100`.
@@ -127,8 +142,14 @@
     - **`lines_color`** _(array)_: Default: `[0, 0, 0]`.
       - **Items** _(integer)_
     - **`lines_opacity`** _(number)_: Default: `0.2`.
-    - **`graduation_text_font_filename`** _(string)_: Default: `/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf`.
+    - **`graduation_text_font_filename`** _(string)_: Default: `"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"`.
     - **`graduation_text_font_size`** _(number)_: Default: `17`.
     - **`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
       - **Items** _(integer)_
     - **`graduation_text_margin`** _(integer)_: Default: `6`.
+  - **`rest_upload`** _(object)_: Upload the final PDF via Paperless REST API.
+    - **`enabled`** _(boolean)_: Enable the upload of the PDF via REST API. Default: `false`.
+    - **`api_url`** _(string, required)_: The URL address of the REST API, usually http://server.name/api.
+    - **`api_token`** _(string, required)_: The API token.
+  - **`consume_folder`** _(object)_: Send the final PDF to Paperless using the consume folder.
+    - **`enabled`** _(boolean)_: Enable using the consume folder. Default: `true`.

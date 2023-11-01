@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import subprocess  # nosec
 
 
 def _main() -> None:
@@ -9,12 +10,16 @@ def _main() -> None:
     with open("scan_to_paperless/process_schema.json", encoding="utf-8") as process_schema_file:
         process_schema = json.load(process_schema_file)
 
-    process_schema["definitions"]["args"]["properties"] = config_schema["definitions"]["args"]["properties"]
-    process_schema["definitions"]["auto_mask"]["properties"] = config_schema["definitions"]["auto_mask"][
-        "properties"
-    ]
+    for property in ("args", "auto_mask", "contour"):
+        process_schema["definitions"][property]["properties"] = config_schema["definitions"][property][
+            "properties"
+        ]
     with open("scan_to_paperless/process_schema.json", "w", encoding="utf-8") as process_schema_file:
         json.dump(process_schema, process_schema_file, indent=2)
+
+    subprocess.run(  # nosec
+        ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"]
+    )
 
 
 if __name__ == "__main__":

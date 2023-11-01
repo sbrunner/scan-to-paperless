@@ -1,0 +1,13 @@
+error: "'steps'"
+traceback:
+  - 'Traceback (most recent call last):'
+  - '  File "/opt/scan_to_paperless/process.py", line 1732, in _process'
+  - '    status.write()'
+  - '  File "/opt/scan_to_paperless/status.py", line 188, in write'
+  - '    self.scan()'
+  - '  File "/opt/scan_to_paperless/status.py", line 115, in scan'
+  - '    self._update_status(name)'
+  - '  File "/opt/scan_to_paperless/status.py", line 179, in _update_status'
+  - '    if len(config["steps"]) >= 1:'
+  - "KeyError: 'steps'"
+  - ''

@@ -1,13 +1,13 @@
 """Scan a new document."""
 
 import argparse
+import datetime
 import glob
 import os
-import random
 import re
 import subprocess  # nosec
 import sys
-from typing import Any, List, Optional, cast
+from typing import Any, Optional, cast
 
 import argcomplete
 import numpy as np
@@ -26,7 +26,7 @@ else:
     from scan_to_paperless import config_old as schema  # type: ignore
 
 
-def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> None:
+def call(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> None:
     """Verbose implementation of check_call."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -37,7 +37,7 @@ def call(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> Non
         sys.exit(1)
 
 
-def output(cmd: List[str], cmd2: Optional[List[str]] = None, **kwargs: Any) -> bytes:
+def output(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> bytes:
     """Verbose implementation of check_output."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -105,6 +105,12 @@ def main() -> None:
         help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
         "see requirement: https://pypi.org/project/pyperclip/",
     )
+    parser.add_argument(
+        "--no-remove-to-continue",
+        action="store_true",
+        default=False,
+        help="Don't wait for REMOVE_TO_CONTINUE's deletion before uploading to Paperless.",
+    )
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
@@ -152,17 +158,17 @@ def main() -> None:
         )
         sys.exit(1)
 
-    rand_int = str(random.randint(0, 999999))  # nosec
-    base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
+    now = datetime.datetime.now()
+    base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), now.strftime("%Y%m%d-%H%M%S"))
     while os.path.exists(base_folder):
-        rand_int = str(random.randint(0, 999999))  # nosec
-        base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), rand_int)
+        now += datetime.timedelta(seconds=1)
+        base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), now.strftime("%Y%m%d-%H%M%S"))
 
     root_folder = os.path.join(base_folder, "source")
     os.makedirs(root_folder)
 
     try:
-        scanimage: List[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
+        scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
         scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
         scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
         mode_config = config.get("modes", {}).get(args.mode, {})
@@ -211,7 +217,9 @@ def main() -> None:
                 continue
             if "dpi" not in args_ and config["extension"] in ("tiff", "tif"):
                 with tifffile.TiffFile(os.path.join(root_folder, img)) as tiff:
-                    args_["dpi"] = tiff.pages[0].tags["XResolution"].value[0]
+                    page = tiff.pages[0]
+                    if isinstance(page, tifffile.TiffPage):
+                        args_["dpi"] = page.tags["XResolution"].value[0]
 
     print(base_folder)
     subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec

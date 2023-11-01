@@ -1,8 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/c2cciutils/1.4.13/c2cciutils/schema.json
-
-checks:
-  versions: False
-  codespell: False
+# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/c2cciutils/1.6.10/c2cciutils/schema.json
 
 publish:
   docker:

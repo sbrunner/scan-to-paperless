@@ -1,8 +1,58 @@
 ci:
+  autoupdate_schedule: quarterly
   skip:
+    - copyright
+    - poetry-check
+    - poetry-lock
     - ripsecrets
+    - schema-copy
+    - jsonschema-validator
+    - jsonschema-gentypes
+    - jsonschema2md
 
 repos:
+  - repo: local
+    hooks:
+      - id: schema-copy
+        name: Copy between schemas
+        entry: ci/schema-copy
+        language: python
+        files: ^scan_to_paperless/config_schema\.json$
+        pass_filenames: false
+
+  - repo: https://github.com/sbrunner/jsonschema-validator
+    rev: 0.1.0
+    hooks:
+      - id: jsonschema-validator
+        files: |-
+          (?x)^(
+              ci/config\.yaml
+          )$
+  - repo: https://github.com/sbrunner/jsonschema2md2
+    rev: 1.0.0
+    hooks:
+      - id: jsonschema2md
+        files: schema.json
+        args:
+          - --pre-commit
+          - scan_to_paperless/config_schema.json
+          - config.md
+      - id: jsonschema2md
+        files: schema.json
+        args:
+          - --pre-commit
+          - scan_to_paperless/process_schema.json
+          - process.md
+  - repo: https://github.com/camptocamp/jsonschema-gentypes
+    rev: 2.3.0 # Use the ref you want to point at
+    hooks:
+      - id: jsonschema-gentypes
+        files: |-
+          (?x)^(
+            jsonschema-gentypes\.yaml
+            |scan_to_paperless/process_schema\.json
+            |scan_to_paperless/config_schema\.json
+          )$
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -16,27 +66,34 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: mixed-line-ending
-  - repo: https://github.com/sbrunner/pre-commit-copyright
-    rev: 0.2.3
+  - repo: https://github.com/sbrunner/hooks
+    rev: 0.5.0
     hooks:
       - id: copyright
+      - id: workflows-require-timeout
+      - id: poetry-check
+        additional_dependencies:
+          - poetry==1.6.1 # pypi
+      - id: poetry-lock
+        additional_dependencies:
+          - poetry==1.6.1 # pypi
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
     hooks:
       - id: codespell
-        exclude: |
-          (?x)^(
-            (.*/)?poetry\.lock
-          )$
+        exclude: ^(.*/)?poetry\.lock$
+        args:
+          - --ignore-words=.github/spell-ignore-words.txt
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
+    rev: v3.0.3
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@2.8.8 # npm
-          - prettier-plugin-sh@0.12.8 # npm
-          - prettier-plugin-toml@0.3.5 # npm
+          - prettier@3.0.3 # npm
+          - prettier-plugin-sh@0.13.1 # npm
+          - prettier-plugin-toml@1.0.0 # npm
           - '@prettier/plugin-xml@0.12.0' # npm
+        exclude: ^scan_to_paperless/status\.html$
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.9.0.6
     hooks:
@@ -46,41 +103,54 @@ repos:
     hooks:
       - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.21.0
+    rev: 0.27.0
     hooks:
       - id: check-github-workflows
       - id: check-renovate
         additional_dependencies:
           - pyjson5==1.6.4 # pypi
+      - id: check-github-actions
+      - id: check-jsonschema
+        name: Check GitHub Workflows set timeout-minutes
+        files: ^\.github/workflows/[^/]+$
+        types:
+          - yaml
+        args:
+          - --builtin-schema
+          - github-workflows-require-timeout
   - repo: https://github.com/sirwart/ripsecrets
     rev: v0.1.7
     hooks:
       - id: ripsecrets
-        exclude: "(^\
-          thepaperlessproject-paperless-webserver.json\
-          |thepaperlessproject-paperless-consumer.json)"
+        exclude: |-
+          (?x)(
+            ^thepaperlessproject-paperless-webserver.json
+            |thepaperlessproject-paperless-consumer.json
+          )
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.13.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - --py39-plus
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.9.1
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
       - id: isort
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.0.2
-    hooks:
-      - id: autoflake
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.2
-    hooks:
-      - id: pyupgrade
-        args:
-          - --py38-plus
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.8.4
+    rev: 1.10.2
     hooks:
       - id: prospector
         args:
           - --tool=pydocstyle
           - --die-on-tool-error
+        additional_dependencies:
+          - prospector-profile-duplicated==0.3.0 # pypi

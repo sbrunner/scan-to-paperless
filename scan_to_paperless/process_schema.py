@@ -1,15 +1,33 @@
-from typing import Dict, List, TypedDict, Union
+# Automatically generated file from a JSON schema
+# Used to correctly format the generated file
+
+
+from typing import TypedDict, Union
+
+from typing_extensions import Required
 
 APPEND_CREDIT_CARD_DEFAULT = False
-"""Default value of the field path 'Arguments append_credit_card'"""
+""" Default value of the field path 'Arguments append_credit_card' """
 
 
 ASSISTED_SPLIT_DEFAULT = False
-"""Default value of the field path 'Arguments assisted_split'"""
+""" Default value of the field path 'Arguments assisted_split' """
+
+
+AUTO_CUT_ENABLED_DEFAULT = True
+""" Default value of the field path 'Cut operation enabled' """
+
+
+AUTO_DETECTION_ENABLED_DEFAULT = True
+""" Default value of the field path 'Auto mask enabled' """
 
 
 AUTO_LEVEL_DEFAULT = False
-"""Default value of the field path 'Arguments auto_level'"""
+""" Default value of the field path 'Level auto' """
+
+
+AUTO_ROTATE_ENABLED_DEFAULT = True
+""" Default value of the field path 'Auto rotate enabled' """
 
 
 class Arguments(TypedDict, total=False):
@@ -19,40 +37,11 @@ class Arguments(TypedDict, total=False):
     Editor note: The properties of this object should be modified in the config_schema.json file
     """
 
-    level: Union[bool, int]
+    level: "Level"
     """
     Level.
 
-    true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
-
-    default: False
-    """
-
-    auto_level: bool
-    """
-    Auto level.
-
-    If no level specified, do auto level
-
-    default: False
-    """
-
-    min_level: Union[int, float]
-    """
-    Min level.
-
-    Min level if no level end no auto-level
-
-    default: 0
-    """
-
-    max_level: Union[int, float]
-    """
-    Max level.
-
-    Max level if no level end no auto-level
-
-    default: 100
+    The level configuration
     """
 
     cut_white: Union[int, float]
@@ -73,31 +62,11 @@ class Arguments(TypedDict, total=False):
     default: 0
     """
 
-    no_crop: bool
+    crop: "Crop"
     """
-    No crop.
+    Crop.
 
-    Don't do any crop
-
-    default: False
-    """
-
-    margin_horizontal: Union[int, float]
-    """
-    Margin horizontal.
-
-    The horizontal margin used on auto-detect content [mm]
-
-    default: 9
-    """
-
-    margin_vertical: Union[int, float]
-    """
-    Margin vertical.
-
-    The vertical margin used on auto-detect content [mm]
-
-    default: 6
+    The crop configuration
     """
 
     dpi: Union[int, float]
@@ -109,40 +78,31 @@ class Arguments(TypedDict, total=False):
     default: 300
     """
 
-    sharpen: bool
+    sharpen: "Sharpen"
     """
     Sharpen.
 
-    Do the sharpen
+    Sharpen configuration
 
-    default: False
+    default:
+      enabled: false
     """
 
-    dither: bool
+    dither: "Dither"
     """
     Dither.
 
-    Do the dither
+    The dither configuration
 
-    default: False
+    default:
+      enabled: false
     """
 
-    tesseract: bool
+    tesseract: "Tesseract"
     """
     Tesseract.
 
-    Use tesseract to to an OCR on the document
-
-    default: True
-    """
-
-    tesseract_lang: str
-    """
-    Tesseract lang.
-
-    The used language for tesseract
-
-    default: fra+eng
+    The Tesseract configuration
     """
 
     append_credit_card: bool
@@ -163,139 +123,18 @@ class Arguments(TypedDict, total=False):
     default: False
     """
 
-    min_box_size_crop: Union[int, float]
+    empty: "Empty"
     """
-    Min box size crop.
+    Empty.
 
-    The minimum box size to find the content on witch one we will crop [mm]
-
-    default: 3
+    The empty page detection configuration
     """
 
-    min_box_black_crop: Union[int, float]
+    limit_detection: "LimitDetection"
     """
-    Min box black crop.
+    Limit detection.
 
-    The minimum black in a box on content find on witch one we will crop [%]
-
-    default: 2
-    """
-
-    contour_kernel_size_crop: Union[int, float]
-    """
-    Contour kernel size crop.
-
-    The block size used in a box on content find on witch one we will crop [mm]
-
-    default: 1.5
-    """
-
-    threshold_block_size_crop: Union[int, float]
-    """
-    Threshold block size crop.
-
-    The block size used in a box on threshold for content find on witch one we will crop [mm]
-
-    default: 1.5
-    """
-
-    threshold_value_c_crop: Union[int, float]
-    """
-    Threshold value c crop.
-
-    A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop
-
-    default: 70
-    """
-
-    min_box_size_empty: Union[int, float]
-    """
-    Min box size empty.
-
-    The minimum box size to find the content to determine if the page is empty [mm]
-
-    default: 10
-    """
-
-    min_box_black_empty: Union[int, float]
-    """
-    Min box black empty.
-
-    The minimum black in a box on content find if the page is empty [%]
-
-    default: 2
-    """
-
-    contour_kernel_size_empty: Union[int, float]
-    """
-    Contour kernel size empty.
-
-    The block size used in a box on content find if the page is empty [mm]
-
-    default: 1.5
-    """
-
-    threshold_block_size_empty: Union[int, float]
-    """
-    Threshold block size empty.
-
-    The block size used in a box on threshold for content find if the page is empty [mm]
-
-    default: 1.5
-    """
-
-    threshold_value_c_empty: Union[int, float]
-    """
-    Threshold value c empty.
-
-    A variable used on threshold, should be low on low contrast image, used in a box on content find if the page is empty
-
-    default: 70
-    """
-
-    min_box_size_limit: Union[int, float]
-    """
-    Min box size limit.
-
-    The minimum box size to find the limits based on content [mm]
-
-    default: 10
-    """
-
-    min_box_black_limit: Union[int, float]
-    """
-    Min box black limit.
-
-    The minimum black in a box on content find the limits based on content [%]
-
-    default: 2
-    """
-
-    contour_kernel_size_limit: Union[int, float]
-    """
-    Contour kernel size limit.
-
-    The block size used in a box on content find the limits based on content [mm]
-
-    default: 1.5
-    """
-
-    threshold_block_size_limit: Union[int, float]
-    """
-    Threshold block size limit.
-
-    The block size used in a box on threshold for content find the limits based on content [mm]
-
-    default: 1.5
-    """
-
-    threshold_value_c_limit: Union[int, float]
-    """
-    Threshold value c limit.
-
-    A variable used on threshold, should be low on low contrast image, used in a box on content find the limits based on content
-
-    default: 70
+    The limit page detection configuration
     """
 
     colors: int
@@ -307,83 +146,61 @@ class Arguments(TypedDict, total=False):
     default: 0
     """
 
-    run_optipng: bool
+    optipng: "Optipng"
     """
-    Run optipng.
+    Optipng.
 
-    Run the optipng optimizer
-
-    default: True
+    The optipng optimization tool configuration
     """
 
-    run_pngquant: bool
+    pngquant: "Pngquant"
     """
-    Run pngquant.
+    Pngquant.
 
-    Run the pngquant optimizer
-
-    default: False
-    """
-
-    pngquant_options: List[str]
-    """
-    Pngquant options.
-
-    The pngquant options
+    The pngquant optimization tool configuration
 
     default:
-      - --force
-      - --speed=1
-      - --strip
-      - --quality=0-32
+      enabled: false
     """
 
-    run_exiftool: bool
+    exiftool: "Exiftool"
     """
-    Run exiftool.
+    Exiftool.
 
-    Run the exiftool optimizer
+    The exiftool optimization tool configuration
 
-    default: False
-    """
-
-    run_ps2pdf: bool
-    """
-    Run ps2pdf.
-
-    Run the ps2pdf optimizer (=> JPEG)
-
-    default: False
+    default:
+      enabled: false
     """
 
-    no_auto_rotate: bool
+    ps2pdf: "Ps2Pdf"
     """
-    No auto rotate.
+    Ps2pdf.
 
-    Run the auto rotate detected by Tesseract
+    The ps2pdf optimization tool configuration
 
-    default: False
+    default:
+      enabled: false
     """
 
-    jpeg: bool
+    auto_rotate: "AutoRotate"
+    """
+    Auto rotate.
+
+    The auto rotate configuration
+    """
+
+    jpeg: "Jpeg"
     """
     Jpeg.
 
-    Convert images to JPEG
+    Convert images to JPEG configuration
 
-    default: False
+    default:
+      enabled: false
     """
 
-    jpeg_quality: int
-    """
-    Jpeg quality.
-
-    The JPEG quality
-
-    default: 90
-    """
-
-    background_color: List[int]
+    background_color: list[int]
     """
     Background color.
 
@@ -395,34 +212,57 @@ class Arguments(TypedDict, total=False):
       - 255
     """
 
-    auto_mask: "AutoMask"
+    mask: "MaskOperation"
     """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+    Mask operation.
+
+    The mask configuration, the a is used to mask the image on crop and skew calculation
+
+    default:
+      enabled: false
     """
 
-    auto_cut: "AutoMask"
+    cut: "CutOperation"
     """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+    Cut operation.
+
+    The cut configuration, a mask is used to definitively mask the source image
+
+    default:
+      enabled: false
+    """
+
+    no_remove_to_continue: bool
+    """
+    No REMOVE_TO_CONTINUE.
+
+    Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF.
+
+    default: False
     """
 
     deskew: "_ArgumentsDeskew"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
-    line_detection: "LineDetection"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
+    """ The deskew configuration """
 
     rule: "Rule"
     """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+    Rule.
+
+    Configuration of rule displayed in assisted split images
+    """
+
+    rest_upload: "RestUpload"
+    """
+    REST upload.
+
+    Upload the final PDF via Paperless REST API
+    """
+
+    consume_folder: "ConsumeFolder"
+    """
+    Consume folder.
+
+    Send the final PDF to Paperless using the consume folder
     """
 
 
@@ -434,28 +274,39 @@ class AssistedSplit(TypedDict, total=False):
     """
 
     source: str
-    """The source image name."""
+    """ The source image name. """
 
-    destinations: List[Union[int, str]]
-    """The destination image positions."""
+    destinations: list[Union[int, str]]
+    """ The destination image positions. """
 
     image: str
-    """The enhanced image name."""
+    """ The enhanced image name. """
 
-    limits: List["Limit"]
-    """The (proposed) limits to do the assisted split, You should keep only the right one"""
+    limits: list["Limit"]
+    """
+    Limits.
+
+    The (proposed) limits to do the assisted split, You should keep only the right one
+    """
 
 
 class AutoMask(TypedDict, total=False):
     """
     Auto mask.
 
-    The auto mask configuration, the mask is used to mask the image on crop and skew calculation
-
     Editor note: The properties of this object should be modified in the config_schema.json file
     """
 
-    lower_hsv_color: List[int]
+    enabled: bool
+    """
+    Auto detection enabled.
+
+    Enable the auto detection of the mask
+
+    default: True
+    """
+
+    lower_hsv_color: list[int]
     """
     Lower hsv color.
 
@@ -467,7 +318,7 @@ class AutoMask(TypedDict, total=False):
       - 250
     """
 
-    upper_hsv_color: List[int]
+    upper_hsv_color: list[int]
     """
     Upper hsv color.
 
@@ -533,62 +384,81 @@ class AutoMask(TypedDict, total=False):
     default: 20
     """
 
-    additional_filename: str
-    """An image file used to add on the mask"""
+
+class AutoRotate(TypedDict, total=False):
+    """
+    Auto rotate.
+
+    The auto rotate configuration
+    """
+
+    enabled: bool
+    """
+    Auto rotate enabled.
+
+    Enable the auto rotate detected by Tesseract
+
+    default: True
+    """
 
 
 BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
-"""Default value of the field path 'Arguments background_color'"""
+""" Default value of the field path 'Arguments background_color' """
 
 
 BUFFER_LEVEL_DEFAULT = 20
-"""Default value of the field path 'Auto mask buffer_level'"""
+""" Default value of the field path 'Auto mask buffer_level' """
 
 
 BUFFER_SIZE_DEFAULT = 20
-"""Default value of the field path 'Auto mask buffer_size'"""
+""" Default value of the field path 'Auto mask buffer_size' """
 
 
 COLORS_DEFAULT = 0
-"""Default value of the field path 'Arguments colors'"""
+""" Default value of the field path 'Arguments colors' """
 
 
-CONTOUR_KERNEL_SIZE_CROP_DEFAULT = 1.5
-"""Default value of the field path 'Arguments contour_kernel_size_crop'"""
+CONSUME_FOLDER_ENABLED_DEFAULT = True
+""" Default value of the field path 'Consume folder enabled' """
 
 
-CONTOUR_KERNEL_SIZE_EMPTY_DEFAULT = 1.5
-"""Default value of the field path 'Arguments contour_kernel_size_empty'"""
+CONTOUR_KERNEL_SIZE_DEFAULT = 1.5
+""" Default value of the field path 'Contour contour_kernel_size' """
 
 
-CONTOUR_KERNEL_SIZE_LIMIT_DEFAULT = 1.5
-"""Default value of the field path 'Arguments contour_kernel_size_limit'"""
+CROP_ENABLED_DEFAULT = True
+""" Default value of the field path 'Crop enabled' """
 
 
 CUT_BLACK_DEFAULT = 0
-"""Default value of the field path 'Arguments cut_black'"""
+""" Default value of the field path 'Arguments cut_black' """
+
+
+CUT_OPERATION_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments cut' """
 
 
 CUT_WHITE_DEFAULT = 255
-"""Default value of the field path 'Arguments cut_white'"""
+""" Default value of the field path 'Arguments cut_white' """
 
 
 class Configuration(TypedDict, total=False):
     """Configuration."""
 
-    images: List[str]
+    images: Required[list[str]]
     """
     The images
 
-    required
+    Required property
     """
 
-    args: "Arguments"
+    args: Required["Arguments"]
     """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+    Arguments.
 
-    required
+    Editor note: The properties of this object should be modified in the config_schema.json file
+
+    Required property
     """
 
     progress: bool
@@ -600,135 +470,469 @@ class Configuration(TypedDict, total=False):
     default: False
     """
 
-    steps: List["Step"]
-    """The carried out steps description"""
+    steps: list["Step"]
+    """ The carried out steps description """
 
-    assisted_split: List["AssistedSplit"]
-    transformed_images: List[str]
-    """The transformed image, if removed the jobs will rag again from start"""
+    assisted_split: list["AssistedSplit"]
+    transformed_images: list[str]
+    """ The transformed image, if removed the jobs will rag again from start """
 
-    intermediate_error: List["IntermediateError"]
-    """The ignored errors"""
+    intermediate_error: list["IntermediateError"]
+    """ The ignored errors """
 
-    images_config: Dict[str, "_ConfigurationImagesConfigAdditionalproperties"]
+    images_config: dict[str, "_ConfigurationImagesConfigAdditionalproperties"]
+
+
+class ConsumeFolder(TypedDict, total=False):
+    """
+    Consume folder.
+
+    Send the final PDF to Paperless using the consume folder
+    """
+
+    enabled: bool
+    """
+    Consume folder enabled.
+
+    Enable using the consume folder
+
+    default: True
+    """
+
+
+class Contour(TypedDict, total=False):
+    """
+    Contour.
+
+    Editor note: The properties of this object should be modified in the config_schema.json file
+    """
+
+    min_box_size: Union[int, float]
+    """
+    Min box size.
+
+    The minimum box size to find the content [mm]
+
+    default:
+      crop: 3
+      empty: 10
+      limit: 10
+    """
+
+    min_box_black: Union[int, float]
+    """
+    Min box black.
+
+    The minimum black in a box on content find [%]
+
+    default: 2
+    """
+
+    contour_kernel_size: Union[int, float]
+    """
+    Contour kernel size.
+
+    The block size used in a box on content find [mm]
+
+    default: 1.5
+    """
+
+    threshold_block_size: Union[int, float]
+    """
+    Threshold block size.
+
+    The block size used in a box on threshold for content find [mm]
+
+    default: 1.5
+    """
+
+    threshold_value_c: Union[int, float]
+    """
+    Threshold value c.
+
+    A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop
+
+    default: 70
+    """
+
+
+class Crop(TypedDict, total=False):
+    """
+    Crop.
+
+    The crop configuration
+    """
+
+    enabled: bool
+    """
+    Crop enabled.
+
+    Enable the crop
+
+    default: True
+    """
+
+    margin_horizontal: Union[int, float]
+    """
+    Margin horizontal.
+
+    The horizontal margin used on auto-detect content [mm]
+
+    default: 9
+    """
+
+    margin_vertical: Union[int, float]
+    """
+    Margin vertical.
+
+    The vertical margin used on auto-detect content [mm]
+
+    default: 6
+    """
+
+    contour: "Contour"
+    """
+    Contour.
+
+    Editor note: The properties of this object should be modified in the config_schema.json file
+    """
+
+
+class CutOperation(TypedDict, total=False):
+    """
+    Cut operation.
+
+    The cut configuration, a mask is used to definitively mask the source image
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Auto cut enabled.
+
+    Enable the cut
+
+    default: True
+    """
+
+    auto_mask: "AutoMask"
+    """
+    Auto mask.
+
+    Editor note: The properties of this object should be modified in the config_schema.json file
+    """
+
+    additional_filename: str
+    """ An image file used to add on the mask """
 
 
 DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
-"""Default value of the field path 'Arguments deskew angle_derivation'"""
+""" Default value of the field path 'Arguments deskew angle_derivation' """
 
 
 DESKEW_ANGLE_PM_90_DEFAULT = False
-"""Default value of the field path 'Arguments deskew angle_pm_90'"""
+""" Default value of the field path 'Arguments deskew angle_pm_90' """
 
 
 DESKEW_MAX_ANGLE_DEFAULT = 45
-"""Default value of the field path 'Arguments deskew max_angle'"""
+""" Default value of the field path 'Arguments deskew max_angle' """
 
 
 DESKEW_MIN_ANGLE_DEFAULT = -45
-"""Default value of the field path 'Arguments deskew min_angle'"""
+""" Default value of the field path 'Arguments deskew min_angle' """
 
 
 DESKEW_NUM_PEAKS_DEFAULT = 20
-"""Default value of the field path 'Arguments deskew num_peaks'"""
+""" Default value of the field path 'Arguments deskew num_peaks' """
 
 
 DESKEW_SIGMA_DEFAULT = 3.0
-"""Default value of the field path 'Arguments deskew sigma'"""
+""" Default value of the field path 'Arguments deskew sigma' """
 
 
 DE_NOISE_LEVEL_DEFAULT = 220
-"""Default value of the field path 'Auto mask de_noise_level'"""
+""" Default value of the field path 'Auto mask de_noise_level' """
 
 
 DE_NOISE_MORPHOLOGY_DEFAULT = True
-"""Default value of the field path 'Auto mask de_noise_morphology'"""
+""" Default value of the field path 'Auto mask de_noise_morphology' """
 
 
 DE_NOISE_SIZE_DEFAULT = 1000
-"""Default value of the field path 'Auto mask de_noise_size'"""
+""" Default value of the field path 'Auto mask de_noise_size' """
 
 
-DITHER_DEFAULT = False
-"""Default value of the field path 'Arguments dither'"""
+DITHER_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments dither' """
+
+
+DITHER_ENABLED_DEFAULT = True
+""" Default value of the field path 'Dither enabled' """
 
 
 DPI_DEFAULT = 300
-"""Default value of the field path 'Arguments dpi'"""
+""" Default value of the field path 'Arguments dpi' """
+
+
+class Dither(TypedDict, total=False):
+    """
+    Dither.
+
+    The dither configuration
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Dither enabled.
+
+    Enable the dither
+
+    default: True
+    """
+
+
+EMPTY_ENABLED_DEFAULT = True
+""" Default value of the field path 'Empty enabled' """
+
+
+EXIFTOOL_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments exiftool' """
+
+
+EXIFTOOL_ENABLED_DEFAULT = True
+""" Default value of the field path 'Exiftool enabled' """
+
+
+class Empty(TypedDict, total=False):
+    """
+    Empty.
+
+    The empty page detection configuration
+    """
+
+    enabled: bool
+    """
+    Empty enabled.
+
+    Enable the empty page detection
+
+    default: True
+    """
+
+    contour: "Contour"
+    """
+    Contour.
+
+    Editor note: The properties of this object should be modified in the config_schema.json file
+    """
+
+
+class Exiftool(TypedDict, total=False):
+    """
+    Exiftool.
+
+    The exiftool optimization tool configuration
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Exiftool enabled.
+
+    Use the exiftool optimizer
+
+    default: True
+    """
 
 
 INVERSE_MASK_DEFAULT = False
-"""Default value of the field path 'Auto mask inverse_mask'"""
+""" Default value of the field path 'Auto mask inverse_mask' """
 
 
 class IntermediateError(TypedDict, total=False):
     """Intermediate error."""
 
     error: str
-    traceback: List[str]
+    traceback: list[str]
 
 
-JPEG_DEFAULT = False
-"""Default value of the field path 'Arguments jpeg'"""
+JPEG_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments jpeg' """
+
+
+JPEG_ENABLED_DEFAULT = True
+""" Default value of the field path 'Jpeg enabled' """
 
 
 JPEG_QUALITY_DEFAULT = 90
-"""Default value of the field path 'Arguments jpeg_quality'"""
+""" Default value of the field path 'Jpeg quality' """
 
 
-LEVEL_DEFAULT = False
-"""Default value of the field path 'Arguments level'"""
+class Jpeg(TypedDict, total=False):
+    """
+    Jpeg.
+
+    Convert images to JPEG configuration
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Jpeg enabled.
+
+    Convert images to JPEG
+
+    default: True
+    """
+
+    quality: int
+    """
+    Jpeg quality.
+
+    The JPEG quality
+
+    default: 90
+    """
+
+
+LEVEL_VALUE_DEFAULT = False
+""" Default value of the field path 'Level value' """
 
 
 LINE_DETECTION_APERTURE_SIZE_DEFAULT = 3
-"""Default value of the field path 'Line detection aperture_size'"""
+""" Default value of the field path 'Line detection aperture_size' """
 
 
 LINE_DETECTION_HIGH_THRESHOLD_DEFAULT = 1000
-"""Default value of the field path 'Line detection high_threshold'"""
+""" Default value of the field path 'Line detection high_threshold' """
 
 
 LINE_DETECTION_LOW_THRESHOLD_DEFAULT = 0
-"""Default value of the field path 'Line detection low_threshold'"""
+""" Default value of the field path 'Line detection low_threshold' """
 
 
 LINE_DETECTION_MAX_LINE_GAP_DEFAULT = 100
-"""Default value of the field path 'Line detection max_line_gap'"""
+""" Default value of the field path 'Line detection max_line_gap' """
 
 
 LINE_DETECTION_MIN_LINE_LENGTH_DEFAULT = 50
-"""Default value of the field path 'Line detection min_line_length'"""
+""" Default value of the field path 'Line detection min_line_length' """
 
 
 LINE_DETECTION_RHO_DEFAULT = 1
-"""Default value of the field path 'Line detection rho'"""
+""" Default value of the field path 'Line detection rho' """
 
 
 LINE_DETECTION_THRESHOLD_DEFAULT = 100
-"""Default value of the field path 'Line detection threshold'"""
+""" Default value of the field path 'Line detection threshold' """
 
 
 LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
-"""Default value of the field path 'Auto mask lower_hsv_color'"""
+""" Default value of the field path 'Auto mask lower_hsv_color' """
+
+
+class Level(TypedDict, total=False):
+    """
+    Level.
+
+    The level configuration
+    """
+
+    value: "LevelValue"
+    """
+    Level value.
+
+    true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
+
+    default: False
+    """
+
+    auto: bool
+    """
+    Auto level.
+
+    If no level specified, do auto level
+
+    default: False
+    """
+
+    min: Union[int, float]
+    """
+    Min level.
+
+    Min level if no level end no auto-level
+
+    default: 0
+    """
+
+    max: Union[int, float]
+    """
+    Max level.
+
+    Max level if no level end no auto-level
+
+    default: 100
+    """
+
+
+LevelValue = Union[bool, int]
+"""
+Level value.
+
+true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%
+
+default: False
+"""
 
 
 class Limit(TypedDict, total=False):
     """Limit."""
 
     name: str
-    """The name visible on the generated image"""
+    """ The name visible on the generated image """
 
     type: str
-    """The kind of split"""
+    """ The kind of split """
 
     value: int
-    """The split position"""
+    """ The split position """
 
     vertical: bool
-    """Is vertical?"""
+    """ Is vertical? """
 
     margin: int
-    """The margin around the split, can be used to remove a fold"""
+    """ The margin around the split, can be used to remove a fold """
+
+
+class LimitDetection(TypedDict, total=False):
+    """
+    Limit detection.
+
+    The limit page detection configuration
+    """
+
+    contour: "Contour"
+    """
+    Contour.
+
+    Editor note: The properties of this object should be modified in the config_schema.json file
+    """
+
+    line: "LineDetection"
+    """
+    Line detection.
+
+    The line detection used in assisted split
+    """
 
 
 class LineDetection(TypedDict, total=False):
@@ -803,127 +1007,258 @@ class LineDetection(TypedDict, total=False):
 
 
 MARGIN_HORIZONTAL_DEFAULT = 9
-"""Default value of the field path 'Arguments margin_horizontal'"""
+""" Default value of the field path 'Crop margin_horizontal' """
 
 
 MARGIN_VERTICAL_DEFAULT = 6
-"""Default value of the field path 'Arguments margin_vertical'"""
+""" Default value of the field path 'Crop margin_vertical' """
+
+
+MASK_ENABLED_DEFAULT = True
+""" Default value of the field path 'Mask operation enabled' """
+
+
+MASK_OPERATION_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments mask' """
 
 
 MAX_LEVEL_DEFAULT = 100
-"""Default value of the field path 'Arguments max_level'"""
+""" Default value of the field path 'Level max' """
 
 
-MIN_BOX_BLACK_CROP_DEFAULT = 2
-"""Default value of the field path 'Arguments min_box_black_crop'"""
+MIN_BOX_BLACK_DEFAULT = 2
+""" Default value of the field path 'Contour min_box_black' """
 
 
-MIN_BOX_BLACK_EMPTY_DEFAULT = 2
-"""Default value of the field path 'Arguments min_box_black_empty'"""
-
-
-MIN_BOX_BLACK_LIMIT_DEFAULT = 2
-"""Default value of the field path 'Arguments min_box_black_limit'"""
-
-
-MIN_BOX_SIZE_CROP_DEFAULT = 3
-"""Default value of the field path 'Arguments min_box_size_crop'"""
-
-
-MIN_BOX_SIZE_EMPTY_DEFAULT = 10
-"""Default value of the field path 'Arguments min_box_size_empty'"""
-
-
-MIN_BOX_SIZE_LIMIT_DEFAULT = 10
-"""Default value of the field path 'Arguments min_box_size_limit'"""
+MIN_BOX_SIZE_DEFAULT = {"crop": 3, "empty": 10, "limit": 10}
+""" Default value of the field path 'Contour min_box_size' """
 
 
 MIN_LEVEL_DEFAULT = 0
-"""Default value of the field path 'Arguments min_level'"""
+""" Default value of the field path 'Level min' """
 
 
-NO_AUTO_ROTATE_DEFAULT = False
-"""Default value of the field path 'Arguments no_auto_rotate'"""
+class MaskOperation(TypedDict, total=False):
+    """
+    Mask operation.
+
+    The mask configuration, the a is used to mask the image on crop and skew calculation
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    mask enabled.
+
+    Enable the mask
+
+    default: True
+    """
+
+    auto_mask: "AutoMask"
+    """
+    Auto mask.
+
+    Editor note: The properties of this object should be modified in the config_schema.json file
+    """
+
+    additional_filename: str
+    """ An image file used to add on the mask """
 
 
-NO_CROP_DEFAULT = False
-"""Default value of the field path 'Arguments no_crop'"""
+NO_REMOVE_TO_CONTINUE_DEFAULT = False
+""" Default value of the field path 'Arguments no_remove_to_continue' """
+
+
+OPTIPNG_ENABLED_DEFAULT = True
+""" Default value of the field path 'Optipng enabled' """
+
+
+class Optipng(TypedDict, total=False):
+    """
+    Optipng.
+
+    The optipng optimization tool configuration
+    """
+
+    enabled: bool
+    """
+    Optipng enabled.
+
+    Use the optipng optimizer
+
+    default: True
+    """
+
+
+PNGQUANT_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments pngquant' """
+
+
+PNGQUANT_ENABLED_DEFAULT = True
+""" Default value of the field path 'Pngquant enabled' """
 
 
 PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
-"""Default value of the field path 'Arguments pngquant_options'"""
+""" Default value of the field path 'Pngquant options' """
 
 
 PROGRESS_DEFAULT = False
-"""Default value of the field path 'Configuration progress'"""
+""" Default value of the field path 'Configuration progress' """
+
+
+PS2PDF_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments ps2pdf' """
+
+
+PS2PDF_ENABLED_DEFAULT = True
+""" Default value of the field path 'Ps2pdf enabled' """
+
+
+class Pngquant(TypedDict, total=False):
+    """
+    Pngquant.
+
+    The pngquant optimization tool configuration
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Pngquant enabled.
+
+    Use the pngquant optimizer
+
+    default: True
+    """
+
+    options: list[str]
+    """
+    Pngquant options.
+
+    The pngquant options
+
+    default:
+      - --force
+      - --speed=1
+      - --strip
+      - --quality=0-32
+    """
+
+
+class Ps2Pdf(TypedDict, total=False):
+    """
+    Ps2pdf.
+
+    The ps2pdf optimization tool configuration
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Ps2pdf enabled.
+
+    Use the ps2pdf optimizer (=> JPEG)
+
+    default: True
+    """
+
+
+REST_UPLOAD_ENABLED_DEFAULT = False
+""" Default value of the field path 'REST upload enabled' """
 
 
 RULE_ENABLE_DEFAULT = True
-"""Default value of the field path 'Rule enable'"""
+""" Default value of the field path 'Rule enabled' """
 
 
 RULE_GRADUATION_COLOR_DEFAULT = [0, 0, 0]
-"""Default value of the field path 'Rule graduation_color'"""
+""" Default value of the field path 'Rule graduation_color' """
 
 
 RULE_GRADUATION_TEXT_FONT_COLOR_DEFAULT = [0, 0, 0]
-"""Default value of the field path 'Rule graduation_text_font_color'"""
+""" Default value of the field path 'Rule graduation_text_font_color' """
 
 
 RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-"""Default value of the field path 'Rule graduation_text_font_filename'"""
+""" Default value of the field path 'Rule graduation_text_font_filename' """
 
 
 RULE_GRADUATION_TEXT_FONT_SIZE_DEFAULT = 17
-"""Default value of the field path 'Rule graduation_text_font_size'"""
+""" Default value of the field path 'Rule graduation_text_font_size' """
 
 
 RULE_GRADUATION_TEXT_MARGIN_DEFAULT = 6
-"""Default value of the field path 'Rule graduation_text_margin'"""
+""" Default value of the field path 'Rule graduation_text_margin' """
 
 
 RULE_LINES_COLOR_DEFAULT = [0, 0, 0]
-"""Default value of the field path 'Rule lines_color'"""
+""" Default value of the field path 'Rule lines_color' """
 
 
 RULE_LINES_OPACITY_DEFAULT = 0.2
-"""Default value of the field path 'Rule lines_opacity'"""
+""" Default value of the field path 'Rule lines_opacity' """
 
 
 RULE_LINES_SPACE_DEFAULT = 100
-"""Default value of the field path 'Rule lines_space'"""
+""" Default value of the field path 'Rule lines_space' """
 
 
 RULE_MAJOR_GRADUATION_SIZE_DEFAULT = 30
-"""Default value of the field path 'Rule major_graduation_size'"""
+""" Default value of the field path 'Rule major_graduation_size' """
 
 
 RULE_MAJOR_GRADUATION_SPACE_DEFAULT = 100
-"""Default value of the field path 'Rule major_graduation_space'"""
+""" Default value of the field path 'Rule major_graduation_space' """
 
 
 RULE_MINOR_GRADUATION_SIZE_DEFAULT = 10
-"""Default value of the field path 'Rule minor_graduation_size'"""
+""" Default value of the field path 'Rule minor_graduation_size' """
 
 
 RULE_MINOR_GRADUATION_SPACE_DEFAULT = 10
-"""Default value of the field path 'Rule minor_graduation_space'"""
+""" Default value of the field path 'Rule minor_graduation_space' """
 
 
-RUN_EXIFTOOL_DEFAULT = False
-"""Default value of the field path 'Arguments run_exiftool'"""
+class RestUpload(TypedDict, total=False):
+    """
+    REST upload.
 
+    Upload the final PDF via Paperless REST API
+    """
 
-RUN_OPTIPNG_DEFAULT = True
-"""Default value of the field path 'Arguments run_optipng'"""
+    enabled: bool
+    """
+    REST upload enabled.
 
+    Enable the upload of the PDF via REST API
 
-RUN_PNGQUANT_DEFAULT = False
-"""Default value of the field path 'Arguments run_pngquant'"""
+    default: False
+    """
 
+    api_url: Required[str]
+    """
+    REST upload API url.
 
-RUN_PS2PDF_DEFAULT = False
-"""Default value of the field path 'Arguments run_ps2pdf'"""
+    The URL address of the REST API, usually http://server.name/api
+
+    Required property
+    """
+
+    api_token: Required[str]
+    """
+    REST upload API token.
+
+    The API token
+
+    Required property
+    """
 
 
 class Rule(TypedDict, total=False):
@@ -933,7 +1268,7 @@ class Rule(TypedDict, total=False):
     Configuration of rule displayed in assisted split images
     """
 
-    enable: bool
+    enabled: bool
     """
     Rule enable.
 
@@ -975,7 +1310,7 @@ class Rule(TypedDict, total=False):
     default: 30
     """
 
-    graduation_color: List[int]
+    graduation_color: list[int]
     """
     Rule graduation color.
 
@@ -985,7 +1320,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_color: List[int]
+    lines_color: list[int]
     """
     Rule lines color.
 
@@ -1016,7 +1351,7 @@ class Rule(TypedDict, total=False):
     default: 17
     """
 
-    graduation_text_font_color: List[int]
+    graduation_text_font_color: list[int]
     """
     Rule graduation text font color.
 
@@ -1034,57 +1369,91 @@ class Rule(TypedDict, total=False):
     """
 
 
-SHARPEN_DEFAULT = False
-"""Default value of the field path 'Arguments sharpen'"""
+SHARPEN_DEFAULT = {"enabled": False}
+""" Default value of the field path 'Arguments sharpen' """
+
+
+SHARPEN_ENABLED_DEFAULT = True
+""" Default value of the field path 'Sharpen enabled' """
+
+
+class Sharpen(TypedDict, total=False):
+    """
+    Sharpen.
+
+    Sharpen configuration
+
+    default:
+      enabled: false
+    """
+
+    enabled: bool
+    """
+    Sharpen enabled.
+
+    Enable the sharpen
+
+    default: True
+    """
 
 
 class Step(TypedDict, total=False):
     """Step."""
 
     name: str
-    """The step name"""
+    """ The step name """
 
-    sources: List[str]
-    """The images obtain after the current step"""
+    sources: list[str]
+    """ The images obtain after the current step """
 
     process_count: int
-    """The step number"""
+    """ The step number """
 
 
-TESSERACT_DEFAULT = True
-"""Default value of the field path 'Arguments tesseract'"""
+TESSERACT_ENABLED_DEFAULT = True
+""" Default value of the field path 'Tesseract enabled' """
 
 
 TESSERACT_LANG_DEFAULT = "fra+eng"
-"""Default value of the field path 'Arguments tesseract_lang'"""
+""" Default value of the field path 'Tesseract lang' """
 
 
-THRESHOLD_BLOCK_SIZE_CROP_DEFAULT = 1.5
-"""Default value of the field path 'Arguments threshold_block_size_crop'"""
+THRESHOLD_BLOCK_SIZE_DEFAULT = 1.5
+""" Default value of the field path 'Contour threshold_block_size' """
 
 
-THRESHOLD_BLOCK_SIZE_EMPTY_DEFAULT = 1.5
-"""Default value of the field path 'Arguments threshold_block_size_empty'"""
+THRESHOLD_VALUE_C_DEFAULT = 70
+""" Default value of the field path 'Contour threshold_value_c' """
 
 
-THRESHOLD_BLOCK_SIZE_LIMIT_DEFAULT = 1.5
-"""Default value of the field path 'Arguments threshold_block_size_limit'"""
+class Tesseract(TypedDict, total=False):
+    """
+    Tesseract.
 
+    The Tesseract configuration
+    """
 
-THRESHOLD_VALUE_C_CROP_DEFAULT = 70
-"""Default value of the field path 'Arguments threshold_value_c_crop'"""
+    enabled: bool
+    """
+    Tesseract enabled.
 
+    Use Tesseract to to an OCR on the document
 
-THRESHOLD_VALUE_C_EMPTY_DEFAULT = 70
-"""Default value of the field path 'Arguments threshold_value_c_empty'"""
+    default: True
+    """
 
+    lang: str
+    """
+    Tesseract lang.
 
-THRESHOLD_VALUE_C_LIMIT_DEFAULT = 70
-"""Default value of the field path 'Arguments threshold_value_c_limit'"""
+    The used language for tesseract
+
+    default: fra+eng
+    """
 
 
 UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
-"""Default value of the field path 'Auto mask upper_hsv_color'"""
+""" Default value of the field path 'Auto mask upper_hsv_color' """
 
 
 class _ArgumentsDeskew(TypedDict, total=False):
@@ -1147,18 +1516,14 @@ class _ArgumentsDeskew(TypedDict, total=False):
 
 class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
     angle: Union[Union[int, float], None]
-    """The used angle to deskew, can be change, restart by deleting one of the generated images"""
+    """ The used angle to deskew, can be change, restart by deleting one of the generated images """
 
     status: "_ConfigurationImagesConfigAdditionalpropertiesStatus"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=False):
     angle: Union[int, float]
-    """The measured deskew angle"""
+    """ The measured deskew angle """
 
-    size: List[Union[int, float]]
-    """The image dimensions"""
+    size: list[Union[int, float]]
+    """ The image dimensions """
