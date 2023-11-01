@@ -84,14 +84,18 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends apt-transport-https gnupg curl ca-certificates
+COPY .nvmrc /tmp
+# hadolint ignore=SC1091
 RUN . /etc/os-release \
-    && echo "deb https://deb.nodesource.com/node_18.x ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/nodesource.list \
+    && NODE_VERSION="$(cat /tmp/.nvmrc)" \
+    && echo "deb https://deb.nodesource.com/node_${NODE_VERSION}.x ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/nodesource.list \
     && curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key > /etc/apt/sources.list.d/nodesource.gpg \
     && apt-key add /etc/apt/sources.list.d/nodesource.gpg
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get install --assume-yes --no-install-recommends nodejs
+    && NODE_VERSION="$(cat /tmp/.nvmrc)" \
+    && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_VERSION}.*"
 
 COPY package.json package-lock.json ./
 
