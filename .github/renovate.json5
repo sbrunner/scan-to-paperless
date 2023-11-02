@@ -97,5 +97,11 @@
       matchPackageNames: ['shellcheck-py/shellcheck-py'],
       versioning: 'regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$',
     },
+    /** Only LTS version of Node */
+    {
+      allowedVersions: '/(0|2|4|6|8)$/',
+      matchPackageNames: ['node'],
+      enabled: false,
+    },
   ],
 }
