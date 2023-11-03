@@ -46,16 +46,16 @@ add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-numpy = "1.26.0"
+numpy = "1.26.1"
 scikit-image = "0.21.0"
 opencv-contrib-python-headless = { version = "4.8.1.78", optional = true }
 deskew = { version = "1.4.3", optional = true }
-"ruamel.yaml" = "0.17.33"
-argcomplete = "3.1.2"
+"ruamel.yaml" = "0.17.40"
+argcomplete = "3.1.4"
 Pillow = { version = "10.0.1", optional = true }
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
-reportlab = { version = "4.0.5", optional = true }
+reportlab = { version = "4.0.6", optional = true }
 weasyprint = { version = "60.1", optional = true }
 cffi = { version = "1.16.0", optional = true }
 pikepdf = { version = "8.4.1", optional = true }
@@ -63,7 +63,7 @@ zxing-cpp = { version = "2.1.0", optional = true }
 pyperclip = "1.8.2"
 tifffile = "2023.9.26"
 deepmerge = { version = "1.1.0", optional = true }
-matplotlib = { version = "3.8.0", optional = true }
+matplotlib = { version = "3.8.1", optional = true }
 typing-extensions = { version = "4.8.0", optional = true }
 Jinja2 = { version = "3.1.2", optional = true }
 natsort = { version = "8.4.0", optional = true }
@@ -92,15 +92,15 @@ process = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-prospector = { version = "1.10.2", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+prospector = { version = "1.10.3", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 prospector-profile-duplicated = "0.3.0"
-pytest = "7.4.2"
+pytest = "7.4.3"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "12.0"
 pyroma = "4.2"
 typing-extensions = "4.8.0"
 c2cwsgiutils = { version = "6.0.4", extras = ["test_images"] }
-types-requests = "2.31.0.7"
+types-requests = "2.31.0.10"
 nbconvert = "7.8.0"
 ipykernel = "6.25.2"
 
