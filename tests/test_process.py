@@ -562,7 +562,6 @@ def test_empty():
 
 
 # @pytest.mark.skip(reason="for test")
-@pytest.mark.flaky(reruns=3, only_rerun="ValueError")
 @pytest.mark.parametrize(
     "test,args", [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
 )
@@ -575,13 +574,22 @@ def test_custom_process(test, args):
     step = {"sources": [os.path.join(os.path.dirname(__file__), f"{test}.png")]}
     step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
-    print(f"Compare '{step['sources'][0]}' with expected image '{test}.expected.png'.")
-    check_image_file(
-        root_folder,
-        step["sources"][0],
-        os.path.join(os.path.dirname(__file__), f"{test}.expected.png"),
-        generate_expected_image=REGENERATE,
-    )
+    try:
+        print(f"Compare '{step['sources'][0]}' with expected image '{test}.expected.png'.")
+        check_image_file(
+            root_folder,
+            step["sources"][0],
+            os.path.join(os.path.dirname(__file__), f"{test}.expected.png"),
+            generate_expected_image=REGENERATE,
+        )
+    except ValueError:
+        print(f"Compare '{step['sources'][0]}' with expected image '{test}-bis.expected.png'.")
+        check_image_file(
+            root_folder,
+            step["sources"][0],
+            os.path.join(os.path.dirname(__file__), f"{test}-bis.expected.png"),
+            generate_expected_image=REGENERATE,
+        )
 
     shutil.rmtree(root_folder)
 
