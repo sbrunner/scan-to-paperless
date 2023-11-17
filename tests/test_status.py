@@ -7,7 +7,7 @@ from scan_to_paperless import status
 from scan_to_paperless.scan import output
 
 
-def test_status():
+def test_status() -> None:
     os.environ["SCAN_CODES_FOLDER"] = "./codes"
     os.environ["SCAN_FINAL_FOLDER"] = "./consume"
     os.environ["SCAN_SOURCE_FOLDER"] = "./scan"
