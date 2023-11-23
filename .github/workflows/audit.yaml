@@ -28,8 +28,19 @@ jobs:
       - run: ~/.venv/bin/pip install --pre c2cciutils[audit]
       - run: python3 -m pip install --pre c2cciutils[audit]
 
-      - name: Audit
+      - name: Snyk audit
         run: ~/.venv/bin/c2cciutils-audit --branch=${{ matrix.branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Check ci/dpkg-versions.yaml file existence
+        id: dpkg-versions
+        uses: andstor/file-existence-action@v2
+        with:
+          files: ci/dpkg-versions.yaml
+      - name: Update dpkg packages versions
+        run: c2cciutils-docker-versions-update --branch=${{ matrix.branch }}
+        if: steps.dpkg-versions.outputs.files_exists == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
