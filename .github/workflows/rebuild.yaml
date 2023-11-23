@@ -15,8 +15,6 @@ jobs:
       matrix:
         branch:
           - test
-          - master
-
     steps:
       - run: docker system prune --all --force
       - uses: actions/checkout@v4
