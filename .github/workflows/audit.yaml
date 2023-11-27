@@ -39,8 +39,7 @@ jobs:
         with:
           files: ci/dpkg-versions.yaml
       - name: Update dpkg packages versions
-        run: c2cciutils-docker-versions-update --branch=${{ matrix.branch }}
+        run: ~/.venv/bin/c2cciutils-docker-versions-update --branch=${{ matrix.branch }}
         if: steps.dpkg-versions.outputs.files_exists == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
