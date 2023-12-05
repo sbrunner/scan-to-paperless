@@ -122,13 +122,13 @@ def _get_bar_codes_with_open_cv(
     if decoded_image is not None:
         try:
             detector = cv2.barcode.BarcodeDetector()  # pylint: disable=c-extension-no-member
-            retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)  # type: ignore
-            if retval:  # type: ignore[has-type]
+            retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)  # type: ignore[misc]
+            if retval:
                 if os.environ.get("PROGRESS", "FALSE") == "TRUE":
                     base_path = os.path.dirname(image)
                     filename = ".".join(os.path.basename(image).split(".")[:-1])
                     suffix = random.randint(0, 1000)  # nosec
-                    for bbox_index, bbox in enumerate(points):  # type: ignore[has-type]
+                    for bbox_index, bbox in enumerate(points):
                         dest_filename = os.path.join(
                             base_path,
                             f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
@@ -143,9 +143,9 @@ def _get_bar_codes_with_open_cv(
                             ],
                         )
                 founds: list[_FoundCode] = []
-                for index, data in enumerate(decoded_info):  # type: ignore[has-type]
-                    bbox = points[index]  # type: ignore[has-type]
-                    type_ = decoded_type[index]  # type: ignore[has-type]
+                for index, data in enumerate(decoded_info):
+                    bbox = points[index]
+                    type_ = decoded_type[index]
                     founds.append(
                         {
                             "data": data,
