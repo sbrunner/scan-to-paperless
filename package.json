@@ -2,7 +2,7 @@
   "name": "test",
   "type": "module",
   "devDependencies": {
-    "commander": "11.0.0",
-    "puppeteer": "21.1.1"
+    "commander": "11.1.0",
+    "puppeteer": "21.5.2"
   }
 }
