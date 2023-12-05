@@ -22,18 +22,18 @@ def load_image(image_name):
     return cv2.imread(os.path.join(os.path.dirname(__file__), image_name))
 
 
-def test_should_not_commit():
+def test_should_not_commit() -> None:
     assert REGENERATE is False
 
 
 # @pytest.mark.skip(reason="for test")
-def test_find_lines():
+def test_find_lines() -> None:
     lines = process.find_lines(load_image("limit-lines-1.png"), True, {})
     assert 1821 in [l[0] for l in lines]
 
 
 # @pytest.mark.skip(reason="for test")
-def test_find_limit_contour():
+def test_find_limit_contour() -> None:
     context = process_utils.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
     contours = process.find_contours(context.image, context, "limit", {})
@@ -42,7 +42,7 @@ def test_find_limit_contour():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_crop():
+def test_crop() -> None:
     image = load_image("image-1.png")
     root_folder = "/results/crop"
     if not os.path.exists(root_folder):
@@ -91,7 +91,7 @@ def test_crop():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_rotate():
+def test_rotate() -> None:
     image = load_image("image-1.png")
     root_folder = "/results/rotate"
     if not os.path.exists(root_folder):
@@ -136,7 +136,7 @@ def test_rotate():
     shutil.rmtree(root_folder)
 
 
-def init_test():
+def init_test() -> None:
     os.environ["PROGRESS"] = "FALSE"
     os.environ["TIME"] = "TRUE"
     os.environ["SCAN_CODES_FOLDER"] = "/results"
@@ -257,7 +257,7 @@ def test_assisted_split_full(type_, limit, better_value, cut_white):
 
 
 # @pytest.mark.skip(reason="for test")
-def test_assisted_split_join_full():
+def test_assisted_split_join_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/assisted-split-join-full"
@@ -338,7 +338,7 @@ def test_assisted_split_join_full():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_assisted_split_booth():
+def test_assisted_split_booth() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/assisted-split-booth"
@@ -484,7 +484,7 @@ def test_full(progress):
 
 
 # @pytest.mark.skip(reason="for test")
-def test_credit_card_full():
+def test_credit_card_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/credit-card"
@@ -538,7 +538,7 @@ def test_credit_card_full():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_empty():
+def test_empty() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/empty"
@@ -565,7 +565,7 @@ def test_empty():
 @pytest.mark.parametrize(
     "test,args", [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
 )
-def test_custom_process(test, args):
+def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
     root_folder = f"/results/600"
     if not os.path.exists(root_folder):
@@ -627,7 +627,7 @@ def test_qr_code(name):
 
 
 # @pytest.mark.skip(reason="for test")
-def test_qr_code_metadata():
+def test_qr_code_metadata() -> None:
     init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill.pdf"), "/results/qrbill.pdf")
 
@@ -681,7 +681,7 @@ EPD
 
 
 # @pytest.mark.skip(reason="for test")
-def test_multi_code():
+def test_multi_code() -> None:
     init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill-multi.pdf"), "/results/qrbill-multi.pdf")
     root_folder = f"/results/qrcode"
@@ -711,7 +711,7 @@ def test_multi_code():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_tiff_jupyter():
+def test_tiff_jupyter() -> None:
     init_test()
     root_folder = "/results/tiff"
     source_folder = os.path.join(root_folder, "source")
@@ -787,7 +787,7 @@ def test_auto_mask(config, name):
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_mask_combine():
+def test_auto_mask_combine() -> None:
     init_test()
     context = process_utils.Context({"args": {"mask": {}}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
@@ -803,7 +803,7 @@ def test_auto_mask_combine():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_cut():
+def test_auto_cut() -> None:
     init_test()
     context = process_utils.Context({"args": {"cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
@@ -817,7 +817,7 @@ def test_auto_cut():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_color_cut():
+def test_color_cut() -> None:
     init_test()
     context = process_utils.Context({"args": {"cut_white": 200}}, {})
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
@@ -831,7 +831,7 @@ def test_color_cut():
 
 
 # @pytest.mark.skip(reason="for test")
-def test_histogram():
+def test_histogram() -> None:
     init_test()
     context = process_utils.Context(
         {
