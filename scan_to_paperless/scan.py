@@ -192,9 +192,9 @@ def main() -> None:
                     if img not in odd:
                         path = os.path.join(root_folder, img)
                         print(path)
-                        image = io.imread(path)
+                        image = io.imread(path)  # type: ignore[no-untyped-call]
                         image = np.rot90(image, 2)
-                        io.imsave(path, image.astype(np.uint8))
+                        io.imsave(path, image.astype(np.uint8))  # type: ignore[no-untyped-call]
         else:
             call(scanimage)
 
