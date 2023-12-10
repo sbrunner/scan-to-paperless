@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import glob
+import math
 import os
 import re
 import subprocess  # nosec
@@ -10,11 +11,9 @@ import sys
 from typing import Any, Optional, cast
 
 import argcomplete
-import numpy as np
+import PIL.Image
 import pyperclip
-import tifffile
 from ruamel.yaml.main import YAML
-from skimage import io
 
 from scan_to_paperless import CONFIG_PATH, get_config
 
@@ -191,10 +190,8 @@ def main() -> None:
                 for img in os.listdir(root_folder):
                     if img not in odd:
                         path = os.path.join(root_folder, img)
-                        print(path)
-                        image = io.imread(path)  # type: ignore[no-untyped-call]
-                        image = np.rot90(image, 2)
-                        io.imsave(path, image.astype(np.uint8))  # type: ignore[no-untyped-call]
+                        with PIL.Image.open(path) as image:
+                            image.rotate(180).save(path, dpi=image.info["dpi"])
         else:
             call(scanimage)
 
@@ -211,15 +208,15 @@ def main() -> None:
         print(exception)
         sys.exit(1)
 
-    if config.get("extension", schema.EXTENSION_DEFAULT) != "png":
-        for img in os.listdir(root_folder):
-            if not img.startswith("image-"):
-                continue
-            if "dpi" not in args_ and config["extension"] in ("tiff", "tif"):
-                with tifffile.TiffFile(os.path.join(root_folder, img)) as tiff:
-                    page = tiff.pages[0]
-                    if isinstance(page, tifffile.TiffPage):
-                        args_["dpi"] = page.tags["XResolution"].value[0]
+    for img in os.listdir(root_folder):
+        if not img.startswith("image-"):
+            continue
+        if "dpi" not in args_:
+            with PIL.Image.open(os.path.join(root_folder, img)) as image:
+                if "dpi" in image.info:
+                    args_["dpi"] = math.sqrt(
+                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"])
+                    )
 
     print(base_folder)
     subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec

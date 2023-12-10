@@ -40,19 +40,20 @@ repository = "https://github.com/sbrunner/scan-to-paperless"
 
 [tool.poetry.scripts]
 scan = "scan_to_paperless.scan:main"
+scan-sane = "scan_to_paperless.scan_sane:_main"
 scan-process-status = "scan_to_paperless.scan_process_status:main"
 scan-process = "scan_to_paperless.process:main"
 add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-numpy = "1.26.2"
-scikit-image = "0.22.0"
+numpy = { version = "1.26.2", optional = true }
+scikit-image = { version = "0.22.0", optional = true }
 opencv-contrib-python-headless = { version = "4.8.1.78", optional = true }
 deskew = { version = "1.4.3", optional = true }
 "ruamel.yaml" = "0.18.5"
 argcomplete = "3.1.6"
-Pillow = { version = "10.1.0", optional = true }
+Pillow = "10.1.0"
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.0.7", optional = true }
@@ -61,20 +62,20 @@ cffi = { version = "1.16.0", optional = true }
 pikepdf = { version = "8.8.0", optional = true }
 zxing-cpp = { version = "2.1.0", optional = true }
 pyperclip = "1.8.2"
-tifffile = "2023.9.26"
-deepmerge = { version = "1.1.0", optional = true }
+deepmerge = "1.1.0"
 matplotlib = { version = "3.8.2", optional = true }
-typing-extensions = { version = "4.8.0", optional = true }
+typing-extensions = "4.8.0"
 Jinja2 = { version = "3.1.2", optional = true }
 natsort = { version = "8.4.0", optional = true }
 nbformat = { version = "5.9.2", optional = true }
 requests = { version = "2.31.0", optional = true }
+python-sane = { version = "2.9.1", optional = true }
 
 [tool.poetry.extras]
 process = [
+"numpy","scikit-image",
     "opencv-contrib-python-headless",
     "deskew",
-    "Pillow",
     "PyPDF2",
     "pyzbar",
     "reportlab",
@@ -82,18 +83,18 @@ process = [
     "cffi",
     "pikepdf",
     "zxing-cpp",
-    "deepmerge",
     "matplotlib",
-    "typing-extensions",
     "Jinja2",
     "natsort",
     "nbformat",
     "requests"
 ]
+sane = ["python-sane"]
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.10.3", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
-prospector-profile-duplicated = "0.4.0"
+prospector-profile-duplicated = "0.5.1"
+prospector-profile-utils = "1.6.0"
 pytest = "7.4.3"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "13.0"

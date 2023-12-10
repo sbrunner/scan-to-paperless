@@ -1,16 +1,12 @@
 inherits:
   - duplicated
-strictness: veryhigh
+  - utils:base
+  - utils:no-design-checks
 doc-warnings: true
-max-line-length: 110
 
 ignore-paths:
   - scan_to_paperless/process_schema.py
   - scan_to_paperless/config.py
-
-pycodestyle:
-  disable:
-    - E501 # line too long, redundant with Black
 
 pydocstyle:
   disable:
@@ -20,32 +16,10 @@ pydocstyle:
 
 pylint:
   disable:
-    - too-few-public-methods
-    - too-many-lines
-    - too-many-branches
-    - too-many-statements
-    - too-many-locals
-    - too-many-nested-blocks
-    - too-many-arguments
-    - too-many-return-statements
-    - too-many-instance-attributes
-    - line-too-long
-    - no-value-for-parameter
-    - no-else-continue
-    - broad-except
+    - broad-exception-caught
   options:
     good-names: x,y
 
 bandit:
-  run: true
   options:
     config: .bandit.yaml
-
-mypy:
-  run: true
-
-mccabe:
-  run: false
-
-pyroma:
-  run: true

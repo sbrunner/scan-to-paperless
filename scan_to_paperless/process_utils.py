@@ -42,7 +42,7 @@ def rotate_image(
     )
 
 
-def crop_image(  # pylint: disable=too-many-arguments
+def crop_image(
     image: NpNdarrayInt,
     x: int,
     y: int,
@@ -59,10 +59,10 @@ def crop_image(  # pylint: disable=too-many-arguments
     )
 
 
-class Context:  # pylint: disable=too-many-instance-attributes
+class Context:
     """All the context of the current image with his mask."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         config: schema.Configuration,
         step: schema.Step,
