@@ -152,7 +152,7 @@ class ExternalFunction(Protocol):
 
 
 # Decorate a step of the transform
-class Process:  # pylint: disable=too-few-public-methods
+class Process:
     """
     Encapsulate a transform function.
 
@@ -533,7 +533,7 @@ def autorotate(context: process_utils.Context) -> None:
             print("Not text found")
 
 
-def draw_line(  # pylint: disable=too-many-arguments
+def draw_line(
     image: NpNdarrayInt,
     vertical: bool,
     position: Optional[float],
@@ -1179,7 +1179,7 @@ def transform(
         deskew(context)
         docrop(context)
         sharpen(context)
-        dither(context)
+        dither(context)  # pylint: disable=no-value-for-parameter,unknown-option-value, added by decorator
         autorotate(context)
 
         # Is empty ?

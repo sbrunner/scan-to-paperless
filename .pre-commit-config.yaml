@@ -153,3 +153,4 @@ repos:
           - --die-on-tool-error
         additional_dependencies:
           - prospector-profile-duplicated==0.4.0 # pypi
+          - prospector_profile_utils==1.6.0 # pypi
