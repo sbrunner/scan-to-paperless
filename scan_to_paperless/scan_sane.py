@@ -8,6 +8,7 @@ inspired by scanimage interface
 
 import argparse
 import sys
+import time
 from typing import Any
 
 import PIL.Image
@@ -104,19 +105,22 @@ def _main() -> None:
     parser.add_argument(
         "-o",
         "--output-file",
-        type=str,
         help="save output to the given file instead of stdout. This option is incompatible with `--batch`.",
     )
-    parser.add_argument("--format", type=str, help="file format of output file")
+    parser.add_argument("--format", help="file format of output file")
     parser.add_argument(
         "-n", "--dont-scan", action="store_true", help="only set options, don't actually scan"
     )
     parser.add_argument("--verbose", help="verbose output", action="store_true")
 
     bash_group = parser.add_argument_group("batch")
+    # add argument --use[=USE]
+    bash_group.add_argument("--use", nargs="?", const=True, default=False)
     bash_group.add_argument(
         "--batch",
-        type=str,
+        nargs="?",
+        const=True,
+        default=False,
         help=" ".join(
             [
                 "batch format, is `out%%d.pnm` `out%%d.tif` ",
@@ -142,16 +146,15 @@ def _main() -> None:
         "device", "Options that can be relative to the device, see `--all-options` for details"
     )
     device_group.add_argument("--depth", type=int)
-    device_group.add_argument("--mode", type=str)
+    device_group.add_argument("--mode")
     device_group.add_argument("--resolution", type=int, help="set resolution in DPI")
-    device_group.add_argument("--source", type=str, help="set scan source")
+    device_group.add_argument("--source", help="set scan source")
     device_group.add_argument("-l", type=float, help="set top left x coordinate of scan area")
     device_group.add_argument("-t", type=float, help="set top left y coordinate of scan area")
     device_group.add_argument("-x", type=float, help="set the width of scan area")
     device_group.add_argument("-y", type=float, help="set the height of scan area")
     device_group.add_argument(
         "--device-option",
-        type=str,
         action="append",
         help="set a custom device option, use `--all-options` for more details",
     )
@@ -259,29 +262,37 @@ def _main() -> None:
         print(f"bytes_per_line: {bytes_per_line}")
 
     if args.dont_scan:
-        sys.exit(0)
+        sys.exit()
 
-    if args.batch:
+    if args.batch is not False:
         index = args.batch_start or 1
         increment = 2 if args.batch_double else args.batch_increment or 1
-        format_ = args.batch or f"out%d.{args.format or 'png'}"
+        format_ = f"out%d.{args.format or 'png'}" if args.batch is True else args.batch
 
         if args.batch_prompt:
-            remaining = args.batch_count or 1
-            device.start()
+            remaining = args.batch_count or sys.maxsize
             while remaining > 0:
-                image = device.snap()
+                try:
+                    image = device.scan()
 
-                _save_image(image, format_ % index, args)
-                index += increment
-                remaining -= 1
-            sys.exit(0)
+                    _save_image(image, format_ % index, args)
+                    index += increment
+                    remaining -= 1
+                    if remaining > 0:
+                        try:
+                            input("Press enter to scan next page, CTRL+D to stop.\n")
+                        except EOFError:
+                            sys.exit()
+                except Exception as exception:
+                    print(f"{exception}, retry")
+                    time.sleep(0.2)
+            sys.exit()
         else:
             for image in device.multi_scan():
                 _save_image(image, format_ % index, args)
                 index += increment
     else:
-        image = device.snap()
+        image = device.scan()
         if args.output_file is None:
             image.save(sys.stdout.buffer, format=args.format)
         else:
