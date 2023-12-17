@@ -119,7 +119,7 @@
         {% set tr_attributes = ' class="active"' if name == current_folder else "" %}
         <tr{{ tr_attributes | safe }}>
           <td><a href="./{{ name }}" target="_blank"><code>{{ name }}</code></a>{%
-            if folder.nb_images > 0: %} ({{ folder.nb_images }} image{%
+            if folder.nb_images > 0: %} ({{ folder.nb_images }}&nbsp;image{%
             if folder.nb_images > 1: %}s{% endif %}){%
             endif %}</td>
           <td>{{ folder.status | safe }}</td>
