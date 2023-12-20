@@ -1,7 +1,6 @@
 import os
-import subprocess
 
-from c2cwsgiutils.acceptance.image import check_image_file
+from c2cwsgiutils.acceptance.image import check_screenshot
 
 from scan_to_paperless import status
 from scan_to_paperless.scan import output
@@ -18,22 +17,12 @@ def test_status() -> None:
     status_instance.write()
     os.chdir(old_cwd)
 
-    subprocess.run(
-        [
-            "node",
-            "screenshot.js",
-            f'--url=file://{os.path.join(os.path.dirname(__file__), "status", "scan", "status.html")}',
-            f'--output={os.path.join(os.path.dirname(__file__), "status", "status.current.png")}',
-            "--width=850",
-            "--height=1800",
-        ],
-        check=True,
-        cwd="/opt",
-    )
-
-    check_image_file(
+    check_screenshot(
+        f'file://{os.path.join(os.path.dirname(__file__), "status", "scan", "status.html")}',
         os.path.join(os.path.dirname(__file__), "status"),
-        os.path.join(os.path.dirname(__file__), "status", "status.current.png"),
         os.path.join(os.path.dirname(__file__), "status", "status.expected.png"),
         generate_expected_image=False,
+        width=850,
+        height=1800,
+        sleep=1000,
     )
