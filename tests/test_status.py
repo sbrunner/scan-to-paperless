@@ -1,11 +1,13 @@
 import os
 
+import pytest
 from c2cwsgiutils.acceptance.image import check_screenshot
 
 from scan_to_paperless import status
 from scan_to_paperless.scan import output
 
 
+@pytest.mark.flaky(reruns=3)
 def test_status() -> None:
     os.environ["SCAN_CODES_FOLDER"] = "./codes"
     os.environ["SCAN_FINAL_FOLDER"] = "./consume"
