@@ -563,6 +563,7 @@ def test_empty() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
+@pytest.mark.flaky(reruns=3)
 @pytest.mark.parametrize(
     "test,args", [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
 )

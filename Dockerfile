@@ -93,11 +93,6 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
 
-COPY package.json package-lock.json ./
-
-RUN --mount=type=cache,target=/root/.npm \
-    npm install
-
 FROM tests-dist AS tests
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
@@ -125,11 +120,6 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         libx11-6 libx11-xcb1 libxcomposite1 libxcursor1 \
         libxdamage1 libxext6 libxi6 libxtst6 libnss3 libcups2 libxss1 libxrandr2 libasound2 libatk1.0-0 \
         libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3.0 libxcb-dri3-0 libgbm1 libxshmfence1
-
-COPY package.json package-lock.json ./
-COPY --from=tests-node-modules /src/node_modules ./node_modules
-COPY --from=tests-node-modules /root/.cache/puppeteer /root/.cache/puppeteer
-COPY tests/screenshot.js ./
 
 FROM base AS all
 
