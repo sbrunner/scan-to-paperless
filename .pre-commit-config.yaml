@@ -66,7 +66,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
-    rev: 0.5.0
+    rev: 0.6.0
     hooks:
       - id: copyright
       - id: workflows-require-timeout
@@ -137,11 +137,11 @@ repos:
     hooks:
       - id: autoflake
   - repo: https://github.com/psf/black
-    rev: 23.11.0
+    rev: 23.12.1
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
   - repo: https://github.com/PyCQA/prospector
@@ -152,5 +152,5 @@ repos:
           - --tool=pydocstyle
           - --die-on-tool-error
         additional_dependencies:
-          - prospector-profile-duplicated==0.4.0 # pypi
+          - prospector-profile-duplicated==0.5.1 # pypi
           - prospector_profile_utils==1.6.0 # pypi
