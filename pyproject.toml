@@ -49,22 +49,22 @@ add-codes-page = "scan_to_paperless.code:main"
 python = ">=3.9,<3.12"
 numpy = { version = "1.26.2", optional = true }
 scikit-image = { version = "0.22.0", optional = true }
-opencv-contrib-python-headless = { version = "4.8.1.78", optional = true }
+opencv-contrib-python-headless = { version = "4.9.0.80", optional = true }
 deskew = { version = "1.4.3", optional = true }
 "ruamel.yaml" = "0.18.5"
-argcomplete = "3.1.6"
-Pillow = "10.1.0"
+argcomplete = "3.2.1"
+Pillow = "10.2.0"
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.0.8", optional = true }
-weasyprint = { version = "60.1", optional = true }
+weasyprint = { version = "60.2", optional = true }
 cffi = { version = "1.16.0", optional = true }
-pikepdf = { version = "8.8.0", optional = true }
-zxing-cpp = { version = "2.1.0", optional = true }
+pikepdf = { version = "8.11.2", optional = true }
+zxing-cpp = { version = "2.2.0", optional = true }
 pyperclip = "1.8.2"
 deepmerge = "1.1.1"
 matplotlib = { version = "3.8.2", optional = true }
-typing-extensions = "4.8.0"
+typing-extensions = "4.9.0"
 Jinja2 = { version = "3.1.2", optional = true }
 natsort = { version = "8.4.0", optional = true }
 nbformat = { version = "5.9.2", optional = true }
@@ -99,11 +99,11 @@ pytest = "7.4.4"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "13.0"
 pyroma = "4.2"
-typing-extensions = "4.8.0"
+typing-extensions = "4.9.0"
 c2cwsgiutils = { version = "6.0.6", extras = ["test_images"] }
 types-requests = "2.31.0.20231231"
-nbconvert = "7.12.0"
-ipykernel = "6.27.1"
+nbconvert = "7.14.0"
+ipykernel = "6.28.0"
 
 
 [build-system]
