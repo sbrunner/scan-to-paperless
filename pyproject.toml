@@ -47,7 +47,7 @@ add-codes-page = "scan_to_paperless.code:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-numpy = { version = "1.26.2", optional = true }
+numpy = { version = "1.26.3", optional = true }
 scikit-image = { version = "0.22.0", optional = true }
 opencv-contrib-python-headless = { version = "4.8.1.78", optional = true }
 deskew = { version = "1.4.3", optional = true }
