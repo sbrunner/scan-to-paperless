@@ -33,7 +33,7 @@ from skimage.util import img_as_ubyte
 
 import scan_to_paperless
 import scan_to_paperless.status
-from scan_to_paperless import code, jupyter_utils
+from scan_to_paperless import jupyter_utils
 from scan_to_paperless import process_schema as schema
 from scan_to_paperless import process_utils
 
@@ -1823,6 +1823,8 @@ def _process_code(name: str) -> None:
 
     try:
         _LOG.info("Processing codes for %s", pdf_filename)
+        from scan_to_paperless import code  # pylint: disable=import-outside-toplevel
+
         code.add_codes(
             pdf_filename,
             destination_filename,
