@@ -3,6 +3,7 @@
 import logging
 import math
 import os
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 import cv2
@@ -38,7 +39,12 @@ def rotate_image(
     rot_mat[0, 2] += (height - old_height) / 2
     return cast(
         NpNdarrayInt,
-        cv2.warpAffine(image, rot_mat, (int(round(height)), int(round(width))), borderValue=background),
+        cv2.warpAffine(
+            image,
+            rot_mat,
+            (int(round(height)), int(round(width))),
+            borderValue=cast(Sequence[float], background),
+        ),
     )
 
 
@@ -110,6 +116,7 @@ class Context:
         """Init the mask."""
 
         if auto_mask_config is not None:
+            assert self.image is not None
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
             lower_val = np.array(
@@ -306,6 +313,7 @@ class Context:
                     print(exception)
             else:
                 try:
+                    assert self.image is not None
                     cv2.imwrite(dest_image, self.image)
                 except Exception as exception:
                     print(exception)
