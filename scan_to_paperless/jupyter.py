@@ -296,8 +296,10 @@ context.init_mask()
 if context.mask is not None:
     context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
 context.display_image(context.get_masked())
+if context.mask is None:
+    context.mask = np.zeros(context.image.shape[:2], dtype=np.uint8)
 
-images_context["mask"] = context.image"""
+images_context["original-mask"] = context.mask"""
         )
     )
 
@@ -316,6 +318,7 @@ the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).""
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["color_cut"].copy()
+context.mask = images_context["original-mask"].copy()
 
 context.config["args"]["cut"] = {_pretty_repr(context.config["args"].get("cut", {}))}
 
@@ -327,7 +330,8 @@ print("Pixel 100:100: ", hsv[100, 100])
 process.cut(context)
 context.display_image(context.image)
 
-images_context["cut"] = context.image"""
+images_context["cut"] = context.image
+images_context["cut-mask"] = context.mask"""
         )
     )
 
@@ -337,6 +341,7 @@ images_context["cut"] = context.image"""
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["cut"].copy()
+context.mask = images_context["cut-mask"].copy()
 
 context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}))}
 
@@ -344,7 +349,8 @@ context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("des
 process.deskew(context)
 context.display_image(context.image)
 
-images_context["deskew"] = context.image"""
+images_context["deskew"] = context.image
+images_context["deskew-mask"] = context.mask"""
         )
     )
 
@@ -356,13 +362,15 @@ images_context["deskew"] = context.image"""
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["deskew"].copy()
+context.mask = images_context["deskew-mask"].copy()
 
 context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}))}
 
 process.docrop(context)
 context.display_image(context.image)
 
-images_context["crop"] = context.image"""
+images_context["crop"] = context.image
+images_context["crop-mask"] = context.mask"""
         )
     )
 
@@ -372,13 +380,15 @@ images_context["crop"] = context.image"""
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["crop"].copy()
+context.mask = images_context["crop-mask"].copy()
 
 context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
 
 process.sharpen(context)
 context.display_image(context.image)
 
-images_context["sharpen"] = context.image"""
+images_context["sharpen"] = context.image
+images_context["sharpen-mask"] = context.mask"""
         )
     )
 
@@ -388,13 +398,15 @@ images_context["sharpen"] = context.image"""
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["sharpen"].copy()
+context.mask = images_context["sharpen-mask"].copy()
 
 context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
 
 process.dither(context)
 context.display_image(context.image)
 
-images_context["dither"] = context.image"""
+images_context["dither"] = context.image
+images_context["dither-mask"] = context.mask"""
         )
     )
 
@@ -408,6 +420,7 @@ This require Tesseract to be installed."""
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             """context.image = images_context["dither"].copy()
+context.mask = images_context["dither-mask"].copy()
 
 try:
     process.autorotate(context)
