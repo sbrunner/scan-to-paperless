@@ -203,6 +203,7 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
 
     def wrapper(context: process_utils.Context) -> Optional[NpNdarrayInt]:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
+            assert context.image is not None
             cv2.imwrite(source.name, context.image)
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
                 func(context, source.name, destination.name)
@@ -368,6 +369,7 @@ def histogram(context: process_utils.Context) -> None:
 def level(context: process_utils.Context) -> NpNdarrayInt:
     """Do the level on an image."""
 
+    assert context.image is not None
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
     if context.config["args"].setdefault("level", {}).setdefault("auto", schema.AUTO_LEVEL_DEFAULT):
@@ -380,7 +382,7 @@ def level(context: process_utils.Context) -> NpNdarrayInt:
     mins = np.zeros(chanel_y.shape)
     maxs: NpNdarrayInt = np.zeros(chanel_y.shape) + 255
 
-    values = (chanel_y - min_) / (max_ - min_) * 255
+    values = (chanel_y - min_) / (max_ - min_) * 255  # type: ignore[operator]
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
     return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
@@ -393,10 +395,20 @@ def color_cut(context: process_utils.Context) -> None:
     grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
 
     white_mask = cv2.inRange(
-        grayscale, context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT), 255
+        grayscale,
+        cast(
+            np.ndarray[Any, np.dtype[np.generic]],
+            context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT),
+        ),
+        cast(np.ndarray[Any, np.dtype[np.generic]], 255),
     )
     black_mask = cv2.inRange(
-        grayscale, 0, context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT)
+        grayscale,
+        cast(np.ndarray[Any, np.dtype[np.generic]], 0),
+        cast(
+            np.ndarray[Any, np.dtype[np.generic]],
+            context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT),
+        ),
     )
     context.image[white_mask == 255] = (255, 255, 255)
     context.image[black_mask == 255] = (0, 0, 0)
@@ -624,12 +636,12 @@ def find_lines(
     if lines is None:
         return []
 
-    lines = [line for line, in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
+    new_lines = [line for line, in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
 
-    return cast(list[tuple[int, int, int, int]], sorted(lines, key=_key)[:5])
+    return cast(list[tuple[int, int, int, int]], sorted(new_lines, key=_key)[:5])
 
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
