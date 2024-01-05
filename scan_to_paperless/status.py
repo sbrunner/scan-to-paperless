@@ -9,7 +9,6 @@ from enum import Enum
 from typing import NamedTuple, Optional
 
 import jinja2
-import natsort
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import process_schema
@@ -305,6 +304,8 @@ class Status:
 
         if self.no_write:
             return
+
+        import natsort  # pylint: disable=import-outside-toplevel
 
         with open(self._file, "w", encoding="utf-8") as status_file:
             env = jinja2.Environment(
