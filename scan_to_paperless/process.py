@@ -125,7 +125,7 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNda
     image1 = image1 if len(image1.shape) == 2 else cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
     image2 = image2 if len(image2.shape) == 2 else cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
 
-    score, diff = structural_similarity(image1, image2, full=True)
+    score, diff = structural_similarity(image1, image2, full=True)  # type: ignore[no-untyped-call]
     diff = (255 - diff * 255).astype("uint8")
     return score, diff
 
@@ -152,7 +152,7 @@ class ExternalFunction(Protocol):
 
 
 # Decorate a step of the transform
-class Process:  # pylint: disable=too-few-public-methods
+class Process:
     """
     Encapsulate a transform function.
 
@@ -355,7 +355,7 @@ def _histogram(
 def histogram(context: process_utils.Context) -> None:
     """Create an image with the histogram of the current image."""
 
-    noisy_image = img_as_ubyte(context.image)
+    noisy_image = img_as_ubyte(context.image)  # type: ignore[no-untyped-call]
     histogram_data, histogram_centers = skimage_histogram(noisy_image)
     histogram_max = max(histogram_data)
     process_count = context.get_process_count()
@@ -419,7 +419,7 @@ def deskew(context: process_utils.Context) -> None:
     angle = image_config.setdefault("angle", None)
     if angle is None:
         image = context.get_masked()
-        image_rgb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image
+        image_rgb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image  # type: ignore[no-untyped-call]
         grayscale = rgb2gray(image_rgb) if len(image_rgb.shape) == 3 else image_rgb
 
         deskew_configuration = context.config["args"].setdefault("deskew", {})
@@ -533,7 +533,7 @@ def autorotate(context: process_utils.Context) -> None:
             print("Not text found")
 
 
-def draw_line(  # pylint: disable=too-many-arguments
+def draw_line(
     image: NpNdarrayInt,
     vertical: bool,
     position: Optional[float],
@@ -779,7 +779,7 @@ def _find_contours_thresh(
                 image, x, y, width, height, context.get_background_color()
             )
             imagergb = (
-                rgba2rgb(contour_image)
+                rgba2rgb(contour_image)  # type: ignore[no-untyped-call]
                 if len(contour_image.shape) == 3 and contour_image.shape[2] == 4
                 else contour_image
             )
@@ -1179,7 +1179,7 @@ def transform(
         deskew(context)
         docrop(context)
         sharpen(context)
-        dither(context)
+        dither(context)  # pylint: disable=no-value-for-parameter,unknown-option-value, added by decorator
         autorotate(context)
 
         # Is empty ?

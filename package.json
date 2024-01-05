@@ -1,8 +1,0 @@
-{
-  "name": "test",
-  "type": "module",
-  "devDependencies": {
-    "commander": "11.0.0",
-    "puppeteer": "21.1.1"
-  }
-}

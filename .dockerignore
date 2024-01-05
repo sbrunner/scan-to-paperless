@@ -9,4 +9,5 @@
 !pyproject.toml
 !package.json
 !package-lock.json
+!.nvmrc
 !tests/screenshot.js

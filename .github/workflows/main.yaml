@@ -56,7 +56,6 @@ jobs:
       - run: make build
       - run: make build-tests
       - run: make prospector
-      - run: npm install
       - run: mkdir -p results/status
       - name: Pytest
         run: >
@@ -69,7 +68,7 @@ jobs:
       - run: sudo chmod -R go+r results || true
         if: failure()
       - name: Get the status images
-        run: cp tests/status/*.png results/status/
+        run: cp tests/status/*.png results/status/ || true
         if: failure()
       - uses: actions/upload-artifact@v3
         with:
