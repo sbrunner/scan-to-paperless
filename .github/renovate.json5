@@ -90,16 +90,19 @@
       matchPackageNames: ['node'],
       enabled: false,
     },
-    /** Auto merge the GitHub action and pre-commit updates */
-    {
-      matchDatasources: ['github-actions', 'pre-commit'],
-      automerge: true,
-    },
     /** Disable upgrading the supported Python version */
     {
       matchFileNames: ['pyproject.toml'],
       matchPackageNames: ['python'],
       enabled: false,
+    },
+    /** Group and auto merge the CI dependencies */
+    {
+      matchFileNames: ['.github/**', '.pre-commit-config.yaml', 'ci/**'],
+      groupName: 'CI dependencies',
+      automerge: true,
+      separateMajorMinor: false,
+      separateMinorPatch: false,
     },
   ],
 }
