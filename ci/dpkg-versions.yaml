@@ -154,11 +154,11 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libopenjp2-7: 2.4.0-6
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
   ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
-  ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.3
-  ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.3
-  ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.3
+  ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
+  ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.4
+  ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpam-systemd: 249.11-0ubuntu3.11
-  ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.3
+  ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpango-1.0-0: 1.50.6+ds-2ubuntu1
   ubuntu_22_04/libpangocairo-1.0-0: 1.50.6+ds-2ubuntu1
   ubuntu_22_04/libpangoft2-1.0-0: 1.50.6+ds-2ubuntu1
@@ -458,11 +458,11 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libopenjp2-7: 2.4.0-6
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
   ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
-  ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.3
-  ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.3
-  ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.3
+  ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
+  ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.4
+  ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpam-systemd: 249.11-0ubuntu3.11
-  ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.3
+  ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpango-1.0-0: 1.50.6+ds-2ubuntu1
   ubuntu_22_04/libpangocairo-1.0-0: 1.50.6+ds-2ubuntu1
   ubuntu_22_04/libpangoft2-1.0-0: 1.50.6+ds-2ubuntu1
