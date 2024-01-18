@@ -1,5 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/c2cciutils/1.6.13/c2cciutils/schema.json
 
+version:
+  branch_to_version_re:
+    - from: master
+      to: latest
+    - from: test
+      to: test
+
 publish:
   docker:
     images:
