@@ -77,7 +77,7 @@ jobs:
       - name: Publish Docker all
         run: |
           c2cciutils-publish --group=docker-all
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        if: env.HAS_SECRETS == 'HAS_SECRETS'

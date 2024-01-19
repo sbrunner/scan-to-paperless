@@ -71,14 +71,6 @@
       separateMajorMinor: false,
       separateMinorPatch: false,
     },
-    /** Update dpkg versions at any time */
-    {
-      matchBaseBranches: ['master'],
-      matchPaths: ['^ci/dpkg\\-versions\\.yaml$'],
-      schedule: ['at any time'],
-      groupName: 'dpkg',
-      automerge: true,
-    },
     /** Support the 4 parts of shellcheck-py version with a v prefix */
     {
       matchPackageNames: ['shellcheck-py/shellcheck-py'],
