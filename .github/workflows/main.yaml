@@ -93,19 +93,37 @@ jobs:
           git config user.name "CI"
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
+      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Init pypi
+        run: |-
+          echo "[pypi]" > ~/.pypirc
+          echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
+          echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
+      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Init pypi
+        run: |-
+          echo "[pypi]" > ~/.pypirc
+          echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
+          echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
+      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Init pypi
+        run: |-
+          echo "[pypi]" > ~/.pypirc
+          echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
+          echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
       - name: Publish
         run: c2cciutils-publish
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - run: make build-all
 
       - name: Publish Docker all
         run: |
           c2cciutils-publish --group=docker-all
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
