@@ -214,13 +214,13 @@ def _get_qr_codes_with_open_cv(
                     try:
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
-                        retval, _ = detector.detectAndDecode(
+                        retvals = detector.detectAndDecode(
                             decoded_image[
                                 int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
                             ]
                         )
-                        for data in retval:  # type: ignore[attr-defined]
+                        for data in retvals[0]:  # type: ignore[attr-defined]
                             founds.append(
                                 {
                                     "data": data,
