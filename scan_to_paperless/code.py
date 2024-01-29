@@ -220,7 +220,7 @@ def _get_qr_codes_with_open_cv(
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
                             ]
                         )
-                        for data in retval[0]:  # type: ignore[attr-defined]
+                        for data in retvals[0]:  # type: ignore[attr-defined]
                             founds.append(
                                 {
                                     "data": data,
