@@ -214,13 +214,13 @@ def _get_qr_codes_with_open_cv(
                     try:
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
-                        retval_ok, _, _ = detector.detectAndDecode(
+                        retvals = detector.detectAndDecode(
                             decoded_image[
                                 int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
                             ]
                         )
-                        for data in retval_ok:
+                        for data in retval[0]:  # type: ignore[attr-defined]
                             founds.append(
                                 {
                                     "data": data,
@@ -229,7 +229,7 @@ def _get_qr_codes_with_open_cv(
                                 }
                             )
                     except UnicodeDecodeError as exception:
-                        _LOG.warning("Open CV wechat QR code decoder error: %s", str(exception))
+                        _LOG.warning("Open CV WeChat QR code decoder error: %s", str(exception))
                 else:
                     founds.append(
                         {
@@ -277,7 +277,7 @@ def _get_codes_with_open_cv_we_chat(
                 )
             _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
         except UnicodeDecodeError as exception:
-            _LOG.warning("Open CV wechat QR code decoder error: %s", str(exception))
+            _LOG.warning("Open CV WeChat QR code decoder error: %s", str(exception))
 
     return codes
 
