@@ -21,5 +21,3 @@ publish:
       github:
         versions: []
     dispatch: false
-checks:
-  codespell: false
