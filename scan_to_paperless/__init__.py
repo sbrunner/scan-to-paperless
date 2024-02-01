@@ -1,4 +1,5 @@
 """The scan to Paperless main module."""
+
 import os.path
 import sys
 from typing import cast

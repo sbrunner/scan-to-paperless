@@ -1448,9 +1448,11 @@ def transform(
 
     return {
         "sources": images,
-        "name": scan_to_paperless.status.STATUS_ASSISTED_SPLIT
-        if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT)
-        else scan_to_paperless.status.STATUS_FINALIZE,
+        "name": (
+            scan_to_paperless.status.STATUS_ASSISTED_SPLIT
+            if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT)
+            else scan_to_paperless.status.STATUS_FINALIZE
+        ),
         "process_count": process_count,
     }
 
