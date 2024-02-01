@@ -457,9 +457,10 @@ def add_codes(
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
-            with tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1, tempfile.NamedTemporaryFile(
-                suffix=".pdf"
-            ) as dest_2:
+            with (
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
+            ):
                 # Finally, write "output" to a real file
 
                 with open(dest_1.name, "wb") as output_stream:

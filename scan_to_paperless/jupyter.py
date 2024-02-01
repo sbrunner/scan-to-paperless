@@ -1,6 +1,5 @@
 """Functions used to generate a Jupyter notebook from the transform."""
 
-
 import os
 from typing import TYPE_CHECKING, Any
 
