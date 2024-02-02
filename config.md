@@ -20,7 +20,7 @@
 - **`default_args`**: Refer to _[#/definitions/args](#definitions/args)_.
 - **`viewer`** _(string)_: The command used to start the viewer. Default: `"eog"`.
 - **`modes`** _(object)_: Customize the modes. Can contain additional properties. Default: `{"adf": {"scanimage_arguments": ["--source=ADF"]}, "double": {"scanimage_arguments": ["--source=ADF"], "auto_bash": true, "rotate_even": true}, "multi": {"scanimage_arguments": ["--batch-prompt"]}, "one": {"scanimage_arguments": ["--batch-count=1"]}}`.
-  - **Additional Properties** _(object)_
+  - **Additional properties** _(object)_
     - **`scanimage_arguments`** _(array)_: Additional scanimage arguments.
       - **Items** _(string)_
     - **`auto_bash`** _(boolean)_: Run the ADF in tow step odd and even, needed for scanner that don't support double face. Default: `false`.
