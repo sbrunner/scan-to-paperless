@@ -33,7 +33,7 @@
     - **`traceback`** _(array)_
       - **Items** _(string)_
 - **`images_config`** _(object)_: Can contain additional properties.
-  - **Additional Properties** _(object)_: Cannot contain additional properties.
+  - **Additional properties** _(object)_: Cannot contain additional properties.
     - **`angle`** _(['number', 'null'])_: The used angle to deskew, can be change, restart by deleting one of the generated images.
     - **`status`** _(object)_: Cannot contain additional properties.
       - **`angle`** _(number)_: The measured deskew angle.
