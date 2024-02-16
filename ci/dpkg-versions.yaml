@@ -226,7 +226,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libyaml-0-2: 0.2.2-1build2
   ubuntu_22_04/libzbar0: 0.23.92-4build2
   ubuntu_22_04/libzstd1: 1.4.8+dfsg-3build1
-  ubuntu_22_04/login: 1:4.8.1-2ubuntu2.1
+  ubuntu_22_04/login: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/logsave: 1.46.5-2ubuntu1.1
   ubuntu_22_04/lsb-base: 11.1.0ubuntu4
   ubuntu_22_04/lsb-release: 11.1.0ubuntu4
@@ -239,7 +239,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.14
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu2
-  ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.1
+  ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/pdftk-java: 3.2.2-1
   ubuntu_22_04/perl: 5.34.0-3ubuntu1.3
   ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.3
@@ -251,9 +251,9 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/polkitd: 0.105-33
   ubuntu_22_04/poppler-data: 0.4.11-1
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
-  ubuntu_22_04/python-apt-common: 2.4.0ubuntu2
+  ubuntu_22_04/python-apt-common: 2.4.0ubuntu3
   ubuntu_22_04/python3: 3.10.6-1~22.04
-  ubuntu_22_04/python3-apt: 2.4.0ubuntu2
+  ubuntu_22_04/python3-apt: 2.4.0ubuntu3
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
   ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.1
@@ -530,7 +530,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libyaml-0-2: 0.2.2-1build2
   ubuntu_22_04/libzbar0: 0.23.92-4build2
   ubuntu_22_04/libzstd1: 1.4.8+dfsg-3build1
-  ubuntu_22_04/login: 1:4.8.1-2ubuntu2.1
+  ubuntu_22_04/login: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/logsave: 1.46.5-2ubuntu1.1
   ubuntu_22_04/lsb-base: 11.1.0ubuntu4
   ubuntu_22_04/lsb-release: 11.1.0ubuntu4
@@ -543,7 +543,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.14
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu2
-  ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.1
+  ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/pdftk-java: 3.2.2-1
   ubuntu_22_04/perl: 5.34.0-3ubuntu1.3
   ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.3
@@ -555,9 +555,9 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/polkitd: 0.105-33
   ubuntu_22_04/poppler-data: 0.4.11-1
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
-  ubuntu_22_04/python-apt-common: 2.4.0ubuntu2
+  ubuntu_22_04/python-apt-common: 2.4.0ubuntu3
   ubuntu_22_04/python3: 3.10.6-1~22.04
-  ubuntu_22_04/python3-apt: 2.4.0ubuntu2
+  ubuntu_22_04/python3-apt: 2.4.0ubuntu3
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
   ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.1
