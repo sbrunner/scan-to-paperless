@@ -152,5 +152,5 @@ repos:
           - --tool=pydocstyle
           - --die-on-tool-error
         additional_dependencies:
-          - prospector-profile-duplicated==0.5.1 # pypi
+          - prospector-profile-duplicated==1.1.0 # pypi
           - prospector_profile_utils==1.6.0 # pypi
