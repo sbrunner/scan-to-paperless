@@ -256,7 +256,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/python3-apt: 2.4.0ubuntu3
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
-  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.1
+  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.2
   ubuntu_22_04/python3-dbus: 1.2.18-3build1
   ubuntu_22_04/python3-distro: 1.7.0-1
   ubuntu_22_04/python3-distutils: 3.10.8-1~22.04
@@ -560,7 +560,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/python3-apt: 2.4.0ubuntu3
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
-  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.1
+  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.2
   ubuntu_22_04/python3-dbus: 1.2.18-3build1
   ubuntu_22_04/python3-distro: 1.7.0-1
   ubuntu_22_04/python3-distutils: 3.10.8-1~22.04
