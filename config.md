@@ -1,5 +1,7 @@
 # Configuration
 
+test
+
 ## Properties
 
 - **`extends`** _(string)_: The configuration to extends.
