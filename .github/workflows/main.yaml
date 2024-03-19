@@ -40,9 +40,15 @@ jobs:
       - run: pre-commit run --all-files
         env:
           SKIP: poetry-lock
-      - run: git diff && false
+      - run: git diff --exit-code --patch > /tmp/pre-commit.patch || true
         if: failure()
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Apply pre-commit fix.patch
+          path: /tmp/pre-commit.patch
+          retention-days: 1
+        if: failure()
       - name: Print environment information
         run: c2cciutils-env
 
@@ -95,17 +101,17 @@ jobs:
 
       - name: Publish
         run: c2cciutils-publish
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - run: make build-all
 
       - name: Publish Docker all
         run: |
           c2cciutils-publish --group=docker-all
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        if: env.HAS_SECRETS == 'HAS_SECRETS'
