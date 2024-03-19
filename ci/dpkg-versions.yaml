@@ -2,7 +2,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/adduser: 3.118ubuntu5
   ubuntu_22_04/apt: 2.4.11
   ubuntu_22_04/base-passwd: 3.5.52build1
-  ubuntu_22_04/bash: 5.1-6ubuntu1
+  ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3
   ubuntu_22_04/ca-certificates: 20230311ubuntu0.22.04.1
   ubuntu_22_04/ca-certificates-java: 20190909ubuntu1.2
@@ -306,7 +306,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/adduser: 3.118ubuntu5
   ubuntu_22_04/apt: 2.4.11
   ubuntu_22_04/base-passwd: 3.5.52build1
-  ubuntu_22_04/bash: 5.1-6ubuntu1
+  ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3
   ubuntu_22_04/ca-certificates: 20230311ubuntu0.22.04.1
   ubuntu_22_04/ca-certificates-java: 20190909ubuntu1.2
