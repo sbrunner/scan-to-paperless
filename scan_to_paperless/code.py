@@ -176,69 +176,72 @@ def _get_qr_codes_with_open_cv(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
-    if decoded_image is not None:
+    try:
         detector = cv2.QRCodeDetector()
-        retval, decoded_info, points, straight_qr_code = detector.detectAndDecodeMulti(decoded_image)
-        if retval:
-            if os.environ.get("PROGRESS", "FALSE") == "TRUE":
-                base_path = os.path.dirname(image)
-                filename = ".".join(os.path.basename(image).split(".")[:-1])
-                suffix = random.randint(0, 1000)  # nosec
-                for img_index, img in enumerate(straight_qr_code):
-                    dest_filename = os.path.join(
-                        base_path,
-                        f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png",
-                    )
-                    cv2.imwrite(dest_filename, img)
-                for bbox_index, bbox in enumerate(points):
-                    dest_filename = os.path.join(
-                        base_path,
-                        f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
-                    )
-                    bbox_x = [p[0] for p in bbox]
-                    bbox_y = [p[1] for p in bbox]
-                    cv2.imwrite(
-                        dest_filename,
-                        decoded_image[
-                            int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
-                            int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
-                        ],
-                    )
-
-            founds: list[_FoundCode] = []
-            for index, data in enumerate(decoded_info):
-                if points[index] is not None and not data:
-                    bbox = points[index]
-                    detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
-                    try:
+        decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+        if decoded_image is not None:
+            retval, decoded_info, points, straight_qr_code = detector.detectAndDecodeMulti(decoded_image)
+            if retval:
+                if os.environ.get("PROGRESS", "FALSE") == "TRUE":
+                    base_path = os.path.dirname(image)
+                    filename = ".".join(os.path.basename(image).split(".")[:-1])
+                    suffix = random.randint(0, 1000)  # nosec
+                    for img_index, img in enumerate(straight_qr_code):
+                        dest_filename = os.path.join(
+                            base_path,
+                            f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png",
+                        )
+                        cv2.imwrite(dest_filename, img)
+                    for bbox_index, bbox in enumerate(points):
+                        dest_filename = os.path.join(
+                            base_path,
+                            f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
+                        )
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
-                        retvals = detector.detectAndDecode(
+                        cv2.imwrite(
+                            dest_filename,
                             decoded_image[
                                 int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
-                            ]
+                            ],
                         )
-                        for data in retvals[0]:
-                            founds.append(
-                                {
-                                    "data": data,
-                                    "type": "QR code",
-                                    "geometry": points[index],
-                                }
+
+                founds: list[_FoundCode] = []
+                for index, data in enumerate(decoded_info):
+                    if points[index] is not None and not data:
+                        bbox = points[index]
+                        detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
+                        try:
+                            bbox_x = [p[0] for p in bbox]
+                            bbox_y = [p[1] for p in bbox]
+                            retvals = detector.detectAndDecode(
+                                decoded_image[
+                                    int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
+                                    int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                                ]
                             )
-                    except UnicodeDecodeError as exception:
-                        _LOG.warning("Open CV WeChat QR code decoder error: %s", str(exception))
-                else:
-                    founds.append(
-                        {
-                            "data": data,
-                            "type": "QR code",
-                            "geometry": points[index],
-                        }
-                    )
-            _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
+                            for data in retvals[0]:
+                                founds.append(
+                                    {
+                                        "data": data,
+                                        "type": "QR code",
+                                        "geometry": points[index],
+                                    }
+                                )
+                        except UnicodeDecodeError as exception:
+                            _LOG.warning("Open CV WeChat QR code decoder error: %s", str(exception))
+                    else:
+                        founds.append(
+                            {
+                                "data": data,
+                                "type": "QR code",
+                                "geometry": points[index],
+                            }
+                        )
+                _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
+    except Exception:  # pylint: disable=broad-except
+        _LOG.exception("Open CV QR code decoder not available")
 
     return codes
 
