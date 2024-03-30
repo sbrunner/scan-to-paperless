@@ -1,6 +1,6 @@
 sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/adduser: 3.118ubuntu5
-  ubuntu_22_04/apt: 2.4.11
+  ubuntu_22_04/apt: 2.4.12
   ubuntu_22_04/base-passwd: 3.5.52build1
   ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3.3
@@ -48,7 +48,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libapache-pom-java: 18-1
   ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.3
   ubuntu_22_04/libappstream4: 0.15.2-2
-  ubuntu_22_04/libapt-pkg6.0: 2.4.11
+  ubuntu_22_04/libapt-pkg6.0: 2.4.12
   ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1
   ubuntu_22_04/libargon2-1: 0~20171227-0.3
   ubuntu_22_04/libasound2: 1.2.6.1-1ubuntu1
@@ -304,7 +304,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/util-linux: 2.37.2-4ubuntu3.3
 sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/adduser: 3.118ubuntu5
-  ubuntu_22_04/apt: 2.4.11
+  ubuntu_22_04/apt: 2.4.12
   ubuntu_22_04/base-passwd: 3.5.52build1
   ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3.3
@@ -352,7 +352,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libapache-pom-java: 18-1
   ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.3
   ubuntu_22_04/libappstream4: 0.15.2-2
-  ubuntu_22_04/libapt-pkg6.0: 2.4.11
+  ubuntu_22_04/libapt-pkg6.0: 2.4.12
   ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1
   ubuntu_22_04/libargon2-1: 0~20171227-0.3
   ubuntu_22_04/libasound2: 1.2.6.1-1ubuntu1
