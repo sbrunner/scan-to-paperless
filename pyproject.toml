@@ -103,7 +103,7 @@ prospector-profile-duplicated = "1.1.0"
 prospector-profile-utils = "1.7.2"
 pytest = "8.0.2"
 pytest-profiling = "1.7.0"
-pytest-rerunfailures = "13.0"
+pytest-rerunfailures = "14.0"
 pyroma = "4.2"
 typing-extensions = "4.10.0"
 c2cwsgiutils = { version = "6.0.7", extras = ["test_images"] }
