@@ -1,6 +1,6 @@
 poetry==1.8.1
 poetry-plugin-tweak-dependencies-version==1.5.2
 poetry-dynamic-versioning==1.2.0
-poetry-plugin-export==1.6.0
+poetry-plugin-export==1.7.1
 pip==24.0
 poetry-plugin-drop-python-upper-constraint==0.1.0
