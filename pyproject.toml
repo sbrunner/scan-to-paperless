@@ -52,7 +52,7 @@ scikit-image = { version = "0.22.0", optional = true }
 opencv-contrib-python-headless = { version = "4.9.0.80", optional = true }
 deskew = { version = "1.5.1", optional = true }
 "ruamel.yaml" = "0.18.6"
-argcomplete = "3.2.2"
+argcomplete = "3.2.3"
 Pillow = "10.2.0"
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
@@ -107,9 +107,9 @@ pytest-rerunfailures = "13.0"
 pyroma = "4.2"
 typing-extensions = "4.10.0"
 c2cwsgiutils = { version = "6.0.7", extras = ["test_images"] }
-types-requests = "2.31.0.20240218"
-nbconvert = "7.16.1"
-ipykernel = "6.29.3"
+types-requests = "2.31.0.20240311"
+nbconvert = "7.16.3"
+ipykernel = "6.29.4"
 
 
 [build-system]
