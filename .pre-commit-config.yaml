@@ -28,7 +28,7 @@ repos:
               ci/config\.yaml
           )$
   - repo: https://github.com/sbrunner/jsonschema2md2
-    rev: 1.1.0
+    rev: 1.2.0
     hooks:
       - id: jsonschema2md
         files: schema.json
@@ -94,7 +94,7 @@ repos:
           - '@prettier/plugin-xml@0.12.0' # npm
         exclude: ^scan_to_paperless/status\.html$
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: v0.10.0.1
     hooks:
       - id: shellcheck
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
@@ -137,7 +137,7 @@ repos:
     hooks:
       - id: autoflake
   - repo: https://github.com/psf/black
-    rev: 24.2.0
+    rev: 24.3.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
@@ -152,5 +152,5 @@ repos:
           - --tool=pydocstyle
           - --die-on-tool-error
         additional_dependencies:
-          - prospector-profile-duplicated==1.1.0 # pypi
+          - prospector-profile-duplicated==1.2.0 # pypi
           - prospector_profile_utils==1.7.2 # pypi
