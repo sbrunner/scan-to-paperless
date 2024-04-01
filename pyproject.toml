@@ -101,7 +101,7 @@ pytest-rerunfailures = "13.0"
 pyroma = "4.2"
 typing-extensions = "4.8.0"
 c2cwsgiutils = { version = "6.0.7", extras = ["test_images"] }
-types-requests = "2.31.0.20240218"
+types-requests = "2.31.0.20240311"
 nbconvert = "7.12.0"
 ipykernel = "6.27.1"
 
