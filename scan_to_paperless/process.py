@@ -1302,9 +1302,9 @@ def transform(
                         )
                     y += minor_graduation_space
 
-                pil_image = Image.fromarray(context.image)
+                pil_image = Image.fromarray(context.image)  # type: ignore[no-untyped-call]
 
-                font = ImageFont.truetype(font=graduation_text_font_filename, size=graduation_text_font_size)
+                font = ImageFont.truetype(font=graduation_text_font_filename, size=graduation_text_font_size)  # type: ignore[no-untyped-call]
                 draw = ImageDraw.Draw(pil_image)
 
                 x = major_graduation_space
