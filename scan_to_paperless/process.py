@@ -1308,7 +1308,6 @@ def transform(
                 draw = ImageDraw.Draw(pil_image)
 
                 x = major_graduation_space
-                print(graduation_text_font_color)
                 while x < context.image.shape[1]:
                     draw.text(
                         (x + graduation_text_margin, major_graduation_size),
