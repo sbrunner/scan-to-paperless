@@ -60,6 +60,7 @@ reportlab = { version = "4.1.0", optional = true }
 weasyprint = { version = "61.2", optional = true }
 cffi = { version = "1.16.0", optional = true }
 pikepdf = { version = "8.13.0", optional = true }
+lxml= { version = "4.9.4", optional = true }
 zxing-cpp = { version = "2.2.0", optional = true }
 pyperclip = "1.8.2"
 deepmerge = "1.1.1"
