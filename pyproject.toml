@@ -59,7 +59,7 @@ pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.1.0", optional = true }
 weasyprint = { version = "61.2", optional = true }
 cffi = { version = "1.16.0", optional = true }
-pikepdf = { version = "8.14.0", optional = true }
+pikepdf = { version = "8.13.0", optional = true }
 zxing-cpp = { version = "2.2.0", optional = true }
 pyperclip = "1.8.2"
 deepmerge = "1.1.1"
