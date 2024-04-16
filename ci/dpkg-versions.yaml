@@ -104,7 +104,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libglib2.0-bin: 2.72.4-0ubuntu2.2
   ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.2
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
-  ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.4
+  ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.5
   ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/libgpg-error0: 1.43-3
   ubuntu_22_04/libgraphicsmagick-q16-3: 1.4+really1.3.38-1ubuntu0.1
@@ -408,7 +408,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libglib2.0-bin: 2.72.4-0ubuntu2.2
   ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.2
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
-  ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.4
+  ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.5
   ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/libgpg-error0: 1.43-3
   ubuntu_22_04/libgraphicsmagick-q16-3: 1.4+really1.3.38-1ubuntu0.1
