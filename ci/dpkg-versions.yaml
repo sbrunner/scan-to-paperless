@@ -65,8 +65,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libbrotli1: 1.0.9-2build6
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5build1
-  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.6
-  ubuntu_22_04/libc6: 2.35-0ubuntu3.6
+  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.7
+  ubuntu_22_04/libc6: 2.35-0ubuntu3.7
   ubuntu_22_04/libcairo2: 1.16.0-5ubuntu2
   ubuntu_22_04/libcap-ng0: 0.7.9-2.2build3
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.1
@@ -86,8 +86,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libdebconfclient0: 0.261ubuntu1
   ubuntu_22_04/libdeflate0: 1.10-2
   ubuntu_22_04/libdevmapper1.02.1: 2:1.02.175-2.1ubuntu4
-  ubuntu_22_04/libdw1: 0.186-1build1
-  ubuntu_22_04/libelf1: 0.186-1build1
+  ubuntu_22_04/libdw1: 0.188-1~bpo22.04.1
+  ubuntu_22_04/libelf1: 0.188-1~bpo22.04.1
   ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.3
   ubuntu_22_04/libext2fs2: 1.46.5-2ubuntu1.1
   ubuntu_22_04/libffi8: 3.4.2-4
@@ -369,8 +369,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libbrotli1: 1.0.9-2build6
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5build1
-  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.6
-  ubuntu_22_04/libc6: 2.35-0ubuntu3.6
+  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.7
+  ubuntu_22_04/libc6: 2.35-0ubuntu3.7
   ubuntu_22_04/libcairo2: 1.16.0-5ubuntu2
   ubuntu_22_04/libcap-ng0: 0.7.9-2.2build3
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.1
@@ -390,8 +390,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libdebconfclient0: 0.261ubuntu1
   ubuntu_22_04/libdeflate0: 1.10-2
   ubuntu_22_04/libdevmapper1.02.1: 2:1.02.175-2.1ubuntu4
-  ubuntu_22_04/libdw1: 0.186-1build1
-  ubuntu_22_04/libelf1: 0.186-1build1
+  ubuntu_22_04/libdw1: 0.188-1~bpo22.04.1
+  ubuntu_22_04/libelf1: 0.188-1~bpo22.04.1
   ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.3
   ubuntu_22_04/libext2fs2: 1.46.5-2ubuntu1.1
   ubuntu_22_04/libffi8: 3.4.2-4
