@@ -7,7 +7,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get upgrade --yes \
-    && apt-get install --assume-yes --no-install-recommends python3-pip python-is-python3 gnupg fonts-dejavu-core
+    && apt-get install --assume-yes --no-install-recommends python3-pip python-is-python3 gnupg fonts-dejavu-core \
+    && rm /usr/lib/python*/EXTERNALLY-MANAGED
 
 FROM base-all AS poetry
 
