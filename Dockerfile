@@ -2,6 +2,7 @@ FROM ubuntu:24.04 AS upstream
 
 FROM upstream AS base-all
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
+ENV TZ=UTC
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
