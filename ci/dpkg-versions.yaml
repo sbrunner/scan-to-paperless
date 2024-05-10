@@ -100,9 +100,9 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libgdbm6: 1.23-1
   ubuntu_22_04/libgif7: 5.1.9-2build2
   ubuntu_22_04/libgirepository-1.0-1: 1.72.0-1
-  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.2
-  ubuntu_22_04/libglib2.0-bin: 2.72.4-0ubuntu2.2
-  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.2
+  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.3
+  ubuntu_22_04/libglib2.0-bin: 2.72.4-0ubuntu2.3
+  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.3
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
   ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.5
   ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04
@@ -404,9 +404,9 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libgdbm6: 1.23-1
   ubuntu_22_04/libgif7: 5.1.9-2build2
   ubuntu_22_04/libgirepository-1.0-1: 1.72.0-1
-  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.2
-  ubuntu_22_04/libglib2.0-bin: 2.72.4-0ubuntu2.2
-  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.2
+  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.3
+  ubuntu_22_04/libglib2.0-bin: 2.72.4-0ubuntu2.3
+  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.3
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
   ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.5
   ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04
