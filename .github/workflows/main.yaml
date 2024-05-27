@@ -113,6 +113,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+      - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
+        if: failure()
       - run: git checkout pyproject.toml
         if: failure()
       - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
