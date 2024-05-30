@@ -65,8 +65,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libbrotli1: 1.0.9-2build6
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5build1
-  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.7
-  ubuntu_22_04/libc6: 2.35-0ubuntu3.7
+  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.8
+  ubuntu_22_04/libc6: 2.35-0ubuntu3.8
   ubuntu_22_04/libcairo2: 1.16.0-5ubuntu2
   ubuntu_22_04/libcap-ng0: 0.7.9-2.2build3
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.1
@@ -369,8 +369,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libbrotli1: 1.0.9-2build6
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5build1
-  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.7
-  ubuntu_22_04/libc6: 2.35-0ubuntu3.7
+  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.8
+  ubuntu_22_04/libc6: 2.35-0ubuntu3.8
   ubuntu_22_04/libcairo2: 1.16.0-5ubuntu2
   ubuntu_22_04/libcap-ng0: 0.7.9-2.2build3
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.1
