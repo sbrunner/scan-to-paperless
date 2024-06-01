@@ -43,7 +43,7 @@ repos:
           - scan_to_paperless/process_schema.json
           - process.md
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.5.0 # Use the ref you want to point at
+    rev: 2.6.0 # Use the ref you want to point at
     hooks:
       - id: jsonschema-gentypes
         files: |-
@@ -77,7 +77,7 @@ repos:
         additional_dependencies:
           - poetry==1.8.3 # pypi
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         exclude: ^(.*/)?poetry\.lock$
@@ -88,7 +88,7 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@3.2.5 # npm
+          - prettier@3.3.0 # npm
           - prettier-plugin-sh@0.14.0 # npm
           - prettier-plugin-toml@2.0.1 # npm
           - '@prettier/plugin-xml@0.12.0' # npm
