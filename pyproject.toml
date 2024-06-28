@@ -20,7 +20,7 @@ pytest_plugins = ["pytest_profiling"]
 
 [tool.poetry]
 name = "scan-to-paperless"
-version = "1.26.1.dev152"
+version = "1.26.1.dev153"
 description = "Tool to scan and process documents to Paperless"
 readme = "README.md"
 keywords = ["scan", "paperless"]
