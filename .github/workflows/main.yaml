@@ -99,6 +99,8 @@ jobs:
           git config user.name "CI"
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
+      - run: git checkout pyproject.toml
+
       - name: Publish
         run: c2cciutils-publish
         env:
