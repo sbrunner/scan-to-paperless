@@ -195,14 +195,11 @@ def main() -> None:
         else:
             call(scanimage)
 
-        args_: schema.Arguments = {}
+        args_: schema.Arguments = {
+            "append_credit_card": args.append_credit_card,
+            "assisted_split": args.assisted_split,
+        }
         args_.update(config.get("default_args", {}))
-        args_cmd = dict(args._get_kwargs())  # pylint: disable=protected-access
-        del args_cmd["mode"]
-        del args_cmd["preset"]
-        del args_cmd["config"]
-        del args_cmd["set_config"]
-        args_.update(cast(schema.Arguments, args_cmd))
 
     except subprocess.CalledProcessError as exception:
         print(exception)
