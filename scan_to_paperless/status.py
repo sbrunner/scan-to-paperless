@@ -268,7 +268,11 @@ class Status:
             }
         nb_images = len(run_step["sources"])
 
-        if rerun or not os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE")):
+        if (
+            rerun
+            or not os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE"))
+            or len(config.get("steps", [])) == 0
+        ):
             self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
         else:
             len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
