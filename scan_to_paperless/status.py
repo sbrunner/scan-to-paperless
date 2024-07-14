@@ -272,7 +272,9 @@ class Status:
             self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
         else:
             len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
-            source_images = config["steps"][-2]["sources"] if len(config["steps"]) >= 2 else config["sources"]
+            source_images = (
+                config["steps"][-2]["sources"] if len(config.get("steps", [])) >= 2 else config["images"]
+            )
             generated_images = [f[len_folder:] for f in config["steps"][-1]["sources"]]
             self.set_status(
                 name,
