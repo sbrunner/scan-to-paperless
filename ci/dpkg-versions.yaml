@@ -135,7 +135,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libkrb5support0: 1.19.2-2ubuntu0.3
   ubuntu_22_04/libksba8: 1.6.0-2ubuntu0.2
   ubuntu_22_04/liblcms2-2: 2.12~rc1-2build2
-  ubuntu_22_04/libldap-2.5-0: 2.5.18+dfsg-0ubuntu0.22.04.1
+  ubuntu_22_04/libldap-2.5-0: 2.5.18+dfsg-0ubuntu0.22.04.2
   ubuntu_22_04/liblept5: 1.82.0-3build1
   ubuntu_22_04/liblz4-1: 1.9.3-2build2
   ubuntu_22_04/liblzma5: 5.2.5-2ubuntu1
@@ -439,7 +439,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libkrb5support0: 1.19.2-2ubuntu0.3
   ubuntu_22_04/libksba8: 1.6.0-2ubuntu0.2
   ubuntu_22_04/liblcms2-2: 2.12~rc1-2build2
-  ubuntu_22_04/libldap-2.5-0: 2.5.18+dfsg-0ubuntu0.22.04.1
+  ubuntu_22_04/libldap-2.5-0: 2.5.18+dfsg-0ubuntu0.22.04.2
   ubuntu_22_04/liblept5: 1.82.0-3build1
   ubuntu_22_04/liblz4-1: 1.9.3-2build2
   ubuntu_22_04/liblzma5: 5.2.5-2ubuntu1
