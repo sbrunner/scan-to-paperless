@@ -189,7 +189,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.3
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.1
   ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.3
-  ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.16
+  ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.17
   ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
   ubuntu_22_04/libsystemd0: 249.11-0ubuntu3.12
@@ -235,8 +235,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/mount: 2.37.2-4ubuntu3.4
   ubuntu_22_04/ncurses-base: 6.3-2ubuntu0.1
   ubuntu_22_04/ncurses-bin: 6.3-2ubuntu0.1
-  ubuntu_22_04/openjdk-11-jre-headless: 11.0.23+9-1ubuntu1~22.04.1
-  ubuntu_22_04/openssl: 3.0.2-0ubuntu1.16
+  ubuntu_22_04/openjdk-11-jre-headless: 11.0.24+8-1ubuntu3~22.04
+  ubuntu_22_04/openssl: 3.0.2-0ubuntu1.17
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu2
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
@@ -493,7 +493,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.3
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.1
   ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.3
-  ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.16
+  ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.17
   ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
   ubuntu_22_04/libsystemd0: 249.11-0ubuntu3.12
@@ -539,8 +539,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/mount: 2.37.2-4ubuntu3.4
   ubuntu_22_04/ncurses-base: 6.3-2ubuntu0.1
   ubuntu_22_04/ncurses-bin: 6.3-2ubuntu0.1
-  ubuntu_22_04/openjdk-11-jre-headless: 11.0.23+9-1ubuntu1~22.04.1
-  ubuntu_22_04/openssl: 3.0.2-0ubuntu1.16
+  ubuntu_22_04/openjdk-11-jre-headless: 11.0.24+8-1ubuntu3~22.04
+  ubuntu_22_04/openssl: 3.0.2-0ubuntu1.17
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu2
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
