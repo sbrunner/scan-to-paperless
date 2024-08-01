@@ -56,7 +56,7 @@ argcomplete = "3.3.0"
 Pillow = "10.3.0"
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
-reportlab = { version = "4.2.0", optional = true }
+reportlab = { version = "4.2.2", optional = true }
 weasyprint = { version = "62.1", optional = true }
 cffi = { version = "1.16.0", optional = true }
 pikepdf = { version = "9.0.0", optional = true }
@@ -64,8 +64,8 @@ lxml= { version = "5.2.2", optional = true }
 zxing-cpp = { version = "2.2.0", optional = true }
 pyperclip = "1.8.2"
 deepmerge = "1.1.1"
-matplotlib = { version = "3.9.0", optional = true }
-typing-extensions = "4.12.1"
+matplotlib = { version = "3.9.1", optional = true }
+typing-extensions = "4.12.2"
 Jinja2 = { version = "3.1.4", optional = true }
 natsort = { version = "8.4.0", optional = true }
 nbformat = { version = "5.10.4", optional = true }
@@ -102,15 +102,15 @@ sane = ["python-sane"]
 prospector = { version = "1.10.3", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 prospector-profile-duplicated = "1.5.0"
 prospector-profile-utils = "1.7.2"
-pytest = "8.2.1"
+pytest = "8.2.2"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "14.0"
 pyroma = "4.2"
-typing-extensions = "4.12.1"
+typing-extensions = "4.12.2"
 c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
-types-requests = "2.32.0.20240523"
+types-requests = "2.32.0.20240712"
 nbconvert = "7.16.4"
-ipykernel = "6.29.4"
+ipykernel = "6.29.5"
 
 
 [build-system]
