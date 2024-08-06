@@ -77,7 +77,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libcrypt1: 1:4.4.27-1
   ubuntu_22_04/libcryptsetup12: 2:2.4.3-1ubuntu1.2
   ubuntu_22_04/libcups2: 2.4.1op1-1ubuntu4.10
-  ubuntu_22_04/libcurl3-gnutls: 7.81.0-1ubuntu1.16
+  ubuntu_22_04/libcurl3-gnutls: 7.81.0-1ubuntu1.17
   ubuntu_22_04/libdatrie1: 0.2.13-2
   ubuntu_22_04/libdav1d5: 0.9.2-1
   ubuntu_22_04/libdb5.3: 5.3.28+dfsg1-0.8ubuntu3
@@ -381,7 +381,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libcrypt1: 1:4.4.27-1
   ubuntu_22_04/libcryptsetup12: 2:2.4.3-1ubuntu1.2
   ubuntu_22_04/libcups2: 2.4.1op1-1ubuntu4.10
-  ubuntu_22_04/libcurl3-gnutls: 7.81.0-1ubuntu1.16
+  ubuntu_22_04/libcurl3-gnutls: 7.81.0-1ubuntu1.17
   ubuntu_22_04/libdatrie1: 0.2.13-2
   ubuntu_22_04/libdav1d5: 0.9.2-1
   ubuntu_22_04/libdb5.3: 5.3.28+dfsg1-0.8ubuntu3
