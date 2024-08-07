@@ -2,7 +2,7 @@
 
 ## Properties
 
-- **`images`** _(array)_: The images.
+- **`images`** _(array, required)_: The images.
   - **Items** _(string)_
 - **`args`**: Refer to _[#/definitions/args](#definitions/args)_.
 - **`progress`** _(boolean)_: Run in progress mode. Default: `false`.
