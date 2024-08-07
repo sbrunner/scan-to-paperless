@@ -209,8 +209,8 @@ def _get_qr_codes_with_open_cv(
 
                 founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
-                    if points[index] is not None and not data:
-                        bbox = points[index]
+                    if points[index] is not None and not data:  # type: ignore[index]
+                        bbox = points[index]  # type: ignore[index]
                         detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
                         try:
                             bbox_x = [p[0] for p in bbox]
@@ -226,7 +226,7 @@ def _get_qr_codes_with_open_cv(
                                     {
                                         "data": data,
                                         "type": "QR code",
-                                        "geometry": points[index],
+                                        "geometry": points[index],  # type: ignore[index]
                                     }
                                 )
                         except UnicodeDecodeError as exception:
@@ -236,7 +236,7 @@ def _get_qr_codes_with_open_cv(
                             {
                                 "data": data,
                                 "type": "QR code",
-                                "geometry": points[index],
+                                "geometry": points[index],  # type: ignore[index]
                             }
                         )
                 _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
