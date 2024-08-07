@@ -382,7 +382,7 @@ def level(context: process_utils.Context) -> NpNdarrayInt:
     mins = np.zeros(chanel_y.shape)
     maxs: NpNdarrayInt = np.zeros(chanel_y.shape) + 255
 
-    values = (chanel_y - min_) / (max_ - min_) * 255  # type: ignore[operator]
+    values = (chanel_y - min_) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
     return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
@@ -1314,9 +1314,9 @@ def transform(
                         )
                     y += minor_graduation_space
 
-                pil_image = Image.fromarray(context.image)  # type: ignore[no-untyped-call]
+                pil_image = Image.fromarray(context.image)
 
-                font = ImageFont.truetype(font=graduation_text_font_filename, size=graduation_text_font_size)  # type: ignore[no-untyped-call]
+                font = ImageFont.truetype(font=graduation_text_font_filename, size=graduation_text_font_size)
                 draw = ImageDraw.Draw(pil_image)
 
                 x = major_graduation_space
