@@ -28,7 +28,7 @@ repos:
               ci/config\.yaml
           )$
   - repo: https://github.com/sbrunner/jsonschema2md2
-    rev: 1.2.0
+    rev: 1.3.0
     hooks:
       - id: jsonschema2md
         files: schema.json
@@ -43,7 +43,7 @@ repos:
           - scan_to_paperless/process_schema.json
           - process.md
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.6.0 # Use the ref you want to point at
+    rev: 2.7.2 # Use the ref you want to point at
     hooks:
       - id: jsonschema-gentypes
         files: |-
@@ -102,7 +102,7 @@ repos:
     hooks:
       - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.6
+    rev: 0.29.1
     hooks:
       - id: check-github-workflows
       - id: check-renovate
@@ -127,7 +127,7 @@ repos:
             |thepaperlessproject-paperless-consumer.json
           )
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         args:
@@ -137,7 +137,7 @@ repos:
     hooks:
       - id: autoflake
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
