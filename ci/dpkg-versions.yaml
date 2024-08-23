@@ -173,7 +173,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
-  ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04
+  ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
   ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.5
   ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.5
   ubuntu_22_04/libreadline8: 8.1.2-1
@@ -252,7 +252,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/poppler-data: 0.4.11-1
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/python-apt-common: 2.4.0ubuntu3
-  ubuntu_22_04/python3: 3.10.6-1~22.04
+  ubuntu_22_04/python3: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-apt: 2.4.0ubuntu3
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
@@ -270,7 +270,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/python3-lazr.restfulclient: 0.14.4-1
   ubuntu_22_04/python3-lazr.uri: 1.0.6-2
   ubuntu_22_04/python3-lib2to3: 3.10.8-1~22.04
-  ubuntu_22_04/python3-minimal: 3.10.6-1~22.04
+  ubuntu_22_04/python3-minimal: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-more-itertools: 8.10.0-2
   ubuntu_22_04/python3-oauthlib: 3.2.0-1ubuntu0.1
   ubuntu_22_04/python3-pip: 22.0.2+dfsg-1ubuntu0.4
@@ -477,7 +477,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
-  ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04
+  ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
   ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.5
   ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.5
   ubuntu_22_04/libreadline8: 8.1.2-1
@@ -556,7 +556,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/poppler-data: 0.4.11-1
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/python-apt-common: 2.4.0ubuntu3
-  ubuntu_22_04/python3: 3.10.6-1~22.04
+  ubuntu_22_04/python3: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-apt: 2.4.0ubuntu3
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
@@ -574,7 +574,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/python3-lazr.restfulclient: 0.14.4-1
   ubuntu_22_04/python3-lazr.uri: 1.0.6-2
   ubuntu_22_04/python3-lib2to3: 3.10.8-1~22.04
-  ubuntu_22_04/python3-minimal: 3.10.6-1~22.04
+  ubuntu_22_04/python3-minimal: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-more-itertools: 8.10.0-2
   ubuntu_22_04/python3-oauthlib: 3.2.0-1ubuntu0.1
   ubuntu_22_04/python3-pip: 22.0.2+dfsg-1ubuntu0.4
