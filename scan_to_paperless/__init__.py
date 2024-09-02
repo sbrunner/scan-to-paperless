@@ -4,7 +4,7 @@ import os.path
 import sys
 from typing import cast
 
-from deepmerge import Merger
+from deepmerge.merger import Merger
 from ruamel.yaml.main import YAML
 
 if sys.version_info.minor >= 8:
