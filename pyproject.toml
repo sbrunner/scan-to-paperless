@@ -63,7 +63,7 @@ pikepdf = { version = "9.2.0", optional = true }
 lxml= { version = "5.3.0", optional = true }
 zxing-cpp = { version = "2.2.0", optional = true }
 pyperclip = "1.9.0"
-deepmerge = "1.1.1"
+deepmerge = "2.0"
 matplotlib = { version = "3.9.2", optional = true }
 typing-extensions = "4.12.2"
 Jinja2 = { version = "3.1.4", optional = true }
