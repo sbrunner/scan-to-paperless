@@ -46,7 +46,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libacl1: 2.3.1-1
   ubuntu_22_04/libaom3: 3.3.0-1
   ubuntu_22_04/libapache-pom-java: 18-1
-  ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.3
+  ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.3build2
   ubuntu_22_04/libappstream4: 0.15.2-2
   ubuntu_22_04/libapt-pkg6.0: 2.4.12
   ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1.1
@@ -350,7 +350,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libacl1: 2.3.1-1
   ubuntu_22_04/libaom3: 3.3.0-1
   ubuntu_22_04/libapache-pom-java: 18-1
-  ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.3
+  ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.3build2
   ubuntu_22_04/libappstream4: 0.15.2-2
   ubuntu_22_04/libapt-pkg6.0: 2.4.12
   ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1.1
