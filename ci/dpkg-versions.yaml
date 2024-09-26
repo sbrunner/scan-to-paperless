@@ -4,7 +4,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/base-passwd: 3.5.52build1
   ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3.4
-  ubuntu_22_04/ca-certificates: 20230311ubuntu0.22.04.1
+  ubuntu_22_04/ca-certificates: 20240203~22.04.1
   ubuntu_22_04/ca-certificates-java: 20190909ubuntu1.2
   ubuntu_22_04/coreutils: 8.32-4.1ubuntu1.2
   ubuntu_22_04/dash: 0.5.11+git20210903+057cd650a4ed-3build1
@@ -308,7 +308,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/base-passwd: 3.5.52build1
   ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3.4
-  ubuntu_22_04/ca-certificates: 20230311ubuntu0.22.04.1
+  ubuntu_22_04/ca-certificates: 20240203~22.04.1
   ubuntu_22_04/ca-certificates-java: 20190909ubuntu1.2
   ubuntu_22_04/coreutils: 8.32-4.1ubuntu1.2
   ubuntu_22_04/dash: 0.5.11+git20210903+057cd650a4ed-3build1
