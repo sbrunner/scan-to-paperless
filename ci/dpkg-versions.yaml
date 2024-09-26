@@ -76,7 +76,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libcommons-parent-java: 43-1
   ubuntu_22_04/libcrypt1: 1:4.4.27-1
   ubuntu_22_04/libcryptsetup12: 2:2.4.3-1ubuntu1.2
-  ubuntu_22_04/libcups2: 2.4.1op1-1ubuntu4.10
+  ubuntu_22_04/libcups2: 2.4.1op1-1ubuntu4.11
   ubuntu_22_04/libcurl3-gnutls: 7.81.0-1ubuntu1.18
   ubuntu_22_04/libdatrie1: 0.2.13-2
   ubuntu_22_04/libdav1d5: 0.9.2-1
@@ -151,7 +151,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libnspr4: 2:4.35-0ubuntu0.22.04.1
   ubuntu_22_04/libnss3: 2:3.98-0ubuntu0.22.04.2
   ubuntu_22_04/libnuma1: 2.0.14-3ubuntu2
-  ubuntu_22_04/libopenjp2-7: 2.4.0-6
+  ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.1
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
   ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
   ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
@@ -380,7 +380,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libcommons-parent-java: 43-1
   ubuntu_22_04/libcrypt1: 1:4.4.27-1
   ubuntu_22_04/libcryptsetup12: 2:2.4.3-1ubuntu1.2
-  ubuntu_22_04/libcups2: 2.4.1op1-1ubuntu4.10
+  ubuntu_22_04/libcups2: 2.4.1op1-1ubuntu4.11
   ubuntu_22_04/libcurl3-gnutls: 7.81.0-1ubuntu1.18
   ubuntu_22_04/libdatrie1: 0.2.13-2
   ubuntu_22_04/libdav1d5: 0.9.2-1
@@ -455,7 +455,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libnspr4: 2:4.35-0ubuntu0.22.04.1
   ubuntu_22_04/libnss3: 2:3.98-0ubuntu0.22.04.2
   ubuntu_22_04/libnuma1: 2.0.14-3ubuntu2
-  ubuntu_22_04/libopenjp2-7: 2.4.0-6
+  ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.1
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
   ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
   ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
