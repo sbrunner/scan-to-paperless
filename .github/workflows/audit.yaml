@@ -38,8 +38,3 @@ jobs:
         uses: andstor/file-existence-action@v3
         with:
           files: ci/dpkg-versions.yaml
-      - name: Update dpkg packages versions
-        run: ~/.venv/bin/c2cciutils-docker-versions-update --branch=${{ matrix.branch }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        if: steps.dpkg-versions.outputs.files_exists == 'true'

@@ -92,5 +92,10 @@
       groupName: 'CI dependencies',
       automerge: true,
     },
+    /** For security reason don't takes the too early packages on stabilization branches */
+    {
+      matchBaseBranches: ['master'],
+      minimumReleaseAge: '7 days',
+    },
   ],
 }
