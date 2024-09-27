@@ -1,14 +1,3 @@
-ci:
-  autoupdate_schedule: quarterly
-  skip:
-    - copyright
-    - poetry-check
-    - poetry-lock
-    - ripsecrets
-    - schema-copy
-    - jsonschema-validator
-    - jsonschema-gentypes
-    - jsonschema2md
 repos:
   - repo: local
     hooks:
@@ -154,3 +143,7 @@ repos:
         additional_dependencies:
           - prospector-profile-duplicated==1.5.0 # pypi
           - prospector_profile_utils==1.7.2 # pypi
+  - repo: https://github.com/renovatebot/pre-commit-hooks
+    rev: 37.428.1
+    hooks:
+      - id: renovate-config-validator
