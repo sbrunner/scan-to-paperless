@@ -32,7 +32,7 @@ repos:
           - scan_to_paperless/process_schema.json
           - process.md
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.7.2 # Use the ref you want to point at
+    rev: 2.8.1 # Use the ref you want to point at
     hooks:
       - id: jsonschema-gentypes
         files: |-
@@ -55,7 +55,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
-    rev: 1.0.0
+    rev: 1.1.0
     hooks:
       - id: copyright
       - id: workflows-require-timeout
@@ -144,6 +144,6 @@ repos:
           - prospector-profile-duplicated==1.5.0 # pypi
           - prospector_profile_utils==1.7.2 # pypi
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 37.428.3
+    rev: 37.440.7
     hooks:
       - id: renovate-config-validator
