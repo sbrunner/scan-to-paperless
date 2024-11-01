@@ -49,7 +49,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.4
   ubuntu_22_04/libappstream4: 0.15.2-2
   ubuntu_22_04/libapt-pkg6.0: 2.4.13
-  ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1.2
+  ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1.3
   ubuntu_22_04/libargon2-1: 0~20171227-0.3
   ubuntu_22_04/libasound2: 1.2.6.1-1ubuntu1
   ubuntu_22_04/libasound2-data: 1.2.6.1-1ubuntu1
@@ -353,7 +353,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libapparmor1: 3.0.4-2ubuntu2.4
   ubuntu_22_04/libappstream4: 0.15.2-2
   ubuntu_22_04/libapt-pkg6.0: 2.4.13
-  ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1.2
+  ubuntu_22_04/libarchive13: 3.6.0-1ubuntu1.3
   ubuntu_22_04/libargon2-1: 0~20171227-0.3
   ubuntu_22_04/libasound2: 1.2.6.1-1ubuntu1
   ubuntu_22_04/libasound2-data: 1.2.6.1-1ubuntu1
