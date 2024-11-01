@@ -55,16 +55,16 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
-    rev: 1.1.0
+    rev: 1.1.2
     hooks:
       - id: copyright
       - id: workflows-require-timeout
       - id: poetry-check
         additional_dependencies:
-          - poetry==1.8.3 # pypi
+          - poetry==1.8.4 # pypi
       - id: poetry-lock
         additional_dependencies:
-          - poetry==1.8.3 # pypi
+          - poetry==1.8.4 # pypi
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
@@ -91,12 +91,12 @@ repos:
     hooks:
       - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.3
+    rev: 0.29.4
     hooks:
       - id: check-github-workflows
       - id: check-renovate
         additional_dependencies:
-          - pyjson5==1.6.6 # pypi
+          - pyjson5==1.6.7 # pypi
       - id: check-github-actions
       - id: check-jsonschema
         name: Check GitHub Workflows set timeout-minutes
@@ -144,6 +144,6 @@ repos:
           - prospector-profile-duplicated==1.5.0 # pypi
           - prospector_profile_utils==1.7.2 # pypi
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 38.106.3
+    rev: 38.106.4
     hooks:
       - id: renovate-config-validator
