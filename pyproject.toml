@@ -60,7 +60,7 @@ pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.2.5", optional = true }
 weasyprint = { version = "62.3", optional = true }
 cffi = { version = "1.17.1", optional = true }
-pikepdf = { version = "9.3.0", optional = true }
+pikepdf = { version = "9.4.0", optional = true }
 lxml= { version = "5.3.0", optional = true }
 zxing-cpp = { version = "2.2.0", optional = true }
 pyperclip = "1.9.0"
@@ -100,15 +100,15 @@ jupyter = [
 sane = ["python-sane"]
 
 [tool.poetry.group.dev.dependencies]
-prospector = { version = "1.10.3", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
-prospector-profile-duplicated = "1.5.0"
-prospector-profile-utils = "1.7.2"
+prospector = { version = "1.12.1", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+prospector-profile-duplicated = "1.6.0"
+prospector-profile-utils = "1.9.1"
 pytest = "8.3.3"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "14.0"
 pyroma = "4.2"
 typing-extensions = "4.12.2"
-c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.1.2", extras = ["test_images"] }
 types-requests = "2.32.0.20240914"
 nbconvert = "7.16.4"
 ipykernel = "6.29.5"
