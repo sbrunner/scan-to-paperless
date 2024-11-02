@@ -54,7 +54,7 @@ opencv-contrib-python-headless = { version = "4.10.0.84", optional = true }
 deskew = { version = "1.5.1", optional = true }
 "ruamel.yaml" = "0.18.6"
 argcomplete = "3.5.1"
-Pillow = "10.4.0"
+Pillow = "11.0.0"
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.2.5", optional = true }
