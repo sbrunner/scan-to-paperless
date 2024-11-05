@@ -151,7 +151,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libnspr4: 2:4.35-0ubuntu0.22.04.1
   ubuntu_22_04/libnss3: 2:3.98-0ubuntu0.22.04.2
   ubuntu_22_04/libnuma1: 2.0.14-3ubuntu2
-  ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.1
+  ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.2
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
   ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
   ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
@@ -455,7 +455,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libnspr4: 2:4.35-0ubuntu0.22.04.1
   ubuntu_22_04/libnss3: 2:3.98-0ubuntu0.22.04.2
   ubuntu_22_04/libnuma1: 2.0.14-3ubuntu2
-  ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.1
+  ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.2
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
   ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
   ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
