@@ -100,11 +100,11 @@ jupyter = [
 sane = ["python-sane"]
 
 [tool.poetry.group.dev.dependencies]
-prospector = { version = "1.12.1", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
-prospector-profile-duplicated = "1.6.0"
-prospector-profile-utils = "1.9.1"
+prospector = { version = "1.13.3", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+prospector-profile-duplicated = "1.8.0"
+prospector-profile-utils = "1.13.0"
 pytest = "8.3.4"
-pytest-profiling = "1.7.0"
+pytest-profiling = "1.8.1"
 pytest-rerunfailures = "15.0"
 pyroma = "4.2"
 typing-extensions = "4.12.2"
