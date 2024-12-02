@@ -37,7 +37,6 @@ def create_transform_notebook(
     root_folder: str, context: scan_to_paperless.process_utils.Context, step: schema.Step
 ) -> None:
     """Create a Jupyter notebook for the transform step."""
-
     # Jupyter notebook
     dest_folder = os.path.join(root_folder, "jupyter")
     if not os.path.exists(dest_folder):

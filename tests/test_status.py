@@ -4,7 +4,6 @@ import pytest
 from c2cwsgiutils.acceptance.image import check_screenshot
 
 from scan_to_paperless import status
-from scan_to_paperless.scan import output
 
 
 @pytest.mark.flaky(reruns=3)

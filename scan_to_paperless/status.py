@@ -89,7 +89,6 @@ class Status:
 
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
-
         self.no_write = no_write
         self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
         self._status: dict[str, _Folder] = {}
@@ -103,7 +102,6 @@ class Status:
 
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
-
         if self._global_status != status:
             self._global_status = status
             self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
@@ -112,7 +110,6 @@ class Status:
 
     def set_current_folder(self, name: Optional[str]) -> None:
         """Set the current folder."""
-
         if name is not None and name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
 
@@ -132,7 +129,6 @@ class Status:
         write: bool = False,
     ) -> None:
         """Set the status of a folder."""
-
         # Config file name
         if name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
@@ -148,7 +144,6 @@ class Status:
 
     def _scan(self) -> None:
         """Scan for changes for waiting documents."""
-
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
         if codes_folder[-1] != "/":
             codes_folder += "/"
@@ -307,7 +302,6 @@ class Status:
 
     def write(self) -> None:
         """Write the status file."""
-
         if self.no_write:
             return
 
@@ -335,7 +329,6 @@ class Status:
 
     def get_next_job(self) -> tuple[Optional[str], JobType, Optional[process_schema.Step]]:
         """Get the next job to do."""
-
         self._scan()
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),

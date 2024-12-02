@@ -2430,19 +2430,18 @@ wcwidth = "*"
 
 [[package]]
 name = "prospector"
-version = "1.12.1"
+version = "1.13.3"
 description = "Prospector is a tool to analyse Python code by aggregating the result of other tools."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "prospector-1.12.1-py3-none-any.whl", hash = "sha256:e2440b51f40626cbaea80edd97263d8c0a71a79e729415fb505096d4d39e2287"},
-    {file = "prospector-1.12.1.tar.gz", hash = "sha256:b9bb4bcdd77b943c597ee4f374960e851cdd2a0b4b60eaeeaf0da465facafc60"},
+    {file = "prospector-1.13.3-py3-none-any.whl", hash = "sha256:e7261c222ba54bc8aef8c9e31b2dcf5ed2a656c9b76fc0cceab294cd5ec3db6b"},
+    {file = "prospector-1.13.3.tar.gz", hash = "sha256:36ccb13f69aa27c5c4682afd4cc46219b9e0c80723e30dc64ff30c71f7b877a1"},
 ]
 
 [package.dependencies]
 bandit = {version = ">=1.5.1", optional = true, markers = "extra == \"with-bandit\" or extra == \"with_everything\""}
 dodgy = ">=0.2.1,<0.3.0"
-flake8 = "*"
 GitPython = ">=3.1.27,<4.0.0"
 mccabe = ">=0.7.0,<0.8.0"
 mypy = {version = ">=0.600", optional = true, markers = "extra == \"with-mypy\" or extra == \"with_everything\""}
@@ -2457,39 +2456,44 @@ pylint-django = ">=2.6.1"
 pylint-flask = "0.6"
 pyroma = {version = ">=2.4", optional = true, markers = "extra == \"with-pyroma\" or extra == \"with_everything\""}
 PyYAML = "*"
-requirements-detector = ">=1.3.1"
+requirements-detector = ">=1.3.2"
+ruff = {version = "*", optional = true, markers = "extra == \"with-ruff\" or extra == \"with_everything\""}
 setoptconf-tmp = ">=0.3.1,<0.4.0"
 toml = ">=0.10.2,<0.11.0"
 
 [package.extras]
 with-bandit = ["bandit (>=1.5.1)"]
-with-everything = ["bandit (>=1.5.1)", "mypy (>=0.600)", "pyright (>=1.1.3)", "pyroma (>=2.4)", "vulture (>=1.5)"]
+with-everything = ["bandit (>=1.5.1)", "mypy (>=0.600)", "pyright (>=1.1.3)", "pyroma (>=2.4)", "ruff", "vulture (>=1.5)"]
 with-mypy = ["mypy (>=0.600)"]
 with-pyright = ["pyright (>=1.1.3)"]
 with-pyroma = ["pyroma (>=2.4)"]
+with-ruff = ["ruff"]
 with-vulture = ["vulture (>=1.5)"]
 
 [[package]]
 name = "prospector-profile-duplicated"
-version = "1.6.0"
+version = "1.8.0"
 description = "Profile that can be used to disable the duplicated or conflict rules between Prospector and other tools"
 optional = false
 python-versions = "*"
 files = [
-    {file = "prospector_profile_duplicated-1.6.0-py2.py3-none-any.whl", hash = "sha256:bf6a6aae0c7de48043b95e4d42e23ccd090c6c7115b6ee8c8ca472ffb1a2022b"},
-    {file = "prospector_profile_duplicated-1.6.0.tar.gz", hash = "sha256:9c2d541076537405e8b2484cb6222276a2df17492391b6af1b192695770aab83"},
+    {file = "prospector_profile_duplicated-1.8.0-py2.py3-none-any.whl", hash = "sha256:c36ca647848739e1ca52cf220b00ba1fbdf7105217d5534a5bf2e65279ad6011"},
+    {file = "prospector_profile_duplicated-1.8.0.tar.gz", hash = "sha256:1565109b016fac05c61dbce38b952bfce3ff054d0c5493d1acad1fc8e9909704"},
 ]
 
 [[package]]
 name = "prospector-profile-utils"
-version = "1.9.1"
+version = "1.13.0"
 description = "Some utility Prospector profiles."
 optional = false
-python-versions = "*"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "prospector_profile_utils-1.9.1-py2.py3-none-any.whl", hash = "sha256:b458d8c4d59bdb1547e4630a2c6de4971946c4f0999443db6a9eef6d216b26b8"},
-    {file = "prospector_profile_utils-1.9.1.tar.gz", hash = "sha256:008efa6797a85233fd8093dcb9d86f5fa5d89673e431c15cb1496a91c9b2c601"},
+    {file = "prospector_profile_utils-1.13.0-py3-none-any.whl", hash = "sha256:f991f8f2709c5a2c693d0e0a672a8f3ce2db3f1767b4dc2fbe167395c7dbdbb3"},
+    {file = "prospector_profile_utils-1.13.0.tar.gz", hash = "sha256:2f98ddda31c0fa024134fe687e9828855f3597ea52de7a710d1aa508de8fda0a"},
 ]
+
+[package.dependencies]
+prospector = ">=1.13.0"
 
 [[package]]
 name = "psutil"
@@ -2829,22 +2833,19 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments
 
 [[package]]
 name = "pytest-profiling"
-version = "1.7.0"
+version = "1.8.1"
 description = "Profiling plugin for py.test"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "pytest-profiling-1.7.0.tar.gz", hash = "sha256:93938f147662225d2b8bd5af89587b979652426a8a6ffd7e73ec4a23e24b7f29"},
-    {file = "pytest_profiling-1.7.0-py2.py3-none-any.whl", hash = "sha256:999cc9ac94f2e528e3f5d43465da277429984a1c237ae9818f8cfd0b06acb019"},
+    {file = "pytest-profiling-1.8.1.tar.gz", hash = "sha256:3f171fa69d5c82fa9aab76d66abd5f59da69135c37d6ae5bf7557f1b154cb08d"},
+    {file = "pytest_profiling-1.8.1-py3-none-any.whl", hash = "sha256:3dd8713a96298b42d83de8f5951df3ada3e61b3e5d2a06956684175529e17aea"},
 ]
 
 [package.dependencies]
 gprof2dot = "*"
 pytest = "*"
 six = "*"
-
-[package.extras]
-tests = ["pytest-virtualenv"]
 
 [[package]]
 name = "pytest-rerunfailures"
@@ -3367,6 +3368,33 @@ files = [
     {file = "ruamel.yaml.clib-0.2.12-cp39-cp39-win32.whl", hash = "sha256:beffaed67936fbbeffd10966a4eb53c402fafd3d6833770516bf7314bc6ffa12"},
     {file = "ruamel.yaml.clib-0.2.12-cp39-cp39-win_amd64.whl", hash = "sha256:040ae85536960525ea62868b642bdb0c2cc6021c9f9d507810c0c604e66f5a7b"},
     {file = "ruamel.yaml.clib-0.2.12.tar.gz", hash = "sha256:6c8fbb13ec503f99a91901ab46e0b07ae7941cd527393187039aec586fdfd36f"},
+]
+
+[[package]]
+name = "ruff"
+version = "0.8.1"
+description = "An extremely fast Python linter and code formatter, written in Rust."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "ruff-0.8.1-py3-none-linux_armv6l.whl", hash = "sha256:fae0805bd514066f20309f6742f6ee7904a773eb9e6c17c45d6b1600ca65c9b5"},
+    {file = "ruff-0.8.1-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:b8a4f7385c2285c30f34b200ca5511fcc865f17578383db154e098150ce0a087"},
+    {file = "ruff-0.8.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:cd054486da0c53e41e0086e1730eb77d1f698154f910e0cd9e0d64274979a209"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2029b8c22da147c50ae577e621a5bfbc5d1fed75d86af53643d7a7aee1d23871"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:2666520828dee7dfc7e47ee4ea0d928f40de72056d929a7c5292d95071d881d1"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:333c57013ef8c97a53892aa56042831c372e0bb1785ab7026187b7abd0135ad5"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:288326162804f34088ac007139488dcb43de590a5ccfec3166396530b58fb89d"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b12c39b9448632284561cbf4191aa1b005882acbc81900ffa9f9f471c8ff7e26"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:364e6674450cbac8e998f7b30639040c99d81dfb5bbc6dfad69bc7a8f916b3d1"},
+    {file = "ruff-0.8.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b22346f845fec132aa39cd29acb94451d030c10874408dbf776af3aaeb53284c"},
+    {file = "ruff-0.8.1-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:b2f2f7a7e7648a2bfe6ead4e0a16745db956da0e3a231ad443d2a66a105c04fa"},
+    {file = "ruff-0.8.1-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:adf314fc458374c25c5c4a4a9270c3e8a6a807b1bec018cfa2813d6546215540"},
+    {file = "ruff-0.8.1-py3-none-musllinux_1_2_i686.whl", hash = "sha256:a885d68342a231b5ba4d30b8c6e1b1ee3a65cf37e3d29b3c74069cdf1ee1e3c9"},
+    {file = "ruff-0.8.1-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:d2c16e3508c8cc73e96aa5127d0df8913d2290098f776416a4b157657bee44c5"},
+    {file = "ruff-0.8.1-py3-none-win32.whl", hash = "sha256:93335cd7c0eaedb44882d75a7acb7df4b77cd7cd0d2255c93b28791716e81790"},
+    {file = "ruff-0.8.1-py3-none-win_amd64.whl", hash = "sha256:2954cdbe8dfd8ab359d4a30cd971b589d335a44d444b6ca2cb3d1da21b75e4b6"},
+    {file = "ruff-0.8.1-py3-none-win_arm64.whl", hash = "sha256:55873cc1a473e5ac129d15eccb3c008c096b94809d693fc7053f588b67822737"},
+    {file = "ruff-0.8.1.tar.gz", hash = "sha256:3583db9a6450364ed5ca3f3b4225958b24f78178908d5c4bc0f46251ccca898f"},
 ]
 
 [[package]]
@@ -4133,4 +4161,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.14"
-content-hash = "157af54d18a2599b72d391e812e0c1f4ddeda411b9b313001d4668ad55929450"
+content-hash = "0b8dddd6afd93c9b71064979b950de6e42a72da265fd6661494e4f91140b52ea"

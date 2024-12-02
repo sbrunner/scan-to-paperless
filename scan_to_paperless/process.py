@@ -33,9 +33,8 @@ from skimage.util import img_as_ubyte
 
 import scan_to_paperless
 import scan_to_paperless.status
-from scan_to_paperless import jupyter_utils
+from scan_to_paperless import jupyter_utils, process_utils
 from scan_to_paperless import process_schema as schema
-from scan_to_paperless import process_utils
 
 if TYPE_CHECKING:
     NpNdarrayInt = np.ndarray[np.uint8, Any]
@@ -56,7 +55,6 @@ def add_intermediate_error(
     traceback_: list[str],
 ) -> None:
     """Add in the config non fatal error."""
-
     if config_file_name is None:
         raise scan_to_paperless.ScanToPaperlessException("The config file name is required") from error
     if "intermediate_error" not in config:
@@ -81,7 +79,6 @@ def add_intermediate_error(
 
 def call(cmd: Union[str, list[str]], **kwargs: Any) -> None:
     """Verbose version of check_output with no returns."""
-
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -96,7 +93,6 @@ def call(cmd: Union[str, list[str]], **kwargs: Any) -> None:
 
 def run(cmd: Union[str, list[str]], **kwargs: Any) -> CompletedProcess:
     """Verbose version of check_output with no returns."""
-
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -106,7 +102,6 @@ def run(cmd: Union[str, list[str]], **kwargs: Any) -> CompletedProcess:
 
 def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
     """Verbose version of check_output."""
-
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -116,7 +111,6 @@ def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
 
 def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNdarrayInt]:
     """Do a diff between images."""
-
     width = max(image1.shape[1], image2.shape[1])
     height = max(image1.shape[0], image2.shape[0])
     image1 = cv2.resize(image1, (width, height))
@@ -216,7 +210,6 @@ def get_contour_to_crop(
     contours: list[tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0
 ) -> tuple[int, int, int, int]:
     """Get the contour to crop."""
-
     content = [
         contours[0][0],
         contours[0][1],
@@ -243,7 +236,6 @@ def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical
 
     Margin in px
     """
-
     image = context.get_masked()
     process_count = context.get_process_count()
     contours = find_contours(
@@ -355,7 +347,6 @@ def _histogram(
 @Process("histogram", progress=False)
 def histogram(context: process_utils.Context) -> None:
     """Create an image with the histogram of the current image."""
-
     noisy_image = img_as_ubyte(context.image)  # type: ignore[no-untyped-call]
     histogram_data, histogram_centers = skimage_histogram(noisy_image)
     histogram_max = max(histogram_data)
@@ -368,7 +359,6 @@ def histogram(context: process_utils.Context) -> None:
 @Process("level")
 def level(context: process_utils.Context) -> NpNdarrayInt:
     """Do the level on an image."""
-
     assert context.image is not None
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
 
@@ -390,7 +380,6 @@ def level(context: process_utils.Context) -> NpNdarrayInt:
 @Process("color-cut")
 def color_cut(context: process_utils.Context) -> None:
     """Set the near white to white and near black to black."""
-
     assert context.image is not None
     grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
 
@@ -417,14 +406,12 @@ def color_cut(context: process_utils.Context) -> None:
 @Process("mask-cut")
 def cut(context: process_utils.Context) -> None:
     """Mask the image with the cut mask."""
-
     context.do_initial_cut()
 
 
 @Process("deskew")
 def deskew(context: process_utils.Context) -> None:
     """Deskew an image."""
-
     images_config = context.config.setdefault("images_config", {})
     image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
     image_status = image_config.setdefault("status", {})
@@ -478,7 +465,6 @@ def deskew(context: process_utils.Context) -> None:
 @Process("docrop")
 def docrop(context: process_utils.Context) -> None:
     """Crop an image."""
-
     # Margin in mm
     crop_config = context.config["args"].setdefault("crop", {})
     if not crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
@@ -495,7 +481,6 @@ def docrop(context: process_utils.Context) -> None:
 @Process("sharpen")
 def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
-
     if (
         context.config["args"]
         .setdefault("sharpen", cast(schema.Sharpen, schema.SHARPEN_DEFAULT))
@@ -513,7 +498,6 @@ def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
 @external
 def dither(context: process_utils.Context, source: str, destination: str) -> None:
     """Dither an image."""
-
     if (
         context.config["args"]
         .setdefault("dither", cast(schema.Dither, schema.DITHER_DEFAULT))
@@ -531,7 +515,6 @@ def autorotate(context: process_utils.Context) -> None:
 
     Put the text in the right position.
     """
-
     auto_rotate_configuration = context.config["args"].setdefault("auto_rotate", {})
     if not auto_rotate_configuration.setdefault("enabled", schema.AUTO_ROTATE_ENABLED_DEFAULT):
         return
@@ -556,7 +539,6 @@ def draw_line(
     line: Optional[tuple[int, int, int, int]] = None,
 ) -> schema.Limit:
     """Draw a line on an image."""
-
     img_len = image.shape[0 if vertical else 1]
     if line is None:
         assert position is not None
@@ -588,7 +570,6 @@ def draw_line(
 
 def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], border: bool = True) -> None:
     """Draw a rectangle on an image."""
-
     color = (0, 255, 0)
     opacity = 0.1
     x, y, width, height = contour
@@ -615,7 +596,6 @@ def find_lines(
     image: NpNdarrayInt, vertical: bool, config: schema.LineDetection
 ) -> list[tuple[int, int, int, int]]:
     """Find the lines on an image."""
-
     edges = cv2.Canny(
         image,
         config.setdefault("high_threshold", schema.LINE_DETECTION_HIGH_THRESHOLD_DEFAULT),
@@ -636,7 +616,7 @@ def find_lines(
     if lines is None:
         return []
 
-    new_lines = [line for line, in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
+    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
@@ -646,7 +626,6 @@ def find_lines(
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     """Create an array that is 1 where a is 0, and pad each end with an extra 0."""
-
     is_zero: NpNdarrayInt = np.concatenate([[0], np.equal(values, 0).view(np.int8), [0]])
     abs_diff = np.abs(np.diff(is_zero))
     # Runs start and end where abs_diff is 1.
@@ -658,7 +637,6 @@ def find_limit_contour(
     image: NpNdarrayInt, vertical: bool, contours: list[tuple[int, int, int, int]]
 ) -> list[int]:
     """Find the contour for assisted split."""
-
     image_size = image.shape[1 if vertical else 0]
 
     values = np.zeros(image_size)
@@ -811,7 +789,6 @@ def _find_contours_thresh(
 
 def _update_config(config: schema.Configuration) -> None:
     """Convert the old configuration to the new one."""
-
     old_config = cast(dict[str, Any], config)
     # no_crop => crop.enabled (inverted)
     if "no_crop" in old_config["args"]:
@@ -1159,7 +1136,6 @@ def transform(
     status: Optional[scan_to_paperless.status.Status] = None,
 ) -> schema.Step:
     """Apply the transforms on a document."""
-
     if "intermediate_error" in config:
         del config["intermediate_error"]
 
@@ -1474,7 +1450,6 @@ def save(
     context: process_utils.Context, root_folder: str, image: str, folder: str, force: bool = False
 ) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
-
     if force or context.is_progress():
         dest_folder = os.path.join(root_folder, folder)
         if not os.path.exists(dest_folder):
@@ -1502,7 +1477,6 @@ def split(
     root_folder: str,
 ) -> schema.Step:
     """Split an image using the assisted split instructions."""
-
     process_count = 0
     for assisted_split in config["assisted_split"]:
         if assisted_split["limits"]:
@@ -1654,7 +1628,6 @@ def finalize(
 
     convert in one pdf and copy with the right name in the consume folder
     """
-
     name = os.path.basename(root_folder)
     destination = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), f"{name}.pdf")
 
@@ -1813,7 +1786,6 @@ def finalize(
 
 def _process_code(name: str) -> None:
     """Detect ad add a page with the QR codes."""
-
     pdf_filename = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), name)
 
     destination_filename = os.path.join(
@@ -1848,7 +1820,6 @@ def _process_code(name: str) -> None:
 
 def is_sources_present(images: list[str], root_folder: str) -> bool:
     """Are sources present for the next step."""
-
     for image in images:
         if not os.path.exists(os.path.join(root_folder, image)):
             print(f"Missing {root_folder} - {image}")
@@ -1858,7 +1829,6 @@ def is_sources_present(images: list[str], root_folder: str) -> bool:
 
 def save_config(config: schema.Configuration, config_file_name: str) -> None:
     """Save the configuration."""
-
     yaml = YAML()
     yaml.default_flow_style = False
     with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
@@ -1872,7 +1842,6 @@ def _process(
     dirty: bool = False,
 ) -> bool:
     """Process one document."""
-
     if not os.path.exists(config_file_name):
         return dirty
 
@@ -1914,9 +1883,12 @@ def _process(
         step = config["steps"][-1]
 
         if is_sources_present(step["sources"], root_folder):
-            if not disable_remove_to_continue:
-                if os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE")) and not rerun:
-                    return dirty
+            if (
+                not disable_remove_to_continue
+                and os.path.exists(os.path.join(root_folder, "REMOVE_TO_CONTINUE"))
+                and not rerun
+            ):
+                return dirty
             if os.path.exists(os.path.join(root_folder, "DONE")) and not rerun:
                 return dirty
 
@@ -1959,9 +1931,8 @@ def _process(
             if hasattr(exception, attribute):
                 out[attribute] = getattr(exception, attribute)
         for attribute in ("output", "stdout", "stderr"):
-            if hasattr(exception, attribute):
-                if getattr(exception, attribute):
-                    out[attribute] = getattr(exception, attribute).decode()
+            if hasattr(exception, attribute) and getattr(exception, attribute):
+                out[attribute] = getattr(exception, attribute).decode()
 
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
@@ -1984,7 +1955,6 @@ def _process(
 
 def main() -> None:
     """Process the scanned documents."""
-
     parser = argparse.ArgumentParser("Process the scanned documents.")
     parser.add_argument("config", nargs="?", help="The config file to process.")
     args = parser.parse_args()

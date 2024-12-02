@@ -92,7 +92,7 @@ def _all_options(device: sane.SaneDev) -> None:
             value = getattr(device, name)
             if value is not None:
                 print(f"Default value: {value}")
-        except:  # pylint: disable=bare-except # nosec
+        except:  # pylint: disable=bare-except # noqa: S110
             pass
         print()
 
@@ -229,7 +229,7 @@ def _main() -> None:
                 print(f"Invalid device option: {option}")
                 sys.exit(1)
 
-            for index, name_, title, desc, type_, unit, size, cap, constraint in device.get_option():
+            for _, name_, title, desc, type_, unit, size, cap, constraint in device.get_option():
                 del title, desc, size, cap, unit, constraint
 
                 if name_ == name:

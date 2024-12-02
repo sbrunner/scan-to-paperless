@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 from typing_extensions import Required
 
@@ -200,7 +200,7 @@ class Arguments(TypedDict, total=False):
       enabled: false
     """
 
-    background_color: list[int]
+    background_color: List[int]
     """
     Background color.
 
@@ -278,7 +278,7 @@ class AutoMask(TypedDict, total=False):
     default: True
     """
 
-    lower_hsv_color: list[int]
+    lower_hsv_color: List[int]
     """
     Lower hsv color.
 
@@ -290,7 +290,7 @@ class AutoMask(TypedDict, total=False):
       - 250
     """
 
-    upper_hsv_color: list[int]
+    upper_hsv_color: List[int]
     """
     Upper hsv color.
 
@@ -439,7 +439,7 @@ class Configuration(TypedDict, total=False):
     default: scanimage
     """
 
-    scanimage_arguments: list[str]
+    scanimage_arguments: List[str]
     """
     Scanimage arguments.
 
@@ -472,7 +472,7 @@ class Configuration(TypedDict, total=False):
     default: eog
     """
 
-    modes: dict[str, "Mode"]
+    modes: Dict[str, "Mode"]
     """
     Modes.
 
@@ -1079,7 +1079,7 @@ class MergeStrategies(TypedDict, total=False):
     The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies
     """
 
-    list: list[str]
+    list: List[str]
     """
     List.
 
@@ -1089,7 +1089,7 @@ class MergeStrategies(TypedDict, total=False):
       - override
     """
 
-    dict: list[str]
+    dict: List[str]
     """
     Dict.
 
@@ -1099,7 +1099,7 @@ class MergeStrategies(TypedDict, total=False):
       - merge
     """
 
-    fallback: list[str]
+    fallback: List[str]
     """
     Fallback.
 
@@ -1109,7 +1109,7 @@ class MergeStrategies(TypedDict, total=False):
       - override
     """
 
-    type_conflict: list[str]
+    type_conflict: List[str]
     """
     Type conflict.
 
@@ -1123,7 +1123,7 @@ class MergeStrategies(TypedDict, total=False):
 class Mode(TypedDict, total=False):
     """Mode."""
 
-    scanimage_arguments: list[str]
+    scanimage_arguments: List[str]
     """ Additional scanimage arguments """
 
     auto_bash: bool
@@ -1209,7 +1209,7 @@ class Pngquant(TypedDict, total=False):
     default: True
     """
 
-    options: list[str]
+    options: List[str]
     """
     Pngquant options.
 
@@ -1387,7 +1387,7 @@ class Rule(TypedDict, total=False):
     default: 30
     """
 
-    graduation_color: list[int]
+    graduation_color: List[int]
     """
     Rule graduation color.
 
@@ -1397,7 +1397,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_color: list[int]
+    lines_color: List[int]
     """
     Rule lines color.
 
@@ -1428,7 +1428,7 @@ class Rule(TypedDict, total=False):
     default: 17
     """
 
-    graduation_text_font_color: list[int]
+    graduation_text_font_color: List[int]
     """
     Rule graduation text font color.
 
