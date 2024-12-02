@@ -127,7 +127,7 @@ def _get_bar_codes_with_open_cv(
                 if os.environ.get("PROGRESS", "FALSE") == "TRUE":
                     base_path = os.path.dirname(image)
                     filename = ".".join(os.path.basename(image).split(".")[:-1])
-                    suffix = random.randint(0, 1000)  # nosec
+                    suffix = random.randint(0, 1000)  # noqa: S311
                     for bbox_index, bbox in enumerate(points):
                         dest_filename = os.path.join(
                             base_path,
@@ -185,7 +185,7 @@ def _get_qr_codes_with_open_cv(
                 if os.environ.get("PROGRESS", "FALSE") == "TRUE":
                     base_path = os.path.dirname(image)
                     filename = ".".join(os.path.basename(image).split(".")[:-1])
-                    suffix = random.randint(0, 1000)  # nosec
+                    suffix = random.randint(0, 1000)  # noqa: S311
                     for img_index, img in enumerate(straight_qr_code):
                         dest_filename = os.path.join(
                             base_path,
@@ -476,8 +476,7 @@ def add_codes(
                     data = [d if d else "|" for d in data]
                     code_["data_formatted"] = "<br />".join(data)  # type: ignore
                 sections = [
-                    f"<h2>{code_['type']} [{code_['pos']}]</h2>"
-                    f"<p>{code_['data_formatted']}</p>"  # type: ignore
+                    f"<h2>{code_['type']} [{code_['pos']}]</h2>" f"<p>{code_['data_formatted']}</p>"  # type: ignore
                     for code_ in all_codes
                 ]
 

@@ -601,7 +601,7 @@ def test_custom_process(test: str, args: dict[str, Any]) -> None:
 def test_qr_code(name) -> None:
     init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), f"{name}.pdf"), f"/results/{name}.pdf")
-    root_folder = f"/results/qrcode"
+    root_folder = "/results/qrcode"
     for page in range(2):
         subprocess.run(
             [
@@ -686,7 +686,7 @@ EPD
 def test_multi_code() -> None:
     init_test()
     code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill-multi.pdf"), "/results/qrbill-multi.pdf")
-    root_folder = f"/results/qrcode"
+    root_folder = "/results/qrcode"
     for page in range(3):
         subprocess.run(
             [
@@ -849,14 +849,14 @@ def test_histogram() -> None:
     context.image_name = "histogram.png"
     context.root_folder = "/tmp"
     process.histogram(context)
-    print(f"Compare '/results/histogram/histogram.png' with expected image 'histogram.expected.png'.")
+    print("Compare '/results/histogram/histogram.png' with expected image 'histogram.expected.png'.")
     check_image_file(
         "/results/histogram/",
         "/tmp/histogram/histogram.png",
         os.path.join(os.path.dirname(__file__), "histogram.expected.png"),
         generate_expected_image=REGENERATE,
     )
-    print(f"Compare '/results/histogram/log-histogram.png' with expected image 'histogram-log.expected.png'.")
+    print("Compare '/results/histogram/log-histogram.png' with expected image 'histogram-log.expected.png'.")
     check_image_file(
         "/results/histogram/",
         "/tmp/histogram/log-histogram.png",

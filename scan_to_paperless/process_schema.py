@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 from typing_extensions import Required
 
@@ -200,7 +200,7 @@ class Arguments(TypedDict, total=False):
       enabled: false
     """
 
-    background_color: list[int]
+    background_color: List[int]
     """
     Background color.
 
@@ -276,13 +276,13 @@ class AssistedSplit(TypedDict, total=False):
     source: str
     """ The source image name. """
 
-    destinations: list[Union[int, str]]
+    destinations: List[Union[int, str]]
     """ The destination image positions. """
 
     image: str
     """ The enhanced image name. """
 
-    limits: list["Limit"]
+    limits: List["Limit"]
     """
     Limits.
 
@@ -306,7 +306,7 @@ class AutoMask(TypedDict, total=False):
     default: True
     """
 
-    lower_hsv_color: list[int]
+    lower_hsv_color: List[int]
     """
     Lower hsv color.
 
@@ -318,7 +318,7 @@ class AutoMask(TypedDict, total=False):
       - 250
     """
 
-    upper_hsv_color: list[int]
+    upper_hsv_color: List[int]
     """
     Upper hsv color.
 
@@ -445,7 +445,7 @@ CUT_WHITE_DEFAULT = 255
 class Configuration(TypedDict, total=False):
     """Configuration."""
 
-    images: Required[list[str]]
+    images: Required[List[str]]
     """
     The images
 
@@ -470,17 +470,17 @@ class Configuration(TypedDict, total=False):
     default: False
     """
 
-    steps: list["Step"]
+    steps: List["Step"]
     """ The carried out steps description """
 
-    assisted_split: list["AssistedSplit"]
-    transformed_images: list[str]
+    assisted_split: List["AssistedSplit"]
+    transformed_images: List[str]
     """ The transformed image, if removed the jobs will rag again from start """
 
-    intermediate_error: list["IntermediateError"]
+    intermediate_error: List["IntermediateError"]
     """ The ignored errors """
 
-    images_config: dict[str, "_ConfigurationImagesConfigAdditionalproperties"]
+    images_config: Dict[str, "_ConfigurationImagesConfigAdditionalproperties"]
 
 
 class ConsumeFolder(TypedDict, total=False):
@@ -760,7 +760,7 @@ class IntermediateError(TypedDict, total=False):
     """Intermediate error."""
 
     error: str
-    traceback: list[str]
+    traceback: List[str]
 
 
 JPEG_DEFAULT = {"enabled": False}
@@ -1136,7 +1136,7 @@ class Pngquant(TypedDict, total=False):
     default: True
     """
 
-    options: list[str]
+    options: List[str]
     """
     Pngquant options.
 
@@ -1310,7 +1310,7 @@ class Rule(TypedDict, total=False):
     default: 30
     """
 
-    graduation_color: list[int]
+    graduation_color: List[int]
     """
     Rule graduation color.
 
@@ -1320,7 +1320,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_color: list[int]
+    lines_color: List[int]
     """
     Rule lines color.
 
@@ -1351,7 +1351,7 @@ class Rule(TypedDict, total=False):
     default: 17
     """
 
-    graduation_text_font_color: list[int]
+    graduation_text_font_color: List[int]
     """
     Rule graduation text font color.
 
@@ -1403,7 +1403,7 @@ class Step(TypedDict, total=False):
     name: str
     """ The step name """
 
-    sources: list[str]
+    sources: List[str]
     """ The images obtain after the current step """
 
     process_count: int
@@ -1525,5 +1525,5 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=Fals
     angle: Union[int, float]
     """ The measured deskew angle """
 
-    size: list[Union[int, float]]
+    size: List[Union[int, float]]
     """ The image dimensions """

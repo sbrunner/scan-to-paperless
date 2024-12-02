@@ -27,7 +27,6 @@ def rotate_image(
     image: NpNdarrayInt, angle: float, background: Union[int, tuple[int, int, int]]
 ) -> NpNdarrayInt:
     """Rotate the image."""
-
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
     width = abs(np.sin(angle_radian) * old_height) + abs(np.cos(angle_radian) * old_width)
@@ -57,7 +56,6 @@ def crop_image(
     background: Union[tuple[int], tuple[int, int, int]],
 ) -> NpNdarrayInt:
     """Crop the image."""
-
     matrix: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         NpNdarrayInt,
@@ -77,7 +75,6 @@ class Context:
         image_name: Optional[str] = None,
     ) -> None:
         """Initialize."""
-
         self.config = config
         self.step = step
         self.config_file_name = config_file_name
@@ -114,7 +111,6 @@ class Context:
         mask_file: Optional[str] = None,
     ) -> Optional[NpNdarrayInt]:
         """Init the mask."""
-
         if auto_mask_config is not None:
             assert self.image is not None
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
@@ -169,17 +165,16 @@ class Context:
 
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
-            if self.root_folder:
-                if mask_file and os.path.exists(mask_file):
-                    mask = cv2.add(
-                        mask,
-                        cv2.bitwise_not(
-                            cv2.resize(
-                                cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE),
-                                (mask.shape[1], mask.shape[0]),
-                            )
-                        ),
-                    )
+            if self.root_folder and mask_file and os.path.exists(mask_file):
+                mask = cv2.add(
+                    mask,
+                    cv2.bitwise_not(
+                        cv2.resize(
+                            cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE),
+                            (mask.shape[1], mask.shape[0]),
+                        )
+                    ),
+                )
 
             final_mask = cv2.bitwise_not(mask)
 
@@ -193,7 +188,6 @@ class Context:
 
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
-
         mask_config = self.config["args"].setdefault(
             "mask", cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT)
         )
@@ -209,7 +203,6 @@ class Context:
 
     def get_background_color(self) -> tuple[int, int, int]:
         """Get the background color."""
-
         return cast(
             tuple[int, int, int],
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
@@ -217,7 +210,6 @@ class Context:
 
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
-
         cut_config = self.config["args"].get("cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT))
         if cut_config.get("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
@@ -230,7 +222,6 @@ class Context:
 
     def get_process_count(self) -> int:
         """Get the step number."""
-
         try:
             return self.process_count
         finally:
@@ -238,7 +229,6 @@ class Context:
 
     def get_masked(self) -> NpNdarrayInt:
         """Get the mask."""
-
         if self.image is None:
             raise scan_to_paperless.ScanToPaperlessException("The image is None")
         if self.mask is None:
@@ -250,7 +240,6 @@ class Context:
 
     def crop(self, x: int, y: int, width: int, height: int) -> None:
         """Crop the image."""
-
         if self.image is None:
             raise scan_to_paperless.ScanToPaperlessException("The image is None")
         self.image = crop_image(self.image, x, y, width, height, self.get_background_color())
@@ -259,7 +248,6 @@ class Context:
 
     def rotate(self, angle: float) -> None:
         """Rotate the image."""
-
         if self.image is None:
             raise scan_to_paperless.ScanToPaperlessException("The image is None")
         self.image = rotate_image(self.image, angle, self.get_background_color())
@@ -268,12 +256,10 @@ class Context:
 
     def get_px_value(self, value: Union[int, float]) -> float:
         """Get the value in px."""
-
         return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
 
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
-
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
             "progress", schema.PROGRESS_DEFAULT
         )
@@ -287,12 +273,13 @@ class Context:
         force: bool = False,
     ) -> Optional[str]:
         """Save the intermediate images."""
-
         if scan_to_paperless.jupyter_utils.is_ipython():
             if image is None:
                 return None
 
-            from IPython.display import display  # pylint: disable=import-outside-toplevel
+            from IPython.display import (  # pylint: disable=import-outside-toplevel
+                display,
+            )
 
             display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
             return None
@@ -330,8 +317,9 @@ class Context:
 
     def display_image(self, image: NpNdarrayInt) -> None:
         """Display the image."""
-
         if scan_to_paperless.jupyter_utils.is_ipython():
-            from IPython.display import display  # pylint: disable=import-outside-toplevel
+            from IPython.display import (  # pylint: disable=import-outside-toplevel
+                display,
+            )
 
             display(Image.fromarray(cv2.cvtColor(image[self.get_index(image)], cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
