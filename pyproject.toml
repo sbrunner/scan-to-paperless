@@ -58,7 +58,7 @@ Pillow = "11.0.0"
 PyPDF2 = { version = "3.0.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.2.5", optional = true }
-weasyprint = { version = "62.3", optional = true }
+weasyprint = { version = "63.1", optional = true }
 cffi = { version = "1.17.1", optional = true }
 pikepdf = { version = "9.4.2", optional = true }
 lxml= { version = "5.3.0", optional = true }
