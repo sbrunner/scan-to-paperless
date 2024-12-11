@@ -88,7 +88,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libdevmapper1.02.1: 2:1.02.175-2.1ubuntu4
   ubuntu_22_04/libdw1: 0.186-1build1
   ubuntu_22_04/libelf1: 0.186-1build1
-  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.4
+  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.5
   ubuntu_22_04/libext2fs2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libffi8: 3.4.2-4
   ubuntu_22_04/libfontconfig1: 2.13.1-4.2ubuntu5
@@ -392,7 +392,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libdevmapper1.02.1: 2:1.02.175-2.1ubuntu4
   ubuntu_22_04/libdw1: 0.186-1build1
   ubuntu_22_04/libelf1: 0.186-1build1
-  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.4
+  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.5
   ubuntu_22_04/libext2fs2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libffi8: 3.4.2-4
   ubuntu_22_04/libfontconfig1: 2.13.1-4.2ubuntu5
