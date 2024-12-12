@@ -25,7 +25,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/gcc-12-base: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.10
   ubuntu_22_04/gir1.2-glib-2.0: 1.72.0-1
-  ubuntu_22_04/gir1.2-packagekitglib-1.0: 1.2.5-2ubuntu2
+  ubuntu_22_04/gir1.2-packagekitglib-1.0: 1.2.5-2ubuntu3
   ubuntu_22_04/gnupg: 2.2.27-3ubuntu2.1
   ubuntu_22_04/gnupg-l10n: 2.2.27-3ubuntu2.1
   ubuntu_22_04/gnupg-utils: 2.2.27-3ubuntu2.1
@@ -153,7 +153,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libnuma1: 2.0.14-3ubuntu2
   ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.2
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
-  ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
+  ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu3
   ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.4
@@ -238,7 +238,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/openjdk-11-jre-headless: 11.0.25+9-1ubuntu1~22.04
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.18
   ubuntu_22_04/optipng: 0.7.7-2build1
-  ubuntu_22_04/packagekit: 1.2.5-2ubuntu2
+  ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/pdftk-java: 3.2.2-1
   ubuntu_22_04/perl: 5.34.0-3ubuntu1.3
@@ -329,7 +329,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/gcc-12-base: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.10
   ubuntu_22_04/gir1.2-glib-2.0: 1.72.0-1
-  ubuntu_22_04/gir1.2-packagekitglib-1.0: 1.2.5-2ubuntu2
+  ubuntu_22_04/gir1.2-packagekitglib-1.0: 1.2.5-2ubuntu3
   ubuntu_22_04/gnupg: 2.2.27-3ubuntu2.1
   ubuntu_22_04/gnupg-l10n: 2.2.27-3ubuntu2.1
   ubuntu_22_04/gnupg-utils: 2.2.27-3ubuntu2.1
@@ -457,7 +457,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libnuma1: 2.0.14-3ubuntu2
   ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.2
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
-  ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu2
+  ubuntu_22_04/libpackagekit-glib2-18: 1.2.5-2ubuntu3
   ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.4
   ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.4
@@ -542,7 +542,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/openjdk-11-jre-headless: 11.0.25+9-1ubuntu1~22.04
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.18
   ubuntu_22_04/optipng: 0.7.7-2build1
-  ubuntu_22_04/packagekit: 1.2.5-2ubuntu2
+  ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/pdftk-java: 3.2.2-1
   ubuntu_22_04/perl: 5.34.0-3ubuntu1.3
