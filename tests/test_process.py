@@ -450,7 +450,7 @@ def test_full(progress) -> None:
     pdf_filename = os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")
 
     creator_scan_tp_paperless_re = re.compile(r"^Scan to Paperless 1.[0-9]+.[0-9]+\+[0-9]+$")
-    creator_tesseract_re = re.compile(r"^Tesseract 4.[0-9]+.[0-9]+$")
+    creator_tesseract_re = re.compile(r"^Tesseract [0-9]+.[0-9]+.[0-9]+$")
     with pikepdf.open(pdf_filename) as pdf_:
         with pdf_.open_metadata() as meta:
             creator = meta["{http://purl.org/dc/elements/1.1/}creator"]
