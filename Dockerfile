@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS upstream
+FROM ubuntu:24.04 AS upstream
 
 FROM upstream AS base-all
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
