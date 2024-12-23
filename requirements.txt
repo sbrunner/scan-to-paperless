@@ -1,4 +1,4 @@
-poetry==1.8.4
+poetry==1.8.5
 poetry-plugin-tweak-dependencies-version==1.5.2
 poetry-dynamic-versioning==1.4.1
 poetry-plugin-export==1.8.0
