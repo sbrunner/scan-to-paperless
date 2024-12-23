@@ -3,6 +3,7 @@
 """Process the scanned documents."""
 
 import argparse
+import asyncio
 import datetime
 import json
 import logging
@@ -77,27 +78,33 @@ def add_intermediate_error(
     os.rename(config_file_name + "_", config_file_name)
 
 
-def call(cmd: Union[str, list[str]], **kwargs: Any) -> None:
+async def call(cmd: Union[str, list[str]], check: bool = True, **kwargs: Any) -> None:
     """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     sys.stdout.flush()
-    kwargs.setdefault("check", True)
-    subprocess.run(  # nosec # pylint: disable=subprocess-run-check
-        cmd,
-        capture_output=True,
+    proc = await asyncio.create_subprocess_exec(  # nosec # pylint: disable=subprocess-run-check
+        *cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
         **kwargs,
     )
+    await proc.communicate()
+    if check:
+        assert proc.returncode == 0
 
 
-def run(cmd: Union[str, list[str]], **kwargs: Any) -> CompletedProcess:
+async def run(cmd: Union[str, list[str]], **kwargs: Any) -> tuple[bytes, bytes, asyncio.subprocess.Process]:
     """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     sys.stdout.flush()
-    return subprocess.run(cmd, stderr=subprocess.PIPE, check=True, **kwargs)  # nosec
+    proc = await asyncio.create_subprocess_exec(*cmd, stderr=subprocess.PIPE, **kwargs)  # nosec
+    stdout, stderr = await proc.communicate()
+    assert proc.returncode == 0
+    return stdout, stderr, proc
 
 
 def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
@@ -127,21 +134,21 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNda
 class FunctionWithContextReturnsImage(Protocol):
     """Function with context and returns an image."""
 
-    def __call__(self, context: process_utils.Context) -> Optional[NpNdarrayInt]:
+    async def __call__(self, context: process_utils.Context) -> Optional[NpNdarrayInt]:
         """Call the function."""
 
 
 class FunctionWithContextReturnsNone(Protocol):
     """Function with context and no return."""
 
-    def __call__(self, context: process_utils.Context) -> None:
+    async def __call__(self, context: process_utils.Context) -> None:
         """Call the function."""
 
 
 class ExternalFunction(Protocol):
     """Function that call an external tool."""
 
-    def __call__(self, context: process_utils.Context, source: str, destination: str) -> None:
+    async def __call__(self, context: process_utils.Context, source: str, destination: str) -> None:
         """Call the function."""
 
 
@@ -162,11 +169,11 @@ class Process:
     def __call__(self, func: FunctionWithContextReturnsImage) -> FunctionWithContextReturnsNone:
         """Call the function."""
 
-        def wrapper(context: process_utils.Context) -> None:
+        async def wrapper(context: process_utils.Context) -> None:
             start_time = time.perf_counter()
             if self.ignore_error:
                 try:
-                    new_image = func(context)
+                    new_image = await func(context)
                     if new_image is not None and self.ignore_error:
                         context.image = new_image
                 except Exception as exception:
@@ -179,7 +186,7 @@ class Process:
                             traceback.format_exc().split("\n"),
                         )
             else:
-                new_image = func(context)
+                new_image = await func(context)
                 if new_image is not None:
                     context.image = new_image
             elapsed_time = time.perf_counter() - start_time
@@ -195,12 +202,12 @@ class Process:
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
-    def wrapper(context: process_utils.Context) -> Optional[NpNdarrayInt]:
+    async def wrapper(context: process_utils.Context) -> Optional[NpNdarrayInt]:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
             assert context.image is not None
             cv2.imwrite(source.name, context.image)
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
-                func(context, source.name, destination.name)
+                await func(context, source.name, destination.name)
                 return cast(NpNdarrayInt, cv2.imread(destination.name))
 
     return wrapper
@@ -279,7 +286,7 @@ def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
     return level_ is not False, min_, max_
 
 
-def _histogram(
+async def _histogram(
     context: process_utils.Context,
     histogram_data: Any,
     histogram_centers: Any,
@@ -333,7 +340,8 @@ def _histogram(
     with tempfile.NamedTemporaryFile(suffix=".png") as file:
         if not jupyter_utils.is_ipython():
             plt.savefig(file.name)
-            subprocess.run(["gm", "convert", "-flatten", file.name, file.name], check=True)  # nosec
+            proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
+            assert proc.returncode == 0
             image = cv2.imread(file.name)
             context.save_progress_images(
                 "histogram",
@@ -345,19 +353,19 @@ def _histogram(
 
 
 @Process("histogram", progress=False)
-def histogram(context: process_utils.Context) -> None:
+async def histogram(context: process_utils.Context) -> None:
     """Create an image with the histogram of the current image."""
     noisy_image = img_as_ubyte(context.image)  # type: ignore[no-untyped-call]
     histogram_data, histogram_centers = skimage_histogram(noisy_image)
     histogram_max = max(histogram_data)
     process_count = context.get_process_count()
 
-    _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, False)
-    _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, True)
+    await _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, False)
+    await _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, True)
 
 
 @Process("level")
-def level(context: process_utils.Context) -> NpNdarrayInt:
+async def level(context: process_utils.Context) -> NpNdarrayInt:
     """Do the level on an image."""
     assert context.image is not None
     img_yuv = cv2.cvtColor(context.image, cv2.COLOR_BGR2YUV)
@@ -378,7 +386,7 @@ def level(context: process_utils.Context) -> NpNdarrayInt:
 
 
 @Process("color-cut")
-def color_cut(context: process_utils.Context) -> None:
+async def color_cut(context: process_utils.Context) -> None:
     """Set the near white to white and near black to black."""
     assert context.image is not None
     grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
@@ -404,13 +412,13 @@ def color_cut(context: process_utils.Context) -> None:
 
 
 @Process("mask-cut")
-def cut(context: process_utils.Context) -> None:
+async def cut(context: process_utils.Context) -> None:
     """Mask the image with the cut mask."""
     context.do_initial_cut()
 
 
 @Process("deskew")
-def deskew(context: process_utils.Context) -> None:
+async def deskew(context: process_utils.Context) -> None:
     """Deskew an image."""
     images_config = context.config.setdefault("images_config", {})
     image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
@@ -463,7 +471,7 @@ def deskew(context: process_utils.Context) -> None:
 
 
 @Process("docrop")
-def docrop(context: process_utils.Context) -> None:
+async def docrop(context: process_utils.Context) -> None:
     """Crop an image."""
     # Margin in mm
     crop_config = context.config["args"].setdefault("crop", {})
@@ -479,7 +487,7 @@ def docrop(context: process_utils.Context) -> None:
 
 
 @Process("sharpen")
-def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
+async def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
     """Sharpen an image."""
     if (
         context.config["args"]
@@ -496,7 +504,7 @@ def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
 
 @Process("dither")
 @external
-def dither(context: process_utils.Context, source: str, destination: str) -> None:
+async def dither(context: process_utils.Context, source: str, destination: str) -> None:
     """Dither an image."""
     if (
         context.config["args"]
@@ -505,11 +513,11 @@ def dither(context: process_utils.Context, source: str, destination: str) -> Non
         is False
     ):
         return
-    call(CONVERT + ["+dither", source, destination])
+    await call(CONVERT + ["+dither", source, destination])
 
 
 @Process("autorotate", True)
-def autorotate(context: process_utils.Context) -> None:
+async def autorotate(context: process_utils.Context) -> None:
     """
     Auto rotate an image.
 
@@ -1128,7 +1136,7 @@ def _update_config(config: schema.Configuration) -> None:
         del old_config["args"]["max_level"]
 
 
-def transform(
+async def transform(
     config: schema.Configuration,
     step: schema.Step,
     config_file_name: str,
@@ -1159,16 +1167,16 @@ def transform(
         image_status = image_config.setdefault("status", {})
         assert context.image is not None
         image_status["size"] = list(context.image.shape[:2][::-1])
-        histogram(context)
-        level(context)
-        color_cut(context)
+        await histogram(context)
+        await level(context)
+        await color_cut(context)
         context.init_mask()
-        cut(context)
-        deskew(context)
-        docrop(context)
-        sharpen(context)
-        dither(context)  # pylint: disable=no-value-for-parameter,unknown-option-value, added by decorator
-        autorotate(context)
+        await cut(context)
+        await deskew(context)
+        await docrop(context)
+        await sharpen(context)
+        await dither(context)  # pylint: disable=no-value-for-parameter,unknown-option-value, added by decorator
+        await autorotate(context)
 
         # Is empty ?
         empty_config = config["args"].setdefault("empty", {})
@@ -1341,14 +1349,14 @@ def transform(
     count = context.get_process_count()
     for image in images:
         if progress:
-            _save_progress(context.root_folder, count, "finalize", os.path.basename(image), image)
+            await _save_progress(context.root_folder, count, "finalize", os.path.basename(image), image)
 
     if config["args"].setdefault("colors", schema.COLORS_DEFAULT):
         count = context.get_process_count()
         for image in images:
-            call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
+            await call(CONVERT + ["-colors", str(config["args"]["colors"]), image, image])
             if progress:
-                _save_progress(context.root_folder, count, "colors", os.path.basename(image), image)
+                await _save_progress(context.root_folder, count, "colors", os.path.basename(image), image)
 
     pngquant_config = config["args"].setdefault("pngquant", cast(schema.Pngquant, schema.PNGQUANT_DEFAULT))
     if not config["args"].setdefault("jpeg", cast(schema.Jpeg, schema.JPEG_DEFAULT)).setdefault(
@@ -1357,19 +1365,22 @@ def transform(
         count = context.get_process_count()
         for image in images:
             with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
-                call(
-                    ["pngquant", f"--output={temp_file.name}"]
-                    + pngquant_config.setdefault(
-                        "options",
-                        schema.PNGQUANT_OPTIONS_DEFAULT,
-                    )
-                    + ["--", image],
+                await call(
+                    [
+                        "pngquant",
+                        f"--output={temp_file.name}",
+                        *pngquant_config.setdefault(
+                            "options",
+                            schema.PNGQUANT_OPTIONS_DEFAULT,
+                        ),
+                        *["--", image],
+                    ],
                     check=False,
                 )
                 if os.path.getsize(temp_file.name) > 0:
-                    call(["cp", temp_file.name, image])
+                    await call(["cp", temp_file.name, image])
             if progress:
-                _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
+                await _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
 
     if not config["args"].setdefault("jpeg", {}).setdefault(
         "enabled", schema.JPEG_ENABLED_DEFAULT
@@ -1378,9 +1389,9 @@ def transform(
     ):
         count = context.get_process_count()
         for image in images:
-            call(["optipng", image], check=False)
+            await call(["optipng", image], check=False)
             if progress:
-                _save_progress(context.root_folder, count, "optipng", os.path.basename(image), image)
+                await _save_progress(context.root_folder, count, "optipng", os.path.basename(image), image)
 
     if config["args"].setdefault("jpeg", {}).setdefault("enabled", schema.JPEG_ENABLED_DEFAULT):
         count = context.get_process_count()
@@ -1388,24 +1399,18 @@ def transform(
         for image in images:
             name = os.path.splitext(os.path.basename(image))[0]
             jpeg_img = f"{name}.jpeg"
-            subprocess.run(  # nosec
-                [
-                    "gm",
-                    "convert",
-                    image,
-                    "-quality",
-                    str(
-                        config["args"]
-                        .setdefault("jpeg", {})
-                        .setdefault("quality", schema.JPEG_QUALITY_DEFAULT)
-                    ),
-                    jpeg_img,
-                ],
-                check=True,
+            proc = await asyncio.create_subprocess_exec(  # nosec
+                "gm",
+                "convert",
+                image,
+                "-quality",
+                str(config["args"].setdefault("jpeg", {}).setdefault("quality", schema.JPEG_QUALITY_DEFAULT)),
+                jpeg_img,
             )
+            assert proc.returncode == 0
             new_images.append(jpeg_img)
             if progress:
-                _save_progress(context.root_folder, count, "to-jpeg", os.path.basename(image), image)
+                await _save_progress(context.root_folder, count, "to-jpeg", os.path.basename(image), image)
 
         images = new_images
 
@@ -1433,7 +1438,9 @@ def transform(
     }
 
 
-def _save_progress(root_folder: Optional[str], count: int, name: str, image_name: str, image: str) -> None:
+async def _save_progress(
+    root_folder: Optional[str], count: int, name: str, image_name: str, image: str
+) -> None:
     assert root_folder
     name = f"{count}-{name}"
     dest_folder = os.path.join(root_folder, name)
@@ -1441,7 +1448,7 @@ def _save_progress(root_folder: Optional[str], count: int, name: str, image_name
         os.makedirs(dest_folder)
     dest_image = os.path.join(dest_folder, image_name)
     try:
-        call(["cp", image, dest_image])
+        await call(["cp", image, dest_image])
     except Exception as exception:
         print(exception)
 
@@ -1471,7 +1478,7 @@ class Item(TypedDict, total=False):
     file: IO[bytes]
 
 
-def split(
+async def split(
     config: schema.Configuration,
     step: schema.Step,
     root_folder: str,
@@ -1543,7 +1550,7 @@ def split(
                     process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                         suffix=".png"
                     )
-                    call(
+                    await call(
                         CONVERT
                         + [
                             "-crop",
@@ -1592,7 +1599,7 @@ def split(
             raise scan_to_paperless.ScanToPaperlessException(f"Mix of limit type for page '{page_number}'")
 
         with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
-            call(
+            await call(
                 CONVERT
                 + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
                 + [
@@ -1606,7 +1613,7 @@ def split(
             )
             save(context, root_folder, process_file.name, f"{process_count}-split")
             img2 = os.path.join(root_folder, f"image-{page_number}.png")
-            call(CONVERT + [process_file.name, img2])
+            await call(CONVERT + [process_file.name, img2])
             transformed_images.append(img2)
     process_count += 1
 
@@ -1617,7 +1624,7 @@ def split(
     }
 
 
-def finalize(
+async def finalize(
     config: schema.Configuration,
     step: schema.Step,
     root_folder: str,
@@ -1645,7 +1652,7 @@ def finalize(
                 images2.append(image)
 
         file_name = os.path.join(root_folder, "append.png")
-        call(CONVERT + images2 + ["-background", "#ffffff", "-gravity", "center", "-append", file_name])
+        await call(CONVERT + images2 + ["-background", "#ffffff", "-gravity", "center", "-append", file_name])
         # To stack vertically (img1 over img2):
         # vis = np.concatenate((img1, img2), axis=0)
         # To stack horizontally (img1 to the left of img2):
@@ -1662,7 +1669,7 @@ def finalize(
             tesseract_configuration = config["args"].setdefault("tesseract", {})
             if tesseract_configuration.setdefault("enabled", schema.TESSERACT_ENABLED_DEFAULT):
                 with open(file_name, "w", encoding="utf8") as output_file:
-                    process = run(
+                    _, stderr, _ = await run(
                         [
                             "tesseract",
                             "--dpi",
@@ -1675,10 +1682,10 @@ def finalize(
                         ],
                         stdout=output_file,
                     )
-                    if process.stderr:
-                        print(process.stderr)
+                    if stderr:
+                        print(stderr.decode())
             else:
-                call(CONVERT + [image, "+repage", file_name])
+                await call(CONVERT + [image, "+repage", file_name])
             pdf.append(file_name)
 
     if status is not None:
@@ -1705,7 +1712,7 @@ def finalize(
     if progress:
         for pdf_file in pdf:
             basename = os.path.basename(pdf_file).split(".")
-            call(
+            await call(
                 [
                     "cp",
                     pdf_file,
@@ -1715,9 +1722,9 @@ def finalize(
 
     count = 1
     with tempfile.NamedTemporaryFile(suffix=".png") as temporary_pdf:
-        call(["pdftk"] + pdf + ["output", temporary_pdf.name, "compress"])
+        await call(["pdftk"] + pdf + ["output", temporary_pdf.name, "compress"])
         if progress:
-            call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pdftk.pdf")])
+            await call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pdftk.pdf")])
             count += 1
 
         if (
@@ -1725,9 +1732,9 @@ def finalize(
             .setdefault("exiftool", cast(schema.Exiftool, schema.EXIFTOOL_DEFAULT))
             .setdefault("enabled", schema.EXIFTOOL_ENABLED_DEFAULT)
         ):
-            call(["exiftool", "-overwrite_original_in_place", temporary_pdf.name])
+            await call(["exiftool", "-overwrite_original_in_place", temporary_pdf.name])
             if progress:
-                call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-exiftool.pdf")])
+                await call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-exiftool.pdf")])
                 count += 1
 
         if (
@@ -1736,11 +1743,11 @@ def finalize(
             .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
         ):
             with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
-                call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
+                await call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
-                    call(["cp", temporary_ps2pdf.name, f"{count}-ps2pdf.pdf"])
+                    await call(["cp", temporary_ps2pdf.name, f"{count}-ps2pdf.pdf"])
                     count += 1
-                call(["cp", temporary_ps2pdf.name, temporary_pdf.name])
+                await call(["cp", temporary_ps2pdf.name, temporary_pdf.name])
 
         with pikepdf.open(temporary_pdf.name, allow_overwriting_input=True) as pdf_:
             scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
@@ -1752,7 +1759,7 @@ def finalize(
                 )
             pdf_.save(temporary_pdf.name)
         if progress:
-            call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pikepdf.pdf")])
+            await call(["cp", temporary_pdf.name, os.path.join(root_folder, f"{count}-pikepdf.pdf")])
             count += 1
 
         if (
@@ -1760,7 +1767,7 @@ def finalize(
             .setdefault("consume_folder", {})
             .setdefault("enabled", schema.CONSUME_FOLDER_ENABLED_DEFAULT)
         ):
-            call(["cp", temporary_pdf.name, destination])
+            await call(["cp", temporary_pdf.name, destination])
         if (
             config["args"]
             .setdefault("rest_upload", cast(schema.RestUpload, {}))
@@ -1836,7 +1843,7 @@ def save_config(config: schema.Configuration, config_file_name: str) -> None:
     os.rename(config_file_name + "_", config_file_name)
 
 
-def _process(
+async def _process(
     config_file_name: str,
     status: scan_to_paperless.status.Status,
     dirty: bool = False,
@@ -1901,12 +1908,12 @@ def _process(
             next_step = None
             if step["name"] == scan_to_paperless.status.STATUS_TRANSFORM:
                 _update_config(config)
-                next_step = transform(config, step, config_file_name, root_folder, status=status)
+                next_step = await transform(config, step, config_file_name, root_folder, status=status)
             elif step["name"] == scan_to_paperless.status.STATUS_ASSISTED_SPLIT:
                 status.set_status(config_file_name, -1, "Split")
-                next_step = split(config, step, root_folder)
+                next_step = await split(config, step, root_folder)
             elif step["name"] == scan_to_paperless.status.STATUS_FINALIZE:
-                finalize(config, step, root_folder, status=status)
+                await finalize(config, step, root_folder, status=status)
                 done = True
 
             if done and os.environ.get("PROGRESS", "FALSE") != "TRUE":
@@ -1953,22 +1960,7 @@ def _process(
     return dirty
 
 
-def main() -> None:
-    """Process the scanned documents."""
-    parser = argparse.ArgumentParser("Process the scanned documents.")
-    parser.add_argument("config", nargs="?", help="The config file to process.")
-    args = parser.parse_args()
-
-    if args.config:
-        _process(args.config, scan_to_paperless.status.Status(no_write=True))
-        sys.exit()
-
-    print("Welcome to scanned images document to paperless.")
-    print(f"Started at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
-
-    status = scan_to_paperless.status.Status()
-    status.write()
-
+async def _task(status: scan_to_paperless.status.Status) -> None:
     while True:
         status.set_current_folder(None)
         name, job_type, step = status.get_next_job()
@@ -2012,12 +2004,12 @@ def main() -> None:
             next_step = None
             if job_type == scan_to_paperless.status.JobType.TRANSFORM:
                 _update_config(config)
-                next_step = transform(config, step, config_file_name, root_folder, status=status)
+                next_step = await transform(config, step, config_file_name, root_folder, status=status)
             if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
                 status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
-                next_step = split(config, step, root_folder)
+                next_step = await split(config, step, root_folder)
             if job_type == scan_to_paperless.status.JobType.FINALIZE:
-                finalize(config, step, root_folder, status=status)
+                await finalize(config, step, root_folder, status=status)
                 with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
                     pass
             if next_step is not None:
@@ -2048,5 +2040,24 @@ def main() -> None:
             raise ValueError(f"Unknown job type: {job_type}")
 
 
+async def main() -> None:
+    """Process the scanned documents."""
+    parser = argparse.ArgumentParser("Process the scanned documents.")
+    parser.add_argument("config", nargs="?", help="The config file to process.")
+    args = parser.parse_args()
+
+    if args.config:
+        await _process(args.config, scan_to_paperless.status.Status(no_write=True))
+        sys.exit()
+
+    print("Welcome to scanned images document to paperless.")
+    print(f"Started at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
+    status = scan_to_paperless.status.Status()
+    status.write()
+
+    await asyncio.gather(_task(status), status.watch())
+
+
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

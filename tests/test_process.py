@@ -164,7 +164,7 @@ def init_test() -> None:
         ),
     ],
 )
-def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
+async def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = f"/results/assisted-split-full-{type_}"
@@ -193,7 +193,7 @@ def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
         "sources": ["image-1.png"],
     }
     config_file_name = os.path.join(root_folder, "config.yaml")
-    step = process.transform(config, step, config_file_name, root_folder)
+    step = await process.transform(config, step, config_file_name, root_folder)
     assert step["name"] == "split"
     images = step["sources"]
     assert len(images) == 1
@@ -211,7 +211,7 @@ def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
     assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
     config["assisted_split"][0]["limits"][0]["value"] = better_value
-    step = process.split(config, step, root_folder)
+    step = await process.split(config, step, root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalize"
     print(f"Compare '{step['sources'][0]}' with expected image 'assisted-split-{type_}-3.expected.png'.")
@@ -258,7 +258,7 @@ def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_assisted_split_join_full() -> None:
+async def test_assisted_split_join_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/assisted-split-join-full"
@@ -284,7 +284,7 @@ def test_assisted_split_join_full() -> None:
         "sources": ["image-1.png", "image-2.png"],
     }
     config_file_name = os.path.join(root_folder, "config.yaml")
-    step = process.transform(config, step, config_file_name, root_folder)
+    step = await process.transform(config, step, config_file_name, root_folder)
     assert step["name"] == "split"
     images = step["sources"]
     assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
@@ -298,7 +298,7 @@ def test_assisted_split_join_full() -> None:
         limit, destinations = elements
         config["assisted_split"][number]["limits"] = [limit]
         config["assisted_split"][number]["destinations"] = destinations
-    step = process.split(config, step, root_folder)
+    step = await process.split(config, step, root_folder)
     assert step["name"] == "finalize"
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'assisted-split-join-1.expected.png'.")
@@ -339,7 +339,7 @@ def test_assisted_split_join_full() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_assisted_split_booth() -> None:
+async def test_assisted_split_booth() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/assisted-split-booth"
@@ -379,7 +379,7 @@ def test_assisted_split_booth() -> None:
         "name": "split",
         "sources": ["image-1.png"],
     }
-    step = process.split(config, step, root_folder)
+    step = await process.split(config, step, root_folder)
     assert step["name"] == "finalize"
     assert len(step["sources"]) == 4
     print(f"Compare '{step['sources'][0]}' with expected image 'assisted-split-booth-1.expected.png'.")
@@ -415,7 +415,7 @@ def test_assisted_split_booth() -> None:
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize("progress", ["FALSE", "TRUE"])
-def test_full(progress) -> None:
+async def test_full(progress) -> None:
     init_test()
     os.environ["PROGRESS"] = progress
     root_folder = f"/results/full-{progress}"
@@ -426,7 +426,7 @@ def test_full(progress) -> None:
         "images": [os.path.join(os.path.dirname(__file__), "all-1.png")],
     }
     step = {"sources": [os.path.join(os.path.dirname(__file__), "all-1.png")]}
-    step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
     check_image_file(
@@ -485,7 +485,7 @@ def test_full(progress) -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_credit_card_full() -> None:
+async def test_credit_card_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/credit-card"
@@ -506,7 +506,7 @@ def test_credit_card_full() -> None:
             os.path.join(os.path.dirname(__file__), "credit-card-2.png"),
         ]
     }
-    step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalize"
     process.finalize(config, step, root_folder)
@@ -539,7 +539,7 @@ def test_credit_card_full() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_empty() -> None:
+async def test_empty() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = "/results/empty"
@@ -556,7 +556,7 @@ def test_empty() -> None:
             os.path.join(os.path.dirname(__file__), "empty.png"),
         ]
     }
-    step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 0
     assert step["name"] == "finalize"
     shutil.rmtree(root_folder)
@@ -567,14 +567,14 @@ def test_empty() -> None:
 @pytest.mark.parametrize(
     "test,args", [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
 )
-def test_custom_process(test: str, args: dict[str, Any]) -> None:
+async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
     root_folder = "/results/600"
     if not os.path.exists(root_folder):
         os.makedirs(root_folder)
     config = {"args": args}
     step = {"sources": [os.path.join(os.path.dirname(__file__), f"{test}.png")]}
-    step = process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 1
     try:
         print(f"Compare '{step['sources'][0]}' with expected image '{test}.expected.png'.")
@@ -713,7 +713,7 @@ def test_multi_code() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_tiff_jupyter() -> None:
+async def test_tiff_jupyter() -> None:
     init_test()
     root_folder = "/results/tiff"
     source_folder = os.path.join(root_folder, "source")
@@ -733,7 +733,7 @@ def test_tiff_jupyter() -> None:
         "sources": ["source/image-1.tiff"],
     }
     config_file_name = os.path.join(root_folder, "config.yaml")
-    step = process.transform(config, step, config_file_name, root_folder)
+    step = await process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
     assert list(glob.glob(f"{root_folder}/**/*.tiff")) == [os.path.join(root_folder, "source/image-1.tiff")]
 
@@ -833,7 +833,7 @@ def test_color_cut() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_histogram() -> None:
+async def test_histogram() -> None:
     init_test()
     context = process_utils.Context(
         {
@@ -848,7 +848,7 @@ def test_histogram() -> None:
     context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
     context.image_name = "histogram.png"
     context.root_folder = "/tmp"
-    process.histogram(context)
+    await process.histogram(context)
     print("Compare '/results/histogram/histogram.png' with expected image 'histogram.expected.png'.")
     check_image_file(
         "/results/histogram/",
