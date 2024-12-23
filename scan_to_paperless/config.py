@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import Dict, List, TypedDict, Union
+from typing import TypedDict
 
 from typing_extensions import Required
 
@@ -44,7 +44,7 @@ class Arguments(TypedDict, total=False):
     The level configuration
     """
 
-    cut_white: Union[int, float]
+    cut_white: int | float
     """
     Cut white.
 
@@ -53,7 +53,7 @@ class Arguments(TypedDict, total=False):
     default: 255
     """
 
-    cut_black: Union[int, float]
+    cut_black: int | float
     """
     Cut black.
 
@@ -69,7 +69,7 @@ class Arguments(TypedDict, total=False):
     The crop configuration
     """
 
-    dpi: Union[int, float]
+    dpi: int | float
     """
     Dpi.
 
@@ -200,7 +200,7 @@ class Arguments(TypedDict, total=False):
       enabled: false
     """
 
-    background_color: List[int]
+    background_color: list[int]
     """
     Background color.
 
@@ -278,7 +278,7 @@ class AutoMask(TypedDict, total=False):
     default: True
     """
 
-    lower_hsv_color: List[int]
+    lower_hsv_color: list[int]
     """
     Lower hsv color.
 
@@ -290,7 +290,7 @@ class AutoMask(TypedDict, total=False):
       - 250
     """
 
-    upper_hsv_color: List[int]
+    upper_hsv_color: list[int]
     """
     Upper hsv color.
 
@@ -439,7 +439,7 @@ class Configuration(TypedDict, total=False):
     default: scanimage
     """
 
-    scanimage_arguments: List[str]
+    scanimage_arguments: list[str]
     """
     Scanimage arguments.
 
@@ -472,7 +472,7 @@ class Configuration(TypedDict, total=False):
     default: eog
     """
 
-    modes: Dict[str, "Mode"]
+    modes: dict[str, "Mode"]
     """
     Modes.
 
@@ -520,7 +520,7 @@ class Contour(TypedDict, total=False):
     The configuration used to find the contour
     """
 
-    min_box_size: Union[int, float]
+    min_box_size: int | float
     """
     Min box size.
 
@@ -532,7 +532,7 @@ class Contour(TypedDict, total=False):
       limit: 10
     """
 
-    min_box_black: Union[int, float]
+    min_box_black: int | float
     """
     Min box black.
 
@@ -541,7 +541,7 @@ class Contour(TypedDict, total=False):
     default: 2
     """
 
-    contour_kernel_size: Union[int, float]
+    contour_kernel_size: int | float
     """
     Contour kernel size.
 
@@ -550,7 +550,7 @@ class Contour(TypedDict, total=False):
     default: 1.5
     """
 
-    threshold_block_size: Union[int, float]
+    threshold_block_size: int | float
     """
     Threshold block size.
 
@@ -559,7 +559,7 @@ class Contour(TypedDict, total=False):
     default: 1.5
     """
 
-    threshold_value_c: Union[int, float]
+    threshold_value_c: int | float
     """
     Threshold value c.
 
@@ -585,7 +585,7 @@ class Crop(TypedDict, total=False):
     default: True
     """
 
-    margin_horizontal: Union[int, float]
+    margin_horizontal: int | float
     """
     Margin horizontal.
 
@@ -594,7 +594,7 @@ class Crop(TypedDict, total=False):
     default: 9
     """
 
-    margin_vertical: Union[int, float]
+    margin_vertical: int | float
     """
     Margin vertical.
 
@@ -883,7 +883,7 @@ class Level(TypedDict, total=False):
     default: False
     """
 
-    min: Union[int, float]
+    min: int | float
     """
     Min level.
 
@@ -892,7 +892,7 @@ class Level(TypedDict, total=False):
     default: 0
     """
 
-    max: Union[int, float]
+    max: int | float
     """
     Max level.
 
@@ -902,7 +902,7 @@ class Level(TypedDict, total=False):
     """
 
 
-LevelValue = Union[bool, int]
+LevelValue = bool | int
 """
 Level value.
 
@@ -1079,7 +1079,7 @@ class MergeStrategies(TypedDict, total=False):
     The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies
     """
 
-    list: List[str]
+    list: list[str]
     """
     List.
 
@@ -1089,7 +1089,7 @@ class MergeStrategies(TypedDict, total=False):
       - override
     """
 
-    dict: List[str]
+    dict: list[str]
     """
     Dict.
 
@@ -1099,7 +1099,7 @@ class MergeStrategies(TypedDict, total=False):
       - merge
     """
 
-    fallback: List[str]
+    fallback: list[str]
     """
     Fallback.
 
@@ -1109,7 +1109,7 @@ class MergeStrategies(TypedDict, total=False):
       - override
     """
 
-    type_conflict: List[str]
+    type_conflict: list[str]
     """
     Type conflict.
 
@@ -1123,7 +1123,7 @@ class MergeStrategies(TypedDict, total=False):
 class Mode(TypedDict, total=False):
     """Mode."""
 
-    scanimage_arguments: List[str]
+    scanimage_arguments: list[str]
     """ Additional scanimage arguments """
 
     auto_bash: bool
@@ -1209,7 +1209,7 @@ class Pngquant(TypedDict, total=False):
     default: True
     """
 
-    options: List[str]
+    options: list[str]
     """
     Pngquant options.
 
@@ -1387,7 +1387,7 @@ class Rule(TypedDict, total=False):
     default: 30
     """
 
-    graduation_color: List[int]
+    graduation_color: list[int]
     """
     Rule graduation color.
 
@@ -1397,7 +1397,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_color: List[int]
+    lines_color: list[int]
     """
     Rule lines color.
 
@@ -1407,7 +1407,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_opacity: Union[int, float]
+    lines_opacity: int | float
     """
     Rule lines opacity.
 
@@ -1421,14 +1421,14 @@ class Rule(TypedDict, total=False):
     default: /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
     """
 
-    graduation_text_font_size: Union[int, float]
+    graduation_text_font_size: int | float
     """
     Rule graduation text font size.
 
     default: 17
     """
 
-    graduation_text_font_color: List[int]
+    graduation_text_font_color: list[int]
     """
     Rule graduation text font color.
 
@@ -1539,7 +1539,7 @@ VIEWER_DEFAULT = "eog"
 class _ArgumentsDeskew(TypedDict, total=False):
     """The deskew configuration"""
 
-    min_angle: Union[int, float]
+    min_angle: int | float
     """
     Deskew min angle.
 
@@ -1548,7 +1548,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     default: -45
     """
 
-    max_angle: Union[int, float]
+    max_angle: int | float
     """
     Deskew max angle.
 
@@ -1557,7 +1557,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     default: 45
     """
 
-    angle_derivation: Union[int, float]
+    angle_derivation: int | float
     """
     Deskew angle derivation.
 
@@ -1566,7 +1566,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     default: 0.1
     """
 
-    sigma: Union[int, float]
+    sigma: int | float
     """
     Deskew sigma.
 
