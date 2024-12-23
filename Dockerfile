@@ -7,7 +7,10 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get upgrade --yes \
-    && apt-get install --assume-yes --no-install-recommends python3-pip python-is-python3 gnupg fonts-dejavu-core
+    && apt-get install --assume-yes --no-install-recommends python3-pip python3-venv python-is-python3 gnupg fonts-dejavu-core \
+    && python3 -m venv /venv
+
+ENV PATH=/venv/bin:$PATH
 
 FROM base-all AS poetry
 
