@@ -1,5 +1,6 @@
 """Manage the status file of the progress."""
 
+import asyncio
 import datetime
 import glob
 import html
@@ -8,6 +9,7 @@ import traceback
 from enum import Enum
 from typing import NamedTuple, Optional
 
+import asyncinotify
 import jinja2
 from ruamel.yaml.main import YAML
 
@@ -98,7 +100,16 @@ class Status:
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
         self._current_folder: Optional[str] = None
-        self._scan()
+
+        self._codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
+        if self._codes_folder[-1] != "/":
+            self._codes_folder += "/"
+        self._consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
+        if self._consume_folder[-1] != "/":
+            self._consume_folder += "/"
+        self._source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
+
+        self._init()
 
     def set_global_status(self, status: str) -> None:
         """Set the global status."""
@@ -142,66 +153,23 @@ class Status:
         if write:
             self.write()
 
-    def _scan(self) -> None:
+    def _init(self) -> None:
         """Scan for changes for waiting documents."""
-        codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
-        if codes_folder[-1] != "/":
-            codes_folder += "/"
-        self._codes = [
-            f[len(codes_folder) :]
-            for f in glob.glob(os.path.join(codes_folder, "**"), recursive=True)
-            if os.path.isfile(f)
-        ]
+        self._update_scan_codes()
+        self._update_consume()
 
-        consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
-        if consume_folder[-1] != "/":
-            consume_folder += "/"
-        self._consume = [
-            f[len(consume_folder) :]
-            for f in glob.glob(os.path.join(consume_folder, "**"), recursive=True)
-            if os.path.isfile(f)
-        ]
-
-        source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
-        for name in list(self._status):
-            if name != self._current_folder:
-                if os.path.isdir(os.path.join(source_folder, name)):
-                    try:
-                        self._update_status(name)
-                    except Exception as exception:
-                        trace = traceback.format_exc().split("\n")
-                        self.set_status(
-                            name,
-                            -1,
-                            f"Error: {exception}",
-                            f"<p>Stacktrace:</p><p><code>{'<br />'.join(trace)}</code></p>",
-                        )
-                else:
-                    del self._status[name]
-
-        for folder_name in glob.glob(os.path.join(source_folder, "*")):
+        for folder_name in glob.glob(os.path.join(self._source_folder, "*")):
             if os.path.isdir(folder_name):
                 name = os.path.basename(folder_name)
-                if name not in self._status:
-                    try:
-                        self._update_status(name)
-                    except Exception as exception:
-                        trace = traceback.format_exc().split("\n")
-                        self.set_status(
-                            name,
-                            -1,
-                            f"Error: {exception}",
-                            f"<p>Stacktrace:</p><p><code>{'<br />'.join(trace)}</code></p>",
-                        )
+                self._update_source_error(name)
 
         self.write()
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
-        source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
-        if os.path.exists(os.path.join(source_folder, name, "error.yaml")):
+        if os.path.exists(os.path.join(self._source_folder, name, "error.yaml")):
             with open(
-                os.path.join(source_folder, name, "error.yaml"),
+                os.path.join(self._source_folder, name, "error.yaml"),
                 encoding="utf-8",
             ) as error_file:
                 error = yaml.load(error_file)
@@ -216,16 +184,16 @@ class Status:
             )
             return
 
-        if os.path.exists(os.path.join(source_folder, name, "DONE")):
+        if os.path.exists(os.path.join(self._source_folder, name, "DONE")):
             self.set_status(name, -1, _DONE_STATUS)
             return
 
-        if not os.path.exists(os.path.join(source_folder, name, "config.yaml")):
-            len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
+        if not os.path.exists(os.path.join(self._source_folder, name, "config.yaml")):
+            len_folder = len(os.path.join(self._source_folder, name).rstrip("/")) + 1
             files = [
                 f[len_folder:]
                 for f in glob.glob(
-                    os.path.join(source_folder, name, "**"),
+                    os.path.join(self._source_folder, name, "**"),
                     recursive=True,
                 )
                 if os.path.isfile(f)
@@ -235,7 +203,7 @@ class Status:
             return
 
         with open(
-            os.path.join(source_folder, name, "config.yaml"),
+            os.path.join(self._source_folder, name, "config.yaml"),
             encoding="utf-8",
         ) as config_file:
             config = yaml.load(config_file)
@@ -265,12 +233,12 @@ class Status:
 
         if (
             rerun
-            or not os.path.exists(os.path.join(source_folder, name, "REMOVE_TO_CONTINUE"))
+            or not os.path.exists(os.path.join(self._source_folder, name, "REMOVE_TO_CONTINUE"))
             or len(config.get("steps", [])) == 0
         ):
             self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
         else:
-            len_folder = len(os.path.join(source_folder, name).rstrip("/")) + 1
+            len_folder = len(os.path.join(self._source_folder, name).rstrip("/")) + 1
             source_images = (
                 config["steps"][-2]["sources"] if len(config.get("steps", [])) >= 2 else config["images"]
             )
@@ -329,7 +297,6 @@ class Status:
 
     def get_next_job(self) -> tuple[Optional[str], JobType, Optional[process_schema.Step]]:
         """Get the next job to do."""
-        self._scan()
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
             (JobType.ASSISTED_SPLIT, _WAITING_TO_ASSISTED_SPLIT_STATUS),
@@ -347,3 +314,73 @@ class Status:
             return self._codes[0], JobType.CODE, None
 
         return None, JobType.NONE, None
+
+    def _update_scan_codes(self) -> None:
+        self._codes = [
+            f[len(self._codes_folder) :]
+            for f in glob.glob(os.path.join(self._codes_folder, "**"), recursive=True)
+            if os.path.isfile(f)
+        ]
+
+    async def _watch_scan_codes(self) -> None:
+        with asyncinotify.Inotify() as inotify:
+            inotify.add_watch(
+                self._codes_folder,
+                asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
+            )
+            async for _ in inotify:
+                self._update_scan_codes()
+                self.write()
+
+    def _update_consume(self) -> None:
+        self._consume = [
+            f[len(self._consume_folder) :]
+            for f in glob.glob(os.path.join(self._consume_folder, "**"), recursive=True)
+            if os.path.isfile(f)
+        ]
+
+    async def _watch_destination(self) -> None:
+        with asyncinotify.Inotify() as inotify:
+            inotify.add_watch(
+                self._consume_folder,
+                asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
+            )
+            async for _ in inotify:
+                self._update_consume()
+                self.write()
+
+    def _update_source_error(self, name: str) -> bool:
+        if name != self._current_folder:
+            if os.path.isdir(os.path.join(self._source_folder, name)):
+                try:
+                    self._update_status(name)
+                except Exception as exception:
+                    trace = traceback.format_exc().split("\n")
+                    self.set_status(
+                        name,
+                        -1,
+                        f"Error: {exception}",
+                        f"<p>Stacktrace:</p><p><code>{'<br />'.join(trace)}</code></p>",
+                    )
+                return True
+            else:
+                if name in self._status:
+                    del self._status[name]
+                    return True
+        return False
+
+    async def _watch_sources(self) -> None:
+        with asyncinotify.Inotify() as inotify:
+            length = len(self._source_folder.rstrip("/")) + 1
+            inotify.add_watch(
+                self._source_folder,
+                asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
+            )
+            async for event in inotify:
+                name = str(event.path)[length:].split("/", 1)[0]
+                if self._update_source_error(name):
+                    self.write()
+
+    async def watch(self) -> None:
+        """Watch files changes to update status."""
+        await asyncio.gather(self._watch_scan_codes(), self._watch_destination(), self._watch_sources())
