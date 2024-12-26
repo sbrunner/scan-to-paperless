@@ -23,6 +23,14 @@ from weasyprint import CSS, HTML
 _LOG = logging.getLogger(__name__)
 Image.MAX_IMAGE_PIXELS = 500000000
 
+_BACKGROUND_COLOR = Color(1, 1, 1, 0.7)
+_FOREGROUND_COLOR = Color(0, 0, 0, 0.7)
+
+if "CODE_COLOR_BACKGROUND" in os.environ:
+    _BACKGROUND_COLOR = Color(*[float(c) for c in os.environ["CODE_COLOR_BACKGROUND"].split(",")])
+if "CODE_COLOR_FOREGROUND" in os.environ:
+    _FOREGROUND_COLOR = Color(*[float(c) for c in os.environ["CODE_COLOR_FOREGROUND"].split(",")])
+
 
 class _FoundCode(TypedDict):
     data: str
@@ -430,7 +438,7 @@ def add_codes(
                         packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False
                     )
                     for code in codes:
-                        can.setFillColor(Color(1, 1, 1, alpha=0.7))
+                        can.setFillColor(_BACKGROUND_COLOR)
                         path = can.beginPath()
                         path.moveTo(
                             code["geometry"][0][0] / dpi * pdf_dpi, code["geometry"][0][1] / dpi * pdf_dpi
@@ -440,7 +448,7 @@ def add_codes(
                         path.close()
                         can.drawPath(path, stroke=0, fill=1)
 
-                        can.setFillColorRGB(0, 0, 0)
+                        can.setFillColor(_FOREGROUND_COLOR)
                         can.setFont(font_name, font_size)
                         can.drawString(
                             min(p[0] for p in code["geometry"]) / dpi * pdf_dpi + margin_left,
