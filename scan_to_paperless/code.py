@@ -14,7 +14,7 @@ import cv2
 import pikepdf
 import zxingcpp
 from PIL import Image
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from pyzbar import pyzbar
 from reportlab.lib.colors import Color
 from reportlab.pdfgen import canvas
