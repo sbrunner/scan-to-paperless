@@ -55,7 +55,7 @@ deskew = { version = "1.5.1", optional = true }
 "ruamel.yaml" = "0.18.6"
 argcomplete = "3.5.2"
 Pillow = "11.0.0"
-PyPDF2 = { version = "3.0.1", optional = true }
+pypdf = { version = "5.1.0", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.2.5", optional = true }
 weasyprint = { version = "63.1", optional = true }
@@ -80,7 +80,7 @@ process = [
     "scikit-image",
     "opencv-contrib-python-headless",
     "deskew",
-    "PyPDF2",
+    "pypdf",
     "pyzbar",
     "reportlab",
     "weasyprint",
@@ -114,7 +114,6 @@ c2cwsgiutils = { version = "6.1.5", extras = ["test_images"] }
 types-requests = "2.32.0.20241016"
 nbconvert = "7.16.4"
 ipykernel = "6.29.5"
-
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
