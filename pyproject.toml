@@ -72,7 +72,7 @@ natsort = { version = "8.4.0", optional = true }
 nbformat = { version = "5.10.4", optional = true }
 requests = { version = "2.32.3", optional = true }
 python-sane = { version = "2.9.1", optional = true }
-asyncinotify = { version = "4.1.0", optional = true }
+asyncinotify = { version = "4.2.0", optional = true }
 
 [tool.poetry.extras]
 process = [
@@ -103,7 +103,7 @@ sane = ["python-sane"]
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.13.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
-prospector-profile-duplicated = "1.9.0"
+prospector-profile-duplicated = "1.10.0"
 prospector-profile-utils = "1.14.1"
 pytest = "8.3.4"
 pytest-profiling = "1.8.1"
