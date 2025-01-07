@@ -7,7 +7,7 @@ import html
 import os.path
 import traceback
 from enum import Enum
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 import asyncinotify
 import jinja2
@@ -72,7 +72,7 @@ class _Folder(NamedTuple):
     nb_images: int
     status: str
     details: str
-    step: Optional[process_schema.Step]
+    step: process_schema.Step | None
 
 
 class JobType(Enum):
@@ -99,7 +99,7 @@ class Status:
         self._global_status = "Starting..."
         self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
         self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
-        self._current_folder: Optional[str] = None
+        self._current_folder: str | None = None
 
         self._codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
         if self._codes_folder[-1] != "/":
@@ -119,7 +119,7 @@ class Status:
 
             self.write()
 
-    def set_current_folder(self, name: Optional[str]) -> None:
+    def set_current_folder(self, name: str | None) -> None:
         """Set the current folder."""
         if name is not None and name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
@@ -136,7 +136,7 @@ class Status:
         nb_images: int,
         status: str,
         details: str = "",
-        step: Optional[process_schema.Step] = None,
+        step: process_schema.Step | None = None,
         write: bool = False,
     ) -> None:
         """Set the status of a folder."""
@@ -212,7 +212,7 @@ class Status:
             self.set_status(name, -1, "Empty config")
             return
 
-        run_step: Optional[process_schema.Step] = None
+        run_step: process_schema.Step | None = None
         rerun = False
         for step in reversed(config.get("steps", [])):
             all_present = True
@@ -295,7 +295,7 @@ class Status:
                 )
             )
 
-    def get_next_job(self) -> tuple[Optional[str], JobType, Optional[process_schema.Step]]:
+    def get_next_job(self) -> tuple[str | None, JobType, process_schema.Step | None]:
         """Get the next job to do."""
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),

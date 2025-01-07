@@ -15,7 +15,7 @@ import sys
 import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Optional, Protocol, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -38,7 +38,7 @@ from scan_to_paperless import jupyter_utils, process_utils
 from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
-    NpNdarrayInt = np.ndarray[np.uint8, Any]
+    NpNdarrayInt = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any] | np.floating[Any]]]
     CompletedProcess = subprocess.CompletedProcess[str]
 else:
     NpNdarrayInt = np.ndarray
@@ -51,7 +51,7 @@ _LOG = logging.getLogger(__name__)
 
 def add_intermediate_error(
     config: schema.Configuration,
-    config_file_name: Optional[str],
+    config_file_name: str | None,
     error: Exception,
     traceback_: list[str],
 ) -> None:
@@ -78,7 +78,7 @@ def add_intermediate_error(
     os.rename(config_file_name + "_", config_file_name)
 
 
-async def call(cmd: Union[str, list[str]], check: bool = True, **kwargs: Any) -> None:
+async def call(cmd: str | list[str], check: bool = True, **kwargs: Any) -> None:
     """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
@@ -95,7 +95,7 @@ async def call(cmd: Union[str, list[str]], check: bool = True, **kwargs: Any) ->
         assert proc.returncode == 0
 
 
-async def run(cmd: Union[str, list[str]], **kwargs: Any) -> tuple[bytes, bytes, asyncio.subprocess.Process]:
+async def run(cmd: str | list[str], **kwargs: Any) -> tuple[bytes, bytes, asyncio.subprocess.Process]:
     """Verbose version of check_output with no returns."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
@@ -107,7 +107,7 @@ async def run(cmd: Union[str, list[str]], **kwargs: Any) -> tuple[bytes, bytes, 
     return stdout, stderr, proc
 
 
-def output(cmd: Union[str, list[str]], **kwargs: Any) -> str:
+def output(cmd: str | list[str], **kwargs: Any) -> str:
     """Verbose version of check_output."""
     if isinstance(cmd, list):
         cmd = [str(element) for element in cmd]
@@ -134,7 +134,7 @@ def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNda
 class FunctionWithContextReturnsImage(Protocol):
     """Function with context and returns an image."""
 
-    async def __call__(self, context: process_utils.Context) -> Optional[NpNdarrayInt]:
+    async def __call__(self, context: process_utils.Context) -> NpNdarrayInt | None:
         """Call the function."""
 
 
@@ -202,7 +202,7 @@ class Process:
 def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
-    async def wrapper(context: process_utils.Context) -> Optional[NpNdarrayInt]:
+    async def wrapper(context: process_utils.Context) -> NpNdarrayInt | None:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
             assert context.image is not None
             cv2.imwrite(source.name, context.image)
@@ -274,7 +274,7 @@ def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
     if level_ is True:
         min_p100 = schema.MIN_LEVEL_DEFAULT
         max_p100 = schema.MAX_LEVEL_DEFAULT
-    elif isinstance(level_, (float, int)):
+    elif isinstance(level_, float | int):
         min_p100 = 0.0 + level_
         max_p100 = 100.0 - level_
     if level_ is not False:
@@ -394,16 +394,16 @@ async def color_cut(context: process_utils.Context) -> None:
     white_mask = cv2.inRange(
         grayscale,
         cast(
-            np.ndarray[Any, np.dtype[np.generic]],
+            np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]],
             context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT),
         ),
-        cast(np.ndarray[Any, np.dtype[np.generic]], 255),
+        cast(np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]], 255),
     )
     black_mask = cv2.inRange(
         grayscale,
-        cast(np.ndarray[Any, np.dtype[np.generic]], 0),
+        cast(np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]], 0),
         cast(
-            np.ndarray[Any, np.dtype[np.generic]],
+            np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]],
             context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT),
         ),
     )
@@ -431,7 +431,7 @@ async def deskew(context: process_utils.Context) -> None:
 
         deskew_configuration = context.config["args"].setdefault("deskew", {})
         skew_angle, debug_images = determine_skew_debug_images(
-            grayscale,
+            grayscale,  # type: ignore[arg-type]
             min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
             max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
             min_deviation=deskew_configuration.setdefault(
@@ -447,8 +447,8 @@ async def deskew(context: process_utils.Context) -> None:
 
         if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
-            for name, image in debug_images:
-                context.save_progress_images("skew", image, name, process_count, True)
+            for name, debug_image in debug_images:
+                context.save_progress_images("skew", debug_image, name, process_count, True)  # type: ignore[arg-type]
 
     if angle:
         context.rotate(angle)
@@ -487,7 +487,7 @@ async def docrop(context: process_utils.Context) -> None:
 
 
 @Process("sharpen")
-async def sharpen(context: process_utils.Context) -> Optional[NpNdarrayInt]:
+async def sharpen(context: process_utils.Context) -> NpNdarrayInt | None:
     """Sharpen an image."""
     if (
         context.config["args"]
@@ -539,12 +539,12 @@ async def autorotate(context: process_utils.Context) -> None:
 def draw_line(
     image: NpNdarrayInt,
     vertical: bool,
-    position: Optional[float],
-    value: Optional[int],
+    position: float | None,
+    value: int | None,
     name: str,
     type_: str,
     color: tuple[int, int, int],
-    line: Optional[tuple[int, int, int, int]] = None,
+    line: tuple[int, int, int, int] | None = None,
 ) -> schema.Limit:
     """Draw a line on an image."""
     img_len = image.shape[0 if vertical else 1]
@@ -624,7 +624,7 @@ def find_lines(
     if lines is None:
         return []
 
-    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
+    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]  # type: ignore[misc]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
@@ -782,7 +782,7 @@ def _find_contours_thresh(
                 else contour_image
             )
             contour_image = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
-            if (1 - np.mean(contour_image)) * 100 > min_black:
+            if (1 - np.mean(contour_image)) * 100 > min_black:  # type: ignore[arg-type]
                 result.append(
                     (
                         x + kernel_size * 2,
@@ -1141,7 +1141,7 @@ async def transform(
     step: schema.Step,
     config_file_name: str,
     root_folder: str,
-    status: Optional[scan_to_paperless.status.Status] = None,
+    status: scan_to_paperless.status.Status | None = None,
 ) -> schema.Step:
     """Apply the transforms on a document."""
     if "intermediate_error" in config:
@@ -1438,9 +1438,7 @@ async def transform(
     }
 
 
-async def _save_progress(
-    root_folder: Optional[str], count: int, name: str, image_name: str, image: str
-) -> None:
+async def _save_progress(root_folder: str | None, count: int, name: str, image_name: str, image: str) -> None:
     assert root_folder
     name = f"{count}-{name}"
     dest_folder = os.path.join(root_folder, name)
@@ -1508,7 +1506,7 @@ async def split(
             if os.path.exists(image_path):
                 os.unlink(image_path)
 
-    append: dict[Union[str, int], list[Item]] = {}
+    append: dict[str | int, list[Item]] = {}
     transformed_images = []
     for assisted_split in config["assisted_split"]:
         image = assisted_split["source"]
@@ -1628,7 +1626,7 @@ async def finalize(
     config: schema.Configuration,
     step: schema.Step,
     root_folder: str,
-    status: Optional[scan_to_paperless.status.Status] = None,
+    status: scan_to_paperless.status.Status | None = None,
 ) -> None:
     """
     Do final step on document generation.

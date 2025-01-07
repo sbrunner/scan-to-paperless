@@ -6,18 +6,3 @@ version:
       to: latest
     - from: test
       to: test
-
-publish:
-  docker:
-    images:
-      - name: sbrunner/scan-to-paperless
-        tags:
-          - '{version}'
-      - name: sbrunner/scan-to-paperless
-        group: docker-all
-        tags:
-          - '{version}-all'
-    repository:
-      github:
-        versions: []
-    dispatch: false

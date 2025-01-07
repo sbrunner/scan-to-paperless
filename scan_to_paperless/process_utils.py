@@ -3,8 +3,8 @@
 import logging
 import math
 import os
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any, cast
 
 import cv2
 import numpy as np
@@ -16,16 +16,14 @@ import scan_to_paperless.status
 from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
-    NpNdarrayInt = np.ndarray[np.uint8, Any]
+    NpNdarrayInt = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any] | np.floating[Any]]]
 else:
     NpNdarrayInt = np.ndarray
 
 _LOG = logging.getLogger(__name__)
 
 
-def rotate_image(
-    image: NpNdarrayInt, angle: float, background: Union[int, tuple[int, int, int]]
-) -> NpNdarrayInt:
+def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int, int, int]) -> NpNdarrayInt:
     """Rotate the image."""
     old_width, old_height = image.shape[:2]
     angle_radian = math.radians(angle)
@@ -53,7 +51,7 @@ def crop_image(
     y: int,
     width: int,
     height: int,
-    background: Union[tuple[int], tuple[int, int, int]],
+    background: tuple[int] | tuple[int, int, int],
 ) -> NpNdarrayInt:
     """Crop the image."""
     matrix: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
@@ -70,9 +68,9 @@ class Context:
         self,
         config: schema.Configuration,
         step: schema.Step,
-        config_file_name: Optional[str] = None,
-        root_folder: Optional[str] = None,
-        image_name: Optional[str] = None,
+        config_file_name: str | None = None,
+        root_folder: str | None = None,
+        image_name: str | None = None,
     ) -> None:
         """Initialize."""
         self.config = config
@@ -80,10 +78,10 @@ class Context:
         self.config_file_name = config_file_name
         self.root_folder = root_folder
         self.image_name = image_name
-        self.image: Optional[NpNdarrayInt] = None
-        self.mask: Optional[NpNdarrayInt] = None
+        self.image: NpNdarrayInt | None = None
+        self.mask: NpNdarrayInt | None = None
         self.get_index: Callable[
-            [NpNdarrayInt], Optional[tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...]]
+            [NpNdarrayInt], tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None
         ] = lambda image: np.ix_(
             np.arange(0, image.shape[1]),
             np.arange(0, image.shape[1]),
@@ -106,10 +104,10 @@ class Context:
 
     def _get_mask(
         self,
-        auto_mask_config: Optional[schema.AutoMask],
+        auto_mask_config: schema.AutoMask | None,
         config_section: str,
-        mask_file: Optional[str] = None,
-    ) -> Optional[NpNdarrayInt]:
+        mask_file: str | None = None,
+    ) -> NpNdarrayInt | None:
         """Init the mask."""
         if auto_mask_config is not None:
             assert self.image is not None
@@ -254,7 +252,7 @@ class Context:
         if self.mask is not None:
             self.mask = rotate_image(self.mask, angle, 0)
 
-    def get_px_value(self, value: Union[int, float]) -> float:
+    def get_px_value(self, value: int | float) -> float:
         """Get the value in px."""
         return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
 
@@ -267,11 +265,11 @@ class Context:
     def save_progress_images(
         self,
         name: str,
-        image: Optional[NpNdarrayInt] = None,
+        image: NpNdarrayInt | None = None,
         image_prefix: str = "",
-        process_count: Optional[int] = None,
+        process_count: int | None = None,
         force: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Save the intermediate images."""
         if scan_to_paperless.jupyter_utils.is_ipython():
             if image is None:

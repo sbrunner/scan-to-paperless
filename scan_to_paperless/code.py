@@ -8,7 +8,7 @@ import os
 import random
 import subprocess  # nosec
 import tempfile
-from typing import Optional, TypedDict, Union
+from typing import TypedDict
 
 import cv2
 import pikepdf
@@ -35,7 +35,7 @@ if "CODE_COLOR_FOREGROUND" in os.environ:
 class _FoundCode(TypedDict):
     data: str
     type: str
-    geometry: Optional[list[tuple[float, float]]]
+    geometry: list[tuple[float, float]] | None
 
 
 class _Code(TypedDict):
@@ -51,11 +51,11 @@ class _AllCodes(TypedDict):
 
 class _PageCode(TypedDict):
     pos: int
-    geometry: list[tuple[Union[int, float], Union[int, float]]]
+    geometry: list[tuple[int | float, int | float]]
 
 
 def _point(
-    point: tuple[Union[int, float], Union[int, float]], deg_angle: float, width: int, height: int
+    point: tuple[int | float, int | float], deg_angle: float, width: int, height: int
 ) -> tuple[float, float]:
     assert -90 <= deg_angle <= 90
     angle = math.radians(deg_angle)
@@ -117,8 +117,8 @@ def _get_bar_codes_with_open_cv(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[list[_Code]] = None,
-    added_codes: Optional[dict[str, _AllCodes]] = None,
+    all_codes: list[_Code] | None = None,
+    added_codes: dict[str, _AllCodes] | None = None,
 ) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
@@ -175,8 +175,8 @@ def _get_qr_codes_with_open_cv(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[list[_Code]] = None,
-    added_codes: Optional[dict[str, _AllCodes]] = None,
+    all_codes: list[_Code] | None = None,
+    added_codes: dict[str, _AllCodes] | None = None,
 ) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
@@ -205,8 +205,8 @@ def _get_qr_codes_with_open_cv(
                             base_path,
                             f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
                         )
-                        bbox_x = [p[0] for p in bbox]
-                        bbox_y = [p[1] for p in bbox]
+                        bbox_x = [p[0] for p in bbox]  # type: ignore[union-attr]
+                        bbox_y = [p[1] for p in bbox]  # type: ignore[union-attr]
                         cv2.imwrite(
                             dest_filename,
                             decoded_image[
@@ -217,12 +217,12 @@ def _get_qr_codes_with_open_cv(
 
                 founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
-                    if points[index] is not None and not data:  # type: ignore[index]
-                        bbox = points[index]  # type: ignore[index]
+                    if points[index] is not None and not data:
+                        bbox = points[index]
                         detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
                         try:
-                            bbox_x = [p[0] for p in bbox]
-                            bbox_y = [p[1] for p in bbox]
+                            bbox_x = [p[0] for p in bbox]  # type: ignore[union-attr]
+                            bbox_y = [p[1] for p in bbox]  # type: ignore[union-attr]
                             retvals = detector.detectAndDecode(
                                 decoded_image[
                                     int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
@@ -234,7 +234,7 @@ def _get_qr_codes_with_open_cv(
                                     {
                                         "data": data,
                                         "type": "QR code",
-                                        "geometry": points[index],  # type: ignore[index]
+                                        "geometry": points[index],
                                     }
                                 )
                         except UnicodeDecodeError as exception:
@@ -244,7 +244,7 @@ def _get_qr_codes_with_open_cv(
                             {
                                 "data": data,
                                 "type": "QR code",
-                                "geometry": points[index],  # type: ignore[index]
+                                "geometry": points[index],
                             }
                         )
                 _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
@@ -260,8 +260,8 @@ def _get_codes_with_open_cv_we_chat(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[list[_Code]] = None,
-    added_codes: Optional[dict[str, _AllCodes]] = None,
+    all_codes: list[_Code] | None = None,
+    added_codes: dict[str, _AllCodes] | None = None,
 ) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
@@ -299,8 +299,8 @@ def _get_codes_with_zxing(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[list[_Code]] = None,
-    added_codes: Optional[dict[str, _AllCodes]] = None,
+    all_codes: list[_Code] | None = None,
+    added_codes: dict[str, _AllCodes] | None = None,
 ) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}
@@ -336,8 +336,8 @@ def _get_codes_with_z_bar(
     page: int,
     width: int,
     height: int,
-    all_codes: Optional[list[_Code]] = None,
-    added_codes: Optional[dict[str, _AllCodes]] = None,
+    all_codes: list[_Code] | None = None,
+    added_codes: dict[str, _AllCodes] | None = None,
 ) -> list[_PageCode]:
     if added_codes is None:
         added_codes = {}

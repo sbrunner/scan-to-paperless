@@ -1537,7 +1537,7 @@ VIEWER_DEFAULT = "eog"
 
 
 class _ArgumentsDeskew(TypedDict, total=False):
-    """The deskew configuration"""
+    """The deskew configuration."""
 
     min_angle: int | float
     """

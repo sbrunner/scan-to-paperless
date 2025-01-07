@@ -8,7 +8,7 @@ import os
 import re
 import subprocess  # nosec
 import sys
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import argcomplete
 import PIL.Image
@@ -25,7 +25,7 @@ else:
     from scan_to_paperless import config_old as schema  # type: ignore
 
 
-def call(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> None:
+def call(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> None:
     """Verbose implementation of check_call."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
@@ -36,7 +36,7 @@ def call(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> Non
         sys.exit(1)
 
 
-def output(cmd: list[str], cmd2: Optional[list[str]] = None, **kwargs: Any) -> bytes:
+def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> bytes:
     """Verbose implementation of check_output."""
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
