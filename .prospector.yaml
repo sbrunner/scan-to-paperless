@@ -2,6 +2,9 @@ inherits:
   - duplicated
   - utils:base
   - utils:no-design-checks
+  - utils:fix
+  - utils:unsafe
+  - utils:c2cwsgiutils
 doc-warnings: true
 
 ignore-paths:
@@ -19,7 +22,9 @@ pylint:
     - broad-exception-caught
   options:
     good-names: x,y
-
-bandit:
+mypy:
   options:
-    config: .bandit.yaml
+    python-version: '3.10'
+ruff:
+  options:
+    target-version: py310

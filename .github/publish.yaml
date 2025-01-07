@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/tag-publish/0.13.0/tag_publish/schema.json
+
+docker:
+  images:
+    - name: sbrunner/scan-to-paperless
+      tags:
+        - '{version}'
+    - name: sbrunner/scan-to-paperless
+      group: docker-all
+      tags:
+        - '{version}-all'
+pypi:
+  packages:
+    - {}
+dispatch:
+  - {}

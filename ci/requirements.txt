@@ -7,3 +7,4 @@ pip==24.3.1
 pre-commit==4.0.1
 poetry-plugin-drop-python-upper-constraint==0.1.0
 importlib-metadata<8.5.1
+tag-publish==0.13.0
