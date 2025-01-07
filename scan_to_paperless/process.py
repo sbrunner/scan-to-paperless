@@ -38,7 +38,7 @@ from scan_to_paperless import jupyter_utils, process_utils
 from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
-    NpNdarrayInt = np.ndarray[np.uint8, Any]
+    NpNdarrayInt = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any] | np.floating[Any]]]
     CompletedProcess = subprocess.CompletedProcess[str]
 else:
     NpNdarrayInt = np.ndarray
@@ -394,16 +394,16 @@ async def color_cut(context: process_utils.Context) -> None:
     white_mask = cv2.inRange(
         grayscale,
         cast(
-            np.ndarray[Any, np.dtype[np.generic]],
+            np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]],
             context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT),
         ),
-        cast(np.ndarray[Any, np.dtype[np.generic]], 255),
+        cast(np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]], 255),
     )
     black_mask = cv2.inRange(
         grayscale,
-        cast(np.ndarray[Any, np.dtype[np.generic]], 0),
+        cast(np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]], 0),
         cast(
-            np.ndarray[Any, np.dtype[np.generic]],
+            np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]],
             context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT),
         ),
     )
@@ -431,7 +431,7 @@ async def deskew(context: process_utils.Context) -> None:
 
         deskew_configuration = context.config["args"].setdefault("deskew", {})
         skew_angle, debug_images = determine_skew_debug_images(
-            grayscale,
+            grayscale,  # type: ignore[arg-type]
             min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
             max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
             min_deviation=deskew_configuration.setdefault(
@@ -447,8 +447,8 @@ async def deskew(context: process_utils.Context) -> None:
 
         if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
-            for name, image in debug_images:
-                context.save_progress_images("skew", image, name, process_count, True)
+            for name, debug_image in debug_images:
+                context.save_progress_images("skew", debug_image, name, process_count, True)  # type: ignore[arg-type]
 
     if angle:
         context.rotate(angle)
@@ -624,7 +624,7 @@ def find_lines(
     if lines is None:
         return []
 
-    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
+    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]  # type: ignore[misc]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
@@ -782,7 +782,7 @@ def _find_contours_thresh(
                 else contour_image
             )
             contour_image = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
-            if (1 - np.mean(contour_image)) * 100 > min_black:
+            if (1 - np.mean(contour_image)) * 100 > min_black:  # type: ignore[arg-type]
                 result.append(
                     (
                         x + kernel_size * 2,

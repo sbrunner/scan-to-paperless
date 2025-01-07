@@ -16,7 +16,7 @@ import scan_to_paperless.status
 from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
-    NpNdarrayInt = np.ndarray[np.uint8, Any]
+    NpNdarrayInt = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any] | np.floating[Any]]]
 else:
     NpNdarrayInt = np.ndarray
 
