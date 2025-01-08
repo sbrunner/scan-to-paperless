@@ -9,6 +9,11 @@ on:
       - '*'
   pull_request:
 
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
 
@@ -29,18 +34,20 @@ jobs:
           fetch-depth: 0
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-      - run: python3 -m pip install --user --requirement=ci/requirements.txt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python3 -m pip install --requirement=ci/requirements.txt
 
       - uses: actions/cache@v3
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: "pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}\npre-commit-"
-      - run: pre-commit run --all-files
+      - run: pre-commit run --all-files --color=always
         env:
           SKIP: poetry-lock
-      - run: git diff --exit-code --patch > /tmp/pre-commit.patch || true
+      - run: git diff --exit-code --patch > /tmp/pre-commit.patch; git diff --color; git reset --hard || true
         if: failure()
 
       - uses: actions/upload-artifact@v4
@@ -117,6 +124,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+      - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
+        if: failure()
       - run: git checkout pyproject.toml
         if: always()
       - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
