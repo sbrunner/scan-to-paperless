@@ -2038,7 +2038,12 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             raise ValueError(f"Unknown job type: {job_type}")
 
 
-async def main() -> None:
+def main() -> None:
+    """Process the scanned documents."""
+    asyncio.run(async_main())
+
+
+async def async_main() -> None:
     """Process the scanned documents."""
     parser = argparse.ArgumentParser("Process the scanned documents.")
     parser.add_argument("config", nargs="?", help="The config file to process.")
@@ -2058,4 +2063,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
