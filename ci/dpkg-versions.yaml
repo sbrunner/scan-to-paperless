@@ -174,8 +174,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
   ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
-  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.7
-  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.7
+  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.8
+  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.8
   ubuntu_22_04/libreadline8: 8.1.2-1
   ubuntu_22_04/librtmp1: 2.4+20151223.gitfa8646d.1-2build4
   ubuntu_22_04/libsasl2-2: 2.1.27+dfsg2-3ubuntu1.2
@@ -283,8 +283,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/python3-wadllib: 1.3.6-1
   ubuntu_22_04/python3-wheel: 0.37.1-2ubuntu0.22.04.1
   ubuntu_22_04/python3-zipp: 1.0.0-3ubuntu0.1
-  ubuntu_22_04/python3.10: 3.10.12-1~22.04.7
-  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.7
+  ubuntu_22_04/python3.10: 3.10.12-1~22.04.8
+  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.8
   ubuntu_22_04/readline-common: 8.1.2-1
   ubuntu_22_04/sed: 4.8-1ubuntu2
   ubuntu_22_04/sensible-utils: 0.0.17
@@ -478,8 +478,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
   ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
-  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.7
-  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.7
+  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.8
+  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.8
   ubuntu_22_04/libreadline8: 8.1.2-1
   ubuntu_22_04/librtmp1: 2.4+20151223.gitfa8646d.1-2build4
   ubuntu_22_04/libsasl2-2: 2.1.27+dfsg2-3ubuntu1.2
@@ -587,8 +587,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/python3-wadllib: 1.3.6-1
   ubuntu_22_04/python3-wheel: 0.37.1-2ubuntu0.22.04.1
   ubuntu_22_04/python3-zipp: 1.0.0-3ubuntu0.1
-  ubuntu_22_04/python3.10: 3.10.12-1~22.04.7
-  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.7
+  ubuntu_22_04/python3.10: 3.10.12-1~22.04.8
+  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.8
   ubuntu_22_04/readline-common: 8.1.2-1
   ubuntu_22_04/sed: 4.8-1ubuntu2
   ubuntu_22_04/sensible-utils: 0.0.17
