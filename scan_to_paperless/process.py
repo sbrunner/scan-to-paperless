@@ -341,6 +341,7 @@ async def _histogram(
         if not jupyter_utils.is_ipython():
             plt.savefig(file.name)
             proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
+            await proc.communicate()
             assert proc.returncode == 0
             image = cv2.imread(file.name)
             context.save_progress_images(
