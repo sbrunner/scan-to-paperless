@@ -390,6 +390,7 @@ class Status:
             )
             async for event in inotify:
                 name = str(event.path)[length:].split("/", 1)[0]
+                print(f"Update source '{name}' from event")
                 if self._update_source_error(name):
                     self.write()
 
