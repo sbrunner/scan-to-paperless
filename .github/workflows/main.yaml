@@ -76,7 +76,7 @@ jobs:
       - name: Get the status images
         run: cp tests/status/*.png results/status/ || true
         if: failure()
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: results
           path: results
