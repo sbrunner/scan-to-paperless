@@ -122,7 +122,15 @@ class Status:
 
     def set_current_folder(self, name: str | None) -> None:
         """Set the current folder."""
-        if name is not None and name.endswith("/config.yaml"):
+        if name is None:
+            if self._current_folder is not None:
+                old_name = self._current_folder
+                self._current_folder = None
+                self._update_source_error(old_name)
+                self.write()
+            return
+
+        if name.endswith("/config.yaml"):
             name = os.path.basename(os.path.dirname(name))
 
         write = self._current_folder != name
