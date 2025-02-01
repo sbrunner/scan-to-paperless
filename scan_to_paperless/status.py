@@ -154,12 +154,6 @@ class Status:
         if write:
             self.write()
 
-    def remove_status(self, name: str) -> None:
-        """Remove the status when a task is completely done."""
-        if name in self._status:
-            del self._status[name]
-            self.write()
-
     def _init(self) -> None:
         """Scan for changes for waiting documents."""
         self._update_scan_codes()
@@ -322,12 +316,6 @@ class Status:
 
         return None, JobType.NONE, None
 
-    def code_down(self, name: str) -> None:
-        """Set a code as done."""
-        if name in self._codes:
-            self._codes.remove(name)
-            self.write()
-
     def _update_scan_codes(self) -> None:
         self._codes = [
             f[len(self._codes_folder) :]
@@ -352,7 +340,7 @@ class Status:
                 | asyncinotify.Mask.OPEN,
             )
             async for event in inotify:
-                print(f"Watch event on folder {self._codes_folder}: {event}")
+                print(f"Watch event on folder {self._codes_folder}: {event.path} - {event.mask}")
 
     async def _watch_scan_codes(self) -> None:
         with asyncinotify.Inotify() as inotify:
@@ -388,7 +376,7 @@ class Status:
                 | asyncinotify.Mask.OPEN,
             )
             async for event in inotify:
-                print(f"Watch event on folder {self._consume_folder}: {event}")
+                print(f"Watch event on folder {self._consume_folder}: {event.path} - {event.mask}")
 
     async def _watch_destination(self) -> None:
         with asyncinotify.Inotify() as inotify:
@@ -437,7 +425,7 @@ class Status:
                 | asyncinotify.Mask.OPEN,
             )
             async for event in inotify:
-                print(f"Watch event on folder {self._source_folder}: {event}")
+                print(f"Watch event on folder {self._source_folder}: {event.path} - {event.mask}")
 
     async def _watch_sources(self) -> None:
         with asyncinotify.Inotify() as inotify:

@@ -1795,19 +1795,16 @@ async def finalize(
                 print(f"Uploaded {temporary_pdf.name} with title {title}")
 
 
-def _process_code(name: str) -> bool:
+def _process_code(name: str) -> None:
     """Detect ad add a page with the QR codes."""
     pdf_filename = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), name)
-
-    if not os.path.exists(pdf_filename):
-        return True
 
     destination_filename = os.path.join(
         os.environ.get("SCAN_FINAL_FOLDER", "/destination"), os.path.basename(pdf_filename)
     )
 
     if os.path.exists(destination_filename):
-        return False
+        return
 
     try:
         _LOG.info("Processing codes for %s", pdf_filename)
@@ -1827,11 +1824,9 @@ def _process_code(name: str) -> bool:
             # Remove the source file on success
             os.remove(pdf_filename)
         _LOG.info("Down processing codes for %s", pdf_filename)
-        return True
 
     except Exception as exception:
         _LOG.exception("Error while processing %s: %s", pdf_filename, str(exception))
-    return False
 
 
 def is_sources_present(images: list[str], root_folder: str) -> bool:
@@ -2031,15 +2026,13 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
             if os.path.exists(root_folder):
                 shutil.rmtree(root_folder)
-            status.remove_status(name)
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert name is not None
             print(f"Process code '{name}'")
             status.set_global_status(f"Process code '{name}'...")
             status.set_current_folder(name)
             try:
-                if _process_code(name):
-                    status.code_down(name)
+                _process_code(name)
             except Exception as exception:
                 print(exception)
                 trace = traceback.format_exc()
