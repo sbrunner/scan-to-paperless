@@ -2058,7 +2058,8 @@ async def _watch_dog() -> None:
             print(f"| {task.get_name()}")
             string_io = io.StringIO()
             task.print_stack(limit=1, file=string_io)
-            print(f"|   {string_io.getvalue()}")
+            for line in string_io.getvalue().split("\n"):
+                print(f"|   {line}")
         print("|===================")
         if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
             await asyncio.sleep(10)

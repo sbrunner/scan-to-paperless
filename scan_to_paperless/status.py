@@ -340,7 +340,7 @@ class Status:
                 | asyncinotify.Mask.OPEN,
             )
             async for event in inotify:
-                print(f"Watch event on folder {self._codes_folder}: {event.path} - {event.mask}")
+                print(f"Watch event on folder {self._codes_folder}: {event.path} - {repr(event.mask)}")
 
     async def _watch_scan_codes(self) -> None:
         with asyncinotify.Inotify() as inotify:
@@ -376,7 +376,7 @@ class Status:
                 | asyncinotify.Mask.OPEN,
             )
             async for event in inotify:
-                print(f"Watch event on folder {self._consume_folder}: {event.path} - {event.mask}")
+                print(f"Watch event on folder {self._consume_folder}: {event.path} - {repr(event.mask)}")
 
     async def _watch_destination(self) -> None:
         with asyncinotify.Inotify() as inotify:
@@ -425,7 +425,7 @@ class Status:
                 | asyncinotify.Mask.OPEN,
             )
             async for event in inotify:
-                print(f"Watch event on folder {self._source_folder}: {event.path} - {event.mask}")
+                print(f"Watch event on folder {self._source_folder}: {event.path} - {repr(event.mask)}")
 
     async def _watch_sources(self) -> None:
         with asyncinotify.Inotify() as inotify:
