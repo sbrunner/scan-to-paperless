@@ -2042,7 +2042,7 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
         elif job_type == scan_to_paperless.status.JobType.NONE:
             status.set_global_status("Waiting...")
             status.set_current_folder(None)
-            time.sleep(30)
+            await asyncio.sleep(30)
         else:
             raise ValueError(f"Unknown job type: {job_type}")
 
@@ -2066,9 +2066,9 @@ async def async_main() -> None:
     print(f"Started at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
     status = scan_to_paperless.status.Status()
-    status.write()
 
-    await asyncio.gather(_task(status), status.watch())
+    asyncio.create_task(_task(status), name="main")
+    status.start_watch()
 
 
 if __name__ == "__main__":
