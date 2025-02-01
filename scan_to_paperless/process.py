@@ -1979,47 +1979,49 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
 
             status.set_global_status(f"Processing '{name}'...")
             status.set_current_folder(name)
+            try:
+                root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
+                config_file_name = os.path.join(root_folder, "config.yaml")
+                yaml = YAML()
+                yaml.default_flow_style = False
+                async with aiofiles.open(config_file_name, encoding="utf-8") as config_file:
+                    config: schema.Configuration = yaml.load(await config_file.read())
+                    config.yaml_set_start_comment(  # type: ignore[attr-defined]
+                        "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/"
+                        f"scan-to-paperless/{os.environ.get('SCHEMA_BRANCH', 'master')}/scan_to_paperless/"
+                        "process_schema.json\n\n"
+                    )
 
-            root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
-            config_file_name = os.path.join(root_folder, "config.yaml")
-            yaml = YAML()
-            yaml.default_flow_style = False
-            async with aiofiles.open(config_file_name, encoding="utf-8") as config_file:
-                config: schema.Configuration = yaml.load(await config_file.read())
-                config.yaml_set_start_comment(  # type: ignore[attr-defined]
-                    "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/"
-                    f"scan-to-paperless/{os.environ.get('SCHEMA_BRANCH', 'master')}/scan_to_paperless/"
-                    "process_schema.json\n\n"
-                )
+                if "steps" not in config or not config["steps"]:
+                    config["steps"] = [step]
+                else:
+                    used_index = -1
+                    for index, test_step in enumerate(config["steps"]):
+                        if step["name"] == test_step["name"]:
+                            used_index = index
+                            break
+                    if used_index != -1:
+                        config["steps"] = config["steps"][: used_index + 1]
 
-            if "steps" not in config or not config["steps"]:
-                config["steps"] = [step]
-            else:
-                used_index = -1
-                for index, test_step in enumerate(config["steps"]):
-                    if step["name"] == test_step["name"]:
-                        used_index = index
-                        break
-                if used_index != -1:
-                    config["steps"] = config["steps"][: used_index + 1]
+                assert step is not None
 
-            assert step is not None
+                next_step = None
+                if job_type == scan_to_paperless.status.JobType.TRANSFORM:
+                    _update_config(config)
+                    next_step = await transform(config, step, config_file_name, root_folder, status=status)
+                if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
+                    status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
+                    next_step = await split(config, step, root_folder)
+                if job_type == scan_to_paperless.status.JobType.FINALIZE:
+                    await finalize(config, step, root_folder, status=status)
+                    with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
+                        pass
+                if next_step is not None:
+                    config["steps"].append(next_step)
 
-            next_step = None
-            if job_type == scan_to_paperless.status.JobType.TRANSFORM:
-                _update_config(config)
-                next_step = await transform(config, step, config_file_name, root_folder, status=status)
-            if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
-                status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
-                next_step = await split(config, step, root_folder)
-            if job_type == scan_to_paperless.status.JobType.FINALIZE:
-                await finalize(config, step, root_folder, status=status)
-                with open(os.path.join(root_folder, "DONE"), "w", encoding="utf-8"):
-                    pass
-            if next_step is not None:
-                config["steps"].append(next_step)
-
-            save_config(config, config_file_name)
+                save_config(config, config_file_name)
+            finally:
+                status.set_current_folder(None)
 
         elif job_type == scan_to_paperless.status.JobType.DOWN:
             assert name is not None
@@ -2058,7 +2060,8 @@ async def _watch_dog() -> None:
             print(f"| {task.get_name()}")
             string_io = io.StringIO()
             task.print_stack(limit=1, file=string_io)
-            print(f"|   {string_io.getvalue()}")
+            for line in string_io.getvalue().split("\n"):
+                print(f"|   {line}")
         print("|===================")
         if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
             await asyncio.sleep(10)
