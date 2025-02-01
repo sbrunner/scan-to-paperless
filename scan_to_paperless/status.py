@@ -316,12 +316,6 @@ class Status:
 
         return None, JobType.NONE, None
 
-    def code_down(self, name: str) -> None:
-        """Set a code as done."""
-        if name in self._codes:
-            self._codes.remove(name)
-            self.write()
-
     def _update_scan_codes(self) -> None:
         self._codes = [
             f[len(self._codes_folder) :]
