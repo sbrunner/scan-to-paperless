@@ -165,14 +165,15 @@ class Status:
     def _init(self) -> None:
         """Scan for changes for waiting documents."""
         self._update_scan_codes()
+        self.write()
         self._update_consume()
+        self.write()
 
         for folder_name in glob.glob(os.path.join(self._source_folder, "*")):
             if os.path.isdir(folder_name):
                 name = os.path.basename(folder_name)
                 self._update_source_error(name)
-
-        self.write()
+                self.write()
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
