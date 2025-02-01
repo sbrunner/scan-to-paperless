@@ -35,11 +35,11 @@ add-codes-page = "scan_to_paperless.code:main"
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.10,<3.14"
-numpy = { version = "2.2.1", optional = true }
+numpy = { version = "2.2.2", optional = true }
 scikit-image = { version = "0.25.1", optional = true }
 opencv-contrib-python-headless = { version = "4.10.0.84", optional = true }
 deskew = { version = "1.5.1", optional = true }
-"ruamel.yaml" = "0.18.7"
+"ruamel.yaml" = "0.18.10"
 argcomplete = "3.5.3"
 Pillow = "11.1.0"
 pypdf = { version = "5.1.0", optional = true }
@@ -92,16 +92,16 @@ sane = ["python-sane"]
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.13.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
-prospector-profile-duplicated = "1.10.0"
+prospector-profile-duplicated = "1.10.4"
 prospector-profile-utils = "1.14.1"
 pytest = "8.3.4"
 pytest-profiling = "1.8.1"
 pytest-rerunfailures = "15.0"
 pyroma = "4.2"
 typing-extensions = "4.12.2"
-c2cwsgiutils = { version = "6.1.5", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 types-requests = "2.32.0.20241016"
-nbconvert = "7.16.4"
+nbconvert = "7.16.6"
 ipykernel = "6.29.5"
 
 
