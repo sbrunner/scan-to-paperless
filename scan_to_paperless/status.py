@@ -451,6 +451,8 @@ class Status:
                 if self._update_source_error(name):
                     self.write()
 
-    async def watch(self) -> None:
+    def start_watch(self) -> None:
         """Watch files changes to update status."""
-        await asyncio.gather(self._watch_scan_codes(), self._watch_destination(), self._watch_sources())
+        asyncio.create_task(self._watch_scan_codes(), name="Watch scan codes")
+        asyncio.create_task(self._watch_destination(), name="Watch destination")
+        asyncio.create_task(self._watch_sources(), name="Watch sources")
