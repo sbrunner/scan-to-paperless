@@ -2058,10 +2058,14 @@ async def _watch_dog() -> None:
         print("| Watch dog")
         for task in asyncio.all_tasks():
             print(f"| {task.get_name()}")
-            string_io = io.StringIO()
-            task.print_stack(limit=1, file=string_io)
-            for line in string_io.getvalue().split("\n"):
-                print(f"|   {line}")
+            for nb in range(1, 11):
+                string_io = io.StringIO()
+                task.print_stack(limit=2, file=string_io)
+                value = string_io.getvalue()
+                if nb == 10 or "/scan_to_paperless/" in value:
+                    for line in value.split("\n"):
+                        print(f"|   {line}")
+                    break
         print("|===================")
         if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
             await asyncio.sleep(10)
