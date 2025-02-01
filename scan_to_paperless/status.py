@@ -154,12 +154,6 @@ class Status:
         if write:
             self.write()
 
-    def remove_status(self, name: str) -> None:
-        """Remove the status when a task is completely done."""
-        if name in self._status:
-            del self._status[name]
-            self.write()
-
     def _init(self) -> None:
         """Scan for changes for waiting documents."""
         self._update_scan_codes()

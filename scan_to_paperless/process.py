@@ -2031,7 +2031,6 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
             if os.path.exists(root_folder):
                 shutil.rmtree(root_folder)
-            status.remove_status(name)
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert name is not None
             print(f"Process code '{name}'")
