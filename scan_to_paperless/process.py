@@ -17,6 +17,8 @@ import time
 import traceback
 from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
+import aiofiles
+
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
 import matplotlib.pyplot as plt
@@ -1161,7 +1163,9 @@ async def transform(
         context = process_utils.Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
             raise scan_to_paperless.ScanToPaperlessException("Image name is required")
-        context.image = cv2.imread(os.path.join(root_folder, image))
+        async with aiofiles.open(os.path.join(root_folder, image), "rb") as f:
+            img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+            context.image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         assert context.image is not None
         images_config = context.config.setdefault("images_config", {})
         image_config = images_config.setdefault(context.image_name, {})
@@ -1984,8 +1988,8 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             config_file_name = os.path.join(root_folder, "config.yaml")
             yaml = YAML()
             yaml.default_flow_style = False
-            with open(config_file_name, encoding="utf-8") as config_file:
-                config: schema.Configuration = yaml.load(config_file)
+            async with aiofiles.open(config_file_name, encoding="utf-8") as config_file:
+                config: schema.Configuration = yaml.load(await config_file.read())
                 config.yaml_set_start_comment(  # type: ignore[attr-defined]
                     "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/"
                     f"scan-to-paperless/{os.environ.get('SCHEMA_BRANCH', 'master')}/scan_to_paperless/"
@@ -2052,6 +2056,14 @@ def main() -> None:
     asyncio.run(async_main())
 
 
+async def _watch_dog() -> None:
+    while True:
+        print("Watch dog")
+        for task in asyncio.all_tasks():
+            print(task.get_name())
+        await asyncio.sleep(30)
+
+
 async def async_main() -> None:
     """Process the scanned documents."""
     parser = argparse.ArgumentParser("Process the scanned documents.")
@@ -2067,8 +2079,10 @@ async def async_main() -> None:
 
     status = scan_to_paperless.status.Status()
 
-    asyncio.create_task(_task(status), name="main")
+    asyncio.create_task(_watch_dog(), name="Watch dog")
+    main_task = asyncio.create_task(_task(status), name="Main")
     status.start_watch()
+    await main_task
 
 
 if __name__ == "__main__":
