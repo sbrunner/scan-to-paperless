@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import datetime
+import io
 import json
 import logging
 import os
@@ -2058,10 +2059,18 @@ def main() -> None:
 
 async def _watch_dog() -> None:
     while True:
-        print("Watch dog")
+        print("|===================")
+        print("| Watch dog")
         for task in asyncio.all_tasks():
-            print(task.get_name())
-        await asyncio.sleep(30)
+            print(f"| {task.get_name()}")
+            string_io = io.StringIO()
+            task.print_stack(limit=1, file=string_io)
+            print(f"|   {string_io.getvalue()}")
+        print("|===================")
+        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+            await asyncio.sleep(10)
+        else:
+            await asyncio.sleep(60)
 
 
 async def async_main() -> None:
