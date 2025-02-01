@@ -335,6 +335,25 @@ class Status:
         ]
 
     async def _watch_scan_codes(self) -> None:
+        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+            print(f"Start watching {self._codes_folder}")
+            with asyncinotify.Inotify() as inotify:
+                inotify.add_watch(
+                    self._codes_folder,
+                    asyncinotify.Mask.ACCESS
+                    | asyncinotify.Mask.ATTRIB
+                    | asyncinotify.Mask.CLOSE
+                    | asyncinotify.Mask.CREATE
+                    | asyncinotify.Mask.DELETE
+                    | asyncinotify.Mask.DELETE_SELF
+                    | asyncinotify.Mask.MODIFY
+                    | asyncinotify.Mask.MOVE
+                    | asyncinotify.Mask.MOVE_SELF
+                    | asyncinotify.Mask.OPEN,
+                )
+                async for event in inotify:
+                    print(f"Watch event on folder {self._codes_folder}: {event}")
+
         with asyncinotify.Inotify() as inotify:
             inotify.add_watch(
                 self._codes_folder,
@@ -352,6 +371,25 @@ class Status:
         ]
 
     async def _watch_destination(self) -> None:
+        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+            print(f"Start watching {self._consume_folder}")
+            with asyncinotify.Inotify() as inotify:
+                inotify.add_watch(
+                    self._consume_folder,
+                    asyncinotify.Mask.ACCESS
+                    | asyncinotify.Mask.ATTRIB
+                    | asyncinotify.Mask.CLOSE
+                    | asyncinotify.Mask.CREATE
+                    | asyncinotify.Mask.DELETE
+                    | asyncinotify.Mask.DELETE_SELF
+                    | asyncinotify.Mask.MODIFY
+                    | asyncinotify.Mask.MOVE
+                    | asyncinotify.Mask.MOVE_SELF
+                    | asyncinotify.Mask.OPEN,
+                )
+                async for event in inotify:
+                    print(f"Watch event on folder {self._consume_folder}: {event}")
+
         with asyncinotify.Inotify() as inotify:
             inotify.add_watch(
                 self._consume_folder,
@@ -382,6 +420,25 @@ class Status:
         return False
 
     async def _watch_sources(self) -> None:
+        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+            print(f"Start watching {self._source_folder}")
+            with asyncinotify.Inotify() as inotify:
+                inotify.add_watch(
+                    self._source_folder,
+                    asyncinotify.Mask.ACCESS
+                    | asyncinotify.Mask.ATTRIB
+                    | asyncinotify.Mask.CLOSE
+                    | asyncinotify.Mask.CREATE
+                    | asyncinotify.Mask.DELETE
+                    | asyncinotify.Mask.DELETE_SELF
+                    | asyncinotify.Mask.MODIFY
+                    | asyncinotify.Mask.MOVE
+                    | asyncinotify.Mask.MOVE_SELF
+                    | asyncinotify.Mask.OPEN,
+                )
+                async for event in inotify:
+                    print(f"Watch event on folder {self._source_folder}: {event}")
+
         with asyncinotify.Inotify() as inotify:
             length = len(self._source_folder.rstrip("/")) + 1
             inotify.add_watch(
