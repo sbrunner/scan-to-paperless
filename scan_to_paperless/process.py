@@ -1795,7 +1795,7 @@ async def finalize(
                 print(f"Uploaded {temporary_pdf.name} with title {title}")
 
 
-def _process_code(name: str) -> None:
+async def _process_code(name: str) -> bool:
     """Detect ad add a page with the QR codes."""
     pdf_filename = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), name)
 
@@ -1804,29 +1804,35 @@ def _process_code(name: str) -> None:
     )
 
     if os.path.exists(destination_filename):
-        return
+        await asyncio.sleep(1)
+        return False
 
     try:
-        _LOG.info("Processing codes for %s", pdf_filename)
-        from scan_to_paperless import code  # pylint: disable=import-outside-toplevel
+        if os.path.exists(pdf_filename):
+            _LOG.info("Processing codes for %s", pdf_filename)
+            from scan_to_paperless import code  # pylint: disable=import-outside-toplevel
 
-        code.add_codes(
-            pdf_filename,
-            destination_filename,
-            dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
-            pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
-            font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
-            font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
-            margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
-            margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
-        )
-        if os.path.exists(destination_filename):
-            # Remove the source file on success
-            os.remove(pdf_filename)
-        _LOG.info("Down processing codes for %s", pdf_filename)
+            code.add_codes(
+                pdf_filename,
+                destination_filename,
+                dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
+                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
+                font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
+                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
+                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
+                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
+            )
+            if os.path.exists(destination_filename):
+                # Remove the source file on success
+                os.remove(pdf_filename)
+            _LOG.info("Down processing codes for %s", pdf_filename)
+            return True
 
     except Exception as exception:
         _LOG.exception("Error while processing %s: %s", pdf_filename, str(exception))
+
+    await asyncio.sleep(1)
+    return False
 
 
 def is_sources_present(images: list[str], root_folder: str) -> bool:
@@ -2034,7 +2040,8 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             status.set_global_status(f"Process code '{name}'...")
             status.set_current_folder(name)
             try:
-                _process_code(name)
+                if not await _process_code(name):
+                    status.update_scan_codes()
             except Exception as exception:
                 print(exception)
                 trace = traceback.format_exc()

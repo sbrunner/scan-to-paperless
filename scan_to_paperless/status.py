@@ -164,7 +164,7 @@ class Status:
 
     def _init(self) -> None:
         """Scan for changes for waiting documents."""
-        self._update_scan_codes()
+        self.update_scan_codes()
         self.write()
         self._update_consume()
         self.write()
@@ -325,7 +325,8 @@ class Status:
 
         return None, JobType.NONE, None
 
-    def _update_scan_codes(self) -> None:
+    def update_scan_codes(self) -> None:
+        """Update the list of files witch one we should scan the codes."""
         self._codes = [
             f[len(self._codes_folder) :]
             for f in glob.glob(os.path.join(self._codes_folder, "**"), recursive=True)
@@ -358,7 +359,7 @@ class Status:
                 asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
             )
             async for _ in inotify:
-                self._update_scan_codes()
+                self.update_scan_codes()
                 self.write()
 
     def _update_consume(self) -> None:
