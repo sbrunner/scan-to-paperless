@@ -8,6 +8,7 @@ import os
 import re
 import subprocess  # nosec
 import sys
+import time
 from typing import Any, cast
 
 import argcomplete
@@ -128,9 +129,13 @@ def main() -> None:
         print("Wait for clipboard content to be converted, press Ctrl+C to stop")
         convert_clipboard()
         try:
+            previous = pyperclip.paste()
             while True:
-                pyperclip.waitForNewPaste()
-                convert_clipboard()
+                current = pyperclip.paste()
+                if current != previous:
+                    previous = current
+                    convert_clipboard()
+                time.sleep(0.1)
         except KeyboardInterrupt:
             print()
             sys.exit()

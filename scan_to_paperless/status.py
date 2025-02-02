@@ -6,7 +6,9 @@ import glob
 import html
 import os.path
 import traceback
+from collections.abc import AsyncGenerator, Generator
 from enum import Enum
+from pathlib import Path
 from typing import NamedTuple
 
 import asyncinotify
@@ -86,28 +88,126 @@ class JobType(Enum):
     CODE = "code"
 
 
+def _get_directories_recursive(path: Path) -> Generator[Path, None, None]:
+    """
+    Recursively list all directories under path, Including path itself.
+
+    The path itself is always yielded before its children are iterated, so you
+    can pre-process a path (by watching it with inotify) before you get the
+    directory listing.
+
+    Passing a non-directory won't raise an error or anything, it'll just yield
+    nothing.
+    """
+    if path.is_dir():
+        yield path
+        for child in path.iterdir():
+            yield from _get_directories_recursive(child)
+
+
+async def _watch_recursive(path: Path, mask: asyncinotify.Mask) -> AsyncGenerator[asyncinotify.Event, None]:
+    watchers: dict[Path, asyncinotify.Watch] = {}
+    used_mask = (
+        mask
+        | asyncinotify.Mask.MOVED_FROM
+        | asyncinotify.Mask.MOVED_TO
+        | asyncinotify.Mask.CREATE
+        | asyncinotify.Mask.DELETE_SELF
+        | asyncinotify.Mask.IGNORED
+    )
+    with asyncinotify.Inotify() as inotify:
+        for directory in _get_directories_recursive(path):
+            inotify.add_watch(directory, used_mask)
+
+        # Things that can throw this off:
+        #
+        # * Moving a watched directory out of the watch tree (will still
+        #   generate events even when outside of directory tree)
+        #
+        # * Doing two changes on a directory or something before the program
+        #   has a time to handle it (this will also throw off a lot of inotify
+        #   code, though)
+        #
+        # * Moving a watched directory within a watched directory will get the
+        #   wrong path.  This needs to use the cookie system to link events
+        #   together and complete the move properly, which can still make some
+        #   events get the wrong path if you get file events during the move or
+        #   something silly like that, since MOVED_FROM and MOVED_TO aren't
+        #   guaranteed to be contiguous.  That exercise is left up to the
+        #   reader.
+        #
+        # * Trying to watch a path that doesn't exist won't automatically
+        #   create it or anything of the sort.
+        #
+        # * Deleting and recreating or moving the watched directory won't do
+        #   anything special, but it probably should.
+        async for event in inotify:
+            # Add subdirectories to watch if a new directory is added.  We do
+            # this recursively here before processing events to make sure we
+            # have complete coverage of existing and newly-created directories
+            # by watching before recursing and adding, since we know
+            # get_directories_recursive is depth-first and yields every
+            # directory before iterating their children, we know we won't miss
+            # anything.
+            if asyncinotify.Mask.CREATE in event.mask and event.path is not None and event.path.is_dir():
+                for directory in _get_directories_recursive(event.path):
+                    if directory in watchers:
+                        continue
+                    print(f"EVENT: Watching {directory}")
+                    watchers[directory] = inotify.add_watch(directory, used_mask)
+            elif asyncinotify.Mask.DELETE_SELF in event.mask:
+                if event.path in watchers:
+                    print(f"EVENT: Removing watch (delete self) {event.path}")
+                    inotify.rm_watch(watchers[event.path])
+                    del watchers[event.path]
+            elif asyncinotify.Mask.IGNORED in event.mask:
+                if event.path in watchers:
+                    print(f"EVENT: Removing watch (ignored) {event.path}")
+                    inotify.rm_watch(watchers[event.path])
+                    del watchers[event.path]
+            elif asyncinotify.Mask.MOVED_FROM in event.mask:
+                if event.path in watchers:
+                    print(f"EVENT: Removing watch (moved from) {event.path}")
+                    inotify.rm_watch(watchers[event.path])
+                    del watchers[event.path]
+            elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in watchers:
+                if event.path is None or event.path in watchers:
+                    continue
+                print(f"EVENT: Watching (moved to) {event.path}")
+                watchers[event.path] = inotify.add_watch(event.path, used_mask)
+
+            # If there is at least some overlap, assume the user wants this event.
+            if event.mask & mask:
+                yield event
+
+
 class Status:
     """Manage the status file of the progress."""
 
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
         self.no_write = no_write
-        self._file = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), "status.html")
-        self._status: dict[str, _Folder] = {}
-        self._codes: list[str] = []
-        self._consume: list[str] = []
+        self._file = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / "status.html"
+        self._status: dict[Path, _Folder] = {}
+        self._codes: list[Path] = []
+        self._consume: list[Path] = []
         self._global_status = "Starting..."
-        self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
-        self._start_time = datetime.datetime.utcnow().replace(microsecond=0)
-        self._current_folder: str | None = None
+        self._global_status_update = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+        self._start_time = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+        self._current_folder: Path | None = None
 
-        self._codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
-        if self._codes_folder[-1] != "/":
-            self._codes_folder += "/"
-        self._consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
-        if self._consume_folder[-1] != "/":
-            self._consume_folder += "/"
-        self._source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
+        codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
+        if codes_folder[-1] != "/":
+            codes_folder += "/"
+        self._codes_folder = Path(codes_folder)
+        consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
+        if consume_folder[-1] != "/":
+            consume_folder += "/"
+        self._consume_folder = Path(consume_folder)
+        source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
+        if source_folder[-1] != "/":
+            source_folder += "/"
+        self._source_folder = Path(source_folder)
 
         self._init()
 
@@ -120,7 +220,7 @@ class Status:
 
             self.write()
 
-    def set_current_folder(self, name: str | None) -> None:
+    def set_current_folder(self, name: Path | None) -> None:
         """Set the current folder."""
         if name is None:
             if self._current_folder is not None:
@@ -130,8 +230,10 @@ class Status:
                 self.write()
             return
 
-        if name.endswith("/config.yaml"):
-            name = os.path.basename(os.path.dirname(name))
+        if name.name == "config.yaml":
+            name = name.parent
+            if len(name.parents) >= 1:
+                name = name.parents[-2]
 
         write = self._current_folder != name
         self._current_folder = name
@@ -141,7 +243,7 @@ class Status:
 
     def set_status(
         self,
-        name: str,
+        name: Path,
         nb_images: int,
         status: str,
         details: str = "",
@@ -150,11 +252,13 @@ class Status:
     ) -> None:
         """Set the status of a folder."""
         # Config file name
-        if name.endswith("/config.yaml"):
-            name = os.path.basename(os.path.dirname(name))
+        if name.name == "config.yaml":
+            name = name.parent
+            if len(name.parents) >= 1:
+                name = name.parents[-2]
         if nb_images <= 0 and name in self._status:
             nb_images = self._status[name].nb_images
-        self._status[name] = _Folder(nb_images, html.escape(status), details, step)
+        self._status[Path(name)] = _Folder(nb_images, html.escape(status), details, step)
 
         if self.no_write:
             print(f"{name}: {status}")
@@ -169,17 +273,17 @@ class Status:
         self._update_consume()
         self.write()
 
-        for folder_name in glob.glob(os.path.join(self._source_folder, "*")):
+        for folder_name in glob.glob(str(self._source_folder / "*")):
             if os.path.isdir(folder_name):
                 name = os.path.basename(folder_name)
-                self._update_source_error(name)
+                self._update_source_error(Path(name))
                 self.write()
 
-    def _update_status(self, name: str) -> None:
+    def _update_status(self, name: Path) -> None:
         yaml = YAML(typ="safe")
-        if os.path.exists(os.path.join(self._source_folder, name, "error.yaml")):
+        if (self._source_folder / name / "error.yaml").exists():
             with open(
-                os.path.join(self._source_folder, name, "error.yaml"),
+                self._source_folder / name / "error.yaml",
                 encoding="utf-8",
             ) as error_file:
                 error = yaml.load(error_file)
@@ -194,16 +298,16 @@ class Status:
             )
             return
 
-        if os.path.exists(os.path.join(self._source_folder, name, "DONE")):
+        if (self._source_folder / name / "DONE").exists():
             self.set_status(name, -1, _DONE_STATUS)
             return
 
-        if not os.path.exists(os.path.join(self._source_folder, name, "config.yaml")):
-            len_folder = len(os.path.join(self._source_folder, name).rstrip("/")) + 1
+        if not (self._source_folder / name / "config.yaml").exists():
+            len_folder = len(str(self._source_folder / name)) + 1
             files = [
                 f[len_folder:]
                 for f in glob.glob(
-                    os.path.join(self._source_folder, name, "**"),
+                    str(self._source_folder / name / "**"),
                     recursive=True,
                 )
                 if os.path.isfile(f)
@@ -213,7 +317,7 @@ class Status:
             return
 
         with open(
-            os.path.join(self._source_folder, name, "config.yaml"),
+            self._source_folder / name / "config.yaml",
             encoding="utf-8",
         ) as config_file:
             config = yaml.load(config_file)
@@ -243,16 +347,17 @@ class Status:
 
         if (
             rerun
-            or not os.path.exists(os.path.join(self._source_folder, name, "REMOVE_TO_CONTINUE"))
+            or not (self._source_folder / name / "REMOVE_TO_CONTINUE").exists()
             or len(config.get("steps", [])) == 0
         ):
             self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
         else:
-            len_folder = len(os.path.join(self._source_folder, name).rstrip("/")) + 1
             source_images = (
                 config["steps"][-2]["sources"] if len(config.get("steps", [])) >= 2 else config["images"]
             )
-            generated_images = [f[len_folder:] for f in config["steps"][-1]["sources"]]
+            generated_images = [
+                str(Path(f).relative_to(self._source_folder / name)) for f in config["steps"][-1]["sources"]
+            ]
             self.set_status(
                 name,
                 nb_images,
@@ -305,7 +410,7 @@ class Status:
                 )
             )
 
-    def get_next_job(self) -> tuple[str | None, JobType, process_schema.Step | None]:
+    def get_next_job(self) -> tuple[Path | None, JobType, process_schema.Step | None]:
         """Get the next job to do."""
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
@@ -328,79 +433,71 @@ class Status:
     def update_scan_codes(self) -> None:
         """Update the list of files witch one we should scan the codes."""
         self._codes = [
-            f[len(self._codes_folder) :]
-            for f in glob.glob(os.path.join(self._codes_folder, "**"), recursive=True)
+            Path(f).relative_to(self._codes_folder)
+            for f in glob.glob(str(self._codes_folder / "**"), recursive=True)
             if os.path.isfile(f)
         ]
 
     async def _watch_scan_codes_debug(self) -> None:
         print(f"Start watching {self._codes_folder}")
-        with asyncinotify.Inotify() as inotify:
-            inotify.add_watch(
-                self._codes_folder,
-                asyncinotify.Mask.ACCESS
-                | asyncinotify.Mask.ATTRIB
-                | asyncinotify.Mask.CLOSE
-                | asyncinotify.Mask.CREATE
-                | asyncinotify.Mask.DELETE
-                | asyncinotify.Mask.DELETE_SELF
-                | asyncinotify.Mask.MODIFY
-                | asyncinotify.Mask.MOVE
-                | asyncinotify.Mask.MOVE_SELF
-                | asyncinotify.Mask.OPEN,
-            )
-            async for event in inotify:
-                print(f"Watch event on folder {self._codes_folder}: {event.path} - {repr(event.mask)}")
+        async for event in _watch_recursive(
+            self._codes_folder,
+            asyncinotify.Mask.ACCESS
+            | asyncinotify.Mask.ATTRIB
+            | asyncinotify.Mask.CLOSE
+            | asyncinotify.Mask.CREATE
+            | asyncinotify.Mask.DELETE
+            | asyncinotify.Mask.DELETE_SELF
+            | asyncinotify.Mask.MODIFY
+            | asyncinotify.Mask.MOVE
+            | asyncinotify.Mask.MOVE_SELF
+            | asyncinotify.Mask.OPEN,
+        ):
+            print(f"Watch event on folder {self._codes_folder}: {event.path} - {repr(event.mask)}")
 
     async def _watch_scan_codes(self) -> None:
-        with asyncinotify.Inotify() as inotify:
-            inotify.add_watch(
-                self._codes_folder,
-                asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
-            )
-            async for _ in inotify:
-                self.update_scan_codes()
-                self.write()
+        async for _event in _watch_recursive(
+            self._codes_folder,
+            asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
+        ):
+            self.update_scan_codes()
+            self.write()
 
     def _update_consume(self) -> None:
         self._consume = [
-            f[len(self._consume_folder) :]
-            for f in glob.glob(os.path.join(self._consume_folder, "**"), recursive=True)
+            Path(f).relative_to(self._consume_folder)
+            for f in glob.glob(str(self._consume_folder / "**"), recursive=True)
             if os.path.isfile(f)
         ]
 
     async def _watch_destination_debug(self) -> None:
         print(f"Start watching {self._consume_folder}")
-        with asyncinotify.Inotify() as inotify:
-            inotify.add_watch(
-                self._consume_folder,
-                asyncinotify.Mask.ACCESS
-                | asyncinotify.Mask.ATTRIB
-                | asyncinotify.Mask.CLOSE
-                | asyncinotify.Mask.CREATE
-                | asyncinotify.Mask.DELETE
-                | asyncinotify.Mask.DELETE_SELF
-                | asyncinotify.Mask.MODIFY
-                | asyncinotify.Mask.MOVE
-                | asyncinotify.Mask.MOVE_SELF
-                | asyncinotify.Mask.OPEN,
-            )
-            async for event in inotify:
-                print(f"Watch event on folder {self._consume_folder}: {event.path} - {repr(event.mask)}")
+        async for event in _watch_recursive(
+            self._consume_folder,
+            asyncinotify.Mask.ACCESS
+            | asyncinotify.Mask.ATTRIB
+            | asyncinotify.Mask.CLOSE
+            | asyncinotify.Mask.CREATE
+            | asyncinotify.Mask.DELETE
+            | asyncinotify.Mask.DELETE_SELF
+            | asyncinotify.Mask.MODIFY
+            | asyncinotify.Mask.MOVE
+            | asyncinotify.Mask.MOVE_SELF
+            | asyncinotify.Mask.OPEN,
+        ):
+            print(f"Watch event on folder {self._consume_folder}: {event.path} - {repr(event.mask)}")
 
     async def _watch_destination(self) -> None:
-        with asyncinotify.Inotify() as inotify:
-            inotify.add_watch(
-                self._consume_folder,
-                asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
-            )
-            async for _ in inotify:
-                self._update_consume()
-                self.write()
+        async for _event in _watch_recursive(
+            self._consume_folder,
+            asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
+        ):
+            self._update_consume()
+            self.write()
 
-    def _update_source_error(self, name: str) -> bool:
+    def _update_source_error(self, name: Path) -> bool:
         if name != self._current_folder:
-            if os.path.isdir(os.path.join(self._source_folder, name)):
+            if (self._source_folder / name).is_dir():
                 try:
                     self._update_status(name)
                 except Exception as exception:
@@ -420,37 +517,36 @@ class Status:
 
     async def _watch_sources_debug(self) -> None:
         print(f"Start watching {self._source_folder}")
-        with asyncinotify.Inotify() as inotify:
-            inotify.add_watch(
-                self._source_folder,
-                asyncinotify.Mask.ACCESS
-                | asyncinotify.Mask.ATTRIB
-                | asyncinotify.Mask.CLOSE
-                | asyncinotify.Mask.CREATE
-                | asyncinotify.Mask.DELETE
-                | asyncinotify.Mask.DELETE_SELF
-                | asyncinotify.Mask.MODIFY
-                | asyncinotify.Mask.MOVE
-                | asyncinotify.Mask.MOVE_SELF
-                | asyncinotify.Mask.OPEN,
-            )
-            async for event in inotify:
-                print(f"Watch event on folder {self._source_folder}: {event.path} - {repr(event.mask)}")
+        async for event in _watch_recursive(
+            self._source_folder,
+            asyncinotify.Mask.ACCESS
+            | asyncinotify.Mask.ATTRIB
+            | asyncinotify.Mask.CLOSE
+            | asyncinotify.Mask.CREATE
+            | asyncinotify.Mask.DELETE
+            | asyncinotify.Mask.DELETE_SELF
+            | asyncinotify.Mask.MODIFY
+            | asyncinotify.Mask.MOVE
+            | asyncinotify.Mask.MOVE_SELF
+            | asyncinotify.Mask.OPEN,
+        ):
+            print(f"Watch event on folder {self._source_folder}: {event.path} - {repr(event.mask)}")
 
     async def _watch_sources(self) -> None:
-        with asyncinotify.Inotify() as inotify:
-            length = len(self._source_folder.rstrip("/")) + 1
-            inotify.add_watch(
-                self._source_folder,
-                asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
-            )
-            async for event in inotify:
-                name = str(event.path)[length:].split("/", 1)[0]
-                if name == "status.html":
-                    continue
-                print(f"Update source '{name}' from event")
-                if self._update_source_error(name):
-                    self.write()
+        async for event in _watch_recursive(
+            self._source_folder,
+            asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
+        ):
+            if event.path is None:
+                continue
+            name = event.path.relative_to(self._source_folder)
+            if len(name.parents) > 2:
+                name = name.parents[-2]
+            if name == Path("status.html"):
+                continue
+            print(f"Update source '{name}' from event")
+            if self._update_source_error(name):
+                self.write()
 
     def start_watch(self) -> None:
         """Watch files changes to update status."""

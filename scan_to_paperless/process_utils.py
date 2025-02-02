@@ -4,6 +4,7 @@ import logging
 import math
 import os
 from collections.abc import Callable, Sequence
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 import cv2
@@ -68,8 +69,8 @@ class Context:
         self,
         config: schema.Configuration,
         step: schema.Step,
-        config_file_name: str | None = None,
-        root_folder: str | None = None,
+        config_file_name: Path | None = None,
+        root_folder: Path | None = None,
         image_name: str | None = None,
     ) -> None:
         """Initialize."""
