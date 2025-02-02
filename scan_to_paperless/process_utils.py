@@ -208,8 +208,10 @@ class Context:
 
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
-        cut_config = self.config["args"].get("cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT))
-        if cut_config.get("enabled", schema.CROP_ENABLED_DEFAULT):
+        cut_config = self.config["args"].setdefault(
+            "cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT)
+        )
+        if cut_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
             mask = self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
