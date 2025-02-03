@@ -113,7 +113,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libgs9-common: 9.55.0~dfsg1-0ubuntu5.10
   ubuntu_22_04/libgssapi-krb5-2: 1.19.2-2ubuntu0.4
   ubuntu_22_04/libgstreamer1.0-0: 1.20.3-0ubuntu1.1
-  ubuntu_22_04/libharfbuzz0b: 2.7.4-1ubuntu3.1
+  ubuntu_22_04/libharfbuzz0b: 2.7.4-1ubuntu3.2
   ubuntu_22_04/libheif1: 1.12.0-2build1
   ubuntu_22_04/libhogweed6: 3.7.3-1build2
   ubuntu_22_04/libicu70: 70.1-2
@@ -417,7 +417,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libgs9-common: 9.55.0~dfsg1-0ubuntu5.10
   ubuntu_22_04/libgssapi-krb5-2: 1.19.2-2ubuntu0.4
   ubuntu_22_04/libgstreamer1.0-0: 1.20.3-0ubuntu1.1
-  ubuntu_22_04/libharfbuzz0b: 2.7.4-1ubuntu3.1
+  ubuntu_22_04/libharfbuzz0b: 2.7.4-1ubuntu3.2
   ubuntu_22_04/libheif1: 1.12.0-2build1
   ubuntu_22_04/libhogweed6: 3.7.3-1build2
   ubuntu_22_04/libicu70: 70.1-2
