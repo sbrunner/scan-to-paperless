@@ -16,6 +16,7 @@ import sys
 import tempfile
 import time
 import traceback
+from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
 import aiofiles
@@ -54,7 +55,7 @@ _LOG = logging.getLogger(__name__)
 
 def add_intermediate_error(
     config: schema.Configuration,
-    config_file_name: str | None,
+    config_file_name: Path | None,
     error: Exception,
     traceback_: list[str],
 ) -> None:
@@ -70,15 +71,15 @@ def add_intermediate_error(
     yaml.default_flow_style = False
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
+        with open(str(config_file_name) + "_", "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
     except Exception as exception:
         print(exception)
         config["intermediate_error"] = old_intermediate_error
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
+        with open(str(config_file_name) + "_", "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
-    os.rename(config_file_name + "_", config_file_name)
+    os.rename(str(config_file_name) + "_", config_file_name)
 
 
 async def call(cmd: str | list[str], check: bool = True, **kwargs: Any) -> None:
@@ -1143,8 +1144,8 @@ def _update_config(config: schema.Configuration) -> None:
 async def transform(
     config: schema.Configuration,
     step: schema.Step,
-    config_file_name: str,
-    root_folder: str,
+    config_file_name: Path,
+    root_folder: Path,
     status: scan_to_paperless.status.Status | None = None,
 ) -> schema.Step:
     """Apply the transforms on a document."""
@@ -1348,7 +1349,7 @@ async def transform(
 
     from scan_to_paperless import jupyter  # pylint: disable=import-outside-toplevel
 
-    jupyter.create_transform_notebook(root_folder, context, step)
+    jupyter.create_transform_notebook(str(root_folder), context, step)
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
 
@@ -1444,7 +1445,9 @@ async def transform(
     }
 
 
-async def _save_progress(root_folder: str | None, count: int, name: str, image_name: str, image: str) -> None:
+async def _save_progress(
+    root_folder: Path | None, count: int, name: str, image_name: str, image: str
+) -> None:
     assert root_folder
     name = f"{count}-{name}"
     dest_folder = os.path.join(root_folder, name)
@@ -1458,7 +1461,7 @@ async def _save_progress(root_folder: str | None, count: int, name: str, image_n
 
 
 def save(
-    context: process_utils.Context, root_folder: str, image: str, folder: str, force: bool = False
+    context: process_utils.Context, root_folder: Path, image: str, folder: str, force: bool = False
 ) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
     if force or context.is_progress():
@@ -1485,7 +1488,7 @@ class Item(TypedDict, total=False):
 async def split(
     config: schema.Configuration,
     step: schema.Step,
-    root_folder: str,
+    root_folder: Path,
 ) -> schema.Step:
     """Split an image using the assisted split instructions."""
     process_count = 0
@@ -1631,7 +1634,7 @@ async def split(
 async def finalize(
     config: schema.Configuration,
     step: schema.Step,
-    root_folder: str,
+    root_folder: Path,
     status: scan_to_paperless.status.Status | None = None,
 ) -> None:
     """
@@ -1639,7 +1642,7 @@ async def finalize(
 
     convert in one pdf and copy with the right name in the consume folder
     """
-    name = os.path.basename(root_folder)
+    name = Path(root_folder.name)
     destination = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), f"{name}.pdf")
 
     if os.path.exists(destination):
@@ -1655,21 +1658,24 @@ async def finalize(
             if os.path.exists(image):
                 images2.append(image)
 
-        file_name = os.path.join(root_folder, "append.png")
-        await call(CONVERT + images2 + ["-background", "#ffffff", "-gravity", "center", "-append", file_name])
+        file_name = root_folder / "append.png"
+        await call(
+            CONVERT + images2 + ["-background", "#ffffff", "-gravity", "center", "-append", str(file_name)]
+        )
         # To stack vertically (img1 over img2):
         # vis = np.concatenate((img1, img2), axis=0)
         # To stack horizontally (img1 to the left of img2):
         # vis = np.concatenate((img1, img2), axis=1)
-        images = [file_name]
+        images = [str(file_name)]
 
     pdf = []
-    for image in images:
+    for image_filename in images:
+        image_path = Path(image_filename)
         if status is not None:
-            status.set_status(name, -1, f"Finalize ({os.path.basename(image)})", write=True)
-        if os.path.exists(image):
-            name = os.path.splitext(os.path.basename(image))[0]
-            file_name = os.path.join(root_folder, f"{name}.pdf")
+            status.set_status(name, -1, f"Finalize ({image_path.name})", write=True)
+        if image_path.exists():
+            image_name = image_path.stem
+            file_name = root_folder / f"{image_name}.pdf"
             tesseract_configuration = config["args"].setdefault("tesseract", {})
             if tesseract_configuration.setdefault("enabled", schema.TESSERACT_ENABLED_DEFAULT):
                 with open(file_name, "w", encoding="utf8") as output_file:
@@ -1680,7 +1686,7 @@ async def finalize(
                             str(config["args"].setdefault("dpi", schema.DPI_DEFAULT)),
                             "-l",
                             tesseract_configuration.setdefault("lang", schema.TESSERACT_LANG_DEFAULT),
-                            image,
+                            image_filename,
                             "stdout",
                             "pdf",
                         ],
@@ -1689,8 +1695,8 @@ async def finalize(
                     if stderr:
                         print(stderr.decode())
             else:
-                await call(CONVERT + [image, "+repage", file_name])
-            pdf.append(file_name)
+                await call(CONVERT + [image_filename, "+repage", str(file_name)])
+            pdf.append(str(file_name))
 
     if status is not None:
         status.set_status(name, -1, "Finalize (optimize)", write=True)
@@ -1719,7 +1725,7 @@ async def finalize(
             await call(
                 [
                     "cp",
-                    pdf_file,
+                    str(pdf_file),
                     os.path.join(root_folder, f"1-{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
                 ]
             )
@@ -1795,7 +1801,7 @@ async def finalize(
                 print(f"Uploaded {temporary_pdf.name} with title {title}")
 
 
-async def _process_code(name: str) -> bool:
+async def _process_code(name: Path) -> bool:
     """Detect ad add a page with the QR codes."""
     pdf_filename = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), name)
 
@@ -1835,7 +1841,7 @@ async def _process_code(name: str) -> bool:
     return False
 
 
-def is_sources_present(images: list[str], root_folder: str) -> bool:
+def is_sources_present(images: list[str], root_folder: Path) -> bool:
     """Are sources present for the next step."""
     for image in images:
         if not os.path.exists(os.path.join(root_folder, image)):
@@ -1844,27 +1850,27 @@ def is_sources_present(images: list[str], root_folder: str) -> bool:
     return True
 
 
-def save_config(config: schema.Configuration, config_file_name: str) -> None:
+def save_config(config: schema.Configuration, config_file_name: Path) -> None:
     """Save the configuration."""
     yaml = YAML()
     yaml.default_flow_style = False
-    with open(config_file_name + "_", "w", encoding="utf-8") as config_file:
+    with open(str(config_file_name) + "_", "w", encoding="utf-8") as config_file:
         yaml.dump(config, config_file)
-    os.rename(config_file_name + "_", config_file_name)
+    os.rename(str(config_file_name) + "_", config_file_name)
 
 
 async def _process(
-    config_file_name: str,
+    config_file_name: Path,
     status: scan_to_paperless.status.Status,
     dirty: bool = False,
 ) -> bool:
     """Process one document."""
-    if not os.path.exists(config_file_name):
+    if not config_file_name.exists():
         return dirty
 
-    root_folder = os.path.dirname(config_file_name)
+    root_folder = config_file_name.parent
 
-    if os.path.exists(os.path.join(root_folder, "error.yaml")):
+    if (root_folder / "error.yaml").exists():
         return dirty
 
     yaml = YAML()
@@ -1986,8 +1992,8 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             status.set_global_status(f"Processing '{name}'...")
             status.set_current_folder(name)
             try:
-                root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
-                config_file_name = os.path.join(root_folder, "config.yaml")
+                root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source") / name)
+                config_file_name = root_folder / "config.yaml"
                 yaml = YAML()
                 yaml.default_flow_style = False
                 async with aiofiles.open(config_file_name, encoding="utf-8") as config_file:
@@ -2031,8 +2037,8 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
 
         elif job_type == scan_to_paperless.status.JobType.DOWN:
             assert name is not None
-            root_folder = os.path.join(os.environ.get("SCAN_SOURCE_FOLDER", "/source"), name)
-            if os.path.exists(root_folder):
+            root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
+            if root_folder.exists():
                 shutil.rmtree(root_folder)
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert name is not None
