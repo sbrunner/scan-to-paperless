@@ -484,7 +484,7 @@ def add_codes(
                     data = [d if d else "|" for d in data]
                     code_["data_formatted"] = "<br />".join(data)  # type: ignore
                 sections = [
-                    f"<h2>{code_['type']} [{code_['pos']}]</h2>" f"<p>{code_['data_formatted']}</p>"  # type: ignore
+                    f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data_formatted']}</p>"  # type: ignore
                     for code_ in all_codes
                 ]
 
@@ -497,7 +497,7 @@ def add_codes(
                     <section id="heading">
                         <p>QR code and Barcode</p>
                     </section>
-                    {'<hr />'.join(sections)}
+                    {"<hr />".join(sections)}
                 </body>
                 </html>"""
                 )

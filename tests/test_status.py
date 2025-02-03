@@ -20,7 +20,7 @@ def test_status() -> None:
     os.chdir(old_cwd)
 
     check_screenshot(
-        f'file://{os.path.join(os.path.dirname(__file__), "status", "scan", "status.html")}',
+        f"file://{os.path.join(os.path.dirname(__file__), 'status', 'scan', 'status.html')}",
         os.path.join(os.path.dirname(__file__), "status"),
         os.path.join(os.path.dirname(__file__), "status", "status.expected.png"),
         generate_expected_image=False,
