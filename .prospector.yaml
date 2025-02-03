@@ -14,6 +14,7 @@ pylint:
     - broad-exception-caught
   options:
     good-names: x,y
+    extension-pkg-allow-list: cv2
 
 mypy:
   options:
