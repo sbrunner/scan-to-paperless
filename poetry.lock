@@ -2364,6 +2364,17 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "polygon-math"
+version = "1.3.1"
+description = "Calculate geometric properties of arbitrary 2D polygons"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "polygon_math-1.3.1-py3-none-any.whl", hash = "sha256:66e2c3375a7bea705eccc7b91541f5eeac5256e591a516df83c2d4bba2ef3b7d"},
+    {file = "polygon_math-1.3.1.tar.gz", hash = "sha256:cb7553e054ad8a7da6b6bc580960537a6e6f8ed09acebc6e7b0a07658dd31180"},
+]
+
+[[package]]
 name = "prompt-toolkit"
 version = "3.0.50"
 description = "Library for building powerful interactive command lines in Python"
@@ -4183,4 +4194,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.14"
-content-hash = "8386bebdd96fd2b240b137001fcf1c7f635a00c4aeaaa379f62b24f7a571dfc0"
+content-hash = "c2777796d1d2d080a334ab7a411774d744b6e22eabe0d0c9598408964c58a092"

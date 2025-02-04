@@ -12,6 +12,7 @@ from typing import TypedDict
 
 import cv2
 import pikepdf
+import polygon_math
 import zxingcpp
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
@@ -360,6 +361,15 @@ def _get_codes_with_z_bar(
     return codes
 
 
+def _is_rectangular(geometry: list[tuple[float, float]]) -> bool:
+    """Is the geometry an oriented rectangle."""
+    if len(geometry) != 4:
+        return False
+    polygon = polygon_math.polygon(geometry)
+    wrong_angles = [a for a in polygon.Angles if not (80 < a < 100)]
+    return not wrong_angles
+
+
 def add_codes(
     input_filename: str,
     output_filename: str,
@@ -431,6 +441,8 @@ def add_codes(
                 #     codes += _get_codes_with_z_bar(
                 #         image, angle, page, img0.width, img0.height, all_codes, added_codes
                 #     )
+
+                codes = [code for code in codes if _is_rectangular(code["geometry"])]
 
                 if codes:
                     packet = io.BytesIO()

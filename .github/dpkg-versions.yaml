@@ -305,6 +305,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_24_04/tzdata: 2024a-3ubuntu1.1
   ubuntu_24_04/ubuntu-keyring: 2023.11.28.1
   ubuntu_24_04/ucf: 3.0043+nmu1
+  ubuntu_24_04/unminimize: 0.2.1
   ubuntu_24_04/util-linux: 2.39.3-9ubuntu6.1
   ubuntu_24_04/x11-common: 1:7.7+23ubuntu3
   ubuntu_24_04/xfonts-encodings: 1:1.0.5-0ubuntu2
@@ -775,6 +776,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_24_04/tzdata: 2024a-3ubuntu1.1
   ubuntu_24_04/ubuntu-keyring: 2023.11.28.1
   ubuntu_24_04/ucf: 3.0043+nmu1
+  ubuntu_24_04/unminimize: 0.2.1
   ubuntu_24_04/util-linux: 2.39.3-9ubuntu6.1
   ubuntu_24_04/x11-common: 1:7.7+23ubuntu3
   ubuntu_24_04/xfonts-encodings: 1:1.0.5-0ubuntu2
