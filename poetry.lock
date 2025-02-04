@@ -3927,13 +3927,13 @@ files = [
 
 [[package]]
 name = "weasyprint"
-version = "63.1"
+version = "64.0"
 description = "The Awesome Document Factory"
 optional = true
 python-versions = ">=3.9"
 files = [
-    {file = "weasyprint-63.1-py3-none-any.whl", hash = "sha256:9d0319fe3ba553c9a77dc43a2d35b64a70c2b8809ad55a139a214803fde62bce"},
-    {file = "weasyprint-63.1.tar.gz", hash = "sha256:cb424e63e8dd3f14195bfe5f203527646aa40a2f00ac819f9d39b8304cec0044"},
+    {file = "weasyprint-64.0-py3-none-any.whl", hash = "sha256:2ef5539fc05a5d3b4fbee93c87fc20be93345c33895f280076c38071797eadef"},
+    {file = "weasyprint-64.0.tar.gz", hash = "sha256:1ceb3ea6306db4a3d06df0eafae3a5a6e879c35c40091aa8ceb5bcb143e80b29"},
 ]
 
 [package.dependencies]
@@ -3947,7 +3947,7 @@ tinycss2 = ">=1.4.0"
 tinyhtml5 = ">=2.0.0b1"
 
 [package.extras]
-doc = ["sphinx", "sphinx_rtd_theme"]
+doc = ["furo", "sphinx"]
 test = ["pytest", "ruff"]
 
 [[package]]
@@ -4194,4 +4194,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.14"
-content-hash = "c2777796d1d2d080a334ab7a411774d744b6e22eabe0d0c9598408964c58a092"
+content-hash = "eb560d25fd8a52b683467c8953ec929f8ac14db4d9028a7694e2176c5cc6469e"
