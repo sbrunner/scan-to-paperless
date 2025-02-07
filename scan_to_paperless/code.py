@@ -56,7 +56,7 @@ class _PageCode(TypedDict):
 
 
 def _point(
-    point: tuple[int | float, int | float], deg_angle: float, width: int, height: int
+    point: tuple[int | float, int | float], deg_angle: float, width: int, height: int,
 ) -> tuple[float, float]:
     assert -90 <= deg_angle <= 90
     angle = math.radians(deg_angle)
@@ -94,7 +94,7 @@ def _add_code(
                     "type": found["type"],
                     "pos": pos,
                     "data": data,
-                }
+                },
             )
 
     filtered_founds = [
@@ -108,7 +108,7 @@ def _add_code(
             {
                 "pos": added_codes[found["data"]]["pos"],
                 "geometry": [_point(p, alpha, width, height) for p in bbox],
-            }
+            },
         )
 
 
@@ -160,7 +160,7 @@ def _get_bar_codes_with_open_cv(
                             "data": data,
                             "type": type_[0] + type_[1:].lower(),
                             "geometry": bbox,
-                        }
+                        },
                     )
 
                 _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
@@ -228,7 +228,7 @@ def _get_qr_codes_with_open_cv(
                                 decoded_image[
                                     int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                     int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
-                                ]
+                                ],
                             )
                             for data in retvals[0]:
                                 founds.append(
@@ -236,7 +236,7 @@ def _get_qr_codes_with_open_cv(
                                         "data": data,
                                         "type": "QR code",
                                         "geometry": points[index],
-                                    }
+                                    },
                                 )
                         except UnicodeDecodeError as exception:
                             _LOG.warning("Open CV WeChat QR code decoder error: %s", str(exception))
@@ -246,7 +246,7 @@ def _get_qr_codes_with_open_cv(
                                 "data": data,
                                 "type": "QR code",
                                 "geometry": points[index],
-                            }
+                            },
                         )
                 _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
     except Exception:  # pylint: disable=broad-except
@@ -285,7 +285,7 @@ def _get_codes_with_open_cv_we_chat(
                         "type": "QR code",
                         # In current version of wechat_qrcode, the bounding box are not correct
                         "geometry": None,
-                    }
+                    },
                 )
             _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
         except UnicodeDecodeError as exception:
@@ -323,7 +323,7 @@ def _get_codes_with_zxing(
                         (result.position.bottom_right.x, result.position.bottom_right.y),
                         (result.position.bottom_left.x, result.position.bottom_left.y),
                     ],
-                }
+                },
             )
 
         _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
@@ -354,7 +354,7 @@ def _get_codes_with_z_bar(
                 "data": output.data.decode().replace("\\n", "\n"),
                 "type": "QR code" if output.type == "QRCODE" else output.type[0] + output.type[1:].lower(),
                 "geometry": output.polygon,
-            }
+            },
         )
     _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
@@ -411,16 +411,16 @@ def add_codes(
                 # Codes information to add the mask and number on the page
                 codes: list[_PageCode] = []
                 codes += _get_codes_with_zxing(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
                 )
                 codes += _get_bar_codes_with_open_cv(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
                 )
                 codes += _get_qr_codes_with_open_cv(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
                 )
                 codes += _get_codes_with_open_cv_we_chat(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
                 )
                 # codes += _get_codes_with_z_bar(
                 #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
@@ -447,13 +447,13 @@ def add_codes(
                 if codes:
                     packet = io.BytesIO()
                     can = canvas.Canvas(
-                        packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False
+                        packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False,
                     )
                     for code in codes:
                         can.setFillColor(_BACKGROUND_COLOR)
                         path = can.beginPath()
                         path.moveTo(
-                            code["geometry"][0][0] / dpi * pdf_dpi, code["geometry"][0][1] / dpi * pdf_dpi
+                            code["geometry"][0][0] / dpi * pdf_dpi, code["geometry"][0][1] / dpi * pdf_dpi,
                         )
                         for point in code["geometry"][1:]:
                             path.lineTo(point[0] / dpi * pdf_dpi, point[1] / dpi * pdf_dpi)
@@ -511,7 +511,7 @@ def add_codes(
                     </section>
                     {"<hr />".join(sections)}
                 </body>
-                </html>"""
+                </html>""",
                 )
 
                 css = CSS(string="@page { size: A4; margin: 1.5cm } p { font-size: 5pt; font-family: sans; }")
@@ -519,14 +519,14 @@ def add_codes(
                 html.write_pdf(dest_2.name, stylesheets=[css])
 
                 subprocess.run(  # nosec
-                    ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True
+                    ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True,
                 )
 
                 if metadata:
                     with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
                         with pdf.open_metadata() as meta:
                             formatted_codes = "\n-\n".join(
-                                [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes]
+                                [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
                             )
                             if meta.get("{http://purl.org/dc/elements/1.1/}description"):
                                 meta["{http://purl.org/dc/elements/1.1/}description"] += (
@@ -537,7 +537,7 @@ def add_codes(
                         for key, value in metadata.items():
                             pdf.docinfo[key] = value
                         pdf.docinfo["/Codes"] = "\n-\n".join(
-                            [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes]
+                            [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
                         )
                         pdf.save(output_filename)
         else:
@@ -556,13 +556,13 @@ def main() -> None:
     )
     arg_parser.add_argument("--pdf-dpi", help="The DPI used in the PDF", type=int, default=72)
     arg_parser.add_argument(
-        "--font-size", help="The font size used in the PDF to add the number", type=int, default=10
+        "--font-size", help="The font size used in the PDF to add the number", type=int, default=10,
     )
     arg_parser.add_argument(
-        "--margin-left", help="The margin left used in the PDF to add the number", type=int, default=2
+        "--margin-left", help="The margin left used in the PDF to add the number", type=int, default=2,
     )
     arg_parser.add_argument(
-        "--margin-top", help="The margin top used in the PDF to add the number", type=int, default=0
+        "--margin-top", help="The margin top used in the PDF to add the number", type=int, default=0,
     )
     arg_parser.add_argument("input_filename", help="The input PDF filename")
     arg_parser.add_argument("output_filename", help="The output PDF filename")

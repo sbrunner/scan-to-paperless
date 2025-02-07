@@ -373,13 +373,13 @@ class Status:
                         [
                             f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
                             for f in source_images
-                        ]
+                        ],
                     ),
                     generated_images=", ".join(
                         [
                             f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
                             for f in generated_images
-                        ]
+                        ],
                     ),
                 ),
             )
@@ -408,7 +408,7 @@ class Status:
                     sorted_status_key=natsort.natsorted(self._status.keys()),
                     codes=self._codes,
                     consume=self._consume,
-                )
+                ),
             )
 
     def get_next_job(self) -> tuple[str | Path | None, JobType, process_schema.Step | None]:
@@ -454,7 +454,7 @@ class Status:
             | asyncinotify.Mask.MOVE_SELF
             | asyncinotify.Mask.OPEN,
         ):
-            print(f"Watch event on folder {self._codes_folder}: {event.path} - {repr(event.mask)}")
+            print(f"Watch event on folder {self._codes_folder}: {event.path} - {event.mask!r}")
 
     async def _watch_scan_codes(self) -> None:
         async for _event in _watch_recursive(
@@ -486,7 +486,7 @@ class Status:
             | asyncinotify.Mask.MOVE_SELF
             | asyncinotify.Mask.OPEN,
         ):
-            print(f"Watch event on folder {self._consume_folder}: {event.path} - {repr(event.mask)}")
+            print(f"Watch event on folder {self._consume_folder}: {event.path} - {event.mask!r}")
 
     async def _watch_destination(self) -> None:
         async for _event in _watch_recursive(
@@ -510,10 +510,9 @@ class Status:
                         f"<p>Stacktrace:</p><p><code>{'<br />'.join(trace)}</code></p>",
                     )
                 return True
-            else:
-                if name in self._status:
-                    del self._status[name]
-                    return True
+            if name in self._status:
+                del self._status[name]
+                return True
         return False
 
     async def _watch_sources_debug(self) -> None:
@@ -531,7 +530,7 @@ class Status:
             | asyncinotify.Mask.MOVE_SELF
             | asyncinotify.Mask.OPEN,
         ):
-            print(f"Watch event on folder {self._source_folder}: {event.path} - {repr(event.mask)}")
+            print(f"Watch event on folder {self._source_folder}: {event.path} - {event.mask!r}")
 
     async def _watch_sources(self) -> None:
         async for event in _watch_recursive(

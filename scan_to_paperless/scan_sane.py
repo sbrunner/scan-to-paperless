@@ -92,7 +92,7 @@ def _all_options(device: sane.SaneDev) -> None:
             value = getattr(device, name)
             if value is not None:
                 print(f"Default value: {value}")
-        except:  # pylint: disable=bare-except # noqa: S110
+        except:  # pylint: disable=bare-except
             pass
         print()
 
@@ -109,7 +109,7 @@ def _main() -> None:
     )
     parser.add_argument("--format", help="file format of output file")
     parser.add_argument(
-        "-n", "--dont-scan", action="store_true", help="only set options, don't actually scan"
+        "-n", "--dont-scan", action="store_true", help="only set options, don't actually scan",
     )
     parser.add_argument("--verbose", help="verbose output", action="store_true")
 
@@ -126,7 +126,7 @@ def _main() -> None:
                 "batch format, is `out%%d.pnm` `out%%d.tif` ",
                 "`out%%d.png` or `out%%d.jpg` by default depending on `--format` ",
                 "This option is incompatible with `--output-file`.    ",
-            ]
+            ],
         ),
     )
     bash_group.add_argument("--batch-start", type=int, help="page number to start naming files with")
@@ -139,11 +139,11 @@ def _main() -> None:
     )
     bash_group.add_argument("--batch-print", action="store_true", help="print image filenames to stdout")
     bash_group.add_argument(
-        "--batch-prompt", action="store_true", help="ask for pressing a key before scanning a page"
+        "--batch-prompt", action="store_true", help="ask for pressing a key before scanning a page",
     )
 
     device_group = parser.add_argument_group(
-        "device", "Options that can be relative to the device, see `--all-options` for details"
+        "device", "Options that can be relative to the device, see `--all-options` for details",
     )
     device_group.add_argument("--depth", type=int)
     device_group.add_argument("--mode")

@@ -63,7 +63,7 @@ def test_crop() -> None:
     check_image(
         root_folder,
         cv2.cvtColor(
-            process_utils.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB
+            process_utils.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB,
         ),
         os.path.join(os.path.dirname(__file__), "crop-3.expected.png"),
         generate_expected_image=REGENERATE,
@@ -71,7 +71,7 @@ def test_crop() -> None:
     check_image(
         root_folder,
         cv2.cvtColor(
-            process_utils.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB
+            process_utils.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB,
         ),
         os.path.join(os.path.dirname(__file__), "crop-4.expected.png"),
         generate_expected_image=REGENERATE,
@@ -230,7 +230,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
     )
     process.finalize(config, step, root_folder)
     pdfinfo = process.output(
-        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")],
     ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
@@ -243,10 +243,10 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
             os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
-        ]
+        ],
     )
     print(
-        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'assisted-split-{type_}-5.expected.png'."
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'assisted-split-{type_}-5.expected.png'.",
     )
     check_image_file(
         root_folder,
@@ -293,7 +293,7 @@ async def test_assisted_split_join_full() -> None:
         [
             ({"value": 738, "vertical": True, "margin": 0}, ["-", "1.2"]),
             ({"value": 3300, "vertical": True, "margin": 0}, ["1.1", "-"]),
-        ]
+        ],
     ):
         limit, destinations = elements
         config["assisted_split"][number]["limits"] = [limit]
@@ -311,7 +311,7 @@ async def test_assisted_split_join_full() -> None:
 
     process.finalize(config, step, root_folder)
     pdfinfo = process.output(
-        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")],
     ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
@@ -324,10 +324,10 @@ async def test_assisted_split_join_full() -> None:
             os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
-        ]
+        ],
     )
     print(
-        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'assisted-split-join-2.expected.png'."
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'assisted-split-join-2.expected.png'.",
     )
     check_image_file(
         root_folder,
@@ -436,7 +436,7 @@ async def test_full(progress) -> None:
         generate_expected_image=REGENERATE,
     )
     assert os.path.exists(os.path.join(os.path.dirname(__file__), "all-1-skew-corrected.png")), os.listdir(
-        os.path.dirname(__file__)
+        os.path.dirname(__file__),
     )
 
     if progress == "TRUE":
@@ -469,10 +469,10 @@ async def test_full(progress) -> None:
             os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
-        ]
+        ],
     )
     print(
-        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'all-2.expected.png'."
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'all-2.expected.png'.",
     )
     check_image_file(
         root_folder,
@@ -503,14 +503,14 @@ async def test_credit_card_full() -> None:
         "sources": [
             os.path.join(os.path.dirname(__file__), "credit-card-1.png"),
             os.path.join(os.path.dirname(__file__), "credit-card-2.png"),
-        ]
+        ],
     }
     step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 2
     assert step["name"] == "finalize"
     process.finalize(config, step, root_folder)
     pdfinfo = process.output(
-        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")]
+        ["pdfinfo", os.path.join("/results", f"{os.path.basename(root_folder)}.pdf")],
     ).split("\n")
     regex = re.compile(r"([a-zA-Z ]+): +(.*)")
     pdfinfo = [regex.match(e) for e in pdfinfo]
@@ -523,10 +523,10 @@ async def test_credit_card_full() -> None:
             os.path.join("/results", f"{os.path.basename(root_folder)}.pdf"),
             "+adjoin",
             os.path.join("/results", f"{os.path.basename(root_folder)}.png"),
-        ]
+        ],
     )
     print(
-        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'credit-card-1.expected.png'."
+        f"Compare '{os.path.join('/results', f'{os.path.basename(root_folder)}.png')}' with expected image 'credit-card-1.expected.png'.",
     )
     check_image_file(
         root_folder,
@@ -548,12 +548,12 @@ async def test_empty() -> None:
         "args": {
             "level": {"value": True},
             "mask": {},
-        }
+        },
     }
     step = {
         "sources": [
             os.path.join(os.path.dirname(__file__), "empty.png"),
-        ]
+        ],
     }
     step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
     assert len(step["sources"]) == 0
@@ -564,7 +564,7 @@ async def test_empty() -> None:
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.flaky(reruns=3)
 @pytest.mark.parametrize(
-    ("test", "args"), [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
+    ("test", "args"), [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")],
 )
 async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
@@ -759,7 +759,7 @@ async def test_tiff_jupyter() -> None:
             id="inverse",
         ),
         pytest.param(
-            "no-morphology", {"de_noise_morphology": False, "de_noise_size": 20}, id="no-morphology"
+            "no-morphology", {"de_noise_morphology": False, "de_noise_size": 20}, id="no-morphology",
         ),
         pytest.param(
             "inverse-no-morphology",
@@ -840,7 +840,7 @@ async def test_histogram() -> None:
                 "level": {"value": True, "min": 10, "max": 90},
                 "cut_black": 20,
                 "cut_white": 200,
-            }
+            },
         },
         {},
     )

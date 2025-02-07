@@ -38,8 +38,8 @@ def get_config(config_filename: str) -> schema.Configuration:
             if "extends" in config:
                 base_config = get_config(
                     os.path.normpath(
-                        os.path.join(os.path.dirname(config_filename), os.path.expanduser(config["extends"]))
-                    )
+                        os.path.join(os.path.dirname(config_filename), os.path.expanduser(config["extends"])),
+                    ),
                 )
 
                 strategies_config = cast(schema.MergeStrategies, config.get("strategies", {}))

@@ -82,7 +82,7 @@ class Context:
         self.image: NpNdarrayInt | None = None
         self.mask: NpNdarrayInt | None = None
         self.get_index: Callable[
-            [NpNdarrayInt], tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None
+            [NpNdarrayInt], tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None,
         ] = lambda image: np.ix_(
             np.arange(0, image.shape[1]),
             np.arange(0, image.shape[1]),
@@ -115,10 +115,10 @@ class Context:
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
             lower_val = np.array(
-                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)
+                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT),
             )
             upper_val = np.array(
-                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)
+                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT),
             )
             mask = cv2.inRange(hsv, lower_val, upper_val)
 
@@ -171,7 +171,7 @@ class Context:
                         cv2.resize(
                             cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE),
                             (mask.shape[1], mask.shape[0]),
-                        )
+                        ),
                     ),
                 )
 
@@ -188,7 +188,7 @@ class Context:
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
-            "mask", cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT)
+            "mask", cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT),
         )
         self.mask = (
             self._get_mask(
@@ -210,7 +210,7 @@ class Context:
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
-            "cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT)
+            "cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT),
         )
         if cut_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
@@ -255,14 +255,14 @@ class Context:
         if self.mask is not None:
             self.mask = rotate_image(self.mask, angle, 0)
 
-    def get_px_value(self, value: int | float) -> float:
+    def get_px_value(self, value: float) -> float:
         """Get the value in px."""
         return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
 
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
-            "progress", schema.PROGRESS_DEFAULT
+            "progress", schema.PROGRESS_DEFAULT,
         )
 
     def save_progress_images(

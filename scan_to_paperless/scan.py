@@ -150,7 +150,7 @@ def main() -> None:
         with open(config_filename, "w", encoding="utf-8") as config_file:
             config_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/config_schema.json\n\n"
+                "/master/scan_to_paperless/config_schema.json\n\n",
             )
             yaml.dump(config, config_file)
 
@@ -158,7 +158,7 @@ def main() -> None:
         print(
             """The scan folder isn't set, use:
     scan --set-settings scan_folder <a_folder>
-    This should be shared with the process container in 'source'."""
+    This should be shared with the process container in 'source'.""",
         )
         sys.exit(1)
 
@@ -189,7 +189,7 @@ def main() -> None:
                     f"--batch-start={len(odd) * 2}",
                     "--batch-increment=-2",
                     f"--batch-count={len(odd)}",
-                ]
+                ],
             )
             if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
                 for img in os.listdir(root_folder):
@@ -217,7 +217,7 @@ def main() -> None:
             with PIL.Image.open(os.path.join(root_folder, img)) as image:
                 if "dpi" in image.info:
                     args_["dpi"] = math.sqrt(
-                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"])
+                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
                     )
 
     print(base_folder)
@@ -245,11 +245,11 @@ def main() -> None:
         yaml = YAML()
         yaml.default_flow_style = False
         with open(
-            os.path.join(os.path.dirname(root_folder), "config.yaml"), "w", encoding="utf-8"
+            os.path.join(os.path.dirname(root_folder), "config.yaml"), "w", encoding="utf-8",
         ) as process_file:
             process_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/process_schema.json\n\n"
+                "/master/scan_to_paperless/process_schema.json\n\n",
             )
             yaml.dump(process_config, process_file)
     else:

@@ -54,10 +54,9 @@ def main() -> None:
                         if "traceback" in error:
                             print("\n".join(error["traceback"]))
                         continue
-                    else:
-                        _print_status(folder, "Job in unknown error", True)
-                        print(error)
-                        continue
+                    _print_status(folder, "Job in unknown error", True)
+                    print(error)
+                    continue
             else:
                 already_proceed = True
                 if "steps" not in job_config or not job_config["steps"]:
@@ -74,11 +73,9 @@ def main() -> None:
                     if os.path.exists(os.path.join(folder, "DONE")):
                         _print_status(folder, "Process finish")
                         continue
-                    else:
-                        if args.in_progress:
-                            _print_status(folder, "In progress")
-                        continue
-                else:
                     if args.in_progress:
                         _print_status(folder, "In progress")
                     continue
+                if args.in_progress:
+                    _print_status(folder, "In progress")
+                continue
