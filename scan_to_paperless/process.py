@@ -218,7 +218,9 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
 
 
 def get_contour_to_crop(
-    contours: list[tuple[int, int, int, int]], margin_horizontal: int = 0, margin_vertical: int = 0,
+    contours: list[tuple[int, int, int, int]],
+    margin_horizontal: int = 0,
+    margin_vertical: int = 0,
 ) -> tuple[int, int, int, int]:
     """Get the contour to crop."""
     content = [
@@ -440,7 +442,8 @@ async def deskew(context: process_utils.Context) -> None:
             min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
             max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
             min_deviation=deskew_configuration.setdefault(
-                "angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT,
+                "angle_derivation",
+                schema.DESKEW_ANGLE_DERIVATION_DEFAULT,
             ),
             sigma=deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT),
             num_peaks=deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
@@ -558,10 +561,20 @@ def draw_line(
         assert value is not None
         if vertical:
             cv2.rectangle(
-                image, (int(position) - 1, img_len), (int(position) + 1, img_len - value), color, -1,
+                image,
+                (int(position) - 1, img_len),
+                (int(position) + 1, img_len - value),
+                color,
+                -1,
             )
             cv2.putText(
-                image, name, (int(position), img_len - value), cv2.FONT_HERSHEY_SIMPLEX, 2.0, color, 4,
+                image,
+                name,
+                (int(position), img_len - value),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                2.0,
+                color,
+                4,
             )
         else:
             cv2.rectangle(image, (0, int(position) - 1), (value, int(position) + 1), color, -1)
@@ -606,7 +619,9 @@ def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], bord
 
 
 def find_lines(
-    image: NpNdarrayInt, vertical: bool, config: schema.LineDetection,
+    image: NpNdarrayInt,
+    vertical: bool,
+    config: schema.LineDetection,
 ) -> list[tuple[int, int, int, int]]:
     """Find the lines on an image."""
     edges = cv2.Canny(
@@ -647,7 +662,9 @@ def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
 
 
 def find_limit_contour(
-    image: NpNdarrayInt, vertical: bool, contours: list[tuple[int, int, int, int]],
+    image: NpNdarrayInt,
+    vertical: bool,
+    contours: list[tuple[int, int, int, int]],
 ) -> list[int]:
     """Find the contour for assisted split."""
     image_size = image.shape[1 if vertical else 0]
@@ -683,13 +700,18 @@ def find_limits(
     """Find the limit for assisted split."""
     contours_limits = find_limit_contour(image, vertical, contours)
     lines = find_lines(
-        image, vertical, context.config["args"].setdefault("limit_detection", {}).setdefault("line", {}),
+        image,
+        vertical,
+        context.config["args"].setdefault("limit_detection", {}).setdefault("line", {}),
     )
     return contours_limits, lines
 
 
 def fill_limits(
-    image: NpNdarrayInt, vertical: bool, contours_limits: list[int], lines: list[tuple[int, int, int, int]],
+    image: NpNdarrayInt,
+    vertical: bool,
+    contours_limits: list[int],
+    lines: list[tuple[int, int, int, int]],
 ) -> list[schema.Limit]:
     """Fill the limit for assisted split."""
     third_image_size = int(image.shape[0 if vertical else 1] / 3)
@@ -715,7 +737,13 @@ def fill_limits(
         half_image_size = image.shape[1 if vertical else 0] / 2
         limits.append(
             draw_line(
-                image, vertical, half_image_size, third_image_size, f"{prefix}C", "image center", (0, 0, 255),
+                image,
+                vertical,
+                half_image_size,
+                third_image_size,
+                f"{prefix}C",
+                "image center",
+                (0, 0, 255),
             ),
         )
 
@@ -739,7 +767,12 @@ def find_contours(
 
     # Clean the image using method with the inverted binarized image
     thresh = cv2.adaptiveThreshold(
-        gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, block_size + 1, threshold_value_c,
+        gray,
+        255,
+        cv2.ADAPTIVE_THRESH_MEAN_C,
+        cv2.THRESH_BINARY_INV,
+        block_size + 1,
+        threshold_value_c,
     )
     if context.is_progress() or jupyter_utils.is_ipython():
         if jupyter_utils.is_ipython():
@@ -779,7 +812,12 @@ def _find_contours_thresh(
         x, y, width, height = cv2.boundingRect(cnt)
         if width > min_size and height > min_size:
             contour_image = process_utils.crop_image(
-                image, x, y, width, height, context.get_background_color(),
+                image,
+                x,
+                y,
+                width,
+                height,
+                context.get_background_color(),
             )
             imagergb = (
                 rgba2rgb(contour_image)  # type: ignore[no-untyped-call]
@@ -810,43 +848,50 @@ def _update_config(config: schema.Configuration) -> None:
     # margin_horizontal => crop.margin_horizontal
     if "margin_horizontal" in old_config["args"]:
         config["args"].setdefault("crop", {}).setdefault(
-            "margin_horizontal", old_config["args"]["margin_horizontal"],
+            "margin_horizontal",
+            old_config["args"]["margin_horizontal"],
         )
         del old_config["args"]["margin_horizontal"]
     # margin_vertical => crop.margin_vertical
     if "margin_vertical" in old_config["args"]:
         config["args"].setdefault("crop", {}).setdefault(
-            "margin_vertical", old_config["args"]["margin_vertical"],
+            "margin_vertical",
+            old_config["args"]["margin_vertical"],
         )
         del old_config["args"]["margin_vertical"]
     # crop.min_box_size => crop.contour.min_box_size
     if "min_box_size" in old_config["args"].get("crop", {}):
         config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
-            "min_box_size", old_config["args"]["crop"]["min_box_size"],
+            "min_box_size",
+            old_config["args"]["crop"]["min_box_size"],
         )
         del old_config["args"]["crop"]["min_box_size"]
     # crop.min_box_black => crop.contour.min_box_black
     if "min_box_black" in old_config["args"].get("crop", {}):
         config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
-            "min_box_black", old_config["args"]["crop"]["min_box_black"],
+            "min_box_black",
+            old_config["args"]["crop"]["min_box_black"],
         )
         del old_config["args"]["crop"]["min_box_black"]
     # crop.contour_kernel_size => crop.contour.contour_kernel_size
     if "contour_kernel_size" in old_config["args"].get("crop", {}):
         config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
-            "contour_kernel_size", old_config["args"]["crop"]["contour_kernel_size"],
+            "contour_kernel_size",
+            old_config["args"]["crop"]["contour_kernel_size"],
         )
         del old_config["args"]["crop"]["contour_kernel_size"]
     # crop.threshold_block_size => crop.contour.threshold_block_size
     if "threshold_block_size" in old_config["args"].get("crop", {}):
         config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
-            "threshold_block_size", old_config["args"]["crop"]["threshold_block_size"],
+            "threshold_block_size",
+            old_config["args"]["crop"]["threshold_block_size"],
         )
         del old_config["args"]["crop"]["threshold_block_size"]
     # crop.threshold_value_c => crop.contour.threshold_value_c
     if "threshold_value_c" in old_config["args"].get("crop", {}):
         config["args"].setdefault("crop", {}).setdefault("contour", {}).setdefault(
-            "threshold_value_c", old_config["args"]["crop"]["threshold_value_c"],
+            "threshold_value_c",
+            old_config["args"]["crop"]["threshold_value_c"],
         )
         del old_config["args"]["crop"]["threshold_value_c"]
     # empty: null => empty.enabled: false
@@ -859,61 +904,71 @@ def _update_config(config: schema.Configuration) -> None:
     # min_box_size_empty => empty.contour.min_box_size
     if "min_box_size_empty" in old_config["args"]:
         config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
-            "min_box_size", old_config["args"]["min_box_size_empty"],
+            "min_box_size",
+            old_config["args"]["min_box_size_empty"],
         )
         del old_config["args"]["min_box_size_empty"]
     # min_box_black_empty => empty.contour.min_box_black
     if "min_box_black_empty" in old_config["args"]:
         config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
-            "min_box_black", old_config["args"]["min_box_black_empty"],
+            "min_box_black",
+            old_config["args"]["min_box_black_empty"],
         )
         del old_config["args"]["min_box_black_empty"]
     # contour_kernel_size_empty => empty.contour.contour_kernel_size
     if "contour_kernel_size_empty" in old_config["args"]:
         config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
-            "contour_kernel_size", old_config["args"]["contour_kernel_size_empty"],
+            "contour_kernel_size",
+            old_config["args"]["contour_kernel_size_empty"],
         )
         del old_config["args"]["contour_kernel_size_empty"]
     # threshold_block_size_empty => empty.contour.threshold_block_size
     if "threshold_block_size_empty" in old_config["args"]:
         config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
-            "threshold_block_size", old_config["args"]["threshold_block_size_empty"],
+            "threshold_block_size",
+            old_config["args"]["threshold_block_size_empty"],
         )
         del old_config["args"]["threshold_block_size_empty"]
     # threshold_value_c_empty => empty.contour.threshold_value_c
     if "threshold_value_c_empty" in old_config["args"]:
         config["args"].setdefault("empty", {}).setdefault("contour", {}).setdefault(
-            "threshold_value_c", old_config["args"]["threshold_value_c_empty"],
+            "threshold_value_c",
+            old_config["args"]["threshold_value_c_empty"],
         )
         del old_config["args"]["threshold_value_c_empty"]
     # min_box_size_limit => limit_detection.contour.min_box_size
     if "min_box_size_limit" in old_config["args"]:
         config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
-            "min_box_size", old_config["args"]["min_box_size_limit"],
+            "min_box_size",
+            old_config["args"]["min_box_size_limit"],
         )
         del old_config["args"]["min_box_size_limit"]
     # min_box_black_limit => limit_detection.contour.min_box_black
     if "min_box_black_limit" in old_config["args"]:
         config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
-            "min_box_black", old_config["args"]["min_box_black_limit"],
+            "min_box_black",
+            old_config["args"]["min_box_black_limit"],
         )
         del old_config["args"]["min_box_black_limit"]
     # contour_kernel_size_limit => limit_detection.contour.contour_kernel_size
     if "contour_kernel_size_limit" in old_config["args"]:
         config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
-            "contour_kernel_size", old_config["args"]["contour_kernel_size_limit"],
+            "contour_kernel_size",
+            old_config["args"]["contour_kernel_size_limit"],
         )
         del old_config["args"]["contour_kernel_size_limit"]
     # threshold_block_size_limit => limit_detection.contour.threshold_block_size
     if "threshold_block_size_limit" in old_config["args"]:
         config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
-            "threshold_block_size", old_config["args"]["threshold_block_size_limit"],
+            "threshold_block_size",
+            old_config["args"]["threshold_block_size_limit"],
         )
         del old_config["args"]["threshold_block_size_limit"]
     # threshold_value_c_limit => limit_detection.contour.threshold_value_c
     if "threshold_value_c_limit" in old_config["args"]:
         config["args"].setdefault("limit_detection", {}).setdefault("contour", {}).setdefault(
-            "threshold_value_c", old_config["args"]["threshold_value_c_limit"],
+            "threshold_value_c",
+            old_config["args"]["threshold_value_c_limit"],
         )
         del old_config["args"]["threshold_value_c_limit"]
     # auto_mask: null => auto_mask.enabled: false
@@ -1067,7 +1122,8 @@ def _update_config(config: schema.Configuration) -> None:
     # pngquant_options => pngquant.options
     if "pngquant_options" in old_config["args"]:
         config["args"].setdefault("pngquant", {}).setdefault(
-            "options", old_config["args"]["pngquant_options"],
+            "options",
+            old_config["args"]["pngquant_options"],
         )
         del old_config["args"]["pngquant_options"]
     # run_exiftool => exiftool.enabled
@@ -1103,7 +1159,8 @@ def _update_config(config: schema.Configuration) -> None:
     # no_auto_rotate= auto_rotate.enabled (inverted)
     if "no_auto_rotate" in old_config["args"]:
         config["args"].setdefault("auto_rotate", {}).setdefault(
-            "enabled", not old_config["args"]["no_auto_rotate"],
+            "enabled",
+            not old_config["args"]["no_auto_rotate"],
         )
         del old_config["args"]["no_auto_rotate"]
     # sharpen => sharpen.enabled
@@ -1232,34 +1289,43 @@ async def transform(
             rule_config = config["args"].setdefault("rule", {})
             if rule_config.setdefault("enabled", schema.RULE_ENABLE_DEFAULT):
                 minor_graduation_space = rule_config.setdefault(
-                    "minor_graduation_space", schema.RULE_MINOR_GRADUATION_SPACE_DEFAULT,
+                    "minor_graduation_space",
+                    schema.RULE_MINOR_GRADUATION_SPACE_DEFAULT,
                 )
                 major_graduation_space = rule_config.setdefault(
-                    "major_graduation_space", schema.RULE_MAJOR_GRADUATION_SPACE_DEFAULT,
+                    "major_graduation_space",
+                    schema.RULE_MAJOR_GRADUATION_SPACE_DEFAULT,
                 )
                 lines_space = rule_config.setdefault("lines_space", schema.RULE_LINES_SPACE_DEFAULT)
                 minor_graduation_size = rule_config.setdefault(
-                    "minor_graduation_size", schema.RULE_MINOR_GRADUATION_SIZE_DEFAULT,
+                    "minor_graduation_size",
+                    schema.RULE_MINOR_GRADUATION_SIZE_DEFAULT,
                 )
                 major_graduation_size = rule_config.setdefault(
-                    "major_graduation_size", schema.RULE_MAJOR_GRADUATION_SIZE_DEFAULT,
+                    "major_graduation_size",
+                    schema.RULE_MAJOR_GRADUATION_SIZE_DEFAULT,
                 )
                 graduation_color = rule_config.setdefault(
-                    "graduation_color", schema.RULE_GRADUATION_COLOR_DEFAULT,
+                    "graduation_color",
+                    schema.RULE_GRADUATION_COLOR_DEFAULT,
                 )
                 lines_color = rule_config.setdefault("lines_color", schema.RULE_LINES_COLOR_DEFAULT)
                 lines_opacity = rule_config.setdefault("lines_opacity", schema.RULE_LINES_OPACITY_DEFAULT)
                 graduation_text_font_filename = rule_config.setdefault(
-                    "graduation_text_font_filename", schema.RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT,
+                    "graduation_text_font_filename",
+                    schema.RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT,
                 )
                 graduation_text_font_size = rule_config.setdefault(
-                    "graduation_text_font_size", schema.RULE_GRADUATION_TEXT_FONT_SIZE_DEFAULT,
+                    "graduation_text_font_size",
+                    schema.RULE_GRADUATION_TEXT_FONT_SIZE_DEFAULT,
                 )
                 graduation_text_font_color = rule_config.setdefault(
-                    "graduation_text_font_color", schema.RULE_GRADUATION_TEXT_FONT_COLOR_DEFAULT,
+                    "graduation_text_font_color",
+                    schema.RULE_GRADUATION_TEXT_FONT_COLOR_DEFAULT,
                 )
                 graduation_text_margin = rule_config.setdefault(
-                    "graduation_text_margin", schema.RULE_GRADUATION_TEXT_MARGIN_DEFAULT,
+                    "graduation_text_margin",
+                    schema.RULE_GRADUATION_TEXT_MARGIN_DEFAULT,
                 )
 
                 x = minor_graduation_space
@@ -1269,18 +1335,30 @@ async def transform(
                         mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
                         mask_image[:, :] = lines_color
                         opacity_result = cv2.addWeighted(
-                            sub_img, 1 - lines_opacity, mask_image, lines_opacity, 1.0,
+                            sub_img,
+                            1 - lines_opacity,
+                            mask_image,
+                            lines_opacity,
+                            1.0,
                         )
                         if opacity_result is not None:
                             context.image[0 : context.image.shape[0], x : x + 1] = opacity_result
 
                     if x % major_graduation_space == 0:
                         cv2.rectangle(
-                            context.image, (x, 0), (x + 1, major_graduation_size), graduation_color, -1,
+                            context.image,
+                            (x, 0),
+                            (x + 1, major_graduation_size),
+                            graduation_color,
+                            -1,
                         )
                     else:
                         cv2.rectangle(
-                            context.image, (x, 0), (x + 1, minor_graduation_size), graduation_color, -1,
+                            context.image,
+                            (x, 0),
+                            (x + 1, minor_graduation_size),
+                            graduation_color,
+                            -1,
                         )
                     x += minor_graduation_space
 
@@ -1291,17 +1369,29 @@ async def transform(
                         mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
                         mask_image[:, :] = lines_color
                         opacity_result = cv2.addWeighted(
-                            sub_img, 1 - lines_opacity, mask_image, lines_opacity, 1.0,
+                            sub_img,
+                            1 - lines_opacity,
+                            mask_image,
+                            lines_opacity,
+                            1.0,
                         )
                         if opacity_result is not None:
                             context.image[y : y + 1, 0 : context.image.shape[1]] = opacity_result
                     if y % major_graduation_space == 0:
                         cv2.rectangle(
-                            context.image, (0, y), (major_graduation_size, y + 1), graduation_color, -1,
+                            context.image,
+                            (0, y),
+                            (major_graduation_size, y + 1),
+                            graduation_color,
+                            -1,
                         )
                     else:
                         cv2.rectangle(
-                            context.image, (0, y), (minor_graduation_size, y + 1), graduation_color, -1,
+                            context.image,
+                            (0, y),
+                            (minor_graduation_size, y + 1),
+                            graduation_color,
+                            -1,
                         )
                     y += minor_graduation_space
 
@@ -1367,7 +1457,8 @@ async def transform(
 
     pngquant_config = config["args"].setdefault("pngquant", cast(schema.Pngquant, schema.PNGQUANT_DEFAULT))
     if not config["args"].setdefault("jpeg", cast(schema.Jpeg, schema.JPEG_DEFAULT)).setdefault(
-        "enabled", schema.JPEG_ENABLED_DEFAULT,
+        "enabled",
+        schema.JPEG_ENABLED_DEFAULT,
     ) and pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT):
         count = context.get_process_count()
         for image in images:
@@ -1390,9 +1481,11 @@ async def transform(
                 await _save_progress(context.root_folder, count, "pngquant", os.path.basename(image), image)
 
     if not config["args"].setdefault("jpeg", {}).setdefault(
-        "enabled", schema.JPEG_ENABLED_DEFAULT,
+        "enabled",
+        schema.JPEG_ENABLED_DEFAULT,
     ) and config["args"].setdefault("optipng", {}).setdefault(
-        "enabled", not pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT),
+        "enabled",
+        not pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT),
     ):
         count = context.get_process_count()
         for image in images:
@@ -1426,10 +1519,12 @@ async def transform(
     plt.close("all")
 
     disable_remove_to_continue = config["args"].setdefault(
-        "no_remove_to_continue", schema.NO_REMOVE_TO_CONTINUE_DEFAULT,
+        "no_remove_to_continue",
+        schema.NO_REMOVE_TO_CONTINUE_DEFAULT,
     )
     if not disable_remove_to_continue or config["args"].setdefault(
-        "assisted_split", schema.ASSISTED_SPLIT_DEFAULT,
+        "assisted_split",
+        schema.ASSISTED_SPLIT_DEFAULT,
     ):
         with open(os.path.join(root_folder, "REMOVE_TO_CONTINUE"), "w", encoding="utf-8"):
             pass
@@ -1446,7 +1541,11 @@ async def transform(
 
 
 async def _save_progress(
-    root_folder: Path | None, count: int, name: str, image_name: str, image: str,
+    root_folder: Path | None,
+    count: int,
+    name: str,
+    image_name: str,
+    image: str,
 ) -> None:
     assert root_folder
     name = f"{count}-{name}"
@@ -1461,7 +1560,11 @@ async def _save_progress(
 
 
 def save(
-    context: process_utils.Context, root_folder: Path, image: str, folder: str, force: bool = False,
+    context: process_utils.Context,
+    root_folder: Path,
+    image: str,
+    folder: str,
+    force: bool = False,
 ) -> str:
     """Save the current image in a subfolder if progress mode in enabled."""
     if force or context.is_progress():
@@ -1806,7 +1909,8 @@ async def _process_code(name: Path) -> bool:
     pdf_filename = os.path.join(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes"), name)
 
     destination_filename = os.path.join(
-        os.environ.get("SCAN_FINAL_FOLDER", "/destination"), os.path.basename(pdf_filename),
+        os.environ.get("SCAN_FINAL_FOLDER", "/destination"),
+        os.path.basename(pdf_filename),
     )
 
     if os.path.exists(destination_filename):
@@ -1886,7 +1990,8 @@ async def _process(
     try:
         rerun = False
         disable_remove_to_continue = config["args"].setdefault(
-            "no_remove_to_continue", schema.NO_REMOVE_TO_CONTINUE_DEFAULT,
+            "no_remove_to_continue",
+            schema.NO_REMOVE_TO_CONTINUE_DEFAULT,
         )
         if "steps" not in config:
             rerun = True

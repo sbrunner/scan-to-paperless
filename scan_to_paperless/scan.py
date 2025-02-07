@@ -245,7 +245,9 @@ def main() -> None:
         yaml = YAML()
         yaml.default_flow_style = False
         with open(
-            os.path.join(os.path.dirname(root_folder), "config.yaml"), "w", encoding="utf-8",
+            os.path.join(os.path.dirname(root_folder), "config.yaml"),
+            "w",
+            encoding="utf-8",
         ) as process_file:
             process_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"

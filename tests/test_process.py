@@ -63,7 +63,8 @@ def test_crop() -> None:
     check_image(
         root_folder,
         cv2.cvtColor(
-            process_utils.crop_image(image, 100, -100, 100, 200, (255, 255, 255)), cv2.COLOR_BGR2RGB,
+            process_utils.crop_image(image, 100, -100, 100, 200, (255, 255, 255)),
+            cv2.COLOR_BGR2RGB,
         ),
         os.path.join(os.path.dirname(__file__), "crop-3.expected.png"),
         generate_expected_image=REGENERATE,
@@ -71,7 +72,8 @@ def test_crop() -> None:
     check_image(
         root_folder,
         cv2.cvtColor(
-            process_utils.crop_image(image, -100, 100, 200, 100, (255, 255, 255)), cv2.COLOR_BGR2RGB,
+            process_utils.crop_image(image, -100, 100, 200, 100, (255, 255, 255)),
+            cv2.COLOR_BGR2RGB,
         ),
         os.path.join(os.path.dirname(__file__), "crop-4.expected.png"),
         generate_expected_image=REGENERATE,
@@ -564,7 +566,8 @@ async def test_empty() -> None:
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.flaky(reruns=3)
 @pytest.mark.parametrize(
-    ("test", "args"), [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")],
+    ("test", "args"),
+    [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")],
 )
 async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
@@ -759,7 +762,9 @@ async def test_tiff_jupyter() -> None:
             id="inverse",
         ),
         pytest.param(
-            "no-morphology", {"de_noise_morphology": False, "de_noise_size": 20}, id="no-morphology",
+            "no-morphology",
+            {"de_noise_morphology": False, "de_noise_size": 20},
+            id="no-morphology",
         ),
         pytest.param(
             "inverse-no-morphology",

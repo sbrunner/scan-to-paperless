@@ -56,7 +56,10 @@ class _PageCode(TypedDict):
 
 
 def _point(
-    point: tuple[int | float, int | float], deg_angle: float, width: int, height: int,
+    point: tuple[int | float, int | float],
+    deg_angle: float,
+    width: int,
+    height: int,
 ) -> tuple[float, float]:
     assert -90 <= deg_angle <= 90
     angle = math.radians(deg_angle)
@@ -411,16 +414,40 @@ def add_codes(
                 # Codes information to add the mask and number on the page
                 codes: list[_PageCode] = []
                 codes += _get_codes_with_zxing(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 codes += _get_bar_codes_with_open_cv(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 codes += _get_qr_codes_with_open_cv(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 codes += _get_codes_with_open_cv_we_chat(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes,
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 # codes += _get_codes_with_z_bar(
                 #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
@@ -447,13 +474,16 @@ def add_codes(
                 if codes:
                     packet = io.BytesIO()
                     can = canvas.Canvas(
-                        packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False,
+                        packet,
+                        pagesize=(page.mediabox.width, page.mediabox.height),
+                        bottomup=False,
                     )
                     for code in codes:
                         can.setFillColor(_BACKGROUND_COLOR)
                         path = can.beginPath()
                         path.moveTo(
-                            code["geometry"][0][0] / dpi * pdf_dpi, code["geometry"][0][1] / dpi * pdf_dpi,
+                            code["geometry"][0][0] / dpi * pdf_dpi,
+                            code["geometry"][0][1] / dpi * pdf_dpi,
                         )
                         for point in code["geometry"][1:]:
                             path.lineTo(point[0] / dpi * pdf_dpi, point[1] / dpi * pdf_dpi)
@@ -519,7 +549,8 @@ def add_codes(
                 html.write_pdf(dest_2.name, stylesheets=[css])
 
                 subprocess.run(  # nosec
-                    ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True,
+                    ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"],
+                    check=True,
                 )
 
                 if metadata:
@@ -556,13 +587,22 @@ def main() -> None:
     )
     arg_parser.add_argument("--pdf-dpi", help="The DPI used in the PDF", type=int, default=72)
     arg_parser.add_argument(
-        "--font-size", help="The font size used in the PDF to add the number", type=int, default=10,
+        "--font-size",
+        help="The font size used in the PDF to add the number",
+        type=int,
+        default=10,
     )
     arg_parser.add_argument(
-        "--margin-left", help="The margin left used in the PDF to add the number", type=int, default=2,
+        "--margin-left",
+        help="The margin left used in the PDF to add the number",
+        type=int,
+        default=2,
     )
     arg_parser.add_argument(
-        "--margin-top", help="The margin top used in the PDF to add the number", type=int, default=0,
+        "--margin-top",
+        help="The margin top used in the PDF to add the number",
+        type=int,
+        default=0,
     )
     arg_parser.add_argument("input_filename", help="The input PDF filename")
     arg_parser.add_argument("output_filename", help="The output PDF filename")

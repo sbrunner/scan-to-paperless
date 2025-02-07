@@ -34,7 +34,9 @@ def _pretty_repr(value: Any, prefix: str = "") -> str:
 
 
 def create_transform_notebook(
-    root_folder: str, context: scan_to_paperless.process_utils.Context, step: schema.Step,
+    root_folder: str,
+    context: scan_to_paperless.process_utils.Context,
+    step: schema.Step,
 ) -> None:
     """Create a Jupyter notebook for the transform step."""
     # Jupyter notebook

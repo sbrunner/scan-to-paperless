@@ -82,7 +82,8 @@ class Context:
         self.image: NpNdarrayInt | None = None
         self.mask: NpNdarrayInt | None = None
         self.get_index: Callable[
-            [NpNdarrayInt], tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None,
+            [NpNdarrayInt],
+            tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None,
         ] = lambda image: np.ix_(
             np.arange(0, image.shape[1]),
             np.arange(0, image.shape[1]),
@@ -188,7 +189,8 @@ class Context:
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
-            "mask", cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT),
+            "mask",
+            cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT),
         )
         self.mask = (
             self._get_mask(
@@ -210,7 +212,8 @@ class Context:
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
-            "cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT),
+            "cut",
+            cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT),
         )
         if cut_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
@@ -262,7 +265,8 @@ class Context:
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
-            "progress", schema.PROGRESS_DEFAULT,
+            "progress",
+            schema.PROGRESS_DEFAULT,
         )
 
     def save_progress_images(
