@@ -1457,7 +1457,7 @@ UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
 
 
 class _ArgumentsDeskew(TypedDict, total=False):
-    """The deskew configuration."""
+    """The deskew configuration"""
 
     min_angle: int | float
     """
