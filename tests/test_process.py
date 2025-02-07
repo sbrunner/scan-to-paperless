@@ -30,7 +30,7 @@ def test_should_not_commit() -> None:
 # @pytest.mark.skip(reason="for test")
 def test_find_lines() -> None:
     lines = process.find_lines(load_image("limit-lines-1.png"), True, {})
-    assert 1821 in [l[0] for l in lines]
+    assert 1821 in [line[0] for line in lines]
 
 
 # @pytest.mark.skip(reason="for test")
@@ -146,7 +146,7 @@ def init_test() -> None:
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize(
-    "type_,limit,better_value,cut_white",
+    ("type_", "limit", "better_value", "cut_white"),
     [
         pytest.param(
             "lines",
@@ -564,7 +564,7 @@ async def test_empty() -> None:
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.flaky(reruns=3)
 @pytest.mark.parametrize(
-    "test,args", [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
+    ("test", "args"), [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")]
 )
 async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
@@ -745,7 +745,7 @@ async def test_tiff_jupyter() -> None:
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.flaky(reruns=3, only_rerun="ValueError")
 @pytest.mark.parametrize(
-    "name,config",
+    ("name", "config"),
     [
         pytest.param("default", {}, id="default"),
         pytest.param(
