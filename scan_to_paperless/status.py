@@ -188,13 +188,13 @@ class Status:
         """Construct."""
         self.no_write = no_write
         self._file = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / "status.html"
-        self._status: dict[Path, _Folder] = {}
+        self._status: dict[str, _Folder] = {}
         self._codes: list[Path] = []
         self._consume: list[Path] = []
         self._global_status = "Starting..."
         self._global_status_update = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
         self._start_time = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-        self._current_folder: Path | None = None
+        self._current_folder: str | None = None
 
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
         if codes_folder[-1] != "/":
@@ -220,9 +220,9 @@ class Status:
 
             self.write()
 
-    def set_current_folder(self, name: Path | None) -> None:
+    def set_current_folder(self, path: Path | str | None) -> None:
         """Set the current folder."""
-        if name is None:
+        if path is None:
             if self._current_folder is not None:
                 old_name = self._current_folder
                 self._current_folder = None
@@ -230,11 +230,14 @@ class Status:
                 self.write()
             return
 
-        if name.name == "config.yaml":
-            name = name.parent
-            if len(name.parents) >= 1:
-                name = name.parents[-2]
-
+        if isinstance(path, Path):
+            if path.name == "config.yaml":
+                path = path.parent
+                if len(path.parents) >= 1:
+                    path = path.parents[-2]
+            name = path.name
+        else:
+            name = path
         write = self._current_folder != name
         self._current_folder = name
 
@@ -243,7 +246,7 @@ class Status:
 
     def set_status(
         self,
-        name: Path,
+        path: Path | str,
         nb_images: int,
         status: str,
         details: str = "",
@@ -252,13 +255,13 @@ class Status:
     ) -> None:
         """Set the status of a folder."""
         # Config file name
-        if name.name == "config.yaml":
-            name = name.parent
-            if len(name.parents) >= 1:
-                name = name.parents[-2]
+        if isinstance(path, Path):
+            name = path.parent.name if path.name == "config.yaml" else path.name
+        else:
+            name = path
         if nb_images <= 0 and name in self._status:
             nb_images = self._status[name].nb_images
-        self._status[Path(name)] = _Folder(nb_images, html.escape(status), details, step)
+        self._status[name] = _Folder(nb_images, html.escape(status), details, step)
 
         if self.no_write:
             print(f"{name}: {status}")
@@ -276,10 +279,10 @@ class Status:
         for folder_name in glob.glob(str(self._source_folder / "*")):
             if os.path.isdir(folder_name):
                 name = os.path.basename(folder_name)
-                self._update_source_error(Path(name))
+                self._update_source_error(name)
                 self.write()
 
-    def _update_status(self, name: Path) -> None:
+    def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
         if (self._source_folder / name / "error.yaml").exists():
             with open(
@@ -410,7 +413,7 @@ class Status:
                 )
             )
 
-    def get_next_job(self) -> tuple[Path | None, JobType, process_schema.Step | None]:
+    def get_next_job(self) -> tuple[str | Path | None, JobType, process_schema.Step | None]:
         """Get the next job to do."""
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
@@ -495,7 +498,7 @@ class Status:
             self._update_consume()
             self.write()
 
-    def _update_source_error(self, name: Path) -> bool:
+    def _update_source_error(self, name: str) -> bool:
         if name != self._current_folder:
             if (self._source_folder / name).is_dir():
                 try:
@@ -539,10 +542,11 @@ class Status:
         ):
             if event.path is None:
                 continue
-            name = event.path.relative_to(self._source_folder)
-            if len(name.parents) > 2:
-                name = name.parents[-2]
-            if name == Path("status.html"):
+            path = event.path.relative_to(self._source_folder)
+            if len(path.parents) > 2:
+                path = path.parents[-2]
+            name = path.name
+            if name == "status.html":
                 continue
             print(f"Update source '{name}' from event")
             if self._update_source_error(name):
@@ -553,7 +557,7 @@ class Status:
         asyncio.create_task(self._watch_scan_codes(), name="Watch scan codes")
         asyncio.create_task(self._watch_destination(), name="Watch destination")
         asyncio.create_task(self._watch_sources(), name="Watch sources")
-        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+        if os.environ.get("DEBUG_INOTIFY", "FALSE").lower() in ["true", "1", "yes"]:
             asyncio.create_task(self._watch_scan_codes_debug(), name="Watch scan codes debug")
             asyncio.create_task(self._watch_destination_debug(), name="Watch destination debug")
             asyncio.create_task(self._watch_sources_debug(), name="Watch sources debug")

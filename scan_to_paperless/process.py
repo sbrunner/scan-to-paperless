@@ -1986,13 +1986,13 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             scan_to_paperless.status.JobType.ASSISTED_SPLIT,
             scan_to_paperless.status.JobType.FINALIZE,
         ):
-            assert name is not None
+            assert isinstance(name, str)
             assert step is not None
 
             status.set_global_status(f"Processing '{name}'...")
             status.set_current_folder(name)
             try:
-                root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source") / name)
+                root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
                 config_file_name = root_folder / "config.yaml"
                 yaml = YAML()
                 yaml.default_flow_style = False
@@ -2041,7 +2041,7 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             if root_folder.exists():
                 shutil.rmtree(root_folder)
         elif job_type == scan_to_paperless.status.JobType.CODE:
-            assert name is not None
+            assert isinstance(name, Path)
             print(f"Process code '{name}'")
             status.set_global_status(f"Process code '{name}'...")
             status.set_current_folder(name)
@@ -2101,7 +2101,8 @@ async def async_main() -> None:
 
     status = scan_to_paperless.status.Status()
 
-    asyncio.create_task(_watch_dog(), name="Watch dog")
+    if os.environ.get("WATCH_DOG", "FALSE").lower() in ["true", "1", "yes"]:
+        asyncio.create_task(_watch_dog(), name="Watch dog")
     main_task = asyncio.create_task(_task(status), name="Main")
     status.start_watch()
     await main_task
