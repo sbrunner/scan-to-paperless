@@ -233,8 +233,6 @@ class Status:
         if isinstance(path, Path):
             if path.name == "config.yaml":
                 path = path.parent
-                if len(path.parents) >= 1:
-                    path = path.parents[-2]
             name = path.name
         else:
             name = path
@@ -543,10 +541,12 @@ class Status:
             if event.path is None:
                 continue
             path = event.path.relative_to(self._source_folder)
-            if len(path.parents) > 2:
+            if len(path.parents) > 1:
                 path = path.parents[-2]
             name = path.name
             if name == "status.html":
+                continue
+            if name.startswith("."):
                 continue
             print(f"Update source '{name}' from event")
             if self._update_source_error(name):
