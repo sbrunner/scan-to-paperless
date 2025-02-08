@@ -2101,7 +2101,8 @@ async def async_main() -> None:
 
     status = scan_to_paperless.status.Status()
 
-    asyncio.create_task(_watch_dog(), name="Watch dog")
+    if os.environ.get("WATCH_DOG", "FALSE").lower in ["true", "1", "yes"]:
+        asyncio.create_task(_watch_dog(), name="Watch dog")
     main_task = asyncio.create_task(_task(status), name="Main")
     status.start_watch()
     await main_task

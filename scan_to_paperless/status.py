@@ -550,7 +550,7 @@ class Status:
         asyncio.create_task(self._watch_scan_codes(), name="Watch scan codes")
         asyncio.create_task(self._watch_destination(), name="Watch destination")
         asyncio.create_task(self._watch_sources(), name="Watch sources")
-        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+        if os.environ.get("DEBUG_INOTIFY", "FALSE").lower in ["true", "1", "yes"]:
             asyncio.create_task(self._watch_scan_codes_debug(), name="Watch scan codes debug")
             asyncio.create_task(self._watch_destination_debug(), name="Watch destination debug")
             asyncio.create_task(self._watch_sources_debug(), name="Watch sources debug")
