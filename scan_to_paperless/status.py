@@ -243,7 +243,7 @@ class Status:
 
     def set_status(
         self,
-        name: Path,
+        path: Path,
         nb_images: int,
         status: str,
         details: str = "",
@@ -252,10 +252,7 @@ class Status:
     ) -> None:
         """Set the status of a folder."""
         # Config file name
-        if name.name == "config.yaml":
-            name = name.parent
-            if len(name.parents) >= 1:
-                name = name.parents[-2]
+        name = path.parent.name if path.name == "config.yaml" else path.name
         if nb_images <= 0 and name in self._status:
             nb_images = self._status[name].nb_images
         self._status[Path(name)] = _Folder(nb_images, html.escape(status), details, step)
