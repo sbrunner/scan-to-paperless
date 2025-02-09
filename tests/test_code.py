@@ -1,4 +1,4 @@
-from scan_to_paperless.code import _is_rectangular
+from scan_to_paperless.add_code import _is_rectangular
 
 
 def test_square():

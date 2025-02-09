@@ -61,7 +61,7 @@ repos:
     hooks:
       - id: copyright
       - id: workflows-require-timeout
-      - id: poetry-lock
+      - id: poetry2-lock
         additional_dependencies:
           - poetry==2.0.1 # pypi
   - repo: https://github.com/codespell-project/codespell

@@ -3,6 +3,7 @@ import os.path
 import re
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Any
 
 import cv2
@@ -14,7 +15,7 @@ import skimage.io
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
 
-from scan_to_paperless import code, process, process_utils
+from scan_to_paperless import add_code, process, process_utils
 
 REGENERATE = False
 
@@ -600,9 +601,9 @@ async def test_custom_process(test: str, args: dict[str, Any]) -> None:
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.parametrize("name", ["qrcode", "qrbill", "qrbill2"])
-def test_qr_code(name) -> None:
+async def test_qr_code(name) -> None:
     init_test()
-    code.add_codes(os.path.join(os.path.dirname(__file__), f"{name}.pdf"), f"/results/{name}.pdf")
+    await add_code.add_codes(Path(__file__).parent / f"{name}.pdf", Path(f"/results/{name}.pdf"))
     root_folder = "/results/qrcode"
     for page in range(2):
         subprocess.run(
@@ -631,9 +632,9 @@ def test_qr_code(name) -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_qr_code_metadata() -> None:
+async def test_qr_code_metadata() -> None:
     init_test()
-    code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill.pdf"), "/results/qrbill.pdf")
+    await add_code.add_codes(Path(__file__).parent / "qrbill.pdf", Path("/results/qrbill.pdf"))
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
         for k, v in {
@@ -685,9 +686,12 @@ EPD
 
 
 # @pytest.mark.skip(reason="for test")
-def test_multi_code() -> None:
+async def test_multi_code() -> None:
     init_test()
-    code.add_codes(os.path.join(os.path.dirname(__file__), "qrbill-multi.pdf"), "/results/qrbill-multi.pdf")
+    await add_code.add_codes(
+        Path(__file__).parent / "qrbill-multi.pdf",
+        Path("/results/qrbill-multi.pdf"),
+    )
     root_folder = "/results/qrcode"
     for page in range(3):
         subprocess.run(
@@ -796,8 +800,8 @@ def test_auto_mask(config, name) -> None:
 def test_auto_mask_combine() -> None:
     init_test()
     context = process_utils.Context({"args": {"mask": {}}}, {})
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
-    context.root_folder = os.path.join(os.path.join(os.path.dirname(__file__), "auto-mask-other"))
+    context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
+    context.root_folder = Path(__file__).parent / "auto-mask-other"
     context.image_name = "image.png"
     context.init_mask()
     check_image(

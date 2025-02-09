@@ -2,7 +2,6 @@
 
 import asyncio
 import datetime
-import glob
 import html
 import os.path
 import traceback
@@ -184,13 +183,20 @@ async def _watch_recursive(path: Path, mask: asyncinotify.Mask) -> AsyncGenerato
 class Status:
     """Manage the status file of the progress."""
 
+    _watch_scan_codes_task: asyncio.Task[None] | None = None
+    _watch_destination_task: asyncio.Task[None] | None = None
+    _watch_sources_task: asyncio.Task[None] | None = None
+    _watch_scan_codes_debug_task: asyncio.Task[None] | None = None
+    _watch_destination_debug_task: asyncio.Task[None] | None = None
+    _watch_sources_debug_task: asyncio.Task[None] | None = None
+
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
         self.no_write = no_write
         self._file = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / "status.html"
         self._status: dict[str, _Folder] = {}
-        self._codes: list[Path] = []
-        self._consume: list[Path] = []
+        self._codes: list[str] = []
+        self._consume: list[str] = []
         self._global_status = "Starting..."
         self._global_status_update = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
         self._start_time = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
@@ -216,7 +222,7 @@ class Status:
         if self._global_status != status:
             print(status)
             self._global_status = status
-            self._global_status_update = datetime.datetime.utcnow().replace(microsecond=0)
+            self._global_status_update = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
             self.write()
 
@@ -274,17 +280,16 @@ class Status:
         self._update_consume()
         self.write()
 
-        for folder_name in glob.glob(str(self._source_folder / "*")):
-            if os.path.isdir(folder_name):
-                name = os.path.basename(folder_name)
+        for folder_path in self._source_folder.glob("*"):
+            if folder_path.is_dir():
+                name = folder_path.name
                 self._update_source_error(name)
                 self.write()
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
         if (self._source_folder / name / "error.yaml").exists():
-            with open(
-                self._source_folder / name / "error.yaml",
+            with (self._source_folder / name / "error.yaml").open(
                 encoding="utf-8",
             ) as error_file:
                 error = yaml.load(error_file)
@@ -304,21 +309,16 @@ class Status:
             return
 
         if not (self._source_folder / name / "config.yaml").exists():
-            len_folder = len(str(self._source_folder / name)) + 1
             files = [
-                f[len_folder:]
-                for f in glob.glob(
-                    str(self._source_folder / name / "**"),
-                    recursive=True,
-                )
-                if os.path.isfile(f)
+                str(f.relative_to(self._source_folder / name))
+                for f in (self._source_folder / name).rglob("*")
+                if f.is_file() and not f.name.startswith(".")
             ]
             files = [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in files]
             self.set_status(name, -1, "Missing config", ", ".join(files))
             return
 
-        with open(
-            self._source_folder / name / "config.yaml",
+        with (self._source_folder / name / "config.yaml").open(
             encoding="utf-8",
         ) as config_file:
             config = yaml.load(config_file)
@@ -332,7 +332,7 @@ class Status:
         for step in reversed(config.get("steps", [])):
             all_present = True
             for source in step["sources"]:
-                if not os.path.exists(source):
+                if not Path(source).exists():
                     rerun = True
                     all_present = False
                     break
@@ -391,9 +391,9 @@ class Status:
 
         import natsort  # pylint: disable=import-outside-toplevel
 
-        with open(self._file, "w", encoding="utf-8") as status_file:
+        with self._file.open("w", encoding="utf-8") as status_file:
             env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+                loader=jinja2.FileSystemLoader(Path(__file__).parent),
                 autoescape=jinja2.select_autoescape(),
             )
             template = env.get_template("status.html")
@@ -411,7 +411,7 @@ class Status:
                 ),
             )
 
-    def get_next_job(self) -> tuple[str | Path | None, JobType, process_schema.Step | None]:
+    def get_next_job(self) -> tuple[str | None, JobType, process_schema.Step | None]:
         """Get the next job to do."""
         job_types = [
             (JobType.TRANSFORM, _WAITING_TO_TRANSFORM_STATUS),
@@ -434,9 +434,9 @@ class Status:
     def update_scan_codes(self) -> None:
         """Update the list of files witch one we should scan the codes."""
         self._codes = [
-            Path(f).relative_to(self._codes_folder)
-            for f in glob.glob(str(self._codes_folder / "**"), recursive=True)
-            if os.path.isfile(f)
+            path.relative_to(self._codes_folder).name
+            for path in self._codes_folder.rglob("*")
+            if path.is_file()
         ]
 
     async def _watch_scan_codes_debug(self) -> None:
@@ -466,9 +466,9 @@ class Status:
 
     def _update_consume(self) -> None:
         self._consume = [
-            Path(f).relative_to(self._consume_folder)
-            for f in glob.glob(str(self._consume_folder / "**"), recursive=True)
-            if os.path.isfile(f)
+            path.relative_to(self._consume_folder).name
+            for path in self._consume_folder.rglob("*")
+            if path.is_file()
         ]
 
     async def _watch_destination_debug(self) -> None:
@@ -501,7 +501,7 @@ class Status:
             if (self._source_folder / name).is_dir():
                 try:
                     self._update_status(name)
-                except Exception as exception:
+                except Exception as exception:  # noqa: BLE001
                     trace = traceback.format_exc().split("\n")
                     self.set_status(
                         name,
@@ -553,10 +553,22 @@ class Status:
 
     def start_watch(self) -> None:
         """Watch files changes to update status."""
-        asyncio.create_task(self._watch_scan_codes(), name="Watch scan codes")
-        asyncio.create_task(self._watch_destination(), name="Watch destination")
-        asyncio.create_task(self._watch_sources(), name="Watch sources")
+        self._watch_scan_codes_task = asyncio.create_task(self._watch_scan_codes(), name="Watch scan codes")
+        self._watch_destination_task = asyncio.create_task(
+            self._watch_destination(),
+            name="Watch destination",
+        )
+        self._watch_sources_task = asyncio.create_task(self._watch_sources(), name="Watch sources")
         if os.environ.get("DEBUG_INOTIFY", "FALSE").lower() in ["true", "1", "yes"]:
-            asyncio.create_task(self._watch_scan_codes_debug(), name="Watch scan codes debug")
-            asyncio.create_task(self._watch_destination_debug(), name="Watch destination debug")
-            asyncio.create_task(self._watch_sources_debug(), name="Watch sources debug")
+            self._watch_scan_codes_debug_task = asyncio.create_task(
+                self._watch_scan_codes_debug(),
+                name="Watch scan codes debug",
+            )
+            self._watch_destination_debug_task = asyncio.create_task(
+                self._watch_destination_debug(),
+                name="Watch destination debug",
+            )
+            self._watch_sources_debug_task = asyncio.create_task(
+                self._watch_sources_debug(),
+                name="Watch sources debug",
+            )

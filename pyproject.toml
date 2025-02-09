@@ -30,7 +30,7 @@ scan = "scan_to_paperless.scan:main"
 scan-sane = "scan_to_paperless.scan_sane:_main"
 scan-process-status = "scan_to_paperless.scan_process_status:main"
 scan-process = "scan_to_paperless.process:main"
-add-codes-page = "scan_to_paperless.code:main"
+add-codes-page = "scan_to_paperless.add_code:main"
 
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
@@ -62,7 +62,8 @@ python-sane = { version = "2.9.1", optional = true }
 asyncinotify = { version = "4.2.0", optional = true }
 aiofiles = "24.1.0"
 types-aiofiles = "24.1.0.20241221"
-polygon-math = "^1.3.1"
+polygon-math = "1.3.1"
+aiohttp = "3.11.12"
 
 [tool.poetry.extras]
 process = [

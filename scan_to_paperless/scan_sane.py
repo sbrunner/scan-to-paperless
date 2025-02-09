@@ -43,19 +43,19 @@ def _all_options(device: sane.SaneDev) -> None:
         if title == "option-cnt":
             continue
 
-        unit = ""
+        unit = ""  # noqa: PLW2901
         if unit == sane_unit["UNIT_PIXEL"]:
-            unit = " [px]"
+            unit = " [px]"  # noqa: PLW2901
         elif unit == sane_unit["UNIT_BIT"]:
-            unit = " [bit]"
+            unit = " [bit]"  # noqa: PLW2901
         elif unit == sane_unit["UNIT_MM"]:
-            unit = " [mm]"
+            unit = " [mm]"  # noqa: PLW2901
         elif unit == sane_unit["UNIT_DPI"]:
-            unit = " [dpi]"
+            unit = " [dpi]"  # noqa: PLW2901
         elif unit == sane_unit["UNIT_PERCENT"]:
-            unit = " [%]"
+            unit = " [%]"  # noqa: PLW2901
         elif unit == sane_unit["UNIT_MICROSECOND"]:
-            unit = " [us]"
+            unit = " [us]"  # noqa: PLW2901
 
         print(f"{title}{unit}")
         if name == "resolution":
@@ -124,12 +124,10 @@ def _main() -> None:
         nargs="?",
         const=True,
         default=False,
-        help=" ".join(
-            [
-                "batch format, is `out%%d.pnm` `out%%d.tif` ",
-                "`out%%d.png` or `out%%d.jpg` by default depending on `--format` ",
-                "This option is incompatible with `--output-file`.    ",
-            ],
+        help=(
+            "batch format, is `out%%d.pnm` `out%%d.tif` "
+            "`out%%d.png` or `out%%d.jpg` by default depending on `--format` "
+            "This option is incompatible with `--output-file`.    "
         ),
     )
     bash_group.add_argument("--batch-start", type=int, help="page number to start naming files with")
@@ -289,7 +287,7 @@ def _main() -> None:
                             input("Press enter to scan next page, CTRL+D to stop.\n")
                         except EOFError:
                             sys.exit()
-                except Exception as exception:
+                except Exception as exception:  # noqa: BLE001, PERF203
                     print(f"{exception}, retry")
                     time.sleep(0.2)
             sys.exit()

@@ -1,6 +1,6 @@
 """Functions used to generate a Jupyter notebook from the transform."""
 
-import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
@@ -34,16 +34,16 @@ def _pretty_repr(value: Any, prefix: str = "") -> str:
 
 
 def create_transform_notebook(
-    root_folder: str,
+    root_folder: Path,
     context: scan_to_paperless.process_utils.Context,
     step: schema.Step,
 ) -> None:
     """Create a Jupyter notebook for the transform step."""
     # Jupyter notebook
-    dest_folder = os.path.join(root_folder, "jupyter")
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder)
-    with open(os.path.join(dest_folder, "README.txt"), "w", encoding="utf-8") as readme_file:
+    dest_folder = root_folder / "jupyter"
+    if not dest_folder.exists():
+        dest_folder.mkdir(parents=True)
+    with (dest_folder / "README.txt").open("w", encoding="utf-8") as readme_file:
         readme_file.write(
             """# Jupyter notebook
 
@@ -456,5 +456,5 @@ if save:
         ),
     )
 
-    with open(os.path.join(dest_folder, "jupyter.ipynb"), "w", encoding="utf-8") as jupyter_file:
+    with (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
         nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]
