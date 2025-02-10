@@ -19,10 +19,11 @@ def test_status() -> None:
     status_instance.write()
     os.chdir(old_cwd)
 
+    parent_path = Path(__file__).parent
     check_screenshot(
-        f"file://{os.path.join(os.path.dirname(__file__), 'status', 'scan', 'status.html')}",
-        os.path.join(os.path.dirname(__file__), "status"),
-        os.path.join(os.path.dirname(__file__), "status", "status.expected.png"),
+        f"file://{parent_path / 'status' / 'scan' / 'status.html'}",
+        parent_path / "status",
+        parent_path / "status" / "status.expected.png",
         generate_expected_image=False,
         width=850,
         height=1800,

@@ -82,7 +82,8 @@ class Context:
         self.image: NpNdarrayInt | None = None
         self.mask: NpNdarrayInt | None = None
         self.get_index: Callable[
-            [NpNdarrayInt], tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None
+            [NpNdarrayInt],
+            tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None,
         ] = lambda image: np.ix_(
             np.arange(0, image.shape[1]),
             np.arange(0, image.shape[1]),
@@ -94,20 +95,21 @@ class Context:
     def _get_default_mask_file(self, default_file_name: str) -> str:
         if not self.root_folder:
             return ""
-        mask_file = os.path.join(self.root_folder, default_file_name)
-        if not os.path.exists(mask_file):
-            base_folder = os.path.dirname(self.root_folder)
-            assert base_folder
-            mask_file = os.path.join(base_folder, default_file_name)
-            if not os.path.exists(mask_file):
+        mask_file = self.root_folder / default_file_name
+        if not mask_file.exists():
+            base_folder = self.root_folder.parent
+            if base_folder is None:
                 return ""
-        return mask_file
+            mask_file = base_folder / default_file_name
+            if not mask_file.exists():
+                return ""
+        return str(mask_file)
 
     def _get_mask(
         self,
         auto_mask_config: schema.AutoMask | None,
         config_section: str,
-        mask_file: str | None = None,
+        mask_file: Path | None = None,
     ) -> NpNdarrayInt | None:
         """Init the mask."""
         if auto_mask_config is not None:
@@ -115,10 +117,10 @@ class Context:
             hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
             lower_val = np.array(
-                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT)
+                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT),
             )
             upper_val = np.array(
-                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT)
+                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT),
             )
             mask = cv2.inRange(hsv, lower_val, upper_val)
 
@@ -164,37 +166,38 @@ class Context:
 
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
-            if self.root_folder and mask_file and os.path.exists(mask_file):
+            if self.root_folder and mask_file and mask_file.exists():
                 mask = cv2.add(
                     mask,
                     cv2.bitwise_not(
                         cv2.resize(
-                            cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE),
+                            cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE),
                             (mask.shape[1], mask.shape[0]),
-                        )
+                        ),
                     ),
                 )
 
-            final_mask = cv2.bitwise_not(mask)
+            final_mask = cast(NpNdarrayInt, cv2.bitwise_not(mask))
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
-            final_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
+            final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)
             if self.image is not None and final_mask is not None:
                 return cast(NpNdarrayInt, cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])))
-        return cast(NpNdarrayInt, final_mask)
+        return final_mask
 
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
-            "mask", cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT)
+            "mask",
+            cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT),
         )
         self.mask = (
             self._get_mask(
                 mask_config.setdefault("auto_mask", {}),
                 "mask",
-                mask_config.setdefault("additional_filename", self._get_default_mask_file("mask.png")),
+                Path(mask_config.setdefault("additional_filename", self._get_default_mask_file("mask.png"))),
             )
             if mask_config.setdefault("enabled", schema.MASK_ENABLED_DEFAULT)
             else None
@@ -210,14 +213,15 @@ class Context:
     def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
-            "cut", cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT)
+            "cut",
+            cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT),
         )
         if cut_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
             mask = self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
-                cut_config.setdefault("additional_filename", self._get_default_mask_file("cut.png")),
+                Path(cut_config.setdefault("additional_filename", self._get_default_mask_file("cut.png"))),
             )
             self.image[mask == 0] = self.get_background_color()
 
@@ -231,7 +235,8 @@ class Context:
     def get_masked(self) -> NpNdarrayInt:
         """Get the mask."""
         if self.image is None:
-            raise scan_to_paperless.ScanToPaperlessException("The image is None")
+            msg = "The image is None"
+            raise scan_to_paperless.ScanToPaperlessError(msg)
         if self.mask is None:
             return self.image.copy()
 
@@ -242,7 +247,8 @@ class Context:
     def crop(self, x: int, y: int, width: int, height: int) -> None:
         """Crop the image."""
         if self.image is None:
-            raise scan_to_paperless.ScanToPaperlessException("The image is None")
+            msg = "The image is None"
+            raise scan_to_paperless.ScanToPaperlessError(msg)
         self.image = crop_image(self.image, x, y, width, height, self.get_background_color())
         if self.mask is not None:
             self.mask = crop_image(self.mask, x, y, width, height, (0,))
@@ -250,19 +256,21 @@ class Context:
     def rotate(self, angle: float) -> None:
         """Rotate the image."""
         if self.image is None:
-            raise scan_to_paperless.ScanToPaperlessException("The image is None")
+            msg = "The image is None"
+            raise scan_to_paperless.ScanToPaperlessError(msg)
         self.image = rotate_image(self.image, angle, self.get_background_color())
         if self.mask is not None:
             self.mask = rotate_image(self.mask, angle, 0)
 
-    def get_px_value(self, value: int | float) -> float:
+    def get_px_value(self, value: float) -> float:
         """Get the value in px."""
         return value / 10 / 2.51 * self.config["args"].setdefault("dpi", schema.DPI_DEFAULT)
 
     def is_progress(self) -> bool:
         """Return we want to have the intermediate files."""
         return os.environ.get("PROGRESS", "FALSE") == "TRUE" or self.config.setdefault(
-            "progress", schema.PROGRESS_DEFAULT
+            "progress",
+            schema.PROGRESS_DEFAULT,
         )
 
     def save_progress_images(
@@ -272,7 +280,7 @@ class Context:
         image_prefix: str = "",
         process_count: int | None = None,
         force: bool = False,
-    ) -> str | None:
+    ) -> Path | None:
         """Save the intermediate images."""
         if scan_to_paperless.jupyter_utils.is_ipython():
             if image is None:
@@ -289,30 +297,31 @@ class Context:
             process_count = self.get_process_count()
         if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
             name = f"{process_count}-{name}" if self.is_progress() else name
-            dest_folder = os.path.join(self.root_folder, name)
-            if not os.path.exists(dest_folder):
-                os.makedirs(dest_folder)
-            dest_image = os.path.join(dest_folder, image_prefix + self.image_name)
+            dest_folder = self.root_folder / name
+            if not dest_folder.exists():
+                dest_folder.mkdir(parents=True)
+            dest_image = dest_folder / (image_prefix + self.image_name)
             if image is not None:
                 try:
-                    cv2.imwrite(dest_image, image)
-                    return dest_image
-                except Exception as exception:
+                    cv2.imwrite(str(dest_image), image)
+                except Exception as exception:  # noqa: BLE001
                     print(exception)
+                else:
+                    return dest_image
             else:
                 try:
                     assert self.image is not None
-                    cv2.imwrite(dest_image, self.image)
-                except Exception as exception:
+                    cv2.imwrite(str(dest_image), self.image)
+                except Exception as exception:  # noqa: BLE001
                     print(exception)
-                dest_image = os.path.join(dest_folder, "mask-" + self.image_name)
+                dest_image = dest_folder / ("mask-" + self.image_name)
                 try:
-                    dest_image = os.path.join(dest_folder, "masked-" + self.image_name)
-                except Exception as exception:
+                    dest_image = dest_folder / ("masked-" + self.image_name)
+                except Exception as exception:  # noqa: BLE001
                     print(exception)
                 try:
-                    cv2.imwrite(dest_image, self.get_masked())
-                except Exception as exception:
+                    cv2.imwrite(str(dest_image), self.get_masked())
+                except Exception as exception:  # noqa: BLE001
                     print(exception)
         return None
 

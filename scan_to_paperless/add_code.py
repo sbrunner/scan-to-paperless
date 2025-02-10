@@ -1,13 +1,14 @@
 """Add the QRCode and the BarCodes to a PDF in an additional page."""
 
 import argparse
+import asyncio
 import io
 import logging
 import math
 import os
 import random
-import subprocess  # nosec
 import tempfile
+from pathlib import Path
 from typing import TypedDict
 
 import cv2
@@ -56,7 +57,10 @@ class _PageCode(TypedDict):
 
 
 def _point(
-    point: tuple[int | float, int | float], deg_angle: float, width: int, height: int
+    point: tuple[int | float, int | float],
+    deg_angle: float,
+    width: int,
+    height: int,
 ) -> tuple[float, float]:
     assert -90 <= deg_angle <= 90
     angle = math.radians(deg_angle)
@@ -94,7 +98,7 @@ def _add_code(
                     "type": found["type"],
                     "pos": pos,
                     "data": data,
-                }
+                },
             )
 
     filtered_founds = [
@@ -108,12 +112,12 @@ def _add_code(
             {
                 "pos": added_codes[found["data"]]["pos"],
                 "geometry": [_point(p, alpha, width, height) for p in bbox],
-            }
+            },
         )
 
 
 def _get_bar_codes_with_open_cv(
-    image: str,
+    image: Path,
     alpha: float,
     page: int,
     width: int,
@@ -127,25 +131,22 @@ def _get_bar_codes_with_open_cv(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+    decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
         try:
             detector = cv2.barcode.BarcodeDetector()  # pylint: disable=c-extension-no-member
             retval, decoded_info, decoded_type, points = detector.detectAndDecode(decoded_image)  # type: ignore[misc]
             if retval:
                 if os.environ.get("PROGRESS", "FALSE") == "TRUE":
-                    base_path = os.path.dirname(image)
-                    filename = ".".join(os.path.basename(image).split(".")[:-1])
-                    suffix = random.randint(0, 1000)  # noqa: S311
+                    base_path = image.parent
+                    filename = ".".join(image.name.split(".")[:-1])
+                    suffix = random.randint(0, 1000)  # noqa: S311  # nosec
                     for bbox_index, bbox in enumerate(points):
-                        dest_filename = os.path.join(
-                            base_path,
-                            f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
-                        )
+                        dest_filename = (base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",)
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
                         cv2.imwrite(
-                            dest_filename,
+                            str(dest_filename),
                             decoded_image[
                                 int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
@@ -160,18 +161,18 @@ def _get_bar_codes_with_open_cv(
                             "data": data,
                             "type": type_[0] + type_[1:].lower(),
                             "geometry": bbox,
-                        }
+                        },
                     )
 
                 _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOG.warning("Open CV barcode decoder not available")
 
     return codes
 
 
 def _get_qr_codes_with_open_cv(
-    image: str,
+    image: Path,
     alpha: float,
     page: int,
     width: int,
@@ -187,29 +188,25 @@ def _get_qr_codes_with_open_cv(
 
     try:
         detector = cv2.QRCodeDetector()
-        decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+        decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
         if decoded_image is not None:
             retval, decoded_info, points, straight_qr_code = detector.detectAndDecodeMulti(decoded_image)
             if retval:
                 if os.environ.get("PROGRESS", "FALSE") == "TRUE":
-                    base_path = os.path.dirname(image)
-                    filename = ".".join(os.path.basename(image).split(".")[:-1])
-                    suffix = random.randint(0, 1000)  # noqa: S311
+                    base_path = image.parent
+                    filename = ".".join(image.name.split(".")[:-1])
+                    suffix = random.randint(0, 1000)  # noqa: S311 # nosec
                     for img_index, img in enumerate(straight_qr_code):
-                        dest_filename = os.path.join(
-                            base_path,
-                            f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png",
+                        dest_filename = (
+                            base_path / f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png"
                         )
-                        cv2.imwrite(dest_filename, img)
+                        cv2.imwrite(str(dest_filename), img)
                     for bbox_index, bbox in enumerate(points):
-                        dest_filename = os.path.join(
-                            base_path,
-                            f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",
-                        )
+                        dest_filename = base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png"
                         bbox_x = [p[0] for p in bbox]  # type: ignore[union-attr]
                         bbox_y = [p[1] for p in bbox]  # type: ignore[union-attr]
                         cv2.imwrite(
-                            dest_filename,
+                            str(dest_filename),
                             decoded_image[
                                 int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                 int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
@@ -222,22 +219,23 @@ def _get_qr_codes_with_open_cv(
                         bbox = points[index]
                         detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
                         try:
-                            bbox_x = [p[0] for p in bbox]  # type: ignore[union-attr]
-                            bbox_y = [p[1] for p in bbox]  # type: ignore[union-attr]
+                            transformed_bbox = [(p[0], p[1]) for p in bbox]  # type: ignore[union-attr]
+                            bbox_x, bbox_y = (
+                                [x for x, _ in transformed_bbox],
+                                [y for _, y in transformed_bbox],
+                            )
                             retvals = detector.detectAndDecode(
                                 decoded_image[
                                     int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
                                     int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
-                                ]
+                                ],
                             )
-                            for data in retvals[0]:
-                                founds.append(
-                                    {
-                                        "data": data,
-                                        "type": "QR code",
-                                        "geometry": points[index],
-                                    }
-                                )
+                            founds.extend(
+                                [
+                                    {"data": retvals_data, "type": "QR code", "geometry": points[index]}
+                                    for retvals_data in retvals[0]
+                                ],
+                            )
                         except UnicodeDecodeError as exception:
                             _LOG.warning("Open CV WeChat QR code decoder error: %s", str(exception))
                     else:
@@ -246,17 +244,17 @@ def _get_qr_codes_with_open_cv(
                                 "data": data,
                                 "type": "QR code",
                                 "geometry": points[index],
-                            }
+                            },
                         )
                 _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
-    except Exception:  # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except # noqa: BLE001
         _LOG.exception("Open CV QR code decoder not available")
 
     return codes
 
 
 def _get_codes_with_open_cv_we_chat(
-    image: str,
+    image: Path,
     alpha: float,
     page: int,
     width: int,
@@ -270,7 +268,7 @@ def _get_codes_with_open_cv_we_chat(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+    decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
         detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
         try:
@@ -285,7 +283,7 @@ def _get_codes_with_open_cv_we_chat(
                         "type": "QR code",
                         # In current version of wechat_qrcode, the bounding box are not correct
                         "geometry": None,
-                    }
+                    },
                 )
             _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
         except UnicodeDecodeError as exception:
@@ -295,7 +293,7 @@ def _get_codes_with_open_cv_we_chat(
 
 
 def _get_codes_with_zxing(
-    image: str,
+    image: Path,
     alpha: float,
     page: int,
     width: int,
@@ -309,22 +307,21 @@ def _get_codes_with_zxing(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(image, flags=cv2.IMREAD_COLOR)
+    decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
     if decoded_image is not None:
-        founds: list[_FoundCode] = []
-        for result in zxingcpp.read_barcodes(decoded_image):  # pylint: disable=c-extension-no-member
-            founds.append(
-                {
-                    "data": result.text,
-                    "type": "QR code" if result.format.name == "QRCode" else result.format.name,
-                    "geometry": [
-                        (result.position.top_left.x, result.position.top_left.y),
-                        (result.position.top_right.x, result.position.top_right.y),
-                        (result.position.bottom_right.x, result.position.bottom_right.y),
-                        (result.position.bottom_left.x, result.position.bottom_left.y),
-                    ],
-                }
-            )
+        founds: list[_FoundCode] = [
+            {
+                "data": result.text,
+                "type": "QR code" if result.format.name == "QRCode" else result.format.name,
+                "geometry": [
+                    (result.position.top_left.x, result.position.top_left.y),
+                    (result.position.top_right.x, result.position.top_right.y),
+                    (result.position.bottom_right.x, result.position.bottom_right.y),
+                    (result.position.bottom_left.x, result.position.bottom_left.y),
+                ],
+            }
+            for result in zxingcpp.read_barcodes(decoded_image)  # pylint: disable=c-extension-no-member
+        ]
 
         _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
@@ -347,15 +344,14 @@ def _get_codes_with_z_bar(
     codes: list[_PageCode] = []
 
     img = Image.open(image)
-    founds: list[_FoundCode] = []
-    for output in pyzbar.decode(img):
-        founds.append(
-            {
-                "data": output.data.decode().replace("\\n", "\n"),
-                "type": "QR code" if output.type == "QRCODE" else output.type[0] + output.type[1:].lower(),
-                "geometry": output.polygon,
-            }
-        )
+    founds: list[_FoundCode] = [
+        {
+            "data": output.data.decode().replace("\\n", "\n"),
+            "type": "QR code" if output.type == "QRCODE" else output.type[0] + output.type[1:].lower(),
+            "geometry": output.polygon,
+        }
+        for output in pyzbar.decode(img)
+    ]
     _add_code(alpha, width, height, page, all_codes, added_codes, codes, founds)
 
     return codes
@@ -370,9 +366,9 @@ def _is_rectangular(geometry: list[tuple[float, float]]) -> bool:
     return not wrong_angles
 
 
-def add_codes(
-    input_filename: str,
-    output_filename: str,
+async def add_codes(
+    input_filename: Path,
+    output_filename: Path,
     dpi: float = 200,
     pdf_dpi: float = 72,
     font_size: float = 16,
@@ -386,7 +382,7 @@ def add_codes(
     # Codes information about the already found codes
     added_codes: dict[str, _AllCodes] = {}
 
-    with open(input_filename, "rb") as input_file:
+    with input_filename.open("rb") as input_file:
         existing_pdf = PdfReader(input_file)
         metadata = {**existing_pdf.metadata} if existing_pdf.metadata is not None else {}
         output_pdf = PdfWriter()
@@ -394,66 +390,72 @@ def add_codes(
             _LOG.info("Processing page %s", index + 1)
             # Get the QR code from the page
             with tempfile.NamedTemporaryFile(suffix=f"-{index}.png") as image_file:
-                image = image_file.name
-                subprocess.run(  # nosec
-                    [
-                        "gm",
-                        "convert",
-                        "-density",
-                        str(dpi),
-                        f"{input_filename}[{index}]",
-                        image,
-                    ],
-                    check=True,
+                image = Path(image_file.name)
+                proc = await asyncio.create_subprocess_exec(
+                    "gm",
+                    "convert",
+                    "-density",
+                    str(dpi),
+                    f"{input_filename}[{index}]",
+                    str(image),
                 )
+                await proc.wait()
                 img0 = Image.open(image)
 
                 # Codes information to add the mask and number on the page
                 codes: list[_PageCode] = []
                 codes += _get_codes_with_zxing(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 codes += _get_bar_codes_with_open_cv(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 codes += _get_qr_codes_with_open_cv(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
                 codes += _get_codes_with_open_cv_we_chat(
-                    image, 0, index, img0.width, img0.height, all_codes, added_codes
+                    image,
+                    0,
+                    index,
+                    img0.width,
+                    img0.height,
+                    all_codes,
+                    added_codes,
                 )
-                # codes += _get_codes_with_z_bar(
-                #   image, 0, index, img0.width, img0.height, all_codes, added_codes)
-                # for angle in range(-10, 11, 2):
-                #     subprocess.run(  # nosec
-                #         [
-                #             "gm",
-                #             "convert",
-                #             "-density",
-                #             str(dpi),
-                #             "-rotate",
-                #             str(angle),
-                #             f"{input_filename}[{index}]",
-                #             image,
-                #         ],
-                #         check=True,
-                #     )
-                #     codes += _get_codes_with_z_bar(
-                #         image, angle, page, img0.width, img0.height, all_codes, added_codes
-                #     )
 
                 codes = [code for code in codes if _is_rectangular(code["geometry"])]
 
                 if codes:
                     packet = io.BytesIO()
                     can = canvas.Canvas(
-                        packet, pagesize=(page.mediabox.width, page.mediabox.height), bottomup=False
+                        packet,
+                        pagesize=(page.mediabox.width, page.mediabox.height),
+                        bottomup=False,
                     )
                     for code in codes:
                         can.setFillColor(_BACKGROUND_COLOR)
                         path = can.beginPath()
                         path.moveTo(
-                            code["geometry"][0][0] / dpi * pdf_dpi, code["geometry"][0][1] / dpi * pdf_dpi
+                            code["geometry"][0][0] / dpi * pdf_dpi,
+                            code["geometry"][0][1] / dpi * pdf_dpi,
                         )
                         for point in code["geometry"][1:]:
                             path.lineTo(point[0] / dpi * pdf_dpi, point[1] / dpi * pdf_dpi)
@@ -486,7 +488,7 @@ def add_codes(
             ):
                 # Finally, write "output" to a real file
 
-                with open(dest_1.name, "wb") as output_stream:
+                with dest_1.open("wb") as output_stream:
                     output_pdf.write(output_stream)
 
                 for code_ in all_codes:
@@ -494,9 +496,9 @@ def add_codes(
                     if len(data) == 1:
                         data = data[0].split("\n")
                     data = [d if d else "|" for d in data]
-                    code_["data_formatted"] = "<br />".join(data)  # type: ignore
+                    code_["data_formatted"] = "<br />".join(data)  # type: ignore[typeddict-unknown-key]
                 sections = [
-                    f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data_formatted']}</p>"  # type: ignore
+                    f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data_formatted']}</p>"  # type: ignore[typeddict-item]
                     for code_ in all_codes
                 ]
 
@@ -511,22 +513,28 @@ def add_codes(
                     </section>
                     {"<hr />".join(sections)}
                 </body>
-                </html>"""
+                </html>""",
                 )
 
                 css = CSS(string="@page { size: A4; margin: 1.5cm } p { font-size: 5pt; font-family: sans; }")
 
                 html.write_pdf(dest_2.name, stylesheets=[css])
 
-                subprocess.run(  # nosec
-                    ["pdftk", dest_1.name, dest_2.name, "output", output_filename, "compress"], check=True
+                proc = await asyncio.create_subprocess_exec(
+                    "pdftk",
+                    dest_1.name,
+                    dest_2.name,
+                    "output",
+                    output_filename,
+                    "compress",
                 )
+                await proc.wait()
 
                 if metadata:
                     with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
                         with pdf.open_metadata() as meta:
                             formatted_codes = "\n-\n".join(
-                                [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes]
+                                [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
                             )
                             if meta.get("{http://purl.org/dc/elements/1.1/}description"):
                                 meta["{http://purl.org/dc/elements/1.1/}description"] += (
@@ -537,15 +545,21 @@ def add_codes(
                         for key, value in metadata.items():
                             pdf.docinfo[key] = value
                         pdf.docinfo["/Codes"] = "\n-\n".join(
-                            [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes]
+                            [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
                         )
                         pdf.save(output_filename)
         else:
             _LOG.info("No codes found, copy the input file")
-            subprocess.run(["cp", input_filename, output_filename], check=True)  # nosec
+            proc = await asyncio.create_subprocess_exec(
+                "cp",
+                str(input_filename),
+                str(output_filename),
+            )
+            await proc.wait()
+            assert proc.returncode == 0
 
 
-def main() -> None:
+async def aio_main() -> None:
     """Add the QRCode and the BarCodes to a PDF in an additional page."""
     arg_parser = argparse.ArgumentParser("Add the QRCode and the BarCodes to a PDF in an additional page")
     arg_parser.add_argument(
@@ -556,19 +570,28 @@ def main() -> None:
     )
     arg_parser.add_argument("--pdf-dpi", help="The DPI used in the PDF", type=int, default=72)
     arg_parser.add_argument(
-        "--font-size", help="The font size used in the PDF to add the number", type=int, default=10
+        "--font-size",
+        help="The font size used in the PDF to add the number",
+        type=int,
+        default=10,
     )
     arg_parser.add_argument(
-        "--margin-left", help="The margin left used in the PDF to add the number", type=int, default=2
+        "--margin-left",
+        help="The margin left used in the PDF to add the number",
+        type=int,
+        default=2,
     )
     arg_parser.add_argument(
-        "--margin-top", help="The margin top used in the PDF to add the number", type=int, default=0
+        "--margin-top",
+        help="The margin top used in the PDF to add the number",
+        type=int,
+        default=0,
     )
     arg_parser.add_argument("input_filename", help="The input PDF filename")
     arg_parser.add_argument("output_filename", help="The output PDF filename")
     args = arg_parser.parse_args()
 
-    add_codes(
+    await add_codes(
         args.input_filename,
         args.output_filename,
         args.dpi,
@@ -577,3 +600,8 @@ def main() -> None:
         args.margin_left,
         args.margin_top,
     )
+
+
+def main() -> None:
+    """Add the QRCode and the BarCodes to a PDF in an additional page."""
+    asyncio.run(aio_main())

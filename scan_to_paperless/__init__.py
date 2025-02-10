@@ -1,45 +1,40 @@
 """The scan to Paperless main module."""
 
 import os.path
-import sys
+from pathlib import Path
 from typing import cast
 
 from deepmerge.merger import Merger
 from ruamel.yaml.main import YAML
 
-if sys.version_info.minor >= 8:
-    from scan_to_paperless import config as schema
-else:
-    from scan_to_paperless import config_old as schema  # type: ignore
+from scan_to_paperless import config as schema
 
 CONFIG_FILENAME = "scan-to-paperless.yaml"
 
 if "APPDATA" in os.environ:
-    CONFIG_FOLDER = os.environ["APPDATA"]
+    CONFIG_FOLDER = Path(os.environ["APPDATA"])
 elif "XDG_CONFIG_HOME" in os.environ:
-    CONFIG_FOLDER = os.environ["XDG_CONFIG_HOME"]
+    CONFIG_FOLDER = Path(os.environ["XDG_CONFIG_HOME"])
 else:
-    CONFIG_FOLDER = os.path.expanduser("~/.config")
+    CONFIG_FOLDER = Path("~/.config").expanduser()
 
-CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILENAME)
+CONFIG_PATH = CONFIG_FOLDER / CONFIG_FILENAME
 
 
-class ScanToPaperlessException(Exception):
+class ScanToPaperlessError(Exception):
     """Base exception for this module."""
 
 
-def get_config(config_filename: str) -> schema.Configuration:
+def get_config(config_filename: Path) -> schema.Configuration:
     """Get the configuration."""
-    if os.path.exists(config_filename):
+    if config_filename.exists():
         yaml = YAML()
         yaml.default_flow_style = False
-        with open(config_filename, encoding="utf-8") as config_file:
+        with config_filename.open(encoding="utf-8") as config_file:
             config = cast(schema.Configuration, yaml.load(config_file))
             if "extends" in config:
                 base_config = get_config(
-                    os.path.normpath(
-                        os.path.join(os.path.dirname(config_filename), os.path.expanduser(config["extends"]))
-                    )
+                    config_filename.parent / Path(config["extends"]).expanduser().resolve(),
                 )
 
                 strategies_config = cast(schema.MergeStrategies, config.get("strategies", {}))

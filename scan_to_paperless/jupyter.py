@@ -1,6 +1,6 @@
 """Functions used to generate a Jupyter notebook from the transform."""
 
-import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
@@ -27,21 +27,23 @@ def _pretty_repr(value: Any, prefix: str = "") -> str:
                     for key, value in value.items()
                 ],
                 prefix + "}",
-            ]
+            ],
         )
 
     return repr(value)
 
 
 def create_transform_notebook(
-    root_folder: str, context: scan_to_paperless.process_utils.Context, step: schema.Step
+    root_folder: Path,
+    context: scan_to_paperless.process_utils.Context,
+    step: schema.Step,
 ) -> None:
     """Create a Jupyter notebook for the transform step."""
     # Jupyter notebook
-    dest_folder = os.path.join(root_folder, "jupyter")
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder)
-    with open(os.path.join(dest_folder, "README.txt"), "w", encoding="utf-8") as readme_file:
+    dest_folder = root_folder / "jupyter"
+    if not dest_folder.exists():
+        dest_folder.mkdir(parents=True)
+    with (dest_folder / "README.txt").open("w", encoding="utf-8") as readme_file:
         readme_file.write(
             """# Jupyter notebook
 
@@ -52,7 +54,7 @@ Run:
 jupyter lab
 
 Open the notebook file.
-"""
+""",
         )
 
     notebook = nbformat.v4.new_notebook()  # type: ignore[no-untyped-call]
@@ -65,12 +67,12 @@ This notebook show the transformation applied on the images of the document.
 
 At the start of each step, se set some values on the `context.config["args"]` dict,
 you can change the values to see the impact on the result,
-then yon can all those changes in the `config.yaml` file, in the `args` section."""
-        )
+then yon can all those changes in the `config.yaml` file, in the `args` section.""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the required imports.")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("Do the required imports."),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -78,34 +80,34 @@ then yon can all those changes in the `config.yaml` file, in the `args` section.
 import cv2
 import numpy as np
 
-from scan_to_paperless import process, process_utils"""
-        )
+from scan_to_paperless import process, process_utils""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Calculate the base folder of the document."""
-        )
+            """Calculate the base folder of the document.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             """import IPython
 
 jupyter_locals = IPython.extract_module_locals()[1]
-base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__']) if '__vsc_ipynb_file__' in jupyter_locals else os.getcwd())"""
-        )
+base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__']) if '__vsc_ipynb_file__' in jupyter_locals else os.getcwd())""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Open on of the source images, you can change it by uncommenting the corresponding line."""
-        )
+            """Open on of the source images, you can change it by uncommenting the corresponding line.""",
+        ),
     )
     other_images_open = "\n".join(
         [
             f'# context.image = cv2.imread(os.path.join(base_folder, "{image}"))'
             for image in step["sources"][1:]
-        ]
+        ],
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -116,25 +118,25 @@ context = process_utils.Context({{"args": {{}}}}, {{}})
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
 {other_images_open}
 
-images_context = {{"original": context.image}}"""
-        )
+images_context = {{"original": context.image}}""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("""Defined the used DPI.""")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("""Defined the used DPI."""),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.config["args"] = {{
     "dpi": {context.config["args"].get("dpi", schema.DPI_DEFAULT)},
-}}"""
-        )
+}}""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Get the index that represent the part of the image we want to see."""
-        )
+            """Get the index that represent the part of the image we want to see.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -146,12 +148,12 @@ context.get_index = lambda image: np.ix_(
     np.arange(0, min(image.shape[2], 999999)),
 )
 
-context.display_image(images_context["original"])"""
-        )
+context.display_image(images_context["original"])""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Display the image histogram.")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("Display the image histogram."),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -161,16 +163,16 @@ context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("leve
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
-process.histogram(context)"""
-        )
+process.histogram(context)""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
             """Do the image level correction.
 
-Some of the used values are displayed in the histogram chart."""
-        )
+Some of the used values are displayed in the histogram chart.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -181,16 +183,16 @@ context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("leve
 process.level(context)
 context.display_image(context.image)
 
-images_context["level"] = context.image"""
-        )
+images_context["level"] = context.image""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
             """Do the image level cut correction.
 
-Some of the used values are displayed in the histogram chart."""
-        )
+Some of the used values are displayed in the histogram chart.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -202,12 +204,12 @@ context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", s
 process.color_cut(context)
 context.display_image(context.image)
 
-images_context["color_cut"] = context.image"""
-        )
+images_context["color_cut"] = context.image""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("""Defined the background color.""")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("""Defined the background color."""),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -230,14 +232,14 @@ cv2.line(temp_image, [max_x, min_y], [max_x ,max_x], marker_color)
 cv2.line(temp_image, [min_x, max_y], [max_x ,max_x], marker_color)
 
 context.display_image(temp_image)
-            """
-        )
+            """,
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Display images and values useful for the next step."""
-        )
+            """Display images and values useful for the next step.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -258,8 +260,8 @@ image = context.image.copy()
 for x, y in points:
     print(f"Pixel: {x}:{y}, with value: {hsv[y, x, :]}")
     cv2.drawMarker(image, [x, y], (0, 0, 255), cv2.MARKER_CROSS, 20, 2)
-context.display_image(image)"""
-        )
+context.display_image(image)""",
+        ),
     )
 
     notebook["cells"].append(
@@ -281,8 +283,8 @@ On leaflet I use the following values:
 lower_hsv_color: [0, 20, 0]
 upper_hsv_color: [255, 255, 255]
 ```
-"""
-        )
+""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -297,8 +299,8 @@ context.display_image(context.get_masked())
 if context.mask is None:
     context.mask = np.zeros(context.image.shape[:2], dtype=np.uint8)
 
-images_context["original-mask"] = context.mask"""
-        )
+images_context["original-mask"] = context.mask""",
+        ),
     )
 
     notebook["cells"].append(
@@ -310,8 +312,8 @@ The needed of this step is to remove some part of the image that represent the p
 The `lower_hsv_color`and the `upper_hsv_color` are used to define the color range to remove,
 the `de_noise_size` is used to remove noise from the image,
 the `buffer_size` is used to add a buffer around the image and
-the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`)."""
-        )
+the `buffer_level` is used to define the level of the buffer (`0.0` to `1.0`).""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -329,12 +331,12 @@ process.cut(context)
 context.display_image(context.image)
 
 images_context["cut"] = context.image
-images_context["cut-mask"] = context.mask"""
-        )
+images_context["cut-mask"] = context.mask""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the image skew correction.")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("Do the image skew correction."),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -348,14 +350,14 @@ process.deskew(context)
 context.display_image(context.image)
 
 images_context["deskew"] = context.image
-images_context["deskew-mask"] = context.mask"""
-        )
+images_context["deskew-mask"] = context.mask""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image auto crop base on the image content."""
-        )
+            """Do the image auto crop base on the image content.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -368,12 +370,12 @@ process.docrop(context)
 context.display_image(context.image)
 
 images_context["crop"] = context.image
-images_context["crop-mask"] = context.mask"""
-        )
+images_context["crop-mask"] = context.mask""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the image sharpen correction.")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("Do the image sharpen correction."),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -386,12 +388,12 @@ process.sharpen(context)
 context.display_image(context.image)
 
 images_context["sharpen"] = context.image
-images_context["sharpen-mask"] = context.mask"""
-        )
+images_context["sharpen-mask"] = context.mask""",
+        ),
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("Do the image dither correction.")  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell("Do the image dither correction."),  # type: ignore[no-untyped-call]
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -404,16 +406,16 @@ process.dither(context)
 context.display_image(context.image)
 
 images_context["dither"] = context.image
-images_context["dither-mask"] = context.mask"""
-        )
+images_context["dither-mask"] = context.mask""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
             """Do the image auto rotate correction, based on the text orientation.
 
-This require Tesseract to be installed."""
-        )
+This require Tesseract to be installed.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -424,14 +426,14 @@ try:
     process.autorotate(context)
     context.display_image(context.image)
 except FileNotFoundError as e:
-    print("Tesseract not found, skipping autorotate: ", e)"""
-        )
+    print("Tesseract not found, skipping autorotate: ", e)""",
+        ),
     )
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """When you are happy with the result set `save` to `True`, and run this step."""
-        )
+            """When you are happy with the result set `save` to `True`, and run this step.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
@@ -450,9 +452,9 @@ if save:
         yaml.dump(config, config_file)
 
     for image in config["steps"][-1]["sources"]:
-        os.remove(os.path.join(base_folder, os.path.basename(image)))"""
-        )
+        os.remove(os.path.join(base_folder, os.path.basename(image)))""",
+        ),
     )
 
-    with open(os.path.join(dest_folder, "jupyter.ipynb"), "w", encoding="utf-8") as jupyter_file:
+    with (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
         nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]

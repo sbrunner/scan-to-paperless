@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Scan a new document."""
 
 import argparse
@@ -9,6 +11,7 @@ import re
 import subprocess  # nosec
 import sys
 import time
+from pathlib import Path
 from typing import Any, cast
 
 import argcomplete
@@ -17,13 +20,9 @@ import pyperclip
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import CONFIG_PATH, get_config
+from scan_to_paperless import config as schema
 
 from .config import VIEWER_DEFAULT
-
-if sys.version_info.minor >= 8:
-    from scan_to_paperless import config as schema
-else:
-    from scan_to_paperless import config_old as schema  # type: ignore
 
 
 def call(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> None:
@@ -115,13 +114,15 @@ def main() -> None:
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
-    config_filename = CONFIG_PATH if args.preset is None else f"{CONFIG_PATH[:-5]}-{args.preset}.yaml"
+    config_filename = (
+        CONFIG_PATH if args.preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{args.preset}.yaml")
+    )
     config: schema.Configuration = get_config(config_filename)
 
     if args.config:
         yaml = YAML()
         yaml.default_flow_style = False
-        print("Config from file: " + config_filename)
+        print(f"Config from file: {config_filename}")
         yaml.dump(config, sys.stdout)
         sys.exit()
 
@@ -142,15 +143,15 @@ def main() -> None:
 
     dirty = False
     for conf in args.set_config:
-        config[conf[0]] = conf[1]  # type: ignore
+        config[conf[0]] = conf[1]  # type: ignore[literal-required]
         dirty = True
     if dirty:
         yaml = YAML()
         yaml.default_flow_style = False
-        with open(config_filename, "w", encoding="utf-8") as config_file:
+        with config_filename.open("w", encoding="utf-8") as config_file:
             config_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/config_schema.json\n\n"
+                "/master/scan_to_paperless/config_schema.json\n\n",
             )
             yaml.dump(config, config_file)
 
@@ -158,18 +159,17 @@ def main() -> None:
         print(
             """The scan folder isn't set, use:
     scan --set-settings scan_folder <a_folder>
-    This should be shared with the process container in 'source'."""
+    This should be shared with the process container in 'source'.""",
         )
         sys.exit(1)
-
-    now = datetime.datetime.now()
-    base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), now.strftime("%Y%m%d-%H%M%S"))
-    while os.path.exists(base_folder):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
+    while base_folder.exists():
         now += datetime.timedelta(seconds=1)
-        base_folder = os.path.join(os.path.expanduser(config["scan_folder"]), now.strftime("%Y%m%d-%H%M%S"))
+        base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
 
-    root_folder = os.path.join(base_folder, "source")
-    os.makedirs(root_folder)
+    root_folder = base_folder / "source"
+    root_folder.mkdir(parents=True)
 
     try:
         scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
@@ -180,21 +180,21 @@ def main() -> None:
         scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
         if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
-            call(scanimage + ["--batch-start=1", "--batch-increment=2"])
+            call([*scanimage, "--batch-start=1", "--batch-increment=2"])
             odd = os.listdir(root_folder)
             input("Put your document in the automatic document feeder for the other side, and press enter.")
             call(
-                scanimage
-                + [
+                [
+                    *scanimage,
                     f"--batch-start={len(odd) * 2}",
                     "--batch-increment=-2",
                     f"--batch-count={len(odd)}",
-                ]
+                ],
             )
             if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
                 for img in os.listdir(root_folder):
                     if img not in odd:
-                        path = os.path.join(root_folder, img)
+                        path = root_folder / img
                         with PIL.Image.open(path) as image:
                             image.rotate(180).save(path, dpi=image.info["dpi"])
         else:
@@ -214,25 +214,24 @@ def main() -> None:
         if not img.startswith("image-"):
             continue
         if "dpi" not in args_:
-            with PIL.Image.open(os.path.join(root_folder, img)) as image:
+            with PIL.Image.open(root_folder / img) as image:
                 if "dpi" in image.info:
                     args_["dpi"] = math.sqrt(
-                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"])
+                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
                     )
 
-    print(base_folder)
     subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec
 
     images = []
     for img in os.listdir(root_folder):
         if not img.startswith("image-"):
             continue
-        images.append(os.path.join("source", img))
+        images.append(Path("source") / img)
 
     regex = re.compile(rf"^source\/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
 
-    def image_match(image_name: str) -> int:
-        match = regex.match(image_name)
+    def image_match(image_path: Path) -> int:
+        match = regex.match(str(image_path))
         assert match
         return int(match.group(1))
 
@@ -244,14 +243,16 @@ def main() -> None:
         }
         yaml = YAML()
         yaml.default_flow_style = False
-        with open(
-            os.path.join(os.path.dirname(root_folder), "config.yaml"), "w", encoding="utf-8"
-        ) as process_file:
+        with (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
             process_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/process_schema.json\n\n"
+                "/master/scan_to_paperless/process_schema.json\n\n",
             )
             yaml.dump(process_config, process_file)
     else:
-        os.rmdir(root_folder)
-        os.rmdir(base_folder)
+        root_folder.rmdir()
+        base_folder.rmdir()
+
+
+if __name__ == "__main__":
+    main()
