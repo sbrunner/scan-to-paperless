@@ -633,7 +633,7 @@ class CutOperation(TypedDict, total=False):
     auto_mask: "AutoMask"
     """ Auto mask. """
 
-    additional_filename: str
+    additional_filename: str | None
     """ An image file used to add on the mask """
 
 
@@ -1068,7 +1068,7 @@ class MaskOperation(TypedDict, total=False):
     auto_mask: "AutoMask"
     """ Auto mask. """
 
-    additional_filename: str
+    additional_filename: str | None
     """ An image file used to add on the mask """
 
 

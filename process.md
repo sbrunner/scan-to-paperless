@@ -117,11 +117,11 @@
   - **`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
     - **`enabled`** _(boolean)_: Enable the mask. Default: `true`.
     - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - **`additional_filename`** _(string)_: An image file used to add on the mask.
+    - **`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
   - **`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
     - **`enabled`** _(boolean)_: Enable the cut. Default: `true`.
     - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - **`additional_filename`** _(string)_: An image file used to add on the mask.
+    - **`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
   - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
   - **`deskew`** _(object)_: The deskew configuration.
     - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
