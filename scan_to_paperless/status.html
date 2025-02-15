@@ -98,13 +98,13 @@
     <h1>Scan to Paperless</h1>
     <div class="sidebar-box status-header">
         <p><em>{{ global_status }}</em> since <script>
-        window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
+        window.document.write(new Date('{{ global_status_update.isoformat() }}').toLocaleString());
         </script></p>
         <p>Started at: <script>
-        window.document.write(new Date('{{ start_time.isoformat() }}Z').toLocaleString());
+        window.document.write(new Date('{{ start_time.isoformat() }}').toLocaleString());
         </script></p>
         <p>Generated at: <script>
-        window.document.write(new Date('{{ datetime.datetime.utcnow().replace(microsecond=0).isoformat() }}Z').toLocaleString());
+        window.document.write(new Date('{{ datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat() }}').toLocaleString());
         </script></p>
     <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>
 
