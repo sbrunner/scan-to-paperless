@@ -167,6 +167,7 @@ class Context:
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
             if self.root_folder and mask_file and mask_file.exists():
+                print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")
                 mask = cv2.add(
                     mask,
                     cv2.bitwise_not(
