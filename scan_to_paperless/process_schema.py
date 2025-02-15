@@ -624,7 +624,7 @@ class CutOperation(TypedDict, total=False):
     Editor note: The properties of this object should be modified in the config_schema.json file
     """
 
-    additional_filename: str
+    additional_filename: str | None
     """ An image file used to add on the mask """
 
 
@@ -1064,7 +1064,7 @@ class MaskOperation(TypedDict, total=False):
     Editor note: The properties of this object should be modified in the config_schema.json file
     """
 
-    additional_filename: str
+    additional_filename: str | None
     """ An image file used to add on the mask """
 
 

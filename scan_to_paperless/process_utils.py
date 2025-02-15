@@ -92,17 +92,17 @@ class Context:
 
         self.process_count = self.step.get("process_count", 0)
 
-    def _get_default_mask_file(self, default_file_name: str) -> str:
+    def _get_default_mask_file(self, default_file_name: str) -> str | None:
         if not self.root_folder:
-            return ""
+            return None
         mask_file = self.root_folder / default_file_name
         if not mask_file.exists():
             base_folder = self.root_folder.parent
             if base_folder is None:
-                return ""
+                return None
             mask_file = base_folder / default_file_name
             if not mask_file.exists():
-                return ""
+                return None
         return str(mask_file)
 
     def _get_mask(
@@ -166,7 +166,7 @@ class Context:
 
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
-            if self.root_folder and mask_file and mask_file.exists():
+            if self.root_folder and mask_file is not None and mask_file.exists():
                 print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")
                 mask = cv2.add(
                     mask,
@@ -194,11 +194,16 @@ class Context:
             "mask",
             cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT),
         )
+        additional_filename = mask_config.setdefault(
+            "additional_filename",
+            self._get_default_mask_file("mask.png"),
+        )
+        additional_path = None if additional_filename is None else Path(additional_filename)
         self.mask = (
             self._get_mask(
                 mask_config.setdefault("auto_mask", {}),
                 "mask",
-                Path(mask_config.setdefault("additional_filename", self._get_default_mask_file("mask.png"))),
+                additional_path,
             )
             if mask_config.setdefault("enabled", schema.MASK_ENABLED_DEFAULT)
             else None
@@ -219,10 +224,15 @@ class Context:
         )
         if cut_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None
+            additional_filename = cut_config.setdefault(
+                "additional_filename",
+                self._get_default_mask_file("cut.png"),
+            )
+            additional_path = None if additional_filename is None else Path(additional_filename)
             mask = self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
-                Path(cut_config.setdefault("additional_filename", self._get_default_mask_file("cut.png"))),
+                additional_path,
             )
             self.image[mask == 0] = self.get_background_color()
 
