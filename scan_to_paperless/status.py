@@ -443,16 +443,14 @@ class Status:
         print(f"Start watching {self._codes_folder}")
         async for event in _watch_recursive(
             self._codes_folder,
-            asyncinotify.Mask.ACCESS
-            | asyncinotify.Mask.ATTRIB
-            | asyncinotify.Mask.CLOSE
+            asyncinotify.Mask.ATTRIB
+            | asyncinotify.Mask.CLOSE_WRITE
             | asyncinotify.Mask.CREATE
             | asyncinotify.Mask.DELETE
             | asyncinotify.Mask.DELETE_SELF
             | asyncinotify.Mask.MODIFY
             | asyncinotify.Mask.MOVE
-            | asyncinotify.Mask.MOVE_SELF
-            | asyncinotify.Mask.OPEN,
+            | asyncinotify.Mask.MOVE_SELF,
         ):
             print(f"Watch event on folder {self._codes_folder}: {event.path} - {event.mask!r}")
 
@@ -475,16 +473,14 @@ class Status:
         print(f"Start watching {self._consume_folder}")
         async for event in _watch_recursive(
             self._consume_folder,
-            asyncinotify.Mask.ACCESS
-            | asyncinotify.Mask.ATTRIB
-            | asyncinotify.Mask.CLOSE
+            asyncinotify.Mask.ATTRIB
+            | asyncinotify.Mask.CLOSE_WRITE
             | asyncinotify.Mask.CREATE
             | asyncinotify.Mask.DELETE
             | asyncinotify.Mask.DELETE_SELF
             | asyncinotify.Mask.MODIFY
             | asyncinotify.Mask.MOVE
-            | asyncinotify.Mask.MOVE_SELF
-            | asyncinotify.Mask.OPEN,
+            | asyncinotify.Mask.MOVE_SELF,
         ):
             print(f"Watch event on folder {self._consume_folder}: {event.path} - {event.mask!r}")
 
@@ -519,16 +515,14 @@ class Status:
         print(f"Start watching {self._source_folder}")
         async for event in _watch_recursive(
             self._source_folder,
-            asyncinotify.Mask.ACCESS
-            | asyncinotify.Mask.ATTRIB
-            | asyncinotify.Mask.CLOSE
+            asyncinotify.Mask.ATTRIB
+            | asyncinotify.Mask.CLOSE_WRITE
             | asyncinotify.Mask.CREATE
             | asyncinotify.Mask.DELETE
             | asyncinotify.Mask.DELETE_SELF
             | asyncinotify.Mask.MODIFY
             | asyncinotify.Mask.MOVE
-            | asyncinotify.Mask.MOVE_SELF
-            | asyncinotify.Mask.OPEN,
+            | asyncinotify.Mask.MOVE_SELF,
         ):
             print(f"Watch event on folder {self._source_folder}: {event.path} - {event.mask!r}")
 
