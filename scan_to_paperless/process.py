@@ -389,7 +389,7 @@ async def level(context: process_utils.Context) -> NpNdarrayInt:
     mins = np.zeros(chanel_y.shape)
     maxs: NpNdarrayInt = np.zeros(chanel_y.shape) + 255
 
-    values = (float(chanel_y) - min_) / (max_ - min_) * 255
+    values = (chanel_y - np.full_like(chanel_y, min_)) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
     return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
