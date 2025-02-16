@@ -96,12 +96,12 @@ class Context:
         if not self.root_folder:
             return None
         mask_file = self.root_folder / default_file_name
-        if not mask_file.exists() or mask_file.is_dir():
+        if not mask_file.exists():
             base_folder = self.root_folder.parent
             if base_folder is None:
                 return None
             mask_file = base_folder / default_file_name
-            if not mask_file.exists() or mask_file.is_dir():
+            if not mask_file.exists():
                 return None
         return str(mask_file)
 
@@ -198,7 +198,10 @@ class Context:
             "additional_filename",
             self._get_default_mask_file("mask.png"),
         )
-        additional_path = None if additional_filename is None else Path(additional_filename)
+        additional_path = Path(additional_filename) if additional_filename else None
+        if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+            message = f"Mask file {additional_path} does not exist."
+            raise scan_to_paperless.ScanToPaperlessError(message)
         self.mask = (
             self._get_mask(
                 mask_config.setdefault("auto_mask", {}),
@@ -228,7 +231,10 @@ class Context:
                 "additional_filename",
                 self._get_default_mask_file("cut.png"),
             )
-            additional_path = None if additional_filename is None else Path(additional_filename)
+            additional_path = Path(additional_filename) if additional_filename else None
+            if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+                message = f"Mask file {additional_path} does not exist."
+                raise scan_to_paperless.ScanToPaperlessError(message)
             mask = self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
