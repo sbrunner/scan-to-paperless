@@ -96,12 +96,12 @@ class Context:
         if not self.root_folder:
             return None
         mask_file = self.root_folder / default_file_name
-        if not mask_file.exists():
+        if not mask_file.exists() or mask_file.is_dir():
             base_folder = self.root_folder.parent
             if base_folder is None:
                 return None
             mask_file = base_folder / default_file_name
-            if not mask_file.exists():
+            if not mask_file.exists() or mask_file.is_dir():
                 return None
         return str(mask_file)
 
