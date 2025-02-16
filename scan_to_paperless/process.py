@@ -27,7 +27,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
-import ruamel.yaml.compat
 from deskew import determine_skew_debug_images
 from PIL import Image, ImageDraw, ImageFont
 from ruamel.yaml.main import YAML
@@ -74,13 +73,17 @@ async def add_intermediate_error(
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
         async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
-            await config_file.write(yaml.dump(config))
+            out = io.StringIO()
+            yaml.dump(config, out)
+            await config_file.write(out.getvalue())
     except Exception as exception:  # noqa: BLE001
         print(exception)
         config["intermediate_error"] = old_intermediate_error
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
         async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
-            await config_file.write(yaml.dump(config))
+            out = io.StringIO()
+            yaml.dump(config, out)
+            await config_file.write(out.getvalue())
     temp_path.rename(config_file_name)
 
 
@@ -1981,7 +1984,9 @@ async def save_config(config: schema.Configuration, config_file_name: Path) -> N
     yaml.default_flow_style = False
     temp_path = Path(str(config_file_name) + "_")
     async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
-        await config_file.write(yaml.dump(config))
+        out = io.StringIO()
+        yaml.dump(config, out)
+        await config_file.write(out.getvalue())
     temp_path.rename(config_file_name)
 
 
@@ -2083,26 +2088,29 @@ async def _process(
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
         try:
-            with (root_folder / "error.yaml").open("w", encoding="utf-8") as error_file:
-                yaml.dump(out, error_file)
-            stream = ruamel.yaml.compat.StringIO()
-            yaml.dump(out, stream)
+            async with aiofiles.open(root_folder / "error.yaml", "w", encoding="utf-8") as error_file:
+                yaml_out = io.StringIO()
+                yaml.dump(out, yaml_out)
+                await error_file.write(yaml_out.getvalue())
         except Exception as exception2:  # noqa: BLE001
             print(exception2)
             print(traceback.format_exc())
             yaml = YAML()
             yaml.default_flow_style = False
-            with (root_folder / "error.yaml").open("w", encoding="utf-8") as error_file:
-                yaml.dump(out, error_file)
-            stream = ruamel.yaml.compat.StringIO()
-            yaml.dump(out, stream)
+            async with aiofiles.open(root_folder / "error.yaml", "w", encoding="utf-8") as error_file:
+                yaml_out = io.StringIO()
+                yaml.dump(out, yaml_out)
+                await error_file.write(yaml_out.getvalue())
     return dirty
 
 
 async def _task(status: scan_to_paperless.status.Status) -> None:
     while True:
         status.set_current_folder(None)
+        # Be sure that the status is up to date
+        await asyncio.sleep(0.1)
         name, job_type, step = status.get_next_job()
+        print(f"Processing '{name}' as {job_type}...")
 
         if job_type in (
             scan_to_paperless.status.JobType.TRANSFORM,
@@ -2182,6 +2190,8 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
         else:
             msg = f"Unknown job type: {job_type}"
             raise ValueError(msg)
+
+        print(f"End processing '{name}' as {job_type}...")
 
 
 def main() -> None:
