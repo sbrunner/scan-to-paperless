@@ -2110,6 +2110,12 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
         # Be sure that the status is up to date
         await asyncio.sleep(0.1)
         name, job_type, step = status.get_next_job()
+        if job_type == scan_to_paperless.status.JobType.NONE:
+            status.set_global_status("Waiting...")
+            status.set_current_folder(None)
+            await asyncio.sleep(1)
+            continue
+
         print(f"Processing '{name}' as {job_type}...")
 
         if job_type in (
@@ -2183,10 +2189,6 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
                 print(exception)
                 trace = traceback.format_exc()
                 print(trace)
-        elif job_type == scan_to_paperless.status.JobType.NONE:
-            status.set_global_status("Waiting...")
-            status.set_current_folder(None)
-            await asyncio.sleep(30)
         else:
             msg = f"Unknown job type: {job_type}"
             raise ValueError(msg)
