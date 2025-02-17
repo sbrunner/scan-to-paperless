@@ -49,6 +49,7 @@ else:
 
 # dither, crop, append, repage
 CONVERT = ["gm", "convert"]
+_DESKEW_LOCK = asyncio.Lock()
 _LOG = logging.getLogger(__name__)
 
 
@@ -442,18 +443,20 @@ async def deskew(context: process_utils.Context) -> None:
         grayscale = rgb2gray(image_rgb) if len(image_rgb.shape) == 3 else image_rgb
 
         deskew_configuration = context.config["args"].setdefault("deskew", {})
-        skew_angle, debug_images = determine_skew_debug_images(
-            grayscale,  # type: ignore[arg-type]
-            min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
-            max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
-            min_deviation=deskew_configuration.setdefault(
-                "angle_derivation",
-                schema.DESKEW_ANGLE_DERIVATION_DEFAULT,
-            ),
-            sigma=deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT),
-            num_peaks=deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
-            angle_pm_90=deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
-        )
+        async with _DESKEW_LOCK:
+            skew_angle, debug_images = await asyncio.to_thread(
+                determine_skew_debug_images,  # type: ignore[arg-type]
+                grayscale,  # type: ignore[arg-type]
+                min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
+                max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
+                min_deviation=deskew_configuration.setdefault(
+                    "angle_derivation",
+                    schema.DESKEW_ANGLE_DERIVATION_DEFAULT,
+                ),
+                sigma=deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT),
+                num_peaks=deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
+                angle_pm_90=deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
+            )
         if skew_angle is not None:
             image_status["angle"] = float(skew_angle)
             angle = float(skew_angle)
