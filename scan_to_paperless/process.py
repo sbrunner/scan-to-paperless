@@ -479,7 +479,11 @@ async def deskew(context: process_utils.Context) -> None:
                 )
                 source_path = Path(sources[0])
                 cv2.imwrite(
-                    str(context.root_folder / (source_path.stem + "-skew-corrected" + source_path.suffix)),
+                    str(
+                        context.root_folder
+                        / "source"
+                        / (source_path.stem + "-skew-corrected" + source_path.suffix),
+                    ),
                     image,
                 )
 
