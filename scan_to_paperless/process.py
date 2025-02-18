@@ -2181,11 +2181,13 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
 
         elif job_type == scan_to_paperless.status.JobType.DOWN:
             assert name is not None
+            status.set_global_status(f"Removing '{name}'...")
+            status.set_current_folder(name)
             root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
             if root_folder.exists():
                 shutil.rmtree(root_folder)
         elif job_type == scan_to_paperless.status.JobType.CODE:
-            assert isinstance(name, Path)
+            assert isinstance(name, str)
             print(f"Process code '{name}'")
             status.set_global_status(f"Process code '{name}'...")
             status.set_current_folder(name)
@@ -2199,6 +2201,8 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
         else:
             msg = f"Unknown job type: {job_type}"
             raise ValueError(msg)
+
+        status.set_current_folder(None)
 
         print(f"End processing '{name}' as {job_type}...")
 
