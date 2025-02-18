@@ -193,7 +193,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
   ubuntu_22_04/libsystemd0: 249.11-0ubuntu3.12
-  ubuntu_22_04/libtasn1-6: 4.18.0-4build1
+  ubuntu_22_04/libtasn1-6: 4.18.0-4ubuntu0.1
   ubuntu_22_04/libtesseract4: 4.1.1-2.1build1
   ubuntu_22_04/libthai-data: 0.1.29-1build1
   ubuntu_22_04/libthai0: 0.1.29-1build1
@@ -497,7 +497,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
   ubuntu_22_04/libsystemd0: 249.11-0ubuntu3.12
-  ubuntu_22_04/libtasn1-6: 4.18.0-4build1
+  ubuntu_22_04/libtasn1-6: 4.18.0-4ubuntu0.1
   ubuntu_22_04/libtesseract4: 4.1.1-2.1build1
   ubuntu_22_04/libthai-data: 0.1.29-1build1
   ubuntu_22_04/libthai0: 0.1.29-1build1
