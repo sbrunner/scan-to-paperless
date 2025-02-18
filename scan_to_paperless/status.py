@@ -228,11 +228,15 @@ class Status:
 
     def set_current_folder(self, path: Path | str | None) -> None:
         """Set the current folder."""
+        if self._current_folder is not None:
+            old_name = self._current_folder
+            self._current_folder = None
+            self._update_status(old_name)
+            self.update_scan_codes()
+            self._update_consume()
+
         if path is None:
             if self._current_folder is not None:
-                old_name = self._current_folder
-                self._current_folder = None
-                self._update_source_error(old_name)
                 self.write()
             return
 
@@ -276,7 +280,6 @@ class Status:
     def _init(self) -> None:
         """Scan for changes for waiting documents."""
         self.update_scan_codes()
-        self.write()
         self._update_consume()
         self.write()
 
@@ -288,6 +291,12 @@ class Status:
 
     def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
+
+        if not (self._source_folder / name).exists():
+            if name in self._status:
+                del self._status[name]
+            return
+
         if (self._source_folder / name / "error.yaml").exists():
             with (self._source_folder / name / "error.yaml").open(
                 encoding="utf-8",
