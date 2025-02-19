@@ -27,9 +27,12 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
+import sentry_sdk
 from deskew import determine_skew_debug_images
 from PIL import Image, ImageDraw, ImageFont
 from ruamel.yaml.main import YAML
+from sentry_sdk.integrations.asyncio import AsyncioIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 from skimage.color import rgb2gray, rgba2rgb
 from skimage.exposure import histogram as skimage_histogram
 from skimage.metrics import structural_similarity
@@ -2235,6 +2238,14 @@ async def _watch_dog() -> None:
 
 async def async_main() -> None:
     """Process the scanned documents."""
+    if "SENTRY_DSN" in os.environ:
+        sentry_sdk.init(
+            dsn=os.environ["SENTRY_DSN"],
+            integrations=[LoggingIntegration(), AsyncioIntegration()],
+            traces_sample_rate=1.0,
+            profiles_sample_rate=1.0,
+        )
+
     parser = argparse.ArgumentParser("Process the scanned documents.")
     parser.add_argument("config", nargs="?", help="The config file to process.")
     args = parser.parse_args()
