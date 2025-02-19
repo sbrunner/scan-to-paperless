@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import TypedDict
 
+import aiofiles
 import cv2
 import pikepdf
 import polygon_math
@@ -482,14 +483,15 @@ async def add_codes(
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
-            with (
-                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
-                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
+            async with (
+                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
+                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
             ):
-                # Finally, write "output" to a real file
+                assert isinstance(dest_1.name, str)
+                assert isinstance(dest_2.name, str)
 
-                with dest_1.open("wb") as output_stream:
-                    output_pdf.write(output_stream)
+                # Finally, write "output" to a real file
+                output_pdf.write(dest_1.name)
 
                 for code_ in all_codes:
                     data = code_["data"].split("\r\n")
