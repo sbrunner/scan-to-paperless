@@ -3011,18 +3011,18 @@ files = [
 
 [[package]]
 name = "prospector-profile-utils"
-version = "1.21.2"
+version = "1.21.4"
 description = "Some utility Prospector profiles."
 optional = false
 python-versions = "*"
 groups = ["dev"]
 files = [
-    {file = "prospector_profile_utils-1.21.2-py2.py3-none-any.whl", hash = "sha256:2d855271aa6783b8c680f4d8a51723c4599d1f0ebea1e3ca4c9b7248611015f4"},
-    {file = "prospector_profile_utils-1.21.2.tar.gz", hash = "sha256:08fbab70aeada7b934db20a94d97b8845e356313628c42bccaa0e358bbed21ab"},
+    {file = "prospector_profile_utils-1.21.4-py2.py3-none-any.whl", hash = "sha256:fdb0edf7f61b12d1fa93b243ed04983a2e0da2feea772d2773362da602a773ea"},
+    {file = "prospector_profile_utils-1.21.4.tar.gz", hash = "sha256:dfad3177e782be134f4ef5b6cc0869a875e9016e114b2124d2f8c120caf0f933"},
 ]
 
 [package.dependencies]
-prospector = {version = ">=1.13.0", extras = ["with-bandit", "with-mypy", "with-ruff"]}
+prospector = {version = ">=1.13.0", extras = ["with-mypy", "with-ruff"]}
 
 [[package]]
 name = "psutil"
@@ -5018,4 +5018,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "880b2e8bb198346de6749ecc0d8538107107b23a7f277d4a74210640cf2b09ae"
+content-hash = "1171f351ab2139c0000e722f1372001f045b8e3751dce1c863918d4b9a2bcc5b"
