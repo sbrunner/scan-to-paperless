@@ -3011,14 +3011,14 @@ files = [
 
 [[package]]
 name = "prospector-profile-utils"
-version = "1.21.5"
+version = "1.21.6"
 description = "Some utility Prospector profiles."
 optional = false
 python-versions = "*"
 groups = ["dev"]
 files = [
-    {file = "prospector_profile_utils-1.21.5-py2.py3-none-any.whl", hash = "sha256:90537acbabcb027894aadea71dc66a33b0d59355d21778a1c0dbc081bf01299a"},
-    {file = "prospector_profile_utils-1.21.5.tar.gz", hash = "sha256:8babfb07e76ed93b61da149c7f68ca19989208b6363abd0dff21497cab900411"},
+    {file = "prospector_profile_utils-1.21.6-py2.py3-none-any.whl", hash = "sha256:b0409830099802eea7a36b0bdf546c82ac855c2230a8723865b073c7d22cd562"},
+    {file = "prospector_profile_utils-1.21.6.tar.gz", hash = "sha256:8fb52eb0bac55c32ebf86a46270f63d329a8b0dcea3adb6c74980c5c29caa84a"},
 ]
 
 [package.dependencies]
@@ -5018,4 +5018,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "e045e9e89310b1adeb949efb05d70e2d8059a1d2f56f0d1bc1293d13dc61a00c"
+content-hash = "4bfeeb10797ecbfaafd4286b4e89b393c07c24fb531308158e536c9a74ad947f"
