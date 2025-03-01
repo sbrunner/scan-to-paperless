@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS upstream
+FROM ubuntu:25.04 AS upstream
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
