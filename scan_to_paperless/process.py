@@ -1170,7 +1170,7 @@ def _update_config(config: schema.Configuration) -> None:
     if "tesseract_lang" in old_config["args"]:
         config["args"].setdefault("tesseract", {}).setdefault("lang", old_config["args"]["tesseract_lang"])
         del old_config["args"]["tesseract_lang"]
-    # no_auto_rotate= auto_rotate.enabled (inverted)  # noqa: ERA001
+    # no_auto_rotate= auto_rotate.enabled (inverted)
     if "no_auto_rotate" in old_config["args"]:
         config["args"].setdefault("auto_rotate", {}).setdefault(
             "enabled",
@@ -1802,9 +1802,9 @@ async def finalize(
             [*CONVERT, *images2, "-background", "#ffffff", "-gravity", "center", "-append", str(file_path)],
         )
         # To stack vertically (img1 over img2):
-        # vis = np.concatenate((img1, img2), axis=0)  # noqa: ERA001
+        # vis = np.concatenate((img1, img2), axis=0)
         # To stack horizontally (img1 to the left of img2):
-        # vis = np.concatenate((img1, img2), axis=1)  # noqa: ERA001
+        # vis = np.concatenate((img1, img2), axis=1)
         images_filenames = [str(file_path)]
 
     pdf = []
