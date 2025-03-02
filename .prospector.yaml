@@ -3,9 +3,13 @@ inherits:
   - utils:base
   - utils:no-design-checks
   - utils:fix
+
 ignore-paths:
   - scan_to_paperless/process_schema.py
   - scan_to_paperless/config.py
+
+ignore-patterns:
+  - .*/test_.*
 
 pylint:
   disable:

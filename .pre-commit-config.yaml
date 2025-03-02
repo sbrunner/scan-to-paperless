@@ -130,8 +130,7 @@ repos:
           - --profile=.prospector.yaml
         additional_dependencies:
           - prospector-profile-duplicated==1.10.4 # pypi
-          - prospector-profile-utils==1.21.7 # pypi
-          - ruff==0.9.9 # pypi
+          - prospector-profile-utils==1.21.8 # pypi
       - id: prospector
         args:
           - --die-on-tool-error
@@ -139,8 +138,7 @@ repos:
           - --profile=utils:tests
           - --profile=utils:pre-commit
         additional_dependencies:
-          - prospector-profile-utils==1.21.7 # pypi
-          - ruff==0.9.9 # pypi
+          - prospector-profile-utils==1.21.8 # pypi
   - repo: https://github.com/renovatebot/pre-commit-hooks
     rev: 39.182.3
     hooks:
