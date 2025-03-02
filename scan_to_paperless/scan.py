@@ -4,7 +4,6 @@
 
 import argparse
 import datetime
-import glob
 import math
 import os
 import re
@@ -19,7 +18,7 @@ import PIL.Image
 import pyperclip
 from ruamel.yaml.main import YAML
 
-from scan_to_paperless import CONFIG_PATH, get_config
+from scan_to_paperless import CONFIG_FILENAME, CONFIG_FOLDER, CONFIG_PATH, get_config
 from scan_to_paperless import config as schema
 
 from .config import VIEWER_DEFAULT
@@ -60,7 +59,9 @@ def main() -> None:
     """Scan a new document."""
     parser = argparse.ArgumentParser()
 
-    presets = [e[len(CONFIG_PATH) - 4 : -5] for e in glob.glob(f"{CONFIG_PATH[:-5]}-*.yaml")]  # noqa
+    presets = [
+        e.stem[len(str(CONFIG_FILENAME)) - 4 :] for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")
+    ]
 
     parser.add_argument(
         "--mode",
