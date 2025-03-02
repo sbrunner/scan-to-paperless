@@ -37,15 +37,15 @@ add-codes-page = "scan_to_paperless.add_code:main"
 python = ">=3.10,<3.14"
 numpy = { version = "2.2.3", optional = true }
 scikit-image = { version = "0.25.2", optional = true }
-opencv-contrib-python-headless = { version = "4.10.0.84", optional = true }
+opencv-contrib-python-headless = { version = "4.11.0.86", optional = true }
 deskew = { version = "1.5.1", optional = true }
 "ruamel.yaml" = "0.18.10"
 argcomplete = "3.5.3"
 Pillow = "11.1.0"
-pypdf = { version = "5.1.0", optional = true }
+pypdf = { version = "5.3.1", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
-reportlab = { version = "4.2.5", optional = true }
-weasyprint = { version = "64.0", optional = true }
+reportlab = { version = "4.3.1", optional = true }
+weasyprint = { version = "64.1", optional = true }
 cffi = { version = "1.17.1", optional = true }
 pikepdf = { version = "9.5.2", optional = true }
 lxml= { version = "5.3.1", optional = true }
