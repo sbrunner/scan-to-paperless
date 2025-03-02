@@ -1,6 +1,6 @@
 {
   extends: [
-    'github>camptocamp/gs-renovate-config-preset:base.json5#0.8.5',
+    'github>camptocamp/gs-renovate-config-preset:base.json5#0.9.0',
     'github>camptocamp/gs-renovate-config-preset:group.json5#0.8.5',
     'github>camptocamp/gs-renovate-config-preset:stabilization-branches.json5#0.8.5',
     'github>camptocamp/gs-renovate-config-preset:ci.json5#0.8.5',
@@ -15,27 +15,11 @@
   ],
   baseBranches: ['master', 'test'],
   packageRules: [
-    {
-      groupName: 'scikit-image',
-      matchDepNames: ['scikit-image'],
-    },
     /** Accept only the patch on stabilization branches */
     {
       matchBaseBranches: ['master'],
       matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
-    },
-    /** Only LTS version of Node */
-    {
-      allowedVersions: '/(0|2|4|6|8)$/',
-      enabled: false,
-      matchDepNames: ['node'],
-    },
-    /** Disable upgrading the supported Python version */
-    {
-      matchFileNames: ['pyproject.toml'],
-      enabled: false,
-      matchDepNames: ['python'],
     },
     /** Packages published very recently are not pushed to stabilization branches for security reasons */
     {
