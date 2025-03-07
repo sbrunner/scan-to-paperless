@@ -29,7 +29,7 @@ def call(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> None:
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
-        subprocess.check_call(cmd, **kwargs)  # nosec
+        subprocess.check_call(cmd, **kwargs)  # noqa: S603
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
@@ -40,7 +40,7 @@ def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> byte
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
-        return cast(bytes, subprocess.check_output(cmd, **kwargs))  # nosec
+        return cast(bytes, subprocess.check_output(cmd, **kwargs))  # noqa: S603
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
@@ -221,7 +221,7 @@ def main() -> None:
                         sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
                     )
 
-    subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # nosec
+    subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # noqa: S603
 
     images = []
     for img in os.listdir(root_folder):
