@@ -287,7 +287,7 @@ def _main() -> None:
                             input("Press enter to scan next page, CTRL+D to stop.\n")
                         except EOFError:
                             sys.exit()
-                except Exception as exception:  # noqa: BLE001, PERF203
+                except Exception as exception:  # noqa: BLE001
                     print(f"{exception}, retry")
                     time.sleep(0.2)
             sys.exit()
