@@ -2082,6 +2082,8 @@ async def _process(
                 elif not disable_remove_to_continue:
                     with (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
                         pass
+            # Be sure that the status is up to date especially about the modifief files in the current folder
+            await asyncio.sleep(0.1)
             status.set_current_folder(None)
 
     except Exception as exception:  # noqa: BLE001
