@@ -185,7 +185,9 @@ class Context:
         elif self.root_folder and mask_file:
             final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)
             if self.image is not None and final_mask is not None:
-                return cast("NpNdarrayInt", cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])))
+                return cast(
+                    "NpNdarrayInt", cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])),
+                )
         return final_mask
 
     def init_mask(self) -> None:

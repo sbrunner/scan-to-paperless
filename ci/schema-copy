@@ -18,7 +18,8 @@ def _main() -> None:
         json.dump(process_schema, process_schema_file, indent=2)
 
     subprocess.run(  # nosec
-        ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"], check=False,
+        ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"],
+        check=False,
     )
 
 
