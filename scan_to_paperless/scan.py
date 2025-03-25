@@ -40,7 +40,7 @@ def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> byte
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
-        return cast(bytes, subprocess.check_output(cmd, **kwargs))  # noqa: S603
+        return cast("bytes", subprocess.check_output(cmd, **kwargs))  # noqa: S603
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
@@ -177,7 +177,7 @@ def main() -> None:
         scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
         scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
         mode_config = config.get("modes", {}).get(args.mode, {})
-        mode_default = cast(schema.Mode, schema.MODES_DEFAULT.get(args.mode, {}))
+        mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(args.mode, {}))
         scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
         if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
