@@ -2,23 +2,24 @@
 
 import json
 import subprocess  # nosec
+from pathlib import Path
 
 
 def _main() -> None:
-    with open("scan_to_paperless/config_schema.json", encoding="utf-8") as config_schema_file:
+    with Path("scan_to_paperless/config_schema.json").open(encoding="utf-8") as config_schema_file:
         config_schema = json.load(config_schema_file)
-    with open("scan_to_paperless/process_schema.json", encoding="utf-8") as process_schema_file:
+    with Path("scan_to_paperless/process_schema.json").open(encoding="utf-8") as process_schema_file:
         process_schema = json.load(process_schema_file)
 
-    for property in ("args", "auto_mask", "contour"):
-        process_schema["definitions"][property]["properties"] = config_schema["definitions"][property][
+    for property_ in ("args", "auto_mask", "contour"):
+        process_schema["definitions"][property_]["properties"] = config_schema["definitions"][property_][
             "properties"
         ]
-    with open("scan_to_paperless/process_schema.json", "w", encoding="utf-8") as process_schema_file:
+    with Path("scan_to_paperless/process_schema.json").open("w", encoding="utf-8") as process_schema_file:
         json.dump(process_schema, process_schema_file, indent=2)
 
-    subprocess.run(  # nosec
-        ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"],
+    subprocess.run(  # noqa: S603
+        ["pre-commit", "run", "--color=never", "--files=scan_to_paperless/process_schema.json", "prettier"],  # noqa: S607
         check=False,
     )
 

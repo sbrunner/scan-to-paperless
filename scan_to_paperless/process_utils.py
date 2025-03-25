@@ -3,7 +3,6 @@
 import logging
 import math
 import os
-from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -17,6 +16,8 @@ import scan_to_paperless.status
 from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
     NpNdarrayInt = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any] | np.floating[Any]]]
 else:
     NpNdarrayInt = np.ndarray
@@ -40,7 +41,7 @@ def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int,
         cv2.warpAffine(
             image,
             rot_mat,
-            (int(round(height)), int(round(width))),
+            ((round(height)), (round(width))),
             borderValue=cast("Sequence[float]", background),
         ),
     )
@@ -58,7 +59,7 @@ def crop_image(
     matrix: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         "NpNdarrayInt",
-        cv2.warpAffine(image, matrix, (int(round(width)), int(round(height))), borderValue=background),
+        cv2.warpAffine(image, matrix, ((round(width)), (round(height))), borderValue=background),
     )
 
 

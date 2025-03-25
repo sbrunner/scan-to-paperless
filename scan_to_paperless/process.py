@@ -204,7 +204,7 @@ class Process:
                     context.image = new_image
             elapsed_time = time.perf_counter() - start_time
             if os.environ.get("TIME", "FALSE") == "TRUE":
-                print(f"Elapsed time in {self.name}: {int(round(elapsed_time))}s.")
+                print(f"Elapsed time in {self.name}: {round(elapsed_time)}s.")
 
             if self.progress:
                 context.save_progress_images(self.name)
@@ -340,8 +340,8 @@ async def _histogram(
         points.append(("max_level", max_, histogram_max / 10))
 
     for label, value, pos in points:
-        if int(round(value)) < len(histogram_data):
-            hist_value = histogram_data[int(round(value))]
+        if round(value) < len(histogram_data):
+            hist_value = histogram_data[round(value)]
             axes.annotate(
                 label,
                 xy=(value, hist_value),
@@ -507,7 +507,7 @@ async def docrop(context: process_utils.Context) -> None:
     margin_vertical = context.get_px_value(
         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
     )
-    crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
+    crop(context, round(margin_horizontal), round(margin_vertical))
 
 
 @Process("sharpen")
@@ -616,10 +616,10 @@ def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], bord
     color = (0, 255, 0)
     opacity = 0.1
     x, y, width, height = contour
-    x = int(round(x))
-    y = int(round(y))
-    width = int(round(width))
-    height = int(round(height))
+    x = round(x)
+    y = round(y)
+    width = round(width)
+    height = round(height)
 
     sub_img = image[y : y + height, x : x + width]
     mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
@@ -689,20 +689,18 @@ def find_limit_contour(
     values = np.zeros(image_size)
     if vertical:
         for x, _, width, height in contours:
-            x_int = int(round(x))
+            x_int = round(x)
             for value in range(x_int, min(x_int + width, image_size)):
                 values[value] += height
     else:
         for _, y, width, height in contours:
-            y_int = int(round(y))
+            y_int = round(y)
             for value in range(y_int, min(y_int + height, image_size)):
                 values[value] += width
 
     ranges = zero_ranges(values)
 
-    return [
-        int(round(sum(ranges_) / 2)) for ranges_ in ranges if ranges_[0] != 0 and ranges_[1] != image_size
-    ]
+    return [round(sum(ranges_) / 2) for ranges_ in ranges if ranges_[0] != 0 and ranges_[1] != image_size]
 
 
 def find_limits(
@@ -813,7 +811,7 @@ def _find_contours_thresh(
         config.setdefault("contour_kernel_size", schema.CONTOUR_KERNEL_SIZE_DEFAULT),
     )
 
-    kernel_size = int(round(kernel_size / 2))
+    kernel_size = round(kernel_size / 2)
 
     # Assign a rectangle kernel size
     kernel: NpNdarrayInt = np.ones((kernel_size, kernel_size), "uint8")
@@ -1722,7 +1720,7 @@ async def split(
                     )
                     context.image = cv2.imread(process_file.name)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                        crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
+                        crop(context, round(margin_horizontal), round(margin_vertical))
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png",
                         )
@@ -1959,12 +1957,12 @@ async def _process_code(name: str) -> bool:
             await add_code.add_codes(
                 pdf_filename,
                 destination_filename,
-                dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
-                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
+                dpi=float(os.environ.get("SCAN_CODES_DPI", "200")),
+                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", "72")),
                 font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
-                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
-                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
-                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
+                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", "16")),
+                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", "0")),
+                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", "2")),
             )
             if destination_filename.exists():
                 # Remove the source file on success
