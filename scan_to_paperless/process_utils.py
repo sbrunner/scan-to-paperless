@@ -3,7 +3,6 @@
 import logging
 import math
 import os
-from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -17,6 +16,8 @@ import scan_to_paperless.status
 from scan_to_paperless import process_schema as schema
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
     NpNdarrayInt = np.ndarray[tuple[int, ...], np.dtype[np.integer[Any] | np.floating[Any]]]
 else:
     NpNdarrayInt = np.ndarray
@@ -36,12 +37,12 @@ def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int,
     rot_mat[1, 2] += (width - old_width) / 2
     rot_mat[0, 2] += (height - old_height) / 2
     return cast(
-        NpNdarrayInt,
+        "NpNdarrayInt",
         cv2.warpAffine(
             image,
             rot_mat,
-            (int(round(height)), int(round(width))),
-            borderValue=cast(Sequence[float], background),
+            ((round(height)), (round(width))),
+            borderValue=cast("Sequence[float]", background),
         ),
     )
 
@@ -57,8 +58,8 @@ def crop_image(
     """Crop the image."""
     matrix: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
-        NpNdarrayInt,
-        cv2.warpAffine(image, matrix, (int(round(width)), int(round(height))), borderValue=background),
+        "NpNdarrayInt",
+        cv2.warpAffine(image, matrix, ((round(width)), (round(height))), borderValue=background),
     )
 
 
@@ -178,21 +179,24 @@ class Context:
                     ),
                 )
 
-            final_mask = cast(NpNdarrayInt, cv2.bitwise_not(mask))
+            final_mask = cast("NpNdarrayInt", cv2.bitwise_not(mask))
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
             final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)
             if self.image is not None and final_mask is not None:
-                return cast(NpNdarrayInt, cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])))
+                return cast(
+                    "NpNdarrayInt",
+                    cv2.resize(final_mask, (self.image.shape[1], self.image.shape[0])),
+                )
         return final_mask
 
     def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
             "mask",
-            cast(schema.MaskOperation, schema.MASK_OPERATION_DEFAULT),
+            cast("schema.MaskOperation", schema.MASK_OPERATION_DEFAULT),
         )
         additional_filename = mask_config.setdefault(
             "additional_filename",
@@ -215,7 +219,7 @@ class Context:
     def get_background_color(self) -> tuple[int, int, int]:
         """Get the background color."""
         return cast(
-            tuple[int, int, int],
+            "tuple[int, int, int]",
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
         )
 
@@ -223,7 +227,7 @@ class Context:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
             "cut",
-            cast(schema.CutOperation, schema.CUT_OPERATION_DEFAULT),
+            cast("schema.CutOperation", schema.CUT_OPERATION_DEFAULT),
         )
         if cut_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
             assert self.image is not None

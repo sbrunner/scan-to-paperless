@@ -5,7 +5,6 @@
 import argparse
 import datetime
 import math
-import os
 import re
 import subprocess  # nosec
 import sys
@@ -40,7 +39,7 @@ def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> byte
     del cmd2
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     try:
-        return cast(bytes, subprocess.check_output(cmd, **kwargs))  # noqa: S603
+        return cast("bytes", subprocess.check_output(cmd, **kwargs))  # noqa: S603
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
@@ -177,23 +176,23 @@ def main() -> None:
         scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
         scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
         mode_config = config.get("modes", {}).get(args.mode, {})
-        mode_default = cast(schema.Mode, schema.MODES_DEFAULT.get(args.mode, {}))
+        mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(args.mode, {}))
         scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
         if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
             call([*scanimage, "--batch-start=1", "--batch-increment=2"])
-            odd = os.listdir(root_folder)
+            odd = root_folder.iterdir()
             input("Put your document in the automatic document feeder for the other side, and press enter.")
             call(
                 [
                     *scanimage,
-                    f"--batch-start={len(odd) * 2}",
+                    f"--batch-start={len(list(odd)) * 2}",
                     "--batch-increment=-2",
-                    f"--batch-count={len(odd)}",
+                    f"--batch-count={len(list(odd))}",
                 ],
             )
             if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
-                for img in os.listdir(root_folder):
+                for img in root_folder.iterdir():
                     if img not in odd:
                         path = root_folder / img
                         with PIL.Image.open(path) as image:
@@ -211,8 +210,8 @@ def main() -> None:
         print(exception)
         sys.exit(1)
 
-    for img in os.listdir(root_folder):
-        if not img.startswith("image-"):
+    for img in root_folder.iterdir():
+        if not img.name.startswith("image-"):
             continue
         if "dpi" not in args_:
             with PIL.Image.open(root_folder / img) as image:
@@ -224,8 +223,8 @@ def main() -> None:
     subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # noqa: S603
 
     images = []
-    for img in os.listdir(root_folder):
-        if not img.startswith("image-"):
+    for img in root_folder.iterdir():
+        if not img.name.startswith("image-"):
             continue
         images.append(Path("source") / img)
 

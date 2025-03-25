@@ -149,8 +149,8 @@ def _get_bar_codes_with_open_cv(
                         cv2.imwrite(
                             str(dest_filename),
                             decoded_image[
-                                int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
-                                int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                                math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
+                                math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
                             ],
                         )
                 founds: list[_FoundCode] = []
@@ -209,8 +209,8 @@ def _get_qr_codes_with_open_cv(
                         cv2.imwrite(
                             str(dest_filename),
                             decoded_image[
-                                int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
-                                int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                                math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
+                                math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
                             ],
                         )
 
@@ -227,8 +227,8 @@ def _get_qr_codes_with_open_cv(
                             )
                             retvals = detector.detectAndDecode(
                                 decoded_image[
-                                    int(math.floor(min(bbox_y))) : int(math.ceil(max(bbox_y))),
-                                    int(math.floor(min(bbox_x))) : int(math.ceil(max(bbox_x))),
+                                    (math.floor(min(bbox_y))) : (math.ceil(max(bbox_y))),
+                                    (math.floor(min(bbox_x))) : (math.ceil(max(bbox_x))),
                                 ],
                             )
                             founds.extend(

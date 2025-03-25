@@ -126,7 +126,7 @@ def output(cmd: str | list[str], **kwargs: Any) -> str:
         cmd = [str(element) for element in cmd]
     print(" ".join(cmd) if isinstance(cmd, list) else cmd)
     sys.stdout.flush()
-    return cast(bytes, subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)).decode()  # noqa: S603
+    return cast("bytes", subprocess.check_output(cmd, stderr=subprocess.PIPE, **kwargs)).decode()  # noqa: S603
 
 
 def image_diff(image1: NpNdarrayInt, image2: NpNdarrayInt) -> tuple[float, NpNdarrayInt]:
@@ -204,7 +204,7 @@ class Process:
                     context.image = new_image
             elapsed_time = time.perf_counter() - start_time
             if os.environ.get("TIME", "FALSE") == "TRUE":
-                print(f"Elapsed time in {self.name}: {int(round(elapsed_time))}s.")
+                print(f"Elapsed time in {self.name}: {round(elapsed_time)}s.")
 
             if self.progress:
                 context.save_progress_images(self.name)
@@ -221,7 +221,7 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
             cv2.imwrite(source.name, context.image)
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
                 await func(context, source.name, destination.name)
-                return cast(NpNdarrayInt, cv2.imread(destination.name))
+                return cast("NpNdarrayInt", cv2.imread(destination.name))
 
     return wrapper
 
@@ -340,8 +340,8 @@ async def _histogram(
         points.append(("max_level", max_, histogram_max / 10))
 
     for label, value, pos in points:
-        if int(round(value)) < len(histogram_data):
-            hist_value = histogram_data[int(round(value))]
+        if round(value) < len(histogram_data):
+            hist_value = histogram_data[round(value)]
             axes.annotate(
                 label,
                 xy=(value, hist_value),
@@ -361,7 +361,7 @@ async def _histogram(
             image = cv2.imread(file.name)
             context.save_progress_images(
                 "histogram",
-                cast(NpNdarrayInt, image),
+                cast("NpNdarrayInt", image),
                 image_prefix="log-" if log else "",
                 process_count=process_count,
                 force=True,
@@ -388,7 +388,7 @@ async def level(context: process_utils.Context) -> NpNdarrayInt:
 
     if context.config["args"].setdefault("level", {}).setdefault("auto", schema.AUTO_LEVEL_DEFAULT):
         img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
-        return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+        return cast("NpNdarrayInt", cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
     _, min_, max_ = _get_level(context)
 
@@ -398,7 +398,7 @@ async def level(context: process_utils.Context) -> NpNdarrayInt:
 
     values = (chanel_y - np.full_like(chanel_y, min_)) / (max_ - min_) * 255
     img_yuv[:, :, 0] = np.minimum(maxs, np.maximum(mins, values))
-    return cast(NpNdarrayInt, cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
+    return cast("NpNdarrayInt", cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR))
 
 
 @Process("color-cut")
@@ -410,16 +410,16 @@ async def color_cut(context: process_utils.Context) -> None:
     white_mask = cv2.inRange(
         grayscale,
         cast(
-            np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]],
+            "np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]]",
             context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT),
         ),
-        cast(np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]], 255),
+        cast("np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]]", 255),
     )
     black_mask = cv2.inRange(
         grayscale,
-        cast(np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]], 0),
+        cast("np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]]", 0),
         cast(
-            np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]],
+            "np.ndarray[Any, np.dtype[np.integer[Any] | np.floating[Any]]]",
             context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT),
         ),
     )
@@ -479,7 +479,7 @@ async def deskew(context: process_utils.Context) -> None:
             if len(sources) == 1:
                 assert context.root_folder
                 image = process_utils.rotate_image(
-                    cast(NpNdarrayInt, cv2.imread(str(context.root_folder / sources[0]))),
+                    cast("NpNdarrayInt", cv2.imread(str(context.root_folder / sources[0]))),
                     angle,
                     context.get_background_color(),
                 )
@@ -507,7 +507,7 @@ async def docrop(context: process_utils.Context) -> None:
     margin_vertical = context.get_px_value(
         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
     )
-    crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
+    crop(context, round(margin_horizontal), round(margin_vertical))
 
 
 @Process("sharpen")
@@ -515,7 +515,7 @@ async def sharpen(context: process_utils.Context) -> NpNdarrayInt | None:
     """Sharpen an image."""
     if (
         context.config["args"]
-        .setdefault("sharpen", cast(schema.Sharpen, schema.SHARPEN_DEFAULT))
+        .setdefault("sharpen", cast("schema.Sharpen", schema.SHARPEN_DEFAULT))
         .setdefault("enabled", schema.SHARPEN_ENABLED_DEFAULT)
         is False
     ):
@@ -524,7 +524,7 @@ async def sharpen(context: process_utils.Context) -> NpNdarrayInt | None:
         msg = "The image is required"
         raise scan_to_paperless.ScanToPaperlessError(msg)
     image = cv2.GaussianBlur(context.image, (0, 0), 3)
-    return cast(NpNdarrayInt, cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
+    return cast("NpNdarrayInt", cv2.addWeighted(context.image, 1.5, image, -0.5, 0))
 
 
 @Process("dither")
@@ -533,7 +533,7 @@ async def dither(context: process_utils.Context, source: str, destination: str) 
     """Dither an image."""
     if (
         context.config["args"]
-        .setdefault("dither", cast(schema.Dither, schema.DITHER_DEFAULT))
+        .setdefault("dither", cast("schema.Dither", schema.DITHER_DEFAULT))
         .setdefault("enabled", schema.DITHER_ENABLED_DEFAULT)
         is False
     ):
@@ -616,10 +616,10 @@ def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], bord
     color = (0, 255, 0)
     opacity = 0.1
     x, y, width, height = contour
-    x = int(round(x))
-    y = int(round(y))
-    width = int(round(width))
-    height = int(round(height))
+    x = round(x)
+    y = round(y)
+    width = round(width)
+    height = round(height)
 
     sub_img = image[y : y + height, x : x + width]
     mask_image = np.zeros(sub_img.shape, dtype=np.uint8)
@@ -666,7 +666,7 @@ def find_lines(
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
 
-    return cast(list[tuple[int, int, int, int]], sorted(new_lines, key=_key)[:5])
+    return cast("list[tuple[int, int, int, int]]", sorted(new_lines, key=_key)[:5])
 
 
 def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
@@ -675,7 +675,7 @@ def zero_ranges(values: NpNdarrayInt) -> NpNdarrayInt:
     abs_diff = np.abs(np.diff(is_zero))
     # Runs start and end where abs_diff is 1.
     ranges = np.where(abs_diff == 1)[0].reshape(-1, 2)
-    return cast(NpNdarrayInt, ranges)
+    return cast("NpNdarrayInt", ranges)
 
 
 def find_limit_contour(
@@ -689,20 +689,18 @@ def find_limit_contour(
     values = np.zeros(image_size)
     if vertical:
         for x, _, width, height in contours:
-            x_int = int(round(x))
+            x_int = round(x)
             for value in range(x_int, min(x_int + width, image_size)):
                 values[value] += height
     else:
         for _, y, width, height in contours:
-            y_int = int(round(y))
+            y_int = round(y)
             for value in range(y_int, min(y_int + height, image_size)):
                 values[value] += width
 
     ranges = zero_ranges(values)
 
-    return [
-        int(round(sum(ranges_) / 2)) for ranges_ in ranges if ranges_[0] != 0 and ranges_[1] != image_size
-    ]
+    return [round(sum(ranges_) / 2) for ranges_ in ranges if ranges_[0] != 0 and ranges_[1] != image_size]
 
 
 def find_limits(
@@ -791,13 +789,13 @@ def find_contours(
     if context.is_progress() or jupyter_utils.is_ipython():
         if jupyter_utils.is_ipython():
             print("Threshold")
-        thresh_rgb = cast(NpNdarrayInt, cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB))
+        thresh_rgb = cast("NpNdarrayInt", cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB))
         context.save_progress_images(
             "threshold",
             thresh_rgb[context.get_index(thresh_rgb)] if jupyter_utils.is_ipython() else thresh,
         )
 
-    return _find_contours_thresh(image, cast(NpNdarrayInt, thresh), context, name, config)
+    return _find_contours_thresh(image, cast("NpNdarrayInt", thresh), context, name, config)
 
 
 def _find_contours_thresh(
@@ -813,7 +811,7 @@ def _find_contours_thresh(
         config.setdefault("contour_kernel_size", schema.CONTOUR_KERNEL_SIZE_DEFAULT),
     )
 
-    kernel_size = int(round(kernel_size / 2))
+    kernel_size = round(kernel_size / 2)
 
     # Assign a rectangle kernel size
     kernel: NpNdarrayInt = np.ones((kernel_size, kernel_size), "uint8")
@@ -854,7 +852,7 @@ def _find_contours_thresh(
 
 def _update_config(config: schema.Configuration) -> None:
     """Convert the old configuration to the new one."""
-    old_config = cast(dict[str, Any], config)
+    old_config = cast("dict[str, Any]", config)
     # no_crop => crop.enabled (inverted)
     if "no_crop" in old_config["args"]:
         config["args"].setdefault("crop", {}).setdefault("enabled", not old_config["args"]["no_crop"])
@@ -1483,8 +1481,8 @@ async def transform(
             if progress:
                 await _save_progress(context.root_folder, count, "colors", image_path.name, image_path)
 
-    pngquant_config = config["args"].setdefault("pngquant", cast(schema.Pngquant, schema.PNGQUANT_DEFAULT))
-    if not config["args"].setdefault("jpeg", cast(schema.Jpeg, schema.JPEG_DEFAULT)).setdefault(
+    pngquant_config = config["args"].setdefault("pngquant", cast("schema.Pngquant", schema.PNGQUANT_DEFAULT))
+    if not config["args"].setdefault("jpeg", cast("schema.Jpeg", schema.JPEG_DEFAULT)).setdefault(
         "enabled",
         schema.JPEG_ENABLED_DEFAULT,
     ) and pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT):
@@ -1722,7 +1720,7 @@ async def split(
                     )
                     context.image = cv2.imread(process_file.name)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                        crop(context, int(round(margin_horizontal)), int(round(margin_vertical)))
+                        crop(context, round(margin_horizontal), round(margin_vertical))
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png",
                         )
@@ -1878,7 +1876,7 @@ async def finalize(
 
         if (
             config["args"]
-            .setdefault("exiftool", cast(schema.Exiftool, schema.EXIFTOOL_DEFAULT))
+            .setdefault("exiftool", cast("schema.Exiftool", schema.EXIFTOOL_DEFAULT))
             .setdefault("enabled", schema.EXIFTOOL_ENABLED_DEFAULT)
         ):
             await call(["exiftool", "-overwrite_original_in_place", temporary_pdf.name])
@@ -1888,7 +1886,7 @@ async def finalize(
 
         if (
             config["args"]
-            .setdefault("ps2pdf", cast(schema.Ps2Pdf, schema.PS2PDF_DEFAULT))
+            .setdefault("ps2pdf", cast("schema.Ps2Pdf", schema.PS2PDF_DEFAULT))
             .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
         ):
             with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
@@ -1919,7 +1917,7 @@ async def finalize(
             await call(["cp", temporary_pdf.name, str(destination)])
         if (
             config["args"]
-            .setdefault("rest_upload", cast(schema.RestUpload, {}))
+            .setdefault("rest_upload", cast("schema.RestUpload", {}))
             .setdefault("enabled", schema.REST_UPLOAD_ENABLED_DEFAULT)
         ):
             token = config["args"]["rest_upload"]["api_token"]
@@ -1959,12 +1957,12 @@ async def _process_code(name: str) -> bool:
             await add_code.add_codes(
                 pdf_filename,
                 destination_filename,
-                dpi=float(os.environ.get("SCAN_CODES_DPI", 200)),
-                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", 72)),
+                dpi=float(os.environ.get("SCAN_CODES_DPI", "200")),
+                pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", "72")),
                 font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
-                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", 16)),
-                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", 0)),
-                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", 2)),
+                font_size=float(os.environ.get("SCAN_CODES_FONT_SIZE", "16")),
+                margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", "0")),
+                margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", "2")),
             )
             if destination_filename.exists():
                 # Remove the source file on success
