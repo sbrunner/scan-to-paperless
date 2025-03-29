@@ -3,9 +3,10 @@
 import asyncio
 import datetime
 import html
+import logging
 import os.path
 import traceback
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator, Iterable
 from enum import Enum
 from pathlib import Path
 from typing import NamedTuple
@@ -15,6 +16,8 @@ import jinja2
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import process_schema
+
+_LOGGER = logging.getLogger(__name__)
 
 _WAITING_STATUS_NAME = "Waiting validation"
 _WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate that the generate images are correct ({generated_images}).<br />
@@ -104,80 +107,110 @@ def _get_directories_recursive(path: Path) -> Generator[Path, None, None]:
             yield from _get_directories_recursive(child)
 
 
-async def _watch_recursive(path: Path, mask: asyncinotify.Mask) -> AsyncGenerator[asyncinotify.Event, None]:
-    watchers: dict[Path, asyncinotify.Watch] = {}
-    used_mask = (
-        mask
-        | asyncinotify.Mask.MOVED_FROM
-        | asyncinotify.Mask.MOVED_TO
-        | asyncinotify.Mask.CREATE
-        | asyncinotify.Mask.DELETE_SELF
-        | asyncinotify.Mask.IGNORED
-    )
-    with asyncinotify.Inotify() as inotify:
-        for directory in _get_directories_recursive(path):
-            inotify.add_watch(directory, used_mask)
+class _WatchRecursive:
+    def __init__(self, path: Path, mask: asyncinotify.Mask) -> None:
+        self._watchers: dict[Path, asyncinotify.Watch] = {}
+        self._path = path
+        self._mask = mask
 
-        # Things that can throw this off:
-        #
-        # * Moving a watched directory out of the watch tree (will still
-        #   generate events even when outside of directory tree)
-        #
-        # * Doing two changes on a directory or something before the program
-        #   has a time to handle it (this will also throw off a lot of inotify
-        #   code, though)
-        #
-        # * Moving a watched directory within a watched directory will get the
-        #   wrong path.  This needs to use the cookie system to link events
-        #   together and complete the move properly, which can still make some
-        #   events get the wrong path if you get file events during the move or
-        #   something silly like that, since MOVED_FROM and MOVED_TO aren't
-        #   guaranteed to be contiguous.  That exercise is left up to the
-        #   reader.
-        #
-        # * Trying to watch a path that doesn't exist won't automatically
-        #   create it or anything of the sort.
-        #
-        # * Deleting and recreating or moving the watched directory won't do
-        #   anything special, but it probably should.
-        async for event in inotify:
-            # Add subdirectories to watch if a new directory is added.  We do
-            # this recursively here before processing events to make sure we
-            # have complete coverage of existing and newly-created directories
-            # by watching before recursing and adding, since we know
-            # get_directories_recursive is depth-first and yields every
-            # directory before iterating their children, we know we won't miss
-            # anything.
-            if asyncinotify.Mask.CREATE in event.mask and event.path is not None and event.path.is_dir():
-                for directory in _get_directories_recursive(event.path):
-                    if directory in watchers:
+    def get_watched_paths(self) -> Iterable[Path]:
+        """Get the list of watched paths."""
+        return self._watchers.keys()
+
+    async def __aiter__(self) -> AsyncGenerator[asyncinotify.Event, None]:
+        used_mask = (
+            self._mask
+            | asyncinotify.Mask.MOVED_FROM
+            | asyncinotify.Mask.MOVED_TO
+            | asyncinotify.Mask.CREATE
+            | asyncinotify.Mask.DELETE_SELF
+            | asyncinotify.Mask.IGNORED
+        )
+        with asyncinotify.Inotify() as inotify:
+            for directory in _get_directories_recursive(self._path):
+                inotify.add_watch(directory, used_mask)
+
+            # Things that can throw this off:
+            #
+            # * Moving a watched directory out of the watch tree (will still
+            #   generate events even when outside of directory tree)
+            #
+            # * Doing two changes on a directory or something before the program
+            #   has a time to handle it (this will also throw off a lot of inotify
+            #   code, though)
+            #
+            # * Moving a watched directory within a watched directory will get the
+            #   wrong path.  This needs to use the cookie system to link events
+            #   together and complete the move properly, which can still make some
+            #   events get the wrong path if you get file events during the move or
+            #   something silly like that, since MOVED_FROM and MOVED_TO aren't
+            #   guaranteed to be contiguous.  That exercise is left up to the
+            #   reader.
+            #
+            # * Trying to watch a path that doesn't exist won't automatically
+            #   create it or anything of the sort.
+            #
+            # * Deleting and recreating or moving the watched directory won't do
+            #   anything special, but it probably should.
+            async for event in inotify:
+                # Add subdirectories to watch if a new directory is added.  We do
+                # this recursively here before processing events to make sure we
+                # have complete coverage of existing and newly-created directories
+                # by watching before recursing and adding, since we know
+                # get_directories_recursive is depth-first and yields every
+                # directory before iterating their children, we know we won't miss
+                # anything.
+                if asyncinotify.Mask.CREATE in event.mask and event.path is not None and event.path.is_dir():
+                    for directory in _get_directories_recursive(event.path):
+                        if directory in self._watchers:
+                            continue
+                        print(f"EVENT: Watching {directory}")
+                        self._watchers[directory] = inotify.add_watch(directory, used_mask)
+                elif asyncinotify.Mask.DELETE_SELF in event.mask:
+                    if event.path in self._watchers:
+                        print(f"EVENT: Removing watch (delete self) {event.path}")
+                        if event.path in self._watchers:
+                            try:
+                                inotify.rm_watch(self._watchers[event.path])
+                            except OSError:
+                                _LOGGER.exception(
+                                    "Failed to remove watch on %s",
+                                    event.path,
+                                )
+                        del self._watchers[event.path]
+                elif asyncinotify.Mask.IGNORED in event.mask:
+                    if event.path in self._watchers:
+                        print(f"EVENT: Removing watch (ignored) {event.path}")
+                        if event.path in self._watchers:
+                            try:
+                                inotify.rm_watch(self._watchers[event.path])
+                            except OSError:
+                                _LOGGER.exception(
+                                    "Failed to remove watch on %s",
+                                    event.path,
+                                )
+                        del self._watchers[event.path]
+                elif asyncinotify.Mask.MOVED_FROM in event.mask:
+                    if event.path in self._watchers:
+                        print(f"EVENT: Removing watch (moved from) {event.path}")
+                        if event.path in self._watchers:
+                            try:
+                                inotify.rm_watch(self._watchers[event.path])
+                            except OSError:
+                                _LOGGER.exception(
+                                    "Failed to remove watch on %s",
+                                    event.path,
+                                )
+                        del self._watchers[event.path]
+                elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in self._watchers:
+                    if event.path is None or event.path in self._watchers:
                         continue
-                    print(f"EVENT: Watching {directory}")
-                    watchers[directory] = inotify.add_watch(directory, used_mask)
-            elif asyncinotify.Mask.DELETE_SELF in event.mask:
-                if event.path in watchers:
-                    print(f"EVENT: Removing watch (delete self) {event.path}")
-                    inotify.rm_watch(watchers[event.path])
-                    del watchers[event.path]
-            elif asyncinotify.Mask.IGNORED in event.mask:
-                if event.path in watchers:
-                    print(f"EVENT: Removing watch (ignored) {event.path}")
-                    inotify.rm_watch(watchers[event.path])
-                    del watchers[event.path]
-            elif asyncinotify.Mask.MOVED_FROM in event.mask:
-                if event.path in watchers:
-                    print(f"EVENT: Removing watch (moved from) {event.path}")
-                    inotify.rm_watch(watchers[event.path])
-                    del watchers[event.path]
-            elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in watchers:
-                if event.path is None or event.path in watchers:
-                    continue
-                print(f"EVENT: Watching (moved to) {event.path}")
-                watchers[event.path] = inotify.add_watch(event.path, used_mask)
+                    print(f"EVENT: Watching (moved to) {event.path}")
+                    self._watchers[event.path] = inotify.add_watch(event.path, used_mask)
 
-            # If there is at least some overlap, assume the user wants this event.
-            if event.mask & mask:
-                yield event
+                # If there is at least some overlap, assume the user wants this event.
+                if event.mask & self._mask:
+                    yield event
 
 
 class Status:
@@ -189,6 +222,10 @@ class Status:
     _watch_scan_codes_debug_task: asyncio.Task[None] | None = None
     _watch_destination_debug_task: asyncio.Task[None] | None = None
     _watch_sources_debug_task: asyncio.Task[None] | None = None
+    _watchdog_task: asyncio.Task[None] | None = None
+    __watch_scan_codes_debug: _WatchRecursive | None = None
+    __watch_destination_debug: _WatchRecursive | None = None
+    __watch_sources_debug: _WatchRecursive | None = None
 
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
@@ -450,7 +487,7 @@ class Status:
 
     async def _watch_scan_codes_debug(self) -> None:
         print(f"Start watching {self._codes_folder}")
-        async for event in _watch_recursive(
+        self.__watch_scan_codes_debug = _WatchRecursive(
             self._codes_folder,
             asyncinotify.Mask.ATTRIB
             | asyncinotify.Mask.CLOSE_WRITE
@@ -460,11 +497,12 @@ class Status:
             | asyncinotify.Mask.MODIFY
             | asyncinotify.Mask.MOVE
             | asyncinotify.Mask.MOVE_SELF,
-        ):
+        )
+        async for event in self.__watch_scan_codes_debug:
             print(f"Watch event on folder {self._codes_folder}: {event.path} - {event.mask!r}")
 
     async def _watch_scan_codes(self) -> None:
-        async for _event in _watch_recursive(
+        async for _event in _WatchRecursive(
             self._codes_folder,
             asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
         ):
@@ -480,7 +518,7 @@ class Status:
 
     async def _watch_destination_debug(self) -> None:
         print(f"Start watching {self._consume_folder}")
-        async for event in _watch_recursive(
+        self.__watch_destination_debug = _WatchRecursive(
             self._consume_folder,
             asyncinotify.Mask.ATTRIB
             | asyncinotify.Mask.CLOSE_WRITE
@@ -490,11 +528,12 @@ class Status:
             | asyncinotify.Mask.MODIFY
             | asyncinotify.Mask.MOVE
             | asyncinotify.Mask.MOVE_SELF,
-        ):
+        )
+        async for event in self.__watch_destination_debug:
             print(f"Watch event on folder {self._consume_folder}: {event.path} - {event.mask!r}")
 
     async def _watch_destination(self) -> None:
-        async for _event in _watch_recursive(
+        async for _event in _WatchRecursive(
             self._consume_folder,
             asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
         ):
@@ -522,7 +561,7 @@ class Status:
 
     async def _watch_sources_debug(self) -> None:
         print(f"Start watching {self._source_folder}")
-        async for event in _watch_recursive(
+        self.__watch_sources_debug = _WatchRecursive(
             self._source_folder,
             asyncinotify.Mask.ATTRIB
             | asyncinotify.Mask.CLOSE_WRITE
@@ -532,11 +571,12 @@ class Status:
             | asyncinotify.Mask.MODIFY
             | asyncinotify.Mask.MOVE
             | asyncinotify.Mask.MOVE_SELF,
-        ):
+        )
+        async for event in self.__watch_sources_debug:
             print(f"Watch event on folder {self._source_folder}: {event.path} - {event.mask!r}")
 
     async def _watch_sources(self) -> None:
-        async for event in _watch_recursive(
+        async for event in _WatchRecursive(
             self._source_folder,
             asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
         ):
@@ -554,6 +594,34 @@ class Status:
             if self._update_source_error(name):
                 self.write()
 
+    async def _watchdog(self) -> None:
+        """Watchdog to update the status of the source files."""
+        while True:
+            await asyncio.sleep(60)
+            if self.__watch_sources_debug is not None:
+                print("Watched source folders")
+                print(
+                    "\n".join(
+                        f"  {folder_path}" for folder_path in self.__watch_sources_debug.get_watched_paths()
+                    ),
+                )
+            if self.__watch_scan_codes_debug is not None:
+                print("Watched scan codes folders")
+                print(
+                    "\n".join(
+                        f"  {folder_path}"
+                        for folder_path in self.__watch_scan_codes_debug.get_watched_paths()
+                    ),
+                )
+            if self.__watch_destination_debug is not None:
+                print("Watched destination folders")
+                print(
+                    "\n".join(
+                        f"  {folder_path}"
+                        for folder_path in self.__watch_destination_debug.get_watched_paths()
+                    ),
+                )
+
     def start_watch(self) -> None:
         """Watch files changes to update status."""
         self._watch_scan_codes_task = asyncio.create_task(self._watch_scan_codes(), name="Watch scan codes")
@@ -562,7 +630,7 @@ class Status:
             name="Watch destination",
         )
         self._watch_sources_task = asyncio.create_task(self._watch_sources(), name="Watch sources")
-        if os.environ.get("DEBUG_INOTIFY", "FALSE").lower() in ["true", "1", "yes"]:
+        if os.environ.get("DEBUG_INOTIFY", "FALSE").lower() in ("true", "1", "yes"):
             self._watch_scan_codes_debug_task = asyncio.create_task(
                 self._watch_scan_codes_debug(),
                 name="Watch scan codes debug",
@@ -574,4 +642,8 @@ class Status:
             self._watch_sources_debug_task = asyncio.create_task(
                 self._watch_sources_debug(),
                 name="Watch sources debug",
+            )
+            self._watchdog_task = asyncio.create_task(
+                self._watchdog(),
+                name="Status Watchdog",
             )
