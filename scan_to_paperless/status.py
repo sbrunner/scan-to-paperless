@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import html
+import logging
 import os.path
 import traceback
 from collections.abc import AsyncGenerator, Generator, Iterable
@@ -15,6 +16,8 @@ import jinja2
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import process_schema
+
+_LOGGER = logging.getLogger(__name__)
 
 _WAITING_STATUS_NAME = "Waiting validation"
 _WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate that the generate images are correct ({generated_images}).<br />
@@ -166,17 +169,38 @@ class _WatchRecursive:
                 elif asyncinotify.Mask.DELETE_SELF in event.mask:
                     if event.path in self._watchers:
                         print(f"EVENT: Removing watch (delete self) {event.path}")
-                        inotify.rm_watch(self._watchers[event.path])
+                        if event.path in self._watchers:
+                            try:
+                                inotify.rm_watch(self._watchers[event.path])
+                            except OSError:
+                                _LOGGER.exception(
+                                    "Failed to remove watch on %s",
+                                    event.path,
+                                )
                         del self._watchers[event.path]
                 elif asyncinotify.Mask.IGNORED in event.mask:
                     if event.path in self._watchers:
                         print(f"EVENT: Removing watch (ignored) {event.path}")
-                        inotify.rm_watch(self._watchers[event.path])
+                        if event.path in self._watchers:
+                            try:
+                                inotify.rm_watch(self._watchers[event.path])
+                            except OSError:
+                                _LOGGER.exception(
+                                    "Failed to remove watch on %s",
+                                    event.path,
+                                )
                         del self._watchers[event.path]
                 elif asyncinotify.Mask.MOVED_FROM in event.mask:
                     if event.path in self._watchers:
                         print(f"EVENT: Removing watch (moved from) {event.path}")
-                        inotify.rm_watch(self._watchers[event.path])
+                        if event.path in self._watchers:
+                            try:
+                                inotify.rm_watch(self._watchers[event.path])
+                            except OSError:
+                                _LOGGER.exception(
+                                    "Failed to remove watch on %s",
+                                    event.path,
+                                )
                         del self._watchers[event.path]
                 elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in self._watchers:
                     if event.path is None or event.path in self._watchers:
