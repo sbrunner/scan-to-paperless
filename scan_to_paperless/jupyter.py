@@ -283,6 +283,11 @@ On leaflet I use the following values:
 lower_hsv_color: [0, 20, 0]
 upper_hsv_color: [255, 255, 255]
 ```
+On mixed document (like text with images) I use the following values:
+```yaml
+lower_hsv_color: [0, 0, 150]
+upper_hsv_color: [255, 255, 255]
+```
 """,
         ),
     )
