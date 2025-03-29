@@ -128,7 +128,7 @@ class _WatchRecursive:
         )
         with asyncinotify.Inotify() as inotify:
             for directory in _get_directories_recursive(self._path):
-                inotify.add_watch(directory, used_mask)
+                self._watchers[directory] = inotify.add_watch(directory, used_mask)
 
             # Things that can throw this off:
             #
@@ -177,7 +177,7 @@ class _WatchRecursive:
                                     "Failed to remove watch on %s",
                                     event.path,
                                 )
-                        del self._watchers[event.path]
+                            del self._watchers[event.path]
                 elif asyncinotify.Mask.IGNORED in event.mask:
                     if event.path in self._watchers:
                         print(f"EVENT: Removing watch (ignored) {event.path}")
@@ -189,7 +189,7 @@ class _WatchRecursive:
                                     "Failed to remove watch on %s",
                                     event.path,
                                 )
-                        del self._watchers[event.path]
+                            del self._watchers[event.path]
                 elif asyncinotify.Mask.MOVED_FROM in event.mask:
                     if event.path in self._watchers:
                         print(f"EVENT: Removing watch (moved from) {event.path}")
@@ -201,7 +201,7 @@ class _WatchRecursive:
                                     "Failed to remove watch on %s",
                                     event.path,
                                 )
-                        del self._watchers[event.path]
+                            del self._watchers[event.path]
                 elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in self._watchers:
                     if event.path is None or event.path in self._watchers:
                         continue
