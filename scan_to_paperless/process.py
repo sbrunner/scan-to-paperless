@@ -2230,7 +2230,7 @@ async def _watch_dog() -> None:
                         print(f"|   {line}")
                     break
         print("|===================")
-        if os.environ.get("DEBUG_INOTIFY", "FALSE") == "TRUE":
+        if os.environ.get("DEBUG_INOTIFY", "FALSE").lower() in ("true", "1", "yes"):
             await asyncio.sleep(10)
         else:
             await asyncio.sleep(60)
