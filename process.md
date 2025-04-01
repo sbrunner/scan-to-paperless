@@ -2,154 +2,154 @@
 
 ## Properties
 
-- **`images`** _(array, required)_: The images.
-  - **Items** _(string)_
-- **`args`**: Refer to _[#/definitions/args](#definitions/args)_.
-- **`progress`** _(boolean)_: Run in progress mode. Default: `false`.
-- **`steps`** _(array)_: The carried out steps description.
-  - **Items** _(object)_: Cannot contain additional properties.
-    - **`name`** _(string)_: The step name.
-    - **`sources`** _(array)_: The images obtain after the current step.
-      - **Items** _(string)_
-    - **`process_count`** _(integer)_: The step number.
-- **`assisted_split`** _(array)_
-  - **Items** _(object)_: Assisted split configuration. Cannot contain additional properties.
-    - **`source`** _(string)_
-    - **`destinations`** _(array)_
-      - **Items** _(['integer', 'string'])_
-    - **`image`** _(string)_
-    - **`limits`** _(array)_: The (proposed) limits to do the assisted split, You should keep only the right one.
-      - **Items** _(object)_: Cannot contain additional properties.
-        - **`name`** _(string)_: The name visible on the generated image.
-        - **`type`** _(string)_: The kind of split.
-        - **`value`** _(integer)_: The split position.
-        - **`vertical`** _(boolean)_: Is vertical?
-        - **`margin`** _(integer)_: The margin around the split, can be used to remove a fold.
-- **`transformed_images`** _(array)_: The transformed image, if removed the jobs will rag again from start.
-  - **Items** _(string)_
-- **`intermediate_error`** _(array)_: The ignored errors.
-  - **Items** _(object)_: Cannot contain additional properties.
-    - **`error`** _(string)_
-    - **`traceback`** _(array)_
-      - **Items** _(string)_
-- **`images_config`** _(object)_: Can contain additional properties.
-  - **Additional properties** _(object)_: Cannot contain additional properties.
-    - **`angle`** _(['number', 'null'])_: The used angle to deskew, can be change, restart by deleting one of the generated images.
-    - **`status`** _(object)_: Cannot contain additional properties.
-      - **`angle`** _(number)_: The measured deskew angle.
-      - **`size`** _(array)_: The image dimensions.
-        - **Items** _(number)_
+- <a id="properties/images"></a>**`images`** _(array, required)_: The images.
+  - <a id="properties/images/items"></a>**Items** _(string)_
+- <a id="properties/args"></a>**`args`**: Refer to _[#/definitions/args](#definitions/args)_.
+- <a id="properties/progress"></a>**`progress`** _(boolean)_: Run in progress mode. Default: `false`.
+- <a id="properties/steps"></a>**`steps`** _(array)_: The carried out steps description.
+  - <a id="properties/steps/items"></a>**Items** _(object)_: Cannot contain additional properties.
+    - <a id="properties/steps/items/properties/name"></a>**`name`** _(string)_: The step name.
+    - <a id="properties/steps/items/properties/sources"></a>**`sources`** _(array)_: The images obtain after the current step.
+      - <a id="properties/steps/items/properties/sources/items"></a>**Items** _(string)_
+    - <a id="properties/steps/items/properties/process_count"></a>**`process_count`** _(integer)_: The step number.
+- <a id="properties/assisted_split"></a>**`assisted_split`** _(array)_
+  - <a id="properties/assisted_split/items"></a>**Items** _(object)_: Assisted split configuration. Cannot contain additional properties.
+    - <a id="properties/assisted_split/items/properties/source"></a>**`source`** _(string)_
+    - <a id="properties/assisted_split/items/properties/destinations"></a>**`destinations`** _(array)_
+      - <a id="properties/assisted_split/items/properties/destinations/items"></a>**Items** _(['integer', 'string'])_
+    - <a id="properties/assisted_split/items/properties/image"></a>**`image`** _(string)_
+    - <a id="properties/assisted_split/items/properties/limits"></a>**`limits`** _(array)_: The (proposed) limits to do the assisted split, You should keep only the right one.
+      - <a id="properties/assisted_split/items/properties/limits/items"></a>**Items** _(object)_: Cannot contain additional properties.
+        - <a id="properties/assisted_split/items/properties/limits/items/properties/name"></a>**`name`** _(string)_: The name visible on the generated image.
+        - <a id="properties/assisted_split/items/properties/limits/items/properties/type"></a>**`type`** _(string)_: The kind of split.
+        - <a id="properties/assisted_split/items/properties/limits/items/properties/value"></a>**`value`** _(integer)_: The split position.
+        - <a id="properties/assisted_split/items/properties/limits/items/properties/vertical"></a>**`vertical`** _(boolean)_: Is vertical?
+        - <a id="properties/assisted_split/items/properties/limits/items/properties/margin"></a>**`margin`** _(integer)_: The margin around the split, can be used to remove a fold.
+- <a id="properties/transformed_images"></a>**`transformed_images`** _(array)_: The transformed image, if removed the jobs will rag again from start.
+  - <a id="properties/transformed_images/items"></a>**Items** _(string)_
+- <a id="properties/intermediate_error"></a>**`intermediate_error`** _(array)_: The ignored errors.
+  - <a id="properties/intermediate_error/items"></a>**Items** _(object)_: Cannot contain additional properties.
+    - <a id="properties/intermediate_error/items/properties/error"></a>**`error`** _(string)_
+    - <a id="properties/intermediate_error/items/properties/traceback"></a>**`traceback`** _(array)_
+      - <a id="properties/intermediate_error/items/properties/traceback/items"></a>**Items** _(string)_
+- <a id="properties/images_config"></a>**`images_config`** _(object)_: Can contain additional properties.
+  - <a id="properties/images_config/additionalProperties"></a>**Additional properties** _(object)_: Cannot contain additional properties.
+    - <a id="properties/images_config/additionalProperties/properties/angle"></a>**`angle`** _(['number', 'null'])_: The used angle to deskew, can be change, restart by deleting one of the generated images.
+    - <a id="properties/images_config/additionalProperties/properties/status"></a>**`status`** _(object)_: Cannot contain additional properties.
+      - <a id="properties/images_config/additionalProperties/properties/status/properties/angle"></a>**`angle`** _(number)_: The measured deskew angle.
+      - <a id="properties/images_config/additionalProperties/properties/status/properties/size"></a>**`size`** _(array)_: The image dimensions.
+        - <a id="properties/images_config/additionalProperties/properties/status/properties/size/items"></a>**Items** _(number)_
 
 ## Definitions
 
 - <a id="definitions/contour"></a>**`contour`** _(object)_
-  - **`min_box_size`** _(number)_: The minimum box size to find the content [mm]. Default: `{"crop": 3, "empty": 10, "limit": 10}`.
-  - **`min_box_black`** _(number)_: The minimum black in a box on content find [%]. Default: `2`.
-  - **`contour_kernel_size`** _(number)_: The block size used in a box on content find [mm]. Default: `1.5`.
-  - **`threshold_block_size`** _(number)_: The block size used in a box on threshold for content find [mm]. Default: `1.5`.
-  - **`threshold_value_c`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
+  - <a id="definitions/contour/properties/min_box_size"></a>**`min_box_size`** _(number)_: The minimum box size to find the content [mm]. Default: `{"crop": 3, "empty": 10, "limit": 10}`.
+  - <a id="definitions/contour/properties/min_box_black"></a>**`min_box_black`** _(number)_: The minimum black in a box on content find [%]. Default: `2`.
+  - <a id="definitions/contour/properties/contour_kernel_size"></a>**`contour_kernel_size`** _(number)_: The block size used in a box on content find [mm]. Default: `1.5`.
+  - <a id="definitions/contour/properties/threshold_block_size"></a>**`threshold_block_size`** _(number)_: The block size used in a box on threshold for content find [mm]. Default: `1.5`.
+  - <a id="definitions/contour/properties/threshold_value_c"></a>**`threshold_value_c`** _(number)_: A variable used on threshold, should be low on low contrast image, used in a box on content find on witch one we will crop. Default: `70`.
 - <a id="definitions/auto_mask"></a>**`auto_mask`** _(object)_
-  - **`enabled`** _(boolean)_: Enable the auto detection of the mask. Default: `true`.
-  - **`lower_hsv_color`** _(array)_: The lower color in HSV representation. Default: `[0, 0, 250]`.
-    - **Items** _(integer)_
-  - **`upper_hsv_color`** _(array)_: The upper color in HSV representation. Default: `[255, 10, 255]`.
-    - **Items** _(integer)_
-  - **`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `true`.
-  - **`inverse_mask`** _(boolean)_: Inverse the mask. Default: `false`.
-  - **`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `1000`.
-  - **`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
-  - **`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
-  - **`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
+  - <a id="definitions/auto_mask/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the auto detection of the mask. Default: `true`.
+  - <a id="definitions/auto_mask/properties/lower_hsv_color"></a>**`lower_hsv_color`** _(array)_: The lower color in HSV representation. Default: `[0, 0, 250]`.
+    - <a id="definitions/auto_mask/properties/lower_hsv_color/items"></a>**Items** _(integer)_
+  - <a id="definitions/auto_mask/properties/upper_hsv_color"></a>**`upper_hsv_color`** _(array)_: The upper color in HSV representation. Default: `[255, 10, 255]`.
+    - <a id="definitions/auto_mask/properties/upper_hsv_color/items"></a>**Items** _(integer)_
+  - <a id="definitions/auto_mask/properties/de_noise_morphology"></a>**`de_noise_morphology`** _(boolean)_: Apply a morphology operation to remove noise. Default: `true`.
+  - <a id="definitions/auto_mask/properties/inverse_mask"></a>**`inverse_mask`** _(boolean)_: Inverse the mask. Default: `false`.
+  - <a id="definitions/auto_mask/properties/de_noise_size"></a>**`de_noise_size`** _(integer)_: The size of the artifact that will be de noise. Default: `1000`.
+  - <a id="definitions/auto_mask/properties/de_noise_level"></a>**`de_noise_level`** _(integer)_: The threshold level used in de noise on the blurry image. Default: `220`.
+  - <a id="definitions/auto_mask/properties/buffer_size"></a>**`buffer_size`** _(integer)_: The size of the buffer add on the mask. Default: `20`.
+  - <a id="definitions/auto_mask/properties/buffer_level"></a>**`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
 - <a id="definitions/args"></a>**`args`** _(object)_
-  - **`level`** _(object)_: The level configuration.
-    - **`value`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
-    - **`auto`** _(boolean)_: If no level specified, do auto level. Default: `false`.
-    - **`min`** _(number)_: Min level if no level end no auto-level. Default: `0`.
-    - **`max`** _(number)_: Max level if no level end no auto-level. Default: `100`.
-  - **`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `255`.
-  - **`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
-  - **`crop`** _(object)_: The crop configuration.
-    - **`enabled`** _(boolean)_: Enable the crop. Default: `true`.
-    - **`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
-    - **`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
-    - **`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
-  - **`dpi`** _(number)_: The DPI used to convert the mm to pixel. Default: `300`.
-  - **`sharpen`** _(object)_: Sharpen configuration. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Enable the sharpen. Default: `true`.
-  - **`dither`** _(object)_: The dither configuration. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Enable the dither. Default: `true`.
-  - **`tesseract`** _(object)_: The Tesseract configuration.
-    - **`enabled`** _(boolean)_: Use Tesseract to to an OCR on the document. Default: `true`.
-    - **`lang`** _(string)_: The used language for tesseract. Default: `"fra+eng"`.
-  - **`append_credit_card`** _(boolean)_: Do an assisted split. Default: `false`.
-  - **`assisted_split`** _(boolean)_: Do an assisted split. Default: `false`.
-  - **`empty`** _(object)_: The empty page detection configuration.
-    - **`enabled`** _(boolean)_: Enable the empty page detection. Default: `true`.
-    - **`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
-  - **`limit_detection`** _(object)_: The limit page detection configuration.
-    - **`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
-    - **`line`** _(object)_: The line detection used in assisted split.
-      - **`low_threshold`** _(integer)_: The low threshold used in the Canny edge detector. Default: `0`.
-      - **`high_threshold`** _(integer)_: The high threshold used in the Canny edge detector. Default: `1000`.
-      - **`aperture_size`** _(integer)_: The aperture size used in the Canny edge detector. Default: `3`.
-      - **`rho`** _(integer)_: The rho used in the Hough transform. Default: `1`.
-      - **`threshold`** _(integer)_: The threshold used in the Hough transform. Default: `100`.
-      - **`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
-      - **`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.
-  - **`colors`** _(integer)_: The number of colors in the png. Default: `0`.
-  - **`optipng`** _(object)_: The optipng optimization tool configuration.
-    - **`enabled`** _(boolean)_: Use the optipng optimizer. Default: `true`.
-  - **`pngquant`** _(object)_: The pngquant optimization tool configuration. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Use the pngquant optimizer. Default: `true`.
-    - **`options`** _(array)_: The pngquant options. Default: `["--force", "--speed=1", "--strip", "--quality=0-32"]`.
-      - **Items** _(string)_
-  - **`exiftool`** _(object)_: The exiftool optimization tool configuration. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Use the exiftool optimizer. Default: `true`.
-  - **`ps2pdf`** _(object)_: The ps2pdf optimization tool configuration. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Use the ps2pdf optimizer (=> JPEG). Default: `true`.
-  - **`auto_rotate`** _(object)_: The auto rotate configuration.
-    - **`enabled`** _(boolean)_: Enable the auto rotate detected by Tesseract. Default: `true`.
-  - **`jpeg`** _(object)_: Convert images to JPEG configuration. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Convert images to JPEG. Default: `true`.
-    - **`quality`** _(integer)_: The JPEG quality. Default: `90`.
-  - **`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.
-    - **Items** _(integer)_
-  - **`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Enable the mask. Default: `true`.
-    - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - **`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
-  - **`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
-    - **`enabled`** _(boolean)_: Enable the cut. Default: `true`.
-    - **`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - **`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
-  - **`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
-  - **`deskew`** _(object)_: The deskew configuration.
-    - **`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
-    - **`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `45`.
-    - **`angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.
-    - **`sigma`** _(number)_: Used in the `canny` function. Default: `3.0`.
-    - **`num_peaks`** _(integer)_: number of peaks we ask for. Default: `20`.
-    - **`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `false`.
-  - **`rule`** _(object)_: Configuration of rule displayed in assisted split images.
-    - **`enabled`** _(boolean)_: Default: `true`.
-    - **`minor_graduation_space`** _(integer)_: Default: `10`.
-    - **`major_graduation_space`** _(integer)_: Default: `100`.
-    - **`lines_space`** _(integer)_: Default: `100`.
-    - **`minor_graduation_size`** _(integer)_: Default: `10`.
-    - **`major_graduation_size`** _(integer)_: Default: `30`.
-    - **`graduation_color`** _(array)_: Default: `[0, 0, 0]`.
-      - **Items** _(integer)_
-    - **`lines_color`** _(array)_: Default: `[0, 0, 0]`.
-      - **Items** _(integer)_
-    - **`lines_opacity`** _(number)_: Default: `0.2`.
-    - **`graduation_text_font_filename`** _(string)_: Default: `"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"`.
-    - **`graduation_text_font_size`** _(number)_: Default: `17`.
-    - **`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
-      - **Items** _(integer)_
-    - **`graduation_text_margin`** _(integer)_: Default: `6`.
-  - **`rest_upload`** _(object)_: Upload the final PDF via Paperless REST API.
-    - **`enabled`** _(boolean)_: Enable the upload of the PDF via REST API. Default: `false`.
-    - **`api_url`** _(string, required)_: The URL address of the REST API, usually http://server.name/api.
-    - **`api_token`** _(string, required)_: The API token.
-  - **`consume_folder`** _(object)_: Send the final PDF to Paperless using the consume folder.
-    - **`enabled`** _(boolean)_: Enable using the consume folder. Default: `true`.
+  - <a id="definitions/args/properties/level"></a>**`level`** _(object)_: The level configuration.
+    - <a id="definitions/args/properties/level/properties/value"></a>**`value`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
+    - <a id="definitions/args/properties/level/properties/auto"></a>**`auto`** _(boolean)_: If no level specified, do auto level. Default: `false`.
+    - <a id="definitions/args/properties/level/properties/min"></a>**`min`** _(number)_: Min level if no level end no auto-level. Default: `0`.
+    - <a id="definitions/args/properties/level/properties/max"></a>**`max`** _(number)_: Max level if no level end no auto-level. Default: `100`.
+  - <a id="definitions/args/properties/cut_white"></a>**`cut_white`** _(number)_: Set the near white pixels on the image to white. Default: `255`.
+  - <a id="definitions/args/properties/cut_black"></a>**`cut_black`** _(number)_: Set the near black pixels on the image to black. Default: `0`.
+  - <a id="definitions/args/properties/crop"></a>**`crop`** _(object)_: The crop configuration.
+    - <a id="definitions/args/properties/crop/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the crop. Default: `true`.
+    - <a id="definitions/args/properties/crop/properties/margin_horizontal"></a>**`margin_horizontal`** _(number)_: The horizontal margin used on auto-detect content [mm]. Default: `9`.
+    - <a id="definitions/args/properties/crop/properties/margin_vertical"></a>**`margin_vertical`** _(number)_: The vertical margin used on auto-detect content [mm]. Default: `6`.
+    - <a id="definitions/args/properties/crop/properties/contour"></a>**`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
+  - <a id="definitions/args/properties/dpi"></a>**`dpi`** _(number)_: The DPI used to convert the mm to pixel. Default: `300`.
+  - <a id="definitions/args/properties/sharpen"></a>**`sharpen`** _(object)_: Sharpen configuration. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/sharpen/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the sharpen. Default: `true`.
+  - <a id="definitions/args/properties/dither"></a>**`dither`** _(object)_: The dither configuration. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/dither/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the dither. Default: `true`.
+  - <a id="definitions/args/properties/tesseract"></a>**`tesseract`** _(object)_: The Tesseract configuration.
+    - <a id="definitions/args/properties/tesseract/properties/enabled"></a>**`enabled`** _(boolean)_: Use Tesseract to to an OCR on the document. Default: `true`.
+    - <a id="definitions/args/properties/tesseract/properties/lang"></a>**`lang`** _(string)_: The used language for tesseract. Default: `"fra+eng"`.
+  - <a id="definitions/args/properties/append_credit_card"></a>**`append_credit_card`** _(boolean)_: Do an assisted split. Default: `false`.
+  - <a id="definitions/args/properties/assisted_split"></a>**`assisted_split`** _(boolean)_: Do an assisted split. Default: `false`.
+  - <a id="definitions/args/properties/empty"></a>**`empty`** _(object)_: The empty page detection configuration.
+    - <a id="definitions/args/properties/empty/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the empty page detection. Default: `true`.
+    - <a id="definitions/args/properties/empty/properties/contour"></a>**`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
+  - <a id="definitions/args/properties/limit_detection"></a>**`limit_detection`** _(object)_: The limit page detection configuration.
+    - <a id="definitions/args/properties/limit_detection/properties/contour"></a>**`contour`**: Refer to _[#/definitions/contour](#definitions/contour)_.
+    - <a id="definitions/args/properties/limit_detection/properties/line"></a>**`line`** _(object)_: The line detection used in assisted split.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/low_threshold"></a>**`low_threshold`** _(integer)_: The low threshold used in the Canny edge detector. Default: `0`.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/high_threshold"></a>**`high_threshold`** _(integer)_: The high threshold used in the Canny edge detector. Default: `1000`.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/aperture_size"></a>**`aperture_size`** _(integer)_: The aperture size used in the Canny edge detector. Default: `3`.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/rho"></a>**`rho`** _(integer)_: The rho used in the Hough transform. Default: `1`.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/threshold"></a>**`threshold`** _(integer)_: The threshold used in the Hough transform. Default: `100`.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/min_line_length"></a>**`min_line_length`** _(integer)_: The minimum line length in percentage of the image size used in the Hough transform. Default: `50`.
+      - <a id="definitions/args/properties/limit_detection/properties/line/properties/max_line_gap"></a>**`max_line_gap`** _(integer)_: The maximum line gap in percentage of the image size used in the Hough transform. Default: `100`.
+  - <a id="definitions/args/properties/colors"></a>**`colors`** _(integer)_: The number of colors in the png. Default: `0`.
+  - <a id="definitions/args/properties/optipng"></a>**`optipng`** _(object)_: The optipng optimization tool configuration.
+    - <a id="definitions/args/properties/optipng/properties/enabled"></a>**`enabled`** _(boolean)_: Use the optipng optimizer. Default: `true`.
+  - <a id="definitions/args/properties/pngquant"></a>**`pngquant`** _(object)_: The pngquant optimization tool configuration. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/pngquant/properties/enabled"></a>**`enabled`** _(boolean)_: Use the pngquant optimizer. Default: `true`.
+    - <a id="definitions/args/properties/pngquant/properties/options"></a>**`options`** _(array)_: The pngquant options. Default: `["--force", "--speed=1", "--strip", "--quality=0-32"]`.
+      - <a id="definitions/args/properties/pngquant/properties/options/items"></a>**Items** _(string)_
+  - <a id="definitions/args/properties/exiftool"></a>**`exiftool`** _(object)_: The exiftool optimization tool configuration. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/exiftool/properties/enabled"></a>**`enabled`** _(boolean)_: Use the exiftool optimizer. Default: `true`.
+  - <a id="definitions/args/properties/ps2pdf"></a>**`ps2pdf`** _(object)_: The ps2pdf optimization tool configuration. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/ps2pdf/properties/enabled"></a>**`enabled`** _(boolean)_: Use the ps2pdf optimizer (=> JPEG). Default: `true`.
+  - <a id="definitions/args/properties/auto_rotate"></a>**`auto_rotate`** _(object)_: The auto rotate configuration.
+    - <a id="definitions/args/properties/auto_rotate/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the auto rotate detected by Tesseract. Default: `true`.
+  - <a id="definitions/args/properties/jpeg"></a>**`jpeg`** _(object)_: Convert images to JPEG configuration. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/jpeg/properties/enabled"></a>**`enabled`** _(boolean)_: Convert images to JPEG. Default: `true`.
+    - <a id="definitions/args/properties/jpeg/properties/quality"></a>**`quality`** _(integer)_: The JPEG quality. Default: `90`.
+  - <a id="definitions/args/properties/background_color"></a>**`background_color`** _(array)_: The background color. Default: `[255, 255, 255]`.
+    - <a id="definitions/args/properties/background_color/items"></a>**Items** _(integer)_
+  - <a id="definitions/args/properties/mask"></a>**`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/mask/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the mask. Default: `true`.
+    - <a id="definitions/args/properties/mask/properties/auto_mask"></a>**`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+    - <a id="definitions/args/properties/mask/properties/additional_filename"></a>**`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
+  - <a id="definitions/args/properties/cut"></a>**`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
+    - <a id="definitions/args/properties/cut/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the cut. Default: `true`.
+    - <a id="definitions/args/properties/cut/properties/auto_mask"></a>**`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
+    - <a id="definitions/args/properties/cut/properties/additional_filename"></a>**`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
+  - <a id="definitions/args/properties/no_remove_to_continue"></a>**`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
+  - <a id="definitions/args/properties/deskew"></a>**`deskew`** _(object)_: The deskew configuration.
+    - <a id="definitions/args/properties/deskew/properties/min_angle"></a>**`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
+    - <a id="definitions/args/properties/deskew/properties/max_angle"></a>**`max_angle`** _(number)_: The maximum angle to detect the image skew [degree]. Default: `45`.
+    - <a id="definitions/args/properties/deskew/properties/angle_derivation"></a>**`angle_derivation`** _(number)_: The step of angle to detect the image skew [degree]. Default: `0.1`.
+    - <a id="definitions/args/properties/deskew/properties/sigma"></a>**`sigma`** _(number)_: Used in the `canny` function. Default: `3.0`.
+    - <a id="definitions/args/properties/deskew/properties/num_peaks"></a>**`num_peaks`** _(integer)_: number of peaks we ask for. Default: `20`.
+    - <a id="definitions/args/properties/deskew/properties/angle_pm_90"></a>**`angle_pm_90`** _(boolean)_: Detect an angle of +/- 90 degree, also +/- 45 degree. Default: `false`.
+  - <a id="definitions/args/properties/rule"></a>**`rule`** _(object)_: Configuration of rule displayed in assisted split images.
+    - <a id="definitions/args/properties/rule/properties/enabled"></a>**`enabled`** _(boolean)_: Default: `true`.
+    - <a id="definitions/args/properties/rule/properties/minor_graduation_space"></a>**`minor_graduation_space`** _(integer)_: Default: `10`.
+    - <a id="definitions/args/properties/rule/properties/major_graduation_space"></a>**`major_graduation_space`** _(integer)_: Default: `100`.
+    - <a id="definitions/args/properties/rule/properties/lines_space"></a>**`lines_space`** _(integer)_: Default: `100`.
+    - <a id="definitions/args/properties/rule/properties/minor_graduation_size"></a>**`minor_graduation_size`** _(integer)_: Default: `10`.
+    - <a id="definitions/args/properties/rule/properties/major_graduation_size"></a>**`major_graduation_size`** _(integer)_: Default: `30`.
+    - <a id="definitions/args/properties/rule/properties/graduation_color"></a>**`graduation_color`** _(array)_: Default: `[0, 0, 0]`.
+      - <a id="definitions/args/properties/rule/properties/graduation_color/items"></a>**Items** _(integer)_
+    - <a id="definitions/args/properties/rule/properties/lines_color"></a>**`lines_color`** _(array)_: Default: `[0, 0, 0]`.
+      - <a id="definitions/args/properties/rule/properties/lines_color/items"></a>**Items** _(integer)_
+    - <a id="definitions/args/properties/rule/properties/lines_opacity"></a>**`lines_opacity`** _(number)_: Default: `0.2`.
+    - <a id="definitions/args/properties/rule/properties/graduation_text_font_filename"></a>**`graduation_text_font_filename`** _(string)_: Default: `"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"`.
+    - <a id="definitions/args/properties/rule/properties/graduation_text_font_size"></a>**`graduation_text_font_size`** _(number)_: Default: `17`.
+    - <a id="definitions/args/properties/rule/properties/graduation_text_font_color"></a>**`graduation_text_font_color`** _(array)_: Default: `[0, 0, 0]`.
+      - <a id="definitions/args/properties/rule/properties/graduation_text_font_color/items"></a>**Items** _(integer)_
+    - <a id="definitions/args/properties/rule/properties/graduation_text_margin"></a>**`graduation_text_margin`** _(integer)_: Default: `6`.
+  - <a id="definitions/args/properties/rest_upload"></a>**`rest_upload`** _(object)_: Upload the final PDF via Paperless REST API.
+    - <a id="definitions/args/properties/rest_upload/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the upload of the PDF via REST API. Default: `false`.
+    - <a id="definitions/args/properties/rest_upload/properties/api_url"></a>**`api_url`** _(string, required)_: The URL address of the REST API, usually http://server.name/api.
+    - <a id="definitions/args/properties/rest_upload/properties/api_token"></a>**`api_token`** _(string, required)_: The API token.
+  - <a id="definitions/args/properties/consume_folder"></a>**`consume_folder`** _(object)_: Send the final PDF to Paperless using the consume folder.
+    - <a id="definitions/args/properties/consume_folder/properties/enabled"></a>**`enabled`** _(boolean)_: Enable using the consume folder. Default: `true`.
