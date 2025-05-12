@@ -235,7 +235,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/mount: 2.37.2-4ubuntu3.4
   ubuntu_22_04/ncurses-base: 6.3-2ubuntu0.1
   ubuntu_22_04/ncurses-bin: 6.3-2ubuntu0.1
-  ubuntu_22_04/openjdk-11-jre-headless: 11.0.26+4-1ubuntu1~22.04
+  ubuntu_22_04/openjdk-11-jre-headless: 11.0.27+6~us1-0ubuntu1~22.04
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.19
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
@@ -539,7 +539,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/mount: 2.37.2-4ubuntu3.4
   ubuntu_22_04/ncurses-base: 6.3-2ubuntu0.1
   ubuntu_22_04/ncurses-bin: 6.3-2ubuntu0.1
-  ubuntu_22_04/openjdk-11-jre-headless: 11.0.26+4-1ubuntu1~22.04
+  ubuntu_22_04/openjdk-11-jre-headless: 11.0.27+6~us1-0ubuntu1~22.04
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.19
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
