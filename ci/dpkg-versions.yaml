@@ -186,7 +186,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libsemanage2: 3.3-1build2
   ubuntu_22_04/libsepol2: 3.3-1build1
   ubuntu_22_04/libsmartcols1: 2.37.2-4ubuntu3.4
-  ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.3
+  ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.4
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.3
   ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.19
@@ -490,7 +490,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libsemanage2: 3.3-1build2
   ubuntu_22_04/libsepol2: 3.3-1build1
   ubuntu_22_04/libsmartcols1: 2.37.2-4ubuntu3.4
-  ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.3
+  ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.4
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.3
   ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.19
