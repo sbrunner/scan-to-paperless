@@ -220,7 +220,7 @@ def _get_qr_codes_with_open_cv(
                         bbox = points[index]
                         detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
                         try:
-                            transformed_bbox = [(p[0], p[1]) for p in bbox]  # type: ignore[union-attr]
+                            transformed_bbox = [(p[0], p[1]) for p in bbox]
                             bbox_x, bbox_y = (
                                 [x for x, _ in transformed_bbox],
                                 [y for _, y in transformed_bbox],

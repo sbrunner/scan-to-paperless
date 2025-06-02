@@ -46,7 +46,7 @@ def get_config(config_filename: Path) -> schema.Configuration:
                     strategies_config.get("fallback", ["override"]),
                     strategies_config.get("type_conflict", ["override"]),
                 )
-                config = cast("schema.Configuration", merger.merge(base_config, config))
+                config = merger.merge(base_config, config)
             return config
     print(f"Missing config file: {config_filename}")
     return {}
