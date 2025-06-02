@@ -151,10 +151,10 @@ repos:
         additional_dependencies:
           - prospector-profile-utils==1.22.3 # pypi
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 39.264.0
+    rev: 40.36.8
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
-    rev: 0.8.0
+    rev: 1.1.1
     hooks:
       - id: python-versions
