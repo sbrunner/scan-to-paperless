@@ -126,6 +126,8 @@ classifiers = [
     'Typing :: Typed',
 ]
 authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
+requires-python = ">=3.10"
+dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk"]
 
 [project.urls]
 homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
@@ -138,6 +140,11 @@ scan-sane = "scan_to_paperless.scan_sane:_main"
 scan-process-status = "scan_to_paperless.scan_process_status:main"
 scan-process = "scan_to_paperless.process:main"
 add-codes-page = "scan_to_paperless.add_code:main"
+
+[project.optional-dependencies]
+process = ["numpy", "scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify"]
+jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
+sane = ["python-sane"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
