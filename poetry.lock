@@ -387,13 +387,13 @@ files = [
 
 [[package]]
 name = "certifi"
-version = "2024.7.4"
+version = "2024.12.14"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.7.4-py3-none-any.whl", hash = "sha256:c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90"},
-    {file = "certifi-2024.7.4.tar.gz", hash = "sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b"},
+    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
+    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
 ]
 
 [[package]]
@@ -3954,4 +3954,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "5df9b362e5da1778abb420d9e7e3d7c075be0054f57acbb47ac0bb7a0395e47f"
+content-hash = "30573c45f8d627ea941439098625c9c99adf6d46dbc38d505f3d5a2553900995"
