@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import TypedDict, Union
+from typing import TypedDict
 
 from typing_extensions import Required
 
@@ -44,7 +44,7 @@ class Arguments(TypedDict, total=False):
     The level configuration
     """
 
-    cut_white: Union[int, float]
+    cut_white: int | float
     """
     Cut white.
 
@@ -53,7 +53,7 @@ class Arguments(TypedDict, total=False):
     default: 255
     """
 
-    cut_black: Union[int, float]
+    cut_black: int | float
     """
     Cut black.
 
@@ -69,7 +69,7 @@ class Arguments(TypedDict, total=False):
     The crop configuration
     """
 
-    dpi: Union[int, float]
+    dpi: int | float
     """
     Dpi.
 
@@ -276,7 +276,7 @@ class AssistedSplit(TypedDict, total=False):
     source: str
     """ The source image name. """
 
-    destinations: list[Union[int, str]]
+    destinations: list[int | str]
     """ The destination image positions. """
 
     image: str
@@ -507,7 +507,7 @@ class Contour(TypedDict, total=False):
     Editor note: The properties of this object should be modified in the config_schema.json file
     """
 
-    min_box_size: Union[int, float]
+    min_box_size: int | float
     """
     Min box size.
 
@@ -519,7 +519,7 @@ class Contour(TypedDict, total=False):
       limit: 10
     """
 
-    min_box_black: Union[int, float]
+    min_box_black: int | float
     """
     Min box black.
 
@@ -528,7 +528,7 @@ class Contour(TypedDict, total=False):
     default: 2
     """
 
-    contour_kernel_size: Union[int, float]
+    contour_kernel_size: int | float
     """
     Contour kernel size.
 
@@ -537,7 +537,7 @@ class Contour(TypedDict, total=False):
     default: 1.5
     """
 
-    threshold_block_size: Union[int, float]
+    threshold_block_size: int | float
     """
     Threshold block size.
 
@@ -546,7 +546,7 @@ class Contour(TypedDict, total=False):
     default: 1.5
     """
 
-    threshold_value_c: Union[int, float]
+    threshold_value_c: int | float
     """
     Threshold value c.
 
@@ -572,7 +572,7 @@ class Crop(TypedDict, total=False):
     default: True
     """
 
-    margin_horizontal: Union[int, float]
+    margin_horizontal: int | float
     """
     Margin horizontal.
 
@@ -581,7 +581,7 @@ class Crop(TypedDict, total=False):
     default: 9
     """
 
-    margin_vertical: Union[int, float]
+    margin_vertical: int | float
     """
     Margin vertical.
 
@@ -865,7 +865,7 @@ class Level(TypedDict, total=False):
     default: False
     """
 
-    min: Union[int, float]
+    min: int | float
     """
     Min level.
 
@@ -874,7 +874,7 @@ class Level(TypedDict, total=False):
     default: 0
     """
 
-    max: Union[int, float]
+    max: int | float
     """
     Max level.
 
@@ -884,7 +884,7 @@ class Level(TypedDict, total=False):
     """
 
 
-LevelValue = Union[bool, int]
+LevelValue = bool | int
 """
 Level value.
 
@@ -1330,7 +1330,7 @@ class Rule(TypedDict, total=False):
       - 0
     """
 
-    lines_opacity: Union[int, float]
+    lines_opacity: int | float
     """
     Rule lines opacity.
 
@@ -1344,7 +1344,7 @@ class Rule(TypedDict, total=False):
     default: /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
     """
 
-    graduation_text_font_size: Union[int, float]
+    graduation_text_font_size: int | float
     """
     Rule graduation text font size.
 
@@ -1459,7 +1459,7 @@ UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
 class _ArgumentsDeskew(TypedDict, total=False):
     """The deskew configuration"""
 
-    min_angle: Union[int, float]
+    min_angle: int | float
     """
     Deskew min angle.
 
@@ -1468,7 +1468,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     default: -45
     """
 
-    max_angle: Union[int, float]
+    max_angle: int | float
     """
     Deskew max angle.
 
@@ -1477,7 +1477,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     default: 45
     """
 
-    angle_derivation: Union[int, float]
+    angle_derivation: int | float
     """
     Deskew angle derivation.
 
@@ -1486,7 +1486,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     default: 0.1
     """
 
-    sigma: Union[int, float]
+    sigma: int | float
     """
     Deskew sigma.
 
@@ -1515,15 +1515,15 @@ class _ArgumentsDeskew(TypedDict, total=False):
 
 
 class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
-    angle: Union[Union[int, float], None]
+    angle: int | float | None
     """ The used angle to deskew, can be change, restart by deleting one of the generated images """
 
     status: "_ConfigurationImagesConfigAdditionalpropertiesStatus"
 
 
 class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=False):
-    angle: Union[int, float]
+    angle: int | float
     """ The measured deskew angle """
 
-    size: list[Union[int, float]]
+    size: list[int | float]
     """ The image dimensions """
