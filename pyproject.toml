@@ -97,15 +97,15 @@ process = [
 sane = ["python-sane"]
 
 [tool.poetry.group.dev.dependencies]
-prospector = { version = "1.10.3", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
+prospector = { version = "1.17.1", extras = ["with_bandit", "with_mypy", "with_pyroma"] }
 prospector-profile-duplicated = "0.5.1"
-prospector-profile-utils = "1.6.0"
+prospector-profile-utils = "1.23.0"
 pytest = "7.4.4"
 pytest-profiling = "1.7.0"
 pytest-rerunfailures = "13.0"
 pyroma = "4.2"
 typing-extensions = "4.8.0"
-c2cwsgiutils = { version = "6.0.9", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 types-requests = "2.31.0.20240406"
 nbconvert = "7.12.0"
 ipykernel = "6.27.1"

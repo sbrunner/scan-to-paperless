@@ -44,7 +44,7 @@ repos:
           - scan_to_paperless/process_schema.json
           - process.md
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.3.0 # Use the ref you want to point at
+    rev: 2.12.0 # Use the ref you want to point at
     hooks:
       - id: jsonschema-gentypes
         files: |-
@@ -67,7 +67,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
-    rev: 0.5.0
+    rev: 0.7.0
     hooks:
       - id: copyright
       - id: workflows-require-timeout
@@ -146,12 +146,12 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.10.3
+    rev: v1.17.1
     hooks:
       - id: prospector
         args:
           - --tool=pydocstyle
           - --die-on-tool-error
         additional_dependencies:
-          - prospector-profile-duplicated==0.4.0 # pypi
+          - prospector-profile-duplicated==0.5.1 # pypi
           - prospector_profile_utils==1.6.0 # pypi
