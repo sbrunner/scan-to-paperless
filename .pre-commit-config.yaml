@@ -67,7 +67,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
-    rev: 0.5.0
+    rev: 1.4.1
     hooks:
       - id: copyright
       - id: workflows-require-timeout
@@ -153,5 +153,5 @@ repos:
           - --tool=pydocstyle
           - --die-on-tool-error
         additional_dependencies:
-          - prospector-profile-duplicated==0.4.0 # pypi
+          - prospector-profile-duplicated==1.10.5 # pypi
           - prospector_profile_utils==1.6.0 # pypi
