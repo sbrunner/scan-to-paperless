@@ -91,7 +91,7 @@ repos:
     hooks:
       - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.0
+    rev: 0.33.1
     hooks:
       - id: check-github-workflows
       - id: check-github-actions
@@ -155,6 +155,6 @@ repos:
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
-    rev: 1.1.1
+    rev: 1.1.2
     hooks:
       - id: python-versions
