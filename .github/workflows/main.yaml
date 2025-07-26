@@ -9,13 +9,18 @@ on:
       - '*'
   pull_request:
 
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
 
 jobs:
   build:
     name: Continuous integration
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
 
@@ -29,18 +34,18 @@ jobs:
           fetch-depth: 0
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
-      - run: python3 -m pip install --user --requirement=ci/requirements.txt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python3 -m pip install --requirement=ci/requirements.txt
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: "pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}\npre-commit-"
-      - run: pre-commit run --all-files
-        env:
-          SKIP: poetry-lock
-      - run: git diff --exit-code --patch > /tmp/pre-commit.patch || true
+      - run: pre-commit run --all-files --color=always
+      - run: git diff --exit-code --patch > /tmp/pre-commit.patch; git diff --color; git reset --hard || true
         if: failure()
 
       - uses: actions/upload-artifact@v4
@@ -102,23 +107,25 @@ jobs:
       - run: git checkout pyproject.toml
 
       - name: Publish
-        run: c2cciutils-publish
+        run: tag-publish
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
       - run: make build-all
 
       - name: Publish Docker all
         run: |
-          c2cciutils-publish --group=docker-all
+          tag-publish --group=docker-all
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: env.HAS_SECRETS == 'HAS_SECRETS'
+      - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch; git diff --color; git reset --hard || true
+        if: failure()
       - run: git checkout pyproject.toml
-        if: always()
+        if: failure()
       - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
         if: failure()
       - uses: actions/upload-artifact@v4
