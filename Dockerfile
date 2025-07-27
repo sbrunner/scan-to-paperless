@@ -1,4 +1,10 @@
-FROM ubuntu:22.04 AS upstream
+FROM ubuntu:24.04 AS upstream
+
+RUN --mount=type=cache,target=/var/lib/apt/lists \
+    --mount=type=cache,target=/var/cache,sharing=locked \
+    apt-get update \
+    && apt-get upgrade --yes \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --assume-yes --no-install-recommends tzdata
 
 FROM upstream AS base-all
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
@@ -6,8 +12,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get upgrade --yes \
-    && apt-get install --assume-yes --no-install-recommends python3-pip gnupg fonts-dejavu-core
+    && apt-get install --assume-yes --no-install-recommends fonts-dejavu-core gnupg python-is-python3 python3-pip python3-venv \
+    && python3 -m venv /venv
+
+ENV PATH=/venv/bin:$PATH
 
 FROM base-all AS poetry
 
@@ -83,15 +91,7 @@ WORKDIR /src
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get install --assume-yes --no-install-recommends apt-transport-https gnupg curl ca-certificates
-COPY .nvmrc /tmp
-RUN --mount=type=cache,target=/var/lib/apt/lists \
-    --mount=type=cache,target=/var/cache,sharing=locked \
-    NODE_MAJOR="$(cat /tmp/.nvmrc)" \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
-    && curl --silent https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --output=/etc/apt/keyrings/nodesource.gpg \
-    && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
+    && apt-get install --assume-yes --no-install-recommends npm curl ca-certificates
 
 FROM tests-dist AS tests
 
@@ -101,25 +101,18 @@ COPY . ./
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable .
 
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get install --assume-yes --no-install-recommends gnupg
-
-COPY .nvmrc /tmp
-COPY --from=tests-node-modules /etc/apt/sources.list.d/nodesource.list /etc/apt/sources.list.d/nodesource.list
-COPY --from=tests-node-modules /etc/apt/keyrings/nodesource.gpg /etc/apt/keyrings/nodesource.gpg
-
-RUN --mount=type=cache,target=/var/lib/apt/lists \
-    --mount=type=cache,target=/var/cache,sharing=locked \
-    NODE_MAJOR="$(cat /tmp/.nvmrc)" \
+    && apt-get install --assume-yes --no-install-recommends software-properties-common \
+    && add-apt-repository ppa:savoury1/pipewire \
+    && add-apt-repository ppa:savoury1/chromium \
     && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*" \
-    && echo "For Chrome installed by Pupetter" \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-        libx11-6 libx11-xcb1 libxcomposite1 libxcursor1 \
-        libxdamage1 libxext6 libxi6 libxtst6 libnss3 libcups2 libxss1 libxrandr2 libasound2 libatk1.0-0 \
-        libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3.0 libxcb-dri3-0 libgbm1 libxshmfence1
+    && apt-get install --assume-yes --no-install-recommends chromium-browser npm
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 FROM base AS all
 

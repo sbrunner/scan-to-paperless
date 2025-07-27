@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Scan to Paperless status</title>
+    <title>Status - Scan to Paperless</title>
     <link
       rel="icon"
       type="image/svg"
@@ -35,8 +35,8 @@
     />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.22.6/bootstrap-table.min.css"
-      integrity="sha512-qj9OEpICeM/CcdrBiQjGXRUQukr+yYkv2JD7flx4k3/LLXDCor1JE801vhAVdQpmco2JFCXqIuIiXimONoUX0Q=="
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.24.1/bootstrap-table.min.css"
+      integrity="sha512-CPL36V8ZD92nblUPfrYxCPKrlykPHIsP6dp3C/9xXchzL84rSnDdyFeXnFEoTveGFxl5Ucamm4qHR8LynUTKdg=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
@@ -80,6 +80,10 @@
           font-size: .95em;
           background-image: linear-gradient(to bottom, transparent, var(--bs-table-bg));
         }
+        tr:hover .sidebar-box .read-more {
+          background-image: linear-gradient(to bottom, transparent, #323539);
+          /*background-image: linear-gradient(to bottom, transparent, var(--bs-table-hover-bg));*/
+        }
     </style>
   </head>
   <body class="px-5 py-4">
@@ -94,13 +98,13 @@
     <h1>Scan to Paperless</h1>
     <div class="sidebar-box status-header">
         <p><em>{{ global_status }}</em> since <script>
-        window.document.write(new Date('{{ global_status_update.isoformat() }}Z').toLocaleString());
+        window.document.write(new Date('{{ global_status_update.isoformat() }}').toLocaleString());
         </script></p>
         <p>Started at: <script>
-        window.document.write(new Date('{{ start_time.isoformat() }}Z').toLocaleString());
+        window.document.write(new Date('{{ start_time.isoformat() }}').toLocaleString());
         </script></p>
         <p>Generated at: <script>
-        window.document.write(new Date('{{ datetime.datetime.utcnow().replace(microsecond=0).isoformat() }}Z').toLocaleString());
+        window.document.write(new Date('{{ datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat() }}').toLocaleString());
         </script></p>
     <p class="read-more"><a href="javascript:void(0)" class="button">Read More</a></p></div>
 
@@ -174,8 +178,8 @@
       referrerpolicy="no-referrer"
     ></script>
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.22.6/bootstrap-table.min.js"
-      integrity="sha512-UtciDgel0Ni5fY/wxn5RSaTvt89MCtv9RaLAuQLLJRs2olhj3G16xgtoQLLK3AmotuNgpdDr/B5BAyS180n5Qw=="
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.24.1/bootstrap-table.min.js"
+      integrity="sha512-SluUb5Wij76laheDMpw6UZXUuvefcSa3wbeMZoAzEwc8Fe9aVqUwAhG1n2FPDnZh8bExgmx5H6N3k2xzrd1nuQ=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>

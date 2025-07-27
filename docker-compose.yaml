@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   consumer:
     image: sbrunner/scan-to-paperless

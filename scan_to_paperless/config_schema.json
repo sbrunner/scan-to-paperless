@@ -429,7 +429,7 @@
               "$ref": "#/definitions/auto_mask"
             },
             "additional_filename": {
-              "type": "string",
+              "type": ["string", "null"],
               "description": "An image file used to add on the mask"
             }
           }
@@ -452,7 +452,7 @@
               "$ref": "#/definitions/auto_mask"
             },
             "additional_filename": {
-              "type": "string",
+              "type": ["string", "null"],
               "description": "An image file used to add on the mask"
             }
           }

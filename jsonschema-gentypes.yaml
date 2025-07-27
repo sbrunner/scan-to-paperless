@@ -12,6 +12,8 @@ pre_commit:
   arguments:
     - --color=never
 
+python_version: '3.10'
+
 generate:
   - source: scan_to_paperless/config_schema.json
     destination: scan_to_paperless/config.py
