@@ -166,7 +166,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libpcre2-8-0: 10.39-3ubuntu0.1
   ubuntu_22_04/libpcre3: 2:8.39-13ubuntu0.22.04.1
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
-  ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.4
+  ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
   ubuntu_22_04/libpng16-16: 1.6.37-3build5
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33
@@ -241,9 +241,9 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/pdftk-java: 3.2.2-1
-  ubuntu_22_04/perl: 5.34.0-3ubuntu1.4
-  ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.4
-  ubuntu_22_04/perl-modules-5.34: 5.34.0-3ubuntu1.4
+  ubuntu_22_04/perl: 5.34.0-3ubuntu1.5
+  ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.5
+  ubuntu_22_04/perl-modules-5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/pinentry-curses: 1.1.1-1build2
   ubuntu_22_04/pkexec: 0.105-33
   ubuntu_22_04/pngquant: 2.13.1-1
@@ -470,7 +470,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libpcre2-8-0: 10.39-3ubuntu0.1
   ubuntu_22_04/libpcre3: 2:8.39-13ubuntu0.22.04.1
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
-  ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.4
+  ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
   ubuntu_22_04/libpng16-16: 1.6.37-3build5
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33
@@ -545,9 +545,9 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
   ubuntu_22_04/pdftk-java: 3.2.2-1
-  ubuntu_22_04/perl: 5.34.0-3ubuntu1.4
-  ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.4
-  ubuntu_22_04/perl-modules-5.34: 5.34.0-3ubuntu1.4
+  ubuntu_22_04/perl: 5.34.0-3ubuntu1.5
+  ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.5
+  ubuntu_22_04/perl-modules-5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/pinentry-curses: 1.1.1-1build2
   ubuntu_22_04/pkexec: 0.105-33
   ubuntu_22_04/pngquant: 2.13.1-1
