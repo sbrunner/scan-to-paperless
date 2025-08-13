@@ -448,8 +448,8 @@ async def deskew(context: process_utils.Context) -> None:
         deskew_configuration = context.config["args"].setdefault("deskew", {})
         async with _DESKEW_LOCK:
             skew_angle, debug_images = await asyncio.to_thread(
-                determine_skew_debug_images,  # type: ignore[arg-type]
-                grayscale,  # type: ignore[arg-type]
+                determine_skew_debug_images,
+                grayscale,
                 min_angle=deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
                 max_angle=deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
                 min_deviation=deskew_configuration.setdefault(
@@ -467,7 +467,7 @@ async def deskew(context: process_utils.Context) -> None:
         if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
             for name, debug_image in debug_images:
-                context.save_progress_images("skew", debug_image, name, process_count, force=True)  # type: ignore[arg-type]
+                context.save_progress_images("skew", debug_image, name, process_count, force=True)
 
     if angle:
         context.rotate(angle)
