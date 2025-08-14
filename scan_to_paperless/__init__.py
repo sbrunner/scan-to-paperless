@@ -34,7 +34,7 @@ def get_config(config_filename: Path) -> schema.Configuration:
             config = cast("schema.Configuration", yaml.load(config_file))
             if "extends" in config:
                 base_config = get_config(
-                    config_filename.parent / Path(config["extends"]).expanduser().resolve(),
+                    (config_filename.parent / config["extends"]).expanduser().resolve(),
                 )
 
                 strategies_config = cast("schema.MergeStrategies", config.get("strategies", {}))
