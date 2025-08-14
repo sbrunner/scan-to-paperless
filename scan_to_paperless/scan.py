@@ -228,7 +228,7 @@ def main() -> None:
             continue
         images.append(Path("source") / img)
 
-    regex = re.compile(rf"^source\/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
+    regex = re.compile(rf".*/source/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
 
     def image_match(image_path: Path) -> int:
         match = regex.match(str(image_path))
