@@ -2,19 +2,19 @@
 
 """Scan a new document."""
 
-import argparse
 import datetime
 import math
 import re
 import subprocess  # nosec
 import sys
 import time
+from enum import Enum
 from pathlib import Path
-from typing import Any, cast
+from typing import Annotated, Any, cast
 
-import argcomplete
 import PIL.Image
 import pyperclip
+import typer
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import CONFIG_FILENAME, CONFIG_FOLDER, CONFIG_PATH, get_config
@@ -45,7 +45,7 @@ def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> byte
         sys.exit(1)
 
 
-def convert_clipboard() -> None:
+def do_convert_clipboard() -> None:
     """Convert clipboard code from the PDF."""
     original = pyperclip.paste()
     new = "\n".join(["" if e == "|" else e for e in original.split("\n")])
@@ -54,106 +54,131 @@ def convert_clipboard() -> None:
         print(new)
 
 
-def main() -> None:
-    """Scan a new document."""
-    parser = argparse.ArgumentParser()
+app = typer.Typer(rich_markup_mode=None)
 
-    presets = [
-        e.stem[len(str(CONFIG_FILENAME)) - 4 :] for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")
-    ]
 
-    parser.add_argument(
-        "--mode",
-        choices=("adf", "one", "multi", "double"),
-        default="adf",
-        help="The scan mode: 'adf': use Auto Document Feeder (Default), "
-        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF, "
-        "the default used configuration is, "
-        "adf: {scanimage_arguments: [--source=ADF]}, "
-        "multi: {scanimage_arguments: [--batch-prompt]}, "
-        "one: {scanimage_arguments: [--batch-count=1]}, "
-        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}",
-    )
-    parser.add_argument(
-        "--preset",
-        choices=presets,
-        help="Use an alternate configuration",
-    )
-    parser.add_argument(
-        "--append-credit-card",
-        action="store_true",
-        help="Append vertically the credit card",
-    )
-    parser.add_argument("--assisted-split", action="store_true", help="Split operation, see help")
-    parser.add_argument(
-        "--config",
-        action="store_true",
-        help="Print the configuration and exit",
-    )
-    parser.add_argument(
-        "--set-config",
-        nargs=2,
-        metavar=("KEY", "VALUE"),
-        action="append",
-        default=[],
-        help="Set a configuration option",
-    )
-    parser.add_argument(
-        "--convert-clipboard",
-        action="store_true",
-        help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
-        "see requirement: https://pypi.org/project/pyperclip/",
-    )
-    parser.add_argument(
-        "--no-remove-to-continue",
-        action="store_true",
-        default=False,
-        help="Don't wait for REMOVE_TO_CONTINUE's deletion before uploading to Paperless.",
-    )
+def available_presets() -> list[str]:
+    """Return the list of available presets."""
+    return [e.stem[len(str(CONFIG_FILENAME)) - 4 :] for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")]
 
-    argcomplete.autocomplete(parser)
-    args = parser.parse_args()
 
-    config_filename = (
-        CONFIG_PATH if args.preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{args.preset}.yaml")
-    )
+@app.command(name="config", help="Print the configuration.")
+def main_config(
+    preset: Annotated[
+        str,
+        typer.Option(help="Use an alternate configuration", autocompletion=available_presets),
+    ],
+) -> None:
+    """Print the configuration."""
+    config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
     config: schema.Configuration = get_config(config_filename)
 
-    if args.config:
-        yaml = YAML()
-        yaml.default_flow_style = False
-        print(f"Config from file: {config_filename}")
-        yaml.dump(config, sys.stdout)
+    yaml = YAML()
+    yaml.default_flow_style = False
+    print(f"Config from file: {config_filename}")
+    yaml.dump(config, sys.stdout)
+    sys.exit()
+
+
+@app.command(help="Set a configuration option.")
+def set_config(
+    key: Annotated[str, typer.Option(help="Configuration key to set")],
+    value: Annotated[str, typer.Option(help="Configuration value to set")],
+    preset: Annotated[
+        str,
+        typer.Option(help="Use an alternate configuration", autocompletion=available_presets),
+    ],
+) -> None:
+    """Set a configuration option."""
+    config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
+    config: schema.Configuration = get_config(config_filename)
+
+    config[key] = value  # type: ignore[literal-required]
+
+    yaml = YAML()
+    yaml.default_flow_style = False
+    with config_filename.open("w", encoding="utf-8") as config_file:
+        config_file.write(
+            "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
+            "/master/scan_to_paperless/config_schema.json\n\n",
+        )
+        yaml.dump(config, config_file)
+
+
+@app.command(
+    help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
+    "see requirement: https://pypi.org/project/pyperclip/",
+)
+def convert_clipboard() -> None:
+    """
+    Convert clipboard content.
+    """
+    print("Wait for clipboard content to be converted, press Ctrl+C to stop")
+    do_convert_clipboard()
+    try:
+        previous = pyperclip.paste()
+        while True:
+            current = pyperclip.paste()
+            if current != previous:
+                previous = current
+                do_convert_clipboard()
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print()
         sys.exit()
 
-    if args.convert_clipboard:
-        print("Wait for clipboard content to be converted, press Ctrl+C to stop")
-        convert_clipboard()
-        try:
-            previous = pyperclip.paste()
-            while True:
-                current = pyperclip.paste()
-                if current != previous:
-                    previous = current
-                    convert_clipboard()
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print()
-            sys.exit()
 
-    dirty = False
-    for conf in args.set_config:
-        config[conf[0]] = conf[1]  # type: ignore[literal-required]
-        dirty = True
-    if dirty:
-        yaml = YAML()
-        yaml.default_flow_style = False
-        with config_filename.open("w", encoding="utf-8") as config_file:
-            config_file.write(
-                "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/config_schema.json\n\n",
-            )
-            yaml.dump(config, config_file)
+class _Mode(str, Enum):
+    ADF = "adf"
+    MULTI = "multi"
+    ONE = "one"
+    DOUBLE = "double"
+
+
+app_scan = typer.Typer(rich_markup_mode=None)
+
+
+@app.command(help="Scan a new document.")
+@app_scan.command(help="Scan a new document.")
+def scan(
+    mode: Annotated[
+        _Mode,
+        typer.Option(
+            help="\n\n".join(  # noqa: FLY002
+                [
+                    "The scan mode: ",
+                    "'adf': use Auto Document Feeder (Default) (default used arguments: --source=ADF)",
+                    "'one': scan one page (default used arguments: --batch-count=1)",
+                    "'multi': scan multiple pages (default used arguments: --batch-prompt)",
+                    "'double': scan double sided document using the ADF (default used arguments: --source=ADF, auto_bash: true, rotate_even: true)",
+                ],
+            ),
+        ),
+    ] = _Mode.ADF,
+    preset: Annotated[
+        str | None,
+        typer.Option(
+            help="Use an alternate configuration",
+            autocompletion=available_presets,
+        ),
+    ] = None,
+    append_credit_card: Annotated[
+        bool,
+        typer.Option(
+            help="Append vertically the credit card",
+        ),
+    ] = False,
+    assisted_split: Annotated[
+        bool,
+        typer.Option(
+            help="Split operation, see help",
+        ),
+    ] = False,
+) -> None:
+    """Scan a new document."""
+
+    config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
+    config: schema.Configuration = get_config(config_filename)
 
     if "scan_folder" not in config:
         print(
@@ -175,8 +200,8 @@ def main() -> None:
         scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
         scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
         scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
-        mode_config = config.get("modes", {}).get(args.mode, {})
-        mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(args.mode, {}))
+        mode_config = config.get("modes", {}).get(mode.value, {})
+        mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode.value, {}))
         scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
 
         if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
@@ -201,8 +226,8 @@ def main() -> None:
             call(scanimage)
 
         args_: schema.Arguments = {
-            "append_credit_card": args.append_credit_card,
-            "assisted_split": args.assisted_split,
+            "append_credit_card": append_credit_card,
+            "assisted_split": assisted_split,
         }
         args_.update(config.get("default_args", {}))
 
@@ -255,4 +280,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    app_scan()
