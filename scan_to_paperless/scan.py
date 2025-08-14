@@ -263,7 +263,7 @@ def scan(
     images = sorted(images, key=image_match)
     if images:
         process_config = {
-            "images": images,
+            "images": [str(image) for image in images],
             "args": args_,
         }
         yaml = YAML()
