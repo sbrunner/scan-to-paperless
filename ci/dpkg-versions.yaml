@@ -22,7 +22,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/fontconfig-config: 2.13.1-4.2ubuntu5
   ubuntu_22_04/fonts-dejavu-core: 2.37-2build1
   ubuntu_22_04/fonts-urw-base35: 20200910-1
-  ubuntu_22_04/gcc-12-base: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/gcc-12-base: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.12
   ubuntu_22_04/gir1.2-glib-2.0: 1.72.0-1
   ubuntu_22_04/gir1.2-packagekitglib-1.0: 1.2.5-2ubuntu3
@@ -94,7 +94,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libfontconfig1: 2.13.1-4.2ubuntu5
   ubuntu_22_04/libfreetype6: 2.11.1+dfsg-1ubuntu0.3
   ubuntu_22_04/libfribidi0: 1.0.8-2ubuntu3.1
-  ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
   ubuntu_22_04/libgdbm-compat4: 1.23-1
   ubuntu_22_04/libgdbm6: 1.23-1
@@ -105,7 +105,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.5
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
   ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.7
-  ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libgpg-error0: 1.43-3
   ubuntu_22_04/libgraphicsmagick-q16-3: 1.4+really1.3.38-1ubuntu0.1
   ubuntu_22_04/libgraphite2-3: 1.3.14-1build2
@@ -190,7 +190,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.4
   ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.19
-  ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
   ubuntu_22_04/libsystemd0: 249.11-0ubuntu3.16
   ubuntu_22_04/libtasn1-6: 4.18.0-4ubuntu0.1
@@ -326,7 +326,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/fontconfig-config: 2.13.1-4.2ubuntu5
   ubuntu_22_04/fonts-dejavu-core: 2.37-2build1
   ubuntu_22_04/fonts-urw-base35: 20200910-1
-  ubuntu_22_04/gcc-12-base: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/gcc-12-base: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/ghostscript: 9.55.0~dfsg1-0ubuntu5.12
   ubuntu_22_04/gir1.2-glib-2.0: 1.72.0-1
   ubuntu_22_04/gir1.2-packagekitglib-1.0: 1.2.5-2ubuntu3
@@ -398,7 +398,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libfontconfig1: 2.13.1-4.2ubuntu5
   ubuntu_22_04/libfreetype6: 2.11.1+dfsg-1ubuntu0.3
   ubuntu_22_04/libfribidi0: 1.0.8-2ubuntu3.1
-  ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
   ubuntu_22_04/libgdbm-compat4: 1.23-1
   ubuntu_22_04/libgdbm6: 1.23-1
@@ -409,7 +409,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.5
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
   ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.7
-  ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libgpg-error0: 1.43-3
   ubuntu_22_04/libgraphicsmagick-q16-3: 1.4+really1.3.38-1ubuntu0.1
   ubuntu_22_04/libgraphite2-3: 1.3.14-1build2
@@ -494,7 +494,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.4
   ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.19
-  ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04
+  ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
   ubuntu_22_04/libsystemd0: 249.11-0ubuntu3.16
   ubuntu_22_04/libtasn1-6: 4.18.0-4ubuntu0.1
