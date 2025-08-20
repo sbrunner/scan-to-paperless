@@ -1724,7 +1724,7 @@ async def split(
                         process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
                             suffix=".png",
                         )
-                        cv2.imwrite(process_file.name, context.image)
+                        cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
                         save(
                             context,
                             root_folder,
