@@ -42,7 +42,7 @@
   - <a id="definitions/auto_mask/properties/buffer_level"></a>**`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
 - <a id="definitions/args"></a>**`args`** _(object)_: Cannot contain additional properties.
   - <a id="definitions/args/properties/level"></a>**`level`** _(object)_: The level configuration.
-    - <a id="definitions/args/properties/level/properties/value"></a>**`value`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
+    - <a id="definitions/args/properties/level/properties/value"></a>**`value`** _(boolean or integer)_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
     - <a id="definitions/args/properties/level/properties/auto"></a>**`auto`** _(boolean)_: If no level specified, do auto level. Default: `false`.
     - <a id="definitions/args/properties/level/properties/min"></a>**`min`** _(number)_: Min level if no level end no auto-level. Default: `0`.
     - <a id="definitions/args/properties/level/properties/max"></a>**`max`** _(number)_: Max level if no level end no auto-level. Default: `100`.
@@ -97,11 +97,11 @@
   - <a id="definitions/args/properties/mask"></a>**`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/mask/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the mask. Default: `true`.
     - <a id="definitions/args/properties/mask/properties/auto_mask"></a>**`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - <a id="definitions/args/properties/mask/properties/additional_filename"></a>**`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
+    - <a id="definitions/args/properties/mask/properties/additional_filename"></a>**`additional_filename`** _(string or null)_: An image file used to add on the mask.
   - <a id="definitions/args/properties/cut"></a>**`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/cut/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the cut. Default: `true`.
     - <a id="definitions/args/properties/cut/properties/auto_mask"></a>**`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - <a id="definitions/args/properties/cut/properties/additional_filename"></a>**`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
+    - <a id="definitions/args/properties/cut/properties/additional_filename"></a>**`additional_filename`** _(string or null)_: An image file used to add on the mask.
   - <a id="definitions/args/properties/no_remove_to_continue"></a>**`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
   - <a id="definitions/args/properties/deskew"></a>**`deskew`** _(object)_: The deskew configuration.
     - <a id="definitions/args/properties/deskew/properties/min_angle"></a>**`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.

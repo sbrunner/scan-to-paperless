@@ -4,7 +4,7 @@
 
 - <a id="properties/images"></a>**`images`** _(array, required)_: The images.
   - <a id="properties/images/items"></a>**Items** _(string)_
-- <a id="properties/args"></a>**`args`**: Refer to _[#/definitions/args](#definitions/args)_.
+- <a id="properties/args"></a>**`args`** _(required)_: Refer to _[#/definitions/args](#definitions/args)_.
 - <a id="properties/progress"></a>**`progress`** _(boolean)_: Run in progress mode. Default: `false`.
 - <a id="properties/steps"></a>**`steps`** _(array)_: The carried out steps description.
   - <a id="properties/steps/items"></a>**Items** _(object)_: Cannot contain additional properties.
@@ -16,7 +16,7 @@
   - <a id="properties/assisted_split/items"></a>**Items** _(object)_: Assisted split configuration. Cannot contain additional properties.
     - <a id="properties/assisted_split/items/properties/source"></a>**`source`** _(string)_
     - <a id="properties/assisted_split/items/properties/destinations"></a>**`destinations`** _(array)_
-      - <a id="properties/assisted_split/items/properties/destinations/items"></a>**Items** _(['integer', 'string'])_
+      - <a id="properties/assisted_split/items/properties/destinations/items"></a>**Items** _(integer or string)_
     - <a id="properties/assisted_split/items/properties/image"></a>**`image`** _(string)_
     - <a id="properties/assisted_split/items/properties/limits"></a>**`limits`** _(array)_: The (proposed) limits to do the assisted split, You should keep only the right one.
       - <a id="properties/assisted_split/items/properties/limits/items"></a>**Items** _(object)_: Cannot contain additional properties.
@@ -34,7 +34,7 @@
       - <a id="properties/intermediate_error/items/properties/traceback/items"></a>**Items** _(string)_
 - <a id="properties/images_config"></a>**`images_config`** _(object)_: Can contain additional properties.
   - <a id="properties/images_config/additionalProperties"></a>**Additional properties** _(object)_: Cannot contain additional properties.
-    - <a id="properties/images_config/additionalProperties/properties/angle"></a>**`angle`** _(['number', 'null'])_: The used angle to deskew, can be change, restart by deleting one of the generated images.
+    - <a id="properties/images_config/additionalProperties/properties/angle"></a>**`angle`** _(number or null)_: The used angle to deskew, can be change, restart by deleting one of the generated images.
     - <a id="properties/images_config/additionalProperties/properties/status"></a>**`status`** _(object)_: Cannot contain additional properties.
       - <a id="properties/images_config/additionalProperties/properties/status/properties/angle"></a>**`angle`** _(number)_: The measured deskew angle.
       - <a id="properties/images_config/additionalProperties/properties/status/properties/size"></a>**`size`** _(array)_: The image dimensions.
@@ -62,7 +62,7 @@
   - <a id="definitions/auto_mask/properties/buffer_level"></a>**`buffer_level`** _(integer)_: The threshold level used in buffer on the blurry image. Default: `20`.
 - <a id="definitions/args"></a>**`args`** _(object)_
   - <a id="definitions/args/properties/level"></a>**`level`** _(object)_: The level configuration.
-    - <a id="definitions/args/properties/level/properties/value"></a>**`value`** _(['boolean', 'integer'])_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
+    - <a id="definitions/args/properties/level/properties/value"></a>**`value`** _(boolean or integer)_: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
     - <a id="definitions/args/properties/level/properties/auto"></a>**`auto`** _(boolean)_: If no level specified, do auto level. Default: `false`.
     - <a id="definitions/args/properties/level/properties/min"></a>**`min`** _(number)_: Min level if no level end no auto-level. Default: `0`.
     - <a id="definitions/args/properties/level/properties/max"></a>**`max`** _(number)_: Max level if no level end no auto-level. Default: `100`.
@@ -117,11 +117,11 @@
   - <a id="definitions/args/properties/mask"></a>**`mask`** _(object)_: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/mask/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the mask. Default: `true`.
     - <a id="definitions/args/properties/mask/properties/auto_mask"></a>**`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - <a id="definitions/args/properties/mask/properties/additional_filename"></a>**`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
+    - <a id="definitions/args/properties/mask/properties/additional_filename"></a>**`additional_filename`** _(string or null)_: An image file used to add on the mask.
   - <a id="definitions/args/properties/cut"></a>**`cut`** _(object)_: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/cut/properties/enabled"></a>**`enabled`** _(boolean)_: Enable the cut. Default: `true`.
     - <a id="definitions/args/properties/cut/properties/auto_mask"></a>**`auto_mask`**: Refer to _[#/definitions/auto_mask](#definitions/auto_mask)_.
-    - <a id="definitions/args/properties/cut/properties/additional_filename"></a>**`additional_filename`** _(['string', 'null'])_: An image file used to add on the mask.
+    - <a id="definitions/args/properties/cut/properties/additional_filename"></a>**`additional_filename`** _(string or null)_: An image file used to add on the mask.
   - <a id="definitions/args/properties/no_remove_to_continue"></a>**`no_remove_to_continue`** _(boolean)_: Don't wait for the deletion of the REMOVE_TO_CONTINUE file before exporting the PDF. Default: `false`.
   - <a id="definitions/args/properties/deskew"></a>**`deskew`** _(object)_: The deskew configuration.
     - <a id="definitions/args/properties/deskew/properties/min_angle"></a>**`min_angle`** _(number)_: The minimum angle to detect the image skew [degree]. Default: `-45`.
