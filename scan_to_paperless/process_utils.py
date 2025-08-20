@@ -173,7 +173,7 @@ class Context:
                     mask,
                     cv2.bitwise_not(
                         cv2.resize(
-                            cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE),
+                            cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE),  # type: ignore[arg-type]
                             (mask.shape[1], mask.shape[0]),
                         ),
                     ),
@@ -184,7 +184,7 @@ class Context:
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
-            final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)
+            final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)  # type: ignore[assignment]
             if self.image is not None and final_mask is not None:
                 return cast(
                     "NpNdarrayInt",
