@@ -10,7 +10,7 @@
     'github>camptocamp/gs-renovate-config-preset:shellcheck.json5#1.2.3',
     'github>camptocamp/gs-renovate-config-preset:preset.json5#1.2.3',
     'github>camptocamp/gs-renovate-config-preset:docker.json5#1.2.3',
-    'github>camptocamp/gs-renovate-config-preset:stabilization-branches.json5#1.2.3',
+    'github>camptocamp/gs-renovate-config-preset:stabilization-branches.json5#1.4.2',
     'github>camptocamp/gs-renovate-config-preset:own.json5#1.2.3',
     'github>camptocamp/gs-renovate-config-preset:security.json5#1.2.3',
   ],
