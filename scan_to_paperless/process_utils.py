@@ -59,7 +59,7 @@ def crop_image(
     matrix: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         "NpNdarrayInt",
-        cv2.warpAffine(image, matrix, ((round(width)), (round(height))), borderValue=background),
+        cv2.warpAffine(image, matrix, ((width), (height)), borderValue=background),
     )
 
 
