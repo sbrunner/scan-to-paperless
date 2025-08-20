@@ -44,7 +44,7 @@ repos:
             |scan_to_paperless/config_schema\.json
           )$
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: detect-private-key
       - id: check-merge-conflict
@@ -151,7 +151,7 @@ repos:
         additional_dependencies:
           - prospector-profile-utils==1.23.0 # pypi
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 40.36.8
+    rev: 41.66.2
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
