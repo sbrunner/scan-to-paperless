@@ -81,7 +81,7 @@ pytest = "8.3.5"
 pytest-profiling = "1.8.1"
 pytest-rerunfailures = "15.1"
 pytest-asyncio = "1.1.0"
-pyroma = "4.2"
+pyroma = "5.0"
 typing-extensions = "4.13.2"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 types-requests = "2.32.0.20250515"
