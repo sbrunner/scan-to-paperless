@@ -68,7 +68,7 @@ repos:
       - id: prospector-to-ruff
         additional_dependencies:
           - prospector-profile-duplicated==1.10.5 # pypi
-          - prospector-profile-utils==1.26.1 # pypi
+          - prospector-profile-utils==1.26.3 # pypi
         args:
           - --test=utils:tests
   - repo: https://github.com/codespell-project/codespell
@@ -145,7 +145,7 @@ repos:
           )
         additional_dependencies:
           - prospector-profile-duplicated==1.10.5 # pypi
-          - prospector-profile-utils==1.26.2 # pypi
+          - prospector-profile-utils==1.26.3 # pypi
           - pylint[spelling]==3.3.8 # pypi
           - ruff==0.12.8 # pypi
       - id: prospector
@@ -155,7 +155,7 @@ repos:
           - --profile=utils:tests
           - --profile=utils:pre-commit
         additional_dependencies:
-          - prospector-profile-utils==1.26.2 # pypi
+          - prospector-profile-utils==1.26.3 # pypi
   - repo: https://github.com/renovatebot/pre-commit-hooks
     rev: 41.66.2
     hooks:
