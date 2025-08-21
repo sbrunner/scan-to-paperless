@@ -648,8 +648,7 @@ async def test_qr_code_metadata() -> None:
             assert pdf.docinfo[k] == pikepdf.objects.String(v)
         with pdf.open_metadata() as meta:
             assert (
-                meta.get("{http://purl.org/dc/elements/1.1/}description")
-                == """QR code [0]
+                meta.get("{http://purl.org/dc/elements/1.1/}description") == """QR code [0]
 SPC
 0200
 1
@@ -680,7 +679,7 @@ CH
 SCOR
 RF9720200227JS
 20200227JS- - """
-                 """
+                """
 EPD
 
 """

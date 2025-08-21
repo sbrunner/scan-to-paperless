@@ -15,6 +15,7 @@ convention = "numpy"
 "**/tests/**" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
 "**/test_*.py" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
 "**/*_test.py" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
+
 [tool.pytest.ini_options]
 pytest_plugins = ["pytest_profiling"]
 
