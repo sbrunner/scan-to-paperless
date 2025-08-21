@@ -65,6 +65,12 @@ repos:
         additional_dependencies:
           - poetry==2.1.4 # pypi
       - id: canonicalize
+      - id: prospector-to-ruff
+        additional_dependencies:
+          - prospector-profile-duplicated==1.10.5 # pypi
+          - prospector-profile-utils==1.26.1 # pypi
+        args:
+          - --test=utils:tests
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:

@@ -14,7 +14,7 @@
     'github>camptocamp/gs-renovate-config-preset:own.json5#1.4.2',
     'github>camptocamp/gs-renovate-config-preset:security.json5#1.4.2',
   ],
-  baseBranches: ['master', 'test'],
+  baseBranchPatterns: ['master', 'test'],
   packageRules: [
     /** Accept only the patch on stabilization branches */
     {
