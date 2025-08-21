@@ -307,7 +307,7 @@ class Context:
             if image is None:
                 return None
 
-            from IPython.display import (  # pylint: disable=import-outside-toplevel
+            from IPython.display import (  # noqa: PLC0415, RUF100
                 display,
             )
 
@@ -349,7 +349,7 @@ class Context:
     def display_image(self, image: NpNdarrayInt) -> None:
         """Display the image."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            from IPython.display import (  # pylint: disable=import-outside-toplevel
+            from IPython.display import (  # noqa: PLC0415, RUF100
                 display,
             )
 

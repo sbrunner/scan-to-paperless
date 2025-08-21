@@ -12,8 +12,9 @@ def test_status() -> None:
     os.environ["SCAN_CODES_FOLDER"] = "./codes"
     os.environ["SCAN_FINAL_FOLDER"] = "./consume"
     os.environ["SCAN_SOURCE_FOLDER"] = "./scan"
-    old_cwd = os.getcwd()
-    os.chdir(os.path.join(os.path.dirname(__file__), "status"))
+    old_cwd = Path.cwd()
+    status_dir = Path(__file__).parent / "status"
+    os.chdir(status_dir)
     status_instance = status.Status()
     status_instance.set_current_folder(Path("7"))
     status_instance.write()

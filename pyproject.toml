@@ -2,8 +2,19 @@
 target-version = "py310"
 line-length = 110
 
+[tool.ruff.lint]
+select = []
+ignore = ["ANN401", "C90", "D100", "D104", "D105", "D107", "D200", "D202", "D207", "D208", "D212", "E501", "EM101", "EM102", "ERA001", "FA", "FBT001", "FBT002", "FIX002", "I001", "PERF203", "PLR09", "PLR2004", "Q000", "S101", "SIM105", "T201", "TD002", "W293"]
+extend-select = ["UP", "I", "S", "B", "ALL"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
+"**/tests/**" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
+"**/test_*.py" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
+"**/*_test.py" = ["ANN", "ARG", "D", "E722", "INP001", "RET", "RUF012", "RUF100", "SLF"]
 
 [tool.pytest.ini_options]
 pytest_plugins = ["pytest_profiling"]

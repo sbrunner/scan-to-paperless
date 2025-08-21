@@ -1,4 +1,4 @@
-import os.path
+import os
 import re
 import shutil
 import subprocess
@@ -29,7 +29,7 @@ def test_should_not_commit() -> None:
 
 # @pytest.mark.skip(reason="for test")
 def test_find_lines() -> None:
-    lines = process.find_lines(load_image("limit-lines-1.png"), True, {})
+    lines = process.find_lines(load_image("limit-lines-1.png"), vertical=True, config={})
     assert 1821 in [line[0] for line in lines]
 
 
@@ -38,7 +38,7 @@ def test_find_limit_contour() -> None:
     context = process_utils.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
     contours = process.find_contours(context.image, context, "limit", {})
-    limits = process.find_limit_contour(context.image, True, contours)
+    limits = process.find_limit_contour(context.image, vertical=True, contours=contours)
     assert limits == [1589]
 
 
@@ -199,7 +199,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
     assert step["name"] == "split"
     images = step["sources"]
     assert len(images) == 1
-    assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
+    assert Path(images[0]).name == Path(config["assisted_split"][0]["image"]).name
     print(f"Compare '{images[0]}' with expected image 'assisted-split-{type_}-1.expected.png'.")
     check_image_file(
         str(root_folder),
@@ -252,7 +252,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'assisted-split-{type_}-5.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'assisted-split-{type_}-5.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -290,11 +290,11 @@ async def test_assisted_split_join_full() -> None:
         "sources": ["image-1.png", "image-2.png"],
     }
     config_file_name = root_folder / "config.yaml"
-    step = await process.transform(config, step, config_file_name, root_folder)
+    step = await process.transform(config, step, str(config_file_name), root_folder)
     assert step["name"] == "split"
     images = step["sources"]
-    assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
     assert len(images) == 2
+    assert Path(images[0]).name == Path(config["assisted_split"][0]["image"]).name
     for number, elements in enumerate(
         [
             ({"value": 738, "vertical": True, "margin": 0}, ["-", "1.2"]),
@@ -333,7 +333,7 @@ async def test_assisted_split_join_full() -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'assisted-split-join-2.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'assisted-split-join-2.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -432,7 +432,7 @@ async def test_full(progress) -> None:
         "images": [str(Path(__file__).parent / "all-1.png")],
     }
     step = {"sources": [str(Path(__file__).parent / "all-1.png")]}
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
     check_image_file(
@@ -475,7 +475,7 @@ async def test_full(progress) -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'all-2.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'all-2.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -508,7 +508,7 @@ async def test_credit_card_full() -> None:
             str(Path(__file__).parent / "credit-card-2.png"),
         ],
     }
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 2
     assert step["name"] == "finalize"
     await process.finalize(config, step, root_folder)
@@ -529,7 +529,7 @@ async def test_credit_card_full() -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'credit-card-1.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'credit-card-1.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -558,7 +558,7 @@ async def test_empty() -> None:
             str(Path(__file__).parent / "empty.png"),
         ],
     }
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 0
     assert step["name"] == "finalize"
     shutil.rmtree(root_folder)
@@ -577,7 +577,7 @@ async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     root_folder.mkdir(parents=True, exist_ok=True)
     config = {"args": args}
     step = {"sources": [str(Path(__file__).parent / f"{test}.png")]}
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 1
     try:
         print(f"Compare '{step['sources'][0]}' with expected image '{test}.expected.png'.")
@@ -607,8 +607,8 @@ async def test_qr_code(name) -> None:
     await add_code.add_codes(Path(__file__).parent / f"{name}.pdf", Path(f"/results/{name}.pdf"))
     root_folder = Path("/results/qrcode")
     for page in range(2):
-        subprocess.run(
-            [
+        subprocess.run(  # noqa: S603, ASYNC221
+            [  # noqa: S607
                 "gm",
                 "convert",
                 "-density",
@@ -648,8 +648,7 @@ async def test_qr_code_metadata() -> None:
             assert pdf.docinfo[k] == pikepdf.objects.String(v)
         with pdf.open_metadata() as meta:
             assert (
-                meta.get("{http://purl.org/dc/elements/1.1/}description")
-                == """QR code [0]
+                meta.get("{http://purl.org/dc/elements/1.1/}description") == """QR code [0]
 SPC
 0200
 1
@@ -680,7 +679,7 @@ CH
 SCOR
 RF9720200227JS
 20200227JS- - """
-                + """
+                """
 EPD
 
 """
@@ -697,8 +696,8 @@ async def test_multi_code() -> None:
     )
     root_folder = Path("/results/qrcode")
     for page in range(3):
-        subprocess.run(
-            [
+        subprocess.run(  # noqa: S603, ASYNC221
+            [  # noqa: S607
                 "gm",
                 "convert",
                 "-density",
@@ -744,9 +743,9 @@ async def test_tiff_jupyter() -> None:
     config_file_name = str(root_folder / "config.yaml")
     step = await process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
-    assert [p for p in root_folder.rglob("*.tiff")] == [root_folder / "source/image-1.tiff"]
+    assert list(root_folder.rglob("*.tiff")) == [root_folder / "source/image-1.tiff"]
 
-    with open("/results/tiff/jupyter/jupyter.ipynb") as f:
+    with Path("/results/tiff/jupyter/jupyter.ipynb").open() as f:  # noqa: ASYNC230
         nb = nbformat.read(f, as_version=4)
     ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
     ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
@@ -810,7 +809,7 @@ def test_auto_mask_combine() -> None:
     check_image(
         "/results/",
         cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
-        os.path.join(os.path.dirname(__file__), "auto_mask_combine.expected.png"),
+        str(Path(__file__).parent / "auto_mask_combine.expected.png"),
         generate_expected_image=REGENERATE,
     )
 
@@ -819,12 +818,12 @@ def test_auto_mask_combine() -> None:
 def test_auto_cut() -> None:
     init_test()
     context = process_utils.Context({"args": {"cut": {}, "background_color": [255, 0, 0]}}, {})
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
+    context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
     context.do_initial_cut()
     check_image(
         "/results/",
         cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
-        os.path.join(os.path.dirname(__file__), "auto_cut.expected.png"),
+        str(Path(__file__).parent / "auto_cut.expected.png"),
         generate_expected_image=REGENERATE,
     )
 
@@ -834,13 +833,13 @@ def test_auto_cut() -> None:
 async def test_color_cut() -> None:
     init_test()
     context = process_utils.Context({"args": {"cut_white": 200}}, {})
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
+    context.image = cv2.imread(str(Path(__file__).parent / "white-cut.png"))
     await process.color_cut(context)
     cv2.imwrite("/results/white-cut.actual.png", context.image)
     check_image(
         "/results/",
         cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
-        os.path.join(os.path.dirname(__file__), "white-cut.expected.png"),
+        str(Path(__file__).parent / "white-cut.expected.png"),
         generate_expected_image=REGENERATE,
     )
 
@@ -859,21 +858,21 @@ async def test_histogram() -> None:
         },
         {},
     )
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
+    context.image = cv2.imread(str(Path(__file__).parent / "limit-contour-all-1.png"))
     context.image_name = "histogram.png"
-    context.root_folder = Path("/tmp")
+    context.root_folder = Path("/tmp")  # noqa: S108
     await process.histogram(context)
     print("Compare '/results/histogram/histogram.png' with expected image 'histogram.expected.png'.")
     check_image_file(
         "/results/histogram/",
-        "/tmp/histogram/histogram.png",
-        os.path.join(os.path.dirname(__file__), "histogram.expected.png"),
+        str(Path("/tmp") / "histogram" / "histogram.png"),  # noqa: S108
+        str(Path(__file__).parent / "histogram.expected.png"),
         generate_expected_image=REGENERATE,
     )
     print("Compare '/results/histogram/log-histogram.png' with expected image 'histogram-log.expected.png'.")
     check_image_file(
         "/results/histogram/",
-        "/tmp/histogram/log-histogram.png",
-        os.path.join(os.path.dirname(__file__), "histogram-log.expected.png"),
+        str(Path("/tmp") / "histogram" / "log-histogram.png"),  # noqa: S108
+        str(Path(__file__).parent / "histogram-log.expected.png"),
         generate_expected_image=REGENERATE,
     )
