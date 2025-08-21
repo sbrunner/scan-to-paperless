@@ -252,7 +252,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'assisted-split-{type_}-5.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'assisted-split-{type_}-5.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -333,7 +333,7 @@ async def test_assisted_split_join_full() -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'assisted-split-join-2.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'assisted-split-join-2.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -475,7 +475,7 @@ async def test_full(progress) -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'all-2.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'all-2.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -529,7 +529,7 @@ async def test_credit_card_full() -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'credit-card-1.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'credit-card-1.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -680,7 +680,7 @@ CH
 SCOR
 RF9720200227JS
 20200227JS- - """
-                + """
+                 """
 EPD
 
 """
