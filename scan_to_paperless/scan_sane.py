@@ -92,7 +92,7 @@ def _all_options(device: sane.SaneDev) -> None:
             value = getattr(device, name)
             if value is not None:
                 print(f"Default value: {value}")
-        except:  # pylint: disable=bare-except
+        except:  # noqa: S110
             pass
         print()
 

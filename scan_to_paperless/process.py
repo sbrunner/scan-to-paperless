@@ -1463,7 +1463,7 @@ async def transform(
             images_path.append(img2)
         process_count = context.process_count
 
-    from scan_to_paperless import jupyter  # pylint: disable=import-outside-toplevel
+    from scan_to_paperless import jupyter  # noqa: PLC0415, RUF100
 
     jupyter.create_transform_notebook(root_folder, context, step)
 
@@ -1683,7 +1683,7 @@ async def split(
                     else:
                         vertical_value = width
                         vertical_margin = 0
-                    process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
+                    process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
                         suffix=".png",
                     )
                     await call(
@@ -1721,7 +1721,7 @@ async def split(
                     context.image = cv2.imread(process_file.name)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                         crop(context, round(margin_horizontal), round(margin_vertical))
-                        process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
+                        process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
                             suffix=".png",
                         )
                         cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
@@ -1952,7 +1952,7 @@ async def _process_code(name: str) -> bool:
     try:
         if pdf_filename.exists():
             _LOG.info("Processing codes for %s", pdf_filename)
-            from scan_to_paperless import add_code  # pylint: disable=import-outside-toplevel
+            from scan_to_paperless import add_code  # noqa: PLC0415, RUF100
 
             await add_code.add_codes(
                 pdf_filename,

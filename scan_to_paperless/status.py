@@ -435,7 +435,7 @@ class Status:
         if self.no_write:
             return
 
-        import natsort  # pylint: disable=import-outside-toplevel
+        import natsort  # noqa: PLC0415, RUF100
 
         with self._file.open("w", encoding="utf-8") as status_file:
             env = jinja2.Environment(
