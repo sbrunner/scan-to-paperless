@@ -11,10 +11,10 @@ extend-select = ["UP", "I", "S", "B", "ALL"]
 convention = "numpy"
 
 [tool.ruff.lint.extend-per-file-ignores]
-"tests/**" = ["ANN", "ARG", "ASYNC", "D", "E722", "FBT003", "INP001", "N", "PLC0415", "PLR2004", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF"]
-"**/tests/**" = ["ANN", "ARG", "ASYNC", "D", "E722", "FBT003", "INP001", "N", "PLC0415", "PLR2004", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF"]
-"**/test_*.py" = ["ANN", "ARG", "ASYNC", "D", "E722", "FBT003", "INP001", "N", "PLC0415", "PLR2004", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF"]
-"**/*_test.py" = ["ANN", "ARG", "ASYNC", "D", "E722", "FBT003", "INP001", "N", "PLC0415", "PLR2004", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF"]
+"tests/**" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF", "TRY003", "TRY301"]
+"**/tests/**" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF", "TRY003", "TRY301"]
+"**/test_*.py" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF", "TRY003", "TRY301"]
+"**/*_test.py" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S108", "S113", "S603", "S607", "SLF", "TRY003", "TRY301"]
 
 [tool.pytest.ini_options]
 pytest_plugins = ["pytest_profiling"]
@@ -87,7 +87,7 @@ sane = ["python-sane"]
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.17.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.10.5"
-prospector-profile-utils = "1.26.3"
+prospector-profile-utils = "1.26.4"
 pytest = "8.4.1"
 pytest-profiling = "1.8.1"
 pytest-rerunfailures = "15.1"
