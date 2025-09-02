@@ -2164,6 +2164,12 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
 
                 assert step is not None
 
+                for image in step["sources"]:
+                    image_path = root_folder / image
+                    if not image_path.exists():
+                        _LOG.warning("Missing image %s", image_path)
+                        continue
+
                 next_step = None
                 if job_type == scan_to_paperless.status.JobType.TRANSFORM:
                     _update_config(config)
