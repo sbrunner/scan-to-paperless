@@ -392,6 +392,16 @@ class Status:
             }
         nb_images = len(run_step["sources"])
 
+        for source in run_step["sources"]:
+            if not (self._source_folder / name / source).exists():
+                self.set_status(
+                    name,
+                    nb_images,
+                    "Waiting for sources",
+                    f"Missing source image <code>{source}</code>",
+                )
+                break
+
         if (
             rerun
             or not (self._source_folder / name / "REMOVE_TO_CONTINUE").exists()
