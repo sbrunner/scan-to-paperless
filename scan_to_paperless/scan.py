@@ -251,9 +251,9 @@ def scan(
     for img in root_folder.iterdir():
         if not img.name.startswith("image-"):
             continue
-        images.append(Path("source") / img)
+        images.append(Path(img).relative_to(root_folder.parent))
 
-    regex = re.compile(rf".*/source/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
+    regex = re.compile(rf"source/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
 
     def image_match(image_path: Path) -> int:
         match = regex.match(str(image_path))
