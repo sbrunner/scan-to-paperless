@@ -539,14 +539,14 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.1.7"
+version = "6.1.8"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "c2cwsgiutils-6.1.7-py3-none-any.whl", hash = "sha256:ca141a151a0dd19975f76aba91cac12c4a28aec69fb29cf665d8018d0ace6d61"},
-    {file = "c2cwsgiutils-6.1.7.tar.gz", hash = "sha256:21b43e9b476bc73540279817a2ad4eb69a08216f78c0cdecc4e5c979bf0795e4"},
+    {file = "c2cwsgiutils-6.1.8-py3-none-any.whl", hash = "sha256:c70b5ee20bc22f9279bdb2a263b0cadc2bd8b307cc6109964de43adcd0e87b5e"},
+    {file = "c2cwsgiutils-6.1.8.tar.gz", hash = "sha256:3652aec8ae6a967107a10e0f9869f222b89aa6bce1c12c04a6f7ae744539bf31"},
 ]
 
 [package.dependencies]
@@ -555,6 +555,7 @@ pyyaml = "*"
 requests = "*"
 scikit-image = {version = "*", optional = true, markers = "extra == \"test-images\""}
 ujson = "*"
+urllib3 = "*"
 
 [package.extras]
 alembic = ["alembic"]
@@ -5200,4 +5201,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "1214a09d69980f87cf673e04acced8e494e6eae607b0ba6486f3de4c99999ea8"
+content-hash = "8dcccdd5140fa2bcc29dbbb1bf2b79bf78fe64d2ac5a0505d5a23571ddfd4915"
