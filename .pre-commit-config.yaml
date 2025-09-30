@@ -140,7 +140,7 @@ repos:
         additional_dependencies:
           - prospector-profile-duplicated==1.10.5 # pypi
           - prospector-profile-utils==1.23.0 # pypi
-          - pylint[spelling]==3.3.7 # pypi
+          - pylint[spelling]==3.3.8 # pypi
           - ruff==0.11.12 # pypi
       - id: prospector
         args:
