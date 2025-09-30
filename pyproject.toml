@@ -18,12 +18,12 @@ numpy = { version = "2.2.6", optional = true }
 scikit-image = { version = "0.25.2", optional = true }
 opencv-contrib-python-headless = { version = "4.11.0.86", optional = true }
 deskew = { version = "1.5.3", optional = true }
-"ruamel.yaml" = "0.18.14"
+"ruamel.yaml" = "0.18.15"
 argcomplete = "3.6.2"
 pillow = "11.2.1"
 pypdf = { version = "6.0.0", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
-reportlab = { version = "4.4.3", optional = true }
+reportlab = { version = "4.4.4", optional = true }
 weasyprint = { version = "65.1", optional = true }
 cffi = { version = "1.17.1", optional = true }
 pikepdf = { version = "9.8.1", optional = true }
@@ -31,17 +31,17 @@ lxml= { version = "5.4.0", optional = true }
 zxing-cpp = { version = "2.3.0", optional = true }
 pyperclip = "1.9.0"
 deepmerge = "2.0"
-matplotlib = { version = "3.10.5", optional = true }
+matplotlib = { version = "3.10.6", optional = true }
 typing-extensions = "4.13.2"
 Jinja2 = { version = "3.1.6", optional = true }
 natsort = { version = "8.4.0", optional = true }
 nbformat = { version = "5.10.4", optional = true }
-requests = { version = "2.32.4", optional = true }
+requests = { version = "2.32.5", optional = true }
 python-sane = { version = "2.9.2", optional = true }
 asyncinotify = { version = "4.2.1", optional = true }
 aiofiles = "24.1.0"
-types-aiofiles = "24.1.0.20250801"
-polygon-math = "1.3.1"
+types-aiofiles = "24.1.0.20250822"
+polygon-math = "1.3.3"
 aiohttp = "3.12.15"
 sentry-sdk = "2.29.1"
 
@@ -83,7 +83,7 @@ pytest-asyncio = "1.1.0"
 pyroma = "4.2"
 typing-extensions = "4.13.2"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
-types-requests = "2.32.4.20250611"
+types-requests = "2.32.4.20250913"
 nbconvert = "7.16.6"
 ipykernel = "6.29.5"
 
