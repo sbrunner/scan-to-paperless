@@ -25,7 +25,6 @@ version = "0.0.0"
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.10,<3.14"
-numpy = { version = "2.3.3", optional = true }
 scikit-image = { version = "0.25.2", optional = true }
 opencv-contrib-python-headless = { version = "4.12.0.88", optional = true }
 deskew = { version = "1.5.3", optional = true }
@@ -59,7 +58,6 @@ shellingham = "1.5.4" # Used by typer to detect the shell
 
 [tool.poetry.extras]
 process = [
-    "numpy",
     "scikit-image",
     "opencv-contrib-python-headless",
     "deskew",
@@ -156,7 +154,7 @@ scan-process = "scan_to_paperless.process:main"
 add-codes-page = "scan_to_paperless.add_code:main"
 
 [project.optional-dependencies]
-process = ["numpy", "scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify"]
+process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify"]
 jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
 sane = ["python-sane"]
 
