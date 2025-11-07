@@ -95,7 +95,7 @@ typing-extensions = "4.15.0"
 c2cwsgiutils = { version = "6.1.8", extras = ["test_images"] }
 types-requests = "2.32.4.20250913"
 nbconvert = "7.16.6"
-ipykernel = "6.31.0"
+ipykernel = "7.1.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
