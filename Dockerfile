@@ -4,6 +4,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get upgrade --yes \
+    && ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime \
     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --assume-yes --no-install-recommends tzdata
 
 FROM upstream AS base-all
@@ -46,10 +47,14 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         libimage-exiftool-perl software-properties-common ghostscript optipng pngquant libzbar0
 
 RUN --mount=type=cache,target=/root/.cache \
-    --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
-    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/tmp/requirements.txt \
+    --mount=type=bind,from=poetry,source=/tmp,target=/requirements \
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends build-essential python3-dev libsane-dev \
+    && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/requirements/requirements.txt \
     && python3 -m pip freeze > /requirements.txt \
-    && mkdir -p /source /destination /scan-codes
+    && mkdir -p /source /destination /scan-codes \
+    && apt-get remove --assume-yes build-essential python3-dev libsane-dev \
+    && apt-get autoremove --assume-yes
 
 VOLUME /source \
     /destination \

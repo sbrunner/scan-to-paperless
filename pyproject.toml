@@ -24,7 +24,7 @@ version = "0.0.0"
 
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
-python = ">=3.10,<3.14"
+python = ">=3.10,<3.15"
 scikit-image = { version = "0.25.2", optional = true }
 opencv-contrib-python-headless = { version = "4.12.0.88", optional = true }
 deskew = { version = "1.5.3", optional = true }
@@ -55,32 +55,7 @@ aiohttp = "3.13.2"
 sentry-sdk = "2.43.0"
 typer-slim = "0.20.0"
 shellingham = "1.5.4" # Used by typer to detect the shell
-
-[tool.poetry.extras]
-process = [
-    "scikit-image",
-    "opencv-contrib-python-headless",
-    "deskew",
-    "pypdf",
-    "pyzbar",
-    "reportlab",
-    "weasyprint",
-    "cffi",
-    "pikepdf",
-    "zxing-cpp",
-    "matplotlib",
-    "Jinja2",
-    "natsort",
-    "nbformat",
-    "requests",
-    "asyncinotify"
-]
-jupyter = [
-    "opencv-contrib-python-headless",
-    "deskew",
-    "matplotlib",
-]
-sane = ["python-sane"]
+numpy = { version = "2.2.6", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.17.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
@@ -126,7 +101,6 @@ license = "BSD-2-Clause"
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
-    'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
@@ -138,7 +112,7 @@ classifiers = [
 ]
 authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
 requires-python = ">=3.10"
-dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "typer-slim", "shellingham"]
+dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "typer-slim", "shellingham", "scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "python-sane", "asyncinotify", "numpy"]
 
 [project.urls]
 homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
