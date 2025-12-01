@@ -55,7 +55,7 @@ aiohttp = "3.13.2"
 sentry-sdk = "2.46.0"
 typer-slim = "0.20.0"
 shellingham = "1.5.4" # Used by typer to detect the shell
-numpy = { version = "2.3.5", optional = true }
+numpy = { version = "2.2.6", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.17.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
