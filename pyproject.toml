@@ -61,7 +61,7 @@ numpy = { version = "2.2.6", optional = true }
 prospector = { version = "1.17.3", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.10.5"
 prospector-profile-utils = "1.26.5"
-pytest = "8.4.2"
+pytest = "9.0.1"
 pytest-profiling = "1.8.1"
 pytest-rerunfailures = "16.1"
 pytest-asyncio = "1.2.0"
