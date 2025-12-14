@@ -168,7 +168,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
-  ubuntu_22_04/libpng16-16: 1.6.37-3build5
+  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.1
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
@@ -251,9 +251,9 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/polkitd: 0.105-33
   ubuntu_22_04/poppler-data: 0.4.11-1
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
-  ubuntu_22_04/python-apt-common: 2.4.0ubuntu4
+  ubuntu_22_04/python-apt-common: 2.4.0ubuntu4.1
   ubuntu_22_04/python3: 3.10.6-1~22.04.1
-  ubuntu_22_04/python3-apt: 2.4.0ubuntu4
+  ubuntu_22_04/python3-apt: 2.4.0ubuntu4.1
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
   ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.2
@@ -472,7 +472,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
-  ubuntu_22_04/libpng16-16: 1.6.37-3build5
+  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.1
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
@@ -555,9 +555,9 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/polkitd: 0.105-33
   ubuntu_22_04/poppler-data: 0.4.11-1
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
-  ubuntu_22_04/python-apt-common: 2.4.0ubuntu4
+  ubuntu_22_04/python-apt-common: 2.4.0ubuntu4.1
   ubuntu_22_04/python3: 3.10.6-1~22.04.1
-  ubuntu_22_04/python3-apt: 2.4.0ubuntu4
+  ubuntu_22_04/python3-apt: 2.4.0ubuntu4.1
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
   ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.2
