@@ -2,9 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import TypedDict
-
-from typing_extensions import Required
+from typing import Required, TypedDict
 
 APPEND_CREDIT_CARD_DEFAULT = False
 r""" Default value of the field path 'Arguments append_credit_card' """

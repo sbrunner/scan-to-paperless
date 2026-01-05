@@ -235,8 +235,8 @@ class Status:
         self._codes: list[str] = []
         self._consume: list[str] = []
         self._global_status = "Starting..."
-        self._global_status_update = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-        self._start_time = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+        self._global_status_update = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
+        self._start_time = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
         self._current_folder: str | None = None
 
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
@@ -259,7 +259,7 @@ class Status:
         if self._global_status != status:
             print(status)
             self._global_status = status
-            self._global_status_update = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+            self._global_status_update = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
 
             self.write()
 
