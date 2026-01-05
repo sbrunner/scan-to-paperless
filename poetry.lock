@@ -342,22 +342,20 @@ lxml = ["lxml"]
 
 [[package]]
 name = "bleach"
-version = "6.3.0"
+version = "4.1.0"
 description = "An easy safelist-based HTML-sanitizing tool."
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.6"
 groups = ["dev"]
 files = [
-    {file = "bleach-6.3.0-py3-none-any.whl", hash = "sha256:fe10ec77c93ddf3d13a73b035abaac7a9f5e436513864ccdad516693213c65d6"},
-    {file = "bleach-6.3.0.tar.gz", hash = "sha256:6f3b91b1c0a02bb9a78b5a454c92506aa0fdf197e1d5e114d2e00c6f64306d22"},
+    {file = "bleach-4.1.0-py2.py3-none-any.whl", hash = "sha256:4d2651ab93271d1129ac9cbc679f524565cc8a1b791909c4a51eac4446a15994"},
+    {file = "bleach-4.1.0.tar.gz", hash = "sha256:0900d8b37eba61a802ee40ac0061f8c2b5dee29c1927dd1d233e075ebf5a71da"},
 ]
 
 [package.dependencies]
-tinycss2 = {version = ">=1.1.0,<1.5", optional = true, markers = "extra == \"css\""}
+packaging = "*"
+six = ">=1.9.0"
 webencodings = "*"
-
-[package.extras]
-css = ["tinycss2 (>=1.1.0,<1.5)"]
 
 [[package]]
 name = "brotli"
@@ -4935,21 +4933,21 @@ zarr = ["fsspec", "kerchunk", "zarr (>=3.1.3)"]
 
 [[package]]
 name = "tinycss2"
-version = "1.4.0"
+version = "1.5.1"
 description = "A tiny CSS parser"
 optional = false
-python-versions = ">=3.8"
-groups = ["main", "dev"]
+python-versions = ">=3.10"
+groups = ["main"]
 files = [
-    {file = "tinycss2-1.4.0-py3-none-any.whl", hash = "sha256:3a49cf47b7675da0b15d0c6e1df8df4ebd96e9394bb905a5775adb0d884c5289"},
-    {file = "tinycss2-1.4.0.tar.gz", hash = "sha256:10c0972f6fc0fbee87c3edb76549357415e94548c1ae10ebccdea16fb404a9b7"},
+    {file = "tinycss2-1.5.1-py3-none-any.whl", hash = "sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661"},
+    {file = "tinycss2-1.5.1.tar.gz", hash = "sha256:d339d2b616ba90ccce58da8495a78f46e55d4d25f9fd71dfd526f07e7d53f957"},
 ]
 
 [package.dependencies]
 webencodings = ">=0.4"
 
 [package.extras]
-doc = ["sphinx", "sphinx_rtd_theme"]
+doc = ["furo", "sphinx"]
 test = ["pytest", "ruff"]
 
 [[package]]
@@ -5282,24 +5280,24 @@ files = [
 
 [[package]]
 name = "weasyprint"
-version = "66.0"
+version = "67.0"
 description = "The Awesome Document Factory"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "weasyprint-66.0-py3-none-any.whl", hash = "sha256:82b0783b726fcd318e2c977dcdddca76515b30044bc7a830cc4fbe717582a6d0"},
-    {file = "weasyprint-66.0.tar.gz", hash = "sha256:da71dc87dc129ac9cffdc65e5477e90365ab9dbae45c744014ec1d06303dde40"},
+    {file = "weasyprint-67.0-py3-none-any.whl", hash = "sha256:abc2f40872ea01c29c11f7799dafc4b23c078335bf7777f72a8affeb36e1d201"},
+    {file = "weasyprint-67.0.tar.gz", hash = "sha256:fdfbccf700e8086c8fd1607ec42e25d4b584512c29af2d9913587a4e448dead4"},
 ]
 
 [package.dependencies]
 cffi = ">=0.6"
 cssselect2 = ">=0.8.0"
-fonttools = {version = ">=4.0.0", extras = ["woff"]}
+fonttools = {version = ">=4.59.2", extras = ["woff"]}
 Pillow = ">=9.1.0"
 pydyf = ">=0.11.0"
 Pyphen = ">=0.9.1"
-tinycss2 = ">=1.4.0"
+tinycss2 = ">=1.5.0"
 tinyhtml5 = ">=2.0.0b1"
 
 [package.extras]
@@ -5673,4 +5671,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "9f412373000c17d64946853fcc8e72fa1c72e157fcd43f005d83fee91b02c45d"
+content-hash = "a10c5b48096491021a4d7ff60a3897c48b9c91656820fb0aeb2097fde4025d6c"
