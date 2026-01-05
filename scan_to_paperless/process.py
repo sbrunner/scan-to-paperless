@@ -1931,7 +1931,7 @@ async def finalize(
                     form = aiohttp.FormData()
                     form.add_field("document", document_file)
                     form.add_field("title", title)
-                    async with session.post(url, headers=headers, data=form, timeout=120) as response:
+                    async with session.post(url, headers=headers, data=form, timeout=120) as response:  # type: ignore[arg-type]
                         if response.status != 200:
                             text = await response.text()
                             msg = f"Failed ({response.status}) upload to '{url}' with token '{token}'\n{text}"
@@ -2261,7 +2261,7 @@ async def async_main() -> None:
         sys.exit()
 
     print("Welcome to scanned images document to paperless.")
-    print(f"Started at: {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M')}")
+    print(f"Started at: {datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M')}")
 
     status = scan_to_paperless.status.Status()
 
