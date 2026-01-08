@@ -128,7 +128,7 @@ classifiers = [
 ]
 authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
 requires-python = ">=3.10"
-dependencies = ["ruamel.yaml", "argcomplete", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "pillow", "brotli==1.2.0", "brotlicffi==1.2.0.0", "fonttools==4.61.1", "urllib3==2.6.2"]
+dependencies = ["ruamel.yaml", "argcomplete", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "pillow", "brotli==1.2.0", "brotlicffi==1.2.0.0", "fonttools==4.61.1", "urllib3==2.6.3"]
 
 [project.urls]
 homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
