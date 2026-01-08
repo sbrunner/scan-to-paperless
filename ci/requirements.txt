@@ -6,4 +6,4 @@ pip==25.3
 pre-commit==4.2.0
 importlib-metadata<8.7.2
 tag-publish==1.1.1
-urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
+urllib3>=2.6.3 # not directly required, pinned by Snyk to avoid a vulnerability
