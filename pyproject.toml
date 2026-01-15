@@ -82,7 +82,7 @@ pytest-rerunfailures = "15.1"
 pytest-asyncio = "1.1.0"
 pyroma = "4.2"
 typing-extensions = "4.13.2"
-c2cwsgiutils = { version = "6.1.8", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
 types-requests = "2.32.4.20250913"
 nbconvert = "7.16.6"
 ipykernel = "6.29.5"
