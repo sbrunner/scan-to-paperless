@@ -219,7 +219,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libxcb1: 1.14-3ubuntu3
   ubuntu_22_04/libxdmcp6: 1:1.1.3-0ubuntu5
   ubuntu_22_04/libxext6: 2:1.3.4-1build1
-  ubuntu_22_04/libxml2: 2.9.13+dfsg-1ubuntu0.10
+  ubuntu_22_04/libxml2: 2.9.13+dfsg-1ubuntu0.11
   ubuntu_22_04/libxmlb2: 0.3.6-2build1
   ubuntu_22_04/libxrender1: 1:0.9.10-1build4
   ubuntu_22_04/libxxhash0: 0.8.1-1
@@ -523,7 +523,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libxcb1: 1.14-3ubuntu3
   ubuntu_22_04/libxdmcp6: 1:1.1.3-0ubuntu5
   ubuntu_22_04/libxext6: 2:1.3.4-1build1
-  ubuntu_22_04/libxml2: 2.9.13+dfsg-1ubuntu0.10
+  ubuntu_22_04/libxml2: 2.9.13+dfsg-1ubuntu0.11
   ubuntu_22_04/libxmlb2: 0.3.6-2build1
   ubuntu_22_04/libxrender1: 1:0.9.10-1build4
   ubuntu_22_04/libxxhash0: 0.8.1-1
