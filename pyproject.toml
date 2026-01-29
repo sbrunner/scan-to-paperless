@@ -84,7 +84,7 @@ pyroma = "4.2"
 typing-extensions = "4.13.2"
 c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
 types-requests = "2.32.4.20250913"
-nbconvert = "7.16.6"
+nbconvert = "7.17.0"
 ipykernel = "6.29.5"
 
 [tool.poetry-dynamic-versioning]
