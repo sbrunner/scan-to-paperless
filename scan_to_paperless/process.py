@@ -661,7 +661,7 @@ def find_lines(
     if lines is None:
         return []
 
-    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]  # type: ignore[misc]
+    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
@@ -837,7 +837,7 @@ def _find_contours_thresh(
                 else contour_image
             )
             contour_image = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
-            if (1 - np.mean(contour_image)) * 100 > min_black:  # type: ignore[arg-type]
+            if (1 - np.mean(contour_image)) * 100 > min_black:
                 result.append(
                     (
                         x + kernel_size * 2,
