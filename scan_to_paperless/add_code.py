@@ -204,8 +204,8 @@ def _get_qr_codes_with_open_cv(
                         cv2.imwrite(str(dest_filename), img)
                     for bbox_index, bbox in enumerate(points):
                         dest_filename = base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png"
-                        bbox_x = [p[0] for p in bbox]  # type: ignore[union-attr]
-                        bbox_y = [p[1] for p in bbox]  # type: ignore[union-attr]
+                        bbox_x = [p[0] for p in bbox]
+                        bbox_y = [p[1] for p in bbox]
                         cv2.imwrite(
                             str(dest_filename),
                             decoded_image[
