@@ -65,8 +65,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libbrotli1: 1.0.9-2build6
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5build1
-  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.11
-  ubuntu_22_04/libc6: 2.35-0ubuntu3.11
+  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.13
+  ubuntu_22_04/libc6: 2.35-0ubuntu3.13
   ubuntu_22_04/libcairo2: 1.16.0-5ubuntu2
   ubuntu_22_04/libcap-ng0: 0.7.9-2.2build3
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.2
@@ -235,7 +235,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/mount: 2.37.2-4ubuntu3.4
   ubuntu_22_04/ncurses-base: 6.3-2ubuntu0.1
   ubuntu_22_04/ncurses-bin: 6.3-2ubuntu0.1
-  ubuntu_22_04/openjdk-11-jre-headless: 11.0.29+7-1ubuntu1~22.04
+  ubuntu_22_04/openjdk-11-jre-headless: 11.0.30+7-1ubuntu1~22.04
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.21
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
@@ -369,8 +369,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libbrotli1: 1.0.9-2build6
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5build1
-  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.11
-  ubuntu_22_04/libc6: 2.35-0ubuntu3.11
+  ubuntu_22_04/libc-bin: 2.35-0ubuntu3.13
+  ubuntu_22_04/libc6: 2.35-0ubuntu3.13
   ubuntu_22_04/libcairo2: 1.16.0-5ubuntu2
   ubuntu_22_04/libcap-ng0: 0.7.9-2.2build3
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.2
@@ -539,7 +539,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/mount: 2.37.2-4ubuntu3.4
   ubuntu_22_04/ncurses-base: 6.3-2ubuntu0.1
   ubuntu_22_04/ncurses-bin: 6.3-2ubuntu0.1
-  ubuntu_22_04/openjdk-11-jre-headless: 11.0.29+7-1ubuntu1~22.04
+  ubuntu_22_04/openjdk-11-jre-headless: 11.0.30+7-1ubuntu1~22.04
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.21
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/packagekit: 1.2.5-2ubuntu3
