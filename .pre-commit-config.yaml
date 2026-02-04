@@ -126,7 +126,7 @@ repos:
         args:
           - --line-length=110
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.17.3
+    rev: v1.18.0
     hooks:
       - id: prospector
         args:
