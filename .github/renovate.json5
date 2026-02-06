@@ -1,31 +1,31 @@
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "github>camptocamp/gs-renovate-config-preset:base.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:group.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:ci.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:pre-commit.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:python.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:json-schema.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:shellcheck.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:preset.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:docker.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:stabilization-branches.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:own.json5#1.8.5",
-    "github>camptocamp/gs-renovate-config-preset:security.json5#1.8.5",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'github>camptocamp/gs-renovate-config-preset:base.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:group.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:ci.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:pre-commit.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:python.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:json-schema.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:shellcheck.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:preset.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:docker.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:stabilization-branches.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:own.json5#1.8.5',
+    'github>camptocamp/gs-renovate-config-preset:security.json5#1.8.5',
   ],
-  baseBranchPatterns: ["test", "master"],
+  baseBranchPatterns: ['test', 'master'],
   packageRules: [
     /** Accept only the patch on stabilization branches */
     {
-      matchBaseBranches: ["master"],
-      matchUpdateTypes: ["major", "minor", "pin", "digest", "lockFileMaintenance", "rollback", "bump"],
+      matchBaseBranches: ['master'],
+      matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
     },
     /** Packages published very recently are not pushed to stabilization branches for security reasons */
     {
-      matchBaseBranches: ["master"],
-      minimumReleaseAge: "7 days",
+      matchBaseBranches: ['master'],
+      minimumReleaseAge: '7 days',
     },
   ],
 }
