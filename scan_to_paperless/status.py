@@ -8,7 +8,7 @@ import os
 import traceback
 from collections.abc import AsyncGenerator, Iterable
 from enum import Enum
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import anyio
 import anyio.abc
@@ -334,14 +334,13 @@ class Status:
                 await self.write()
 
     async def _update_status(self, name: str) -> None:
-        yaml = YAML(typ="safe")
-
         if not await (self._source_folder / name).exists():
             if name in self._status:
                 del self._status[name]
             return
 
         if await (self._source_folder / name / "error.yaml").exists():
+            yaml = YAML(typ="safe")
             async with await anyio.open_file(
                 self._source_folder / name / "error.yaml",
                 encoding="utf-8",
@@ -362,28 +361,54 @@ class Status:
             await self.set_status(name, -1, _DONE_STATUS)
             return
 
-        if not await (self._source_folder / name / _CONFIG_FILENAME).exists():
+        config = await self._get_config(name)
+        if config is None:
+            return
+
+        run_step, rerun = await self._get_run_step(config)
+        nb_images = len(run_step["sources"])
+
+        if not await self._check_missing_sources(name, run_step):
+            return
+
+        # Determine if we should wait for next step or validation
+        if (
+            rerun
+            or not await (self._source_folder / name / "REMOVE_TO_CONTINUE").exists()
+            or len(config.get("steps", [])) == 0
+        ):
+            await self._set_waiting_status(name, run_step, nb_images)
+        else:
+            await self._set_validation_status(name, config, nb_images)
+
+    async def _get_config(self, name: str) -> dict[str, Any] | None:
+        """Load and validate configuration file."""
+        config_path = self._source_folder / name / _CONFIG_FILENAME
+        if not await config_path.exists():
             files = [
                 str(f.relative_to(self._source_folder / name))
                 async for f in (self._source_folder / name).rglob("*")
                 if await f.is_file() and not f.name.startswith(".")
             ]
-            files = [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in files]
-            await self.set_status(name, -1, "Missing config", ", ".join(files))
-            return
+            files_html = [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in files]
+            await self.set_status(name, -1, "Missing config", ", ".join(files_html))
+            return None
 
-        async with await anyio.open_file(
-            self._source_folder / name / _CONFIG_FILENAME,
-            encoding="utf-8",
-        ) as config_file:
+        yaml = YAML(typ="safe")
+        async with await anyio.open_file(config_path, encoding="utf-8") as config_file:
             config = yaml.load(await config_file.read())
 
         if config is None:
             await self.set_status(name, -1, "Empty config")
-            return
+            return None
 
+        return config
+
+    async def _get_run_step(self, config: dict[str, Any]) -> tuple[process_schema.Step, bool]:
+        """Determine which step to run and if it's a rerun."""
         run_step: process_schema.Step | None = None
         rerun = False
+
         for step in reversed(config.get("steps", [])):
             all_present = True
             for source in step["sources"]:
@@ -394,61 +419,66 @@ class Status:
             if all_present:
                 run_step = step
                 break
+
         if run_step is None:
             run_step = {
                 "sources": config["images"],
                 "name": "transform",
             }
-        nb_images = len(run_step["sources"])
 
+        return run_step, rerun
+
+    async def _check_missing_sources(self, name: str, run_step: process_schema.Step) -> bool:
+        """Check if all source images are present."""
         for source in run_step["sources"]:
             if not await (self._source_folder / name / source).exists():
                 await self.set_status(
                     name,
-                    nb_images,
+                    len(run_step["sources"]),
                     "Waiting for sources",
                     f"Missing source image <code>{source}</code>",
                 )
-                break
+                return False
+        return True
 
-        if (
-            rerun
-            or not await (self._source_folder / name / "REMOVE_TO_CONTINUE").exists()
-            or len(config.get("steps", [])) == 0
-        ):
-            await self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
-        else:
-            source_images = (
-                config["steps"][-2]["sources"] if len(config.get("steps", [])) >= 2 else config["images"]
-            )
-            generated_images = [
-                str(anyio.Path(f).relative_to(self._source_folder / name))
-                for f in config["steps"][-1]["sources"]
-            ]
-            await self.set_status(
-                name,
-                nb_images,
-                _WAITING_STATUS_NAME,
-                (
-                    _WAITING_ASSISTED_SPLIT_DESCRIPTION
-                    if config["steps"][-1]["name"] == "split"
-                    else _WAITING_STATUS_DESCRIPTION
-                ).format(
-                    name=name,
-                    source_images=", ".join(
-                        [
-                            f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
-                            for f in source_images
-                        ],
-                    ),
-                    generated_images=", ".join(
-                        [
-                            f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>'
-                            for f in generated_images
-                        ],
-                    ),
-                ),
-            )
+    async def _set_waiting_status(self, name: str, run_step: process_schema.Step, nb_images: int) -> None:
+        """Set status when waiting for next step."""
+        await self.set_status(
+            name,
+            nb_images,
+            _WAITING_TO_STATUS.format(run_step["name"]),
+            step=run_step,
+        )
+
+    async def _set_validation_status(self, name: str, config: dict[str, Any], nb_images: int) -> None:
+        """Set status when waiting for user validation."""
+        source_images = (
+            config["steps"][-2]["sources"] if len(config.get("steps", [])) >= 2 else config["images"]
+        )
+        generated_images = [
+            str(anyio.Path(f).relative_to(self._source_folder / name)) for f in config["steps"][-1]["sources"]
+        ]
+
+        description = (
+            _WAITING_ASSISTED_SPLIT_DESCRIPTION
+            if config["steps"][-1]["name"] == "split"
+            else _WAITING_STATUS_DESCRIPTION
+        ).format(
+            name=name,
+            source_images=", ".join(
+                [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in source_images],
+            ),
+            generated_images=", ".join(
+                [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in generated_images],
+            ),
+        )
+
+        await self.set_status(
+            name,
+            nb_images,
+            _WAITING_STATUS_NAME,
+            description,
+        )
 
     async def write(self) -> None:
         """Write the status file."""

@@ -180,54 +180,17 @@ async def scan(
     ] = False,
 ) -> None:
     """Scan a new document."""
-
     config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
     config: schema.Configuration = await get_config(config_filename)
 
-    if "scan_folder" not in config:
-        print(
-            """The scan folder isn't set, use:
-    scan --set-settings scan_folder <a_folder>
-    This should be shared with the process container in 'source'.""",
-        )
-        sys.exit(1)
-    now = datetime.datetime.now(datetime.UTC)
-    base_folder = (await Path(config["scan_folder"]).expanduser()) / now.strftime("%Y%m%d-%H%M%S")
-    while await base_folder.exists():
-        now += datetime.timedelta(seconds=1)
-        base_folder = (await Path(config["scan_folder"]).expanduser()) / now.strftime("%Y%m%d-%H%M%S")
-
+    scan_folder = await _validate_scan_folder(config)
+    base_folder = await _get_base_folder(scan_folder)
     root_folder = base_folder / "source"
     await root_folder.mkdir(parents=True)
 
     try:
-        scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
-        scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
-        scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
-        mode_config = config.get("modes", {}).get(mode.value, {})
-        mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode.value, {}))
-        scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
-
-        if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
-            call([*scanimage, "--batch-start=1", "--batch-increment=2"])
-            odd = [p async for p in root_folder.iterdir()]
-            input("Put your document in the automatic document feeder for the other side, and press enter.")
-            call(
-                [
-                    *scanimage,
-                    f"--batch-start={len(odd) * 2}",
-                    "--batch-increment=-2",
-                    f"--batch-count={len(odd)}",
-                ],
-            )
-            if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
-                async for img in root_folder.iterdir():
-                    if img not in odd:
-                        path = root_folder / img
-                        with PIL.Image.open(path) as image:
-                            image.rotate(180).save(path, dpi=image.info["dpi"])
-        else:
-            call(scanimage)
+        scanimage_cmd = await _build_scanimage_command(config, root_folder, mode)
+        await _perform_scan(scanimage_cmd, root_folder, config, mode)
 
         args_: schema.Arguments = {
             "append_credit_card": append_credit_card,
@@ -235,54 +198,172 @@ async def scan(
         }
         args_.update(config.get("default_args", {}))
 
+        await _detect_image_dpi(args_, root_folder)
+
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
-
-    async for img in root_folder.iterdir():
-        if not img.name.startswith("image-"):
-            continue
-        if "dpi" not in args_:
-            with PIL.Image.open(root_folder / img) as image:
-                if "dpi" in image.info:
-                    args_["dpi"] = math.sqrt(
-                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
-                    )
 
     viewer_cmd = [config.get("viewer", VIEWER_DEFAULT), str(root_folder)]
     process = await asyncio.create_subprocess_exec(*viewer_cmd)
     await process.wait()
 
+    extension = config.get("extension", schema.EXTENSION_DEFAULT)
+    images = await _get_sorted_images(root_folder, extension)
+    await _save_process_config(root_folder, images, args_)
+
+
+async def _validate_scan_folder(config: schema.Configuration) -> Path:
+    """Validate and return the scan folder path."""
+    if "scan_folder" not in config:
+        print(
+            """The scan folder isn't set, use:
+    scan --set-settings scan_folder <a_folder>
+    This should be shared with the process container in 'source'.""",
+        )
+        sys.exit(1)
+    return await Path(config["scan_folder"]).expanduser()
+
+
+async def _get_base_folder(scan_folder: Path) -> Path:
+    """Get a unique base folder for the scan."""
+    now = datetime.datetime.now(datetime.UTC)
+    base_folder = scan_folder / now.strftime("%Y%m%d-%H%M%S")
+    while await base_folder.exists():
+        now += datetime.timedelta(seconds=1)
+        base_folder = scan_folder / now.strftime("%Y%m%d-%H%M%S")
+    return base_folder
+
+
+async def _scan_adf_mode(
+    scanimage_cmd: list[str],
+    root_folder: Path,
+) -> None:
+    """Scan using ADF mode."""
+    del root_folder
+    call([*scanimage_cmd])
+
+
+async def _scan_double_mode(
+    scanimage_cmd: list[str],
+    root_folder: Path,
+) -> None:
+    """Scan double-sided document using ADF."""
+    call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
+    odd = [p async for p in root_folder.iterdir()]
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None, input, "Put your document in the automatic document feeder for the other side, and press enter."
+    )
+    call(
+        [
+            *scanimage_cmd,
+            f"--batch-start={len(odd) * 2}",
+            "--batch-increment=-2",
+            f"--batch-count={len(odd)}",
+        ],
+    )
+    async for img in root_folder.iterdir():
+        if img not in odd:
+            path = root_folder / img
+            with PIL.Image.open(path) as image:
+                image.rotate(180).save(path, dpi=image.info["dpi"])
+
+
+async def _build_scanimage_command(
+    config: schema.Configuration,
+    root_folder: Path,
+    mode: _Mode,
+) -> list[str]:
+    """Build the scanimage command based on configuration and mode."""
+    scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
+    scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
+    extension = config.get("extension", schema.EXTENSION_DEFAULT)
+    scanimage += [f"--batch={root_folder}/image-%d.{extension}"]
+
+    mode_config = config.get("modes", {}).get(mode.value, {})
+    mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode.value, {}))
+    scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
+
+    return scanimage
+
+
+async def _perform_scan(
+    scanimage_cmd: list[str],
+    root_folder: Path,
+    config: schema.Configuration,
+    mode: _Mode,
+) -> None:
+    """Perform the actual scan based on mode."""
+    mode_config = config.get("modes", {}).get(mode.value, {})
+    mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode.value, {}))
+
+    if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
+        if mode == _Mode.DOUBLE:
+            await _scan_double_mode(scanimage_cmd, root_folder)
+        else:
+            call([*scanimage_cmd])
+    else:
+        await _scan_adf_mode(scanimage_cmd, root_folder)
+
+
+async def _detect_image_dpi(args_: schema.Arguments, root_folder: Path) -> None:
+    """Detect DPI from images if not already set."""
+    if "dpi" in args_:
+        return
+
+    async for img in root_folder.iterdir():
+        if not img.name.startswith("image-"):
+            continue
+        with PIL.Image.open(root_folder / img) as image:
+            if "dpi" in image.info:
+                args_["dpi"] = math.sqrt(
+                    sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
+                )
+                return
+
+
+async def _get_sorted_images(root_folder: Path, extension: str) -> list[Path]:
+    """Get sorted list of images from root folder."""
     images = []
     async for img in root_folder.iterdir():
         if not img.name.startswith("image-"):
             continue
         images.append(Path(img).relative_to(root_folder.parent))
 
-    regex = re.compile(rf"source/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
+    regex = re.compile(rf"source/image\-([0-9]+)\.{extension}$")
 
     def image_match(image_path: Path) -> int:
         match = regex.match(str(image_path))
         assert match
         return int(match.group(1))
 
-    images = sorted(images, key=image_match)
-    if images:
-        process_config = {
-            "images": [str(image) for image in images],
-            "args": args_,
-        }
-        yaml = YAML()
-        yaml.default_flow_style = False
-        async with await (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
-            await process_file.write(
-                "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/process_schema.json\n\n",
-            )
-            yaml.dump(process_config, process_file)
-    else:
+    return sorted(images, key=image_match)
+
+
+async def _save_process_config(
+    root_folder: Path,
+    images: list[Path],
+    args_: schema.Arguments,
+) -> None:
+    """Save the process configuration file."""
+    if not images:
         await root_folder.rmdir()
-        await base_folder.rmdir()
+        await root_folder.parent.rmdir()
+        return
+
+    process_config = {
+        "images": [str(image) for image in images],
+        "args": args_,
+    }
+    yaml = YAML()
+    yaml.default_flow_style = False
+    async with await (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
+        await process_file.write(
+            "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
+            "/master/scan_to_paperless/process_schema.json\n\n",
+        )
+        yaml.dump(process_config, process_file)
 
 
 if __name__ == "__main__":
