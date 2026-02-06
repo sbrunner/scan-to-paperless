@@ -1,11 +1,11 @@
 """Functions used to generate a Jupyter notebook from the transform."""
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import nbformat
 import numpy as np
+from anyio import Path
 
 import scan_to_paperless
 import scan_to_paperless.process_utils
@@ -33,7 +33,7 @@ def _pretty_repr(value: Any, prefix: str = "") -> str:
     return repr(value)
 
 
-def create_transform_notebook(
+async def create_transform_notebook(
     root_folder: Path,
     context: scan_to_paperless.process_utils.Context,
     step: schema.Step,
@@ -41,10 +41,10 @@ def create_transform_notebook(
     """Create a Jupyter notebook for the transform step."""
     # Jupyter notebook
     dest_folder = root_folder / "jupyter"
-    if not dest_folder.exists():
-        dest_folder.mkdir(parents=True)
-    with (dest_folder / "README.txt").open("w", encoding="utf-8") as readme_file:
-        readme_file.write(
+    if not await dest_folder.exists():
+        await dest_folder.mkdir(parents=True)
+    async with await (dest_folder / "README.txt").open("w", encoding="utf-8") as readme_file:
+        await readme_file.write(
             """# Jupyter notebook
 
 Install dependencies:
@@ -461,5 +461,5 @@ if save:
         ),
     )
 
-    with (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
+    async with await (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
         nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]

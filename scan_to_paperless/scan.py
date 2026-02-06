@@ -2,19 +2,20 @@
 
 """Scan a new document."""
 
+import asyncio
 import datetime
 import math
 import re
 import subprocess  # nosec
 import sys
 import time
-from enum import Enum
-from pathlib import Path
+from enum import StrEnum
 from typing import Annotated, Any, cast
 
 import PIL.Image
 import pyperclip
 import typer
+from anyio import Path
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import CONFIG_FILENAME, CONFIG_FOLDER, CONFIG_PATH, get_config
@@ -57,13 +58,16 @@ def do_convert_clipboard() -> None:
 app = typer.Typer(rich_markup_mode=None)
 
 
-def available_presets() -> list[str]:
+async def available_presets() -> list[str]:
     """Return the list of available presets."""
-    return [e.stem[len(str(CONFIG_FILENAME)) - 4 :] for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")]
+    return [
+        e.stem[len(str(CONFIG_FILENAME)) - 4 :]
+        async for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")
+    ]
 
 
 @app.command(name="config", help="Print the configuration.")
-def main_config(
+async def main_config(
     preset: Annotated[
         str,
         typer.Option(help="Use an alternate configuration", autocompletion=available_presets),
@@ -71,7 +75,7 @@ def main_config(
 ) -> None:
     """Print the configuration."""
     config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
-    config: schema.Configuration = get_config(config_filename)
+    config: schema.Configuration = await get_config(config_filename)
 
     yaml = YAML()
     yaml.default_flow_style = False
@@ -81,7 +85,7 @@ def main_config(
 
 
 @app.command(help="Set a configuration option.")
-def set_config(
+async def set_config(
     key: Annotated[str, typer.Option(help="Configuration key to set")],
     value: Annotated[str, typer.Option(help="Configuration value to set")],
     preset: Annotated[
@@ -91,14 +95,14 @@ def set_config(
 ) -> None:
     """Set a configuration option."""
     config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
-    config: schema.Configuration = get_config(config_filename)
+    config: schema.Configuration = await get_config(config_filename)
 
     config[key] = value  # type: ignore[literal-required]
 
     yaml = YAML()
     yaml.default_flow_style = False
-    with config_filename.open("w", encoding="utf-8") as config_file:
-        config_file.write(
+    async with await config_filename.open("w", encoding="utf-8") as config_file:
+        await config_file.write(
             "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
             "/master/scan_to_paperless/config_schema.json\n\n",
         )
@@ -128,7 +132,7 @@ def convert_clipboard() -> None:
         sys.exit()
 
 
-class _Mode(str, Enum):
+class _Mode(StrEnum):
     ADF = "adf"
     MULTI = "multi"
     ONE = "one"
@@ -140,7 +144,7 @@ app_scan = typer.Typer(rich_markup_mode=None)
 
 @app.command(help="Scan a new document.")
 @app_scan.command(help="Scan a new document.")
-def scan(
+async def scan(
     mode: Annotated[
         _Mode,
         typer.Option(
@@ -178,7 +182,7 @@ def scan(
     """Scan a new document."""
 
     config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
-    config: schema.Configuration = get_config(config_filename)
+    config: schema.Configuration = await get_config(config_filename)
 
     if "scan_folder" not in config:
         print(
@@ -188,13 +192,13 @@ def scan(
         )
         sys.exit(1)
     now = datetime.datetime.now(datetime.UTC)
-    base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
-    while base_folder.exists():
+    base_folder = (await Path(config["scan_folder"]).expanduser()) / now.strftime("%Y%m%d-%H%M%S")
+    while await base_folder.exists():
         now += datetime.timedelta(seconds=1)
-        base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
+        base_folder = (await Path(config["scan_folder"]).expanduser()) / now.strftime("%Y%m%d-%H%M%S")
 
     root_folder = base_folder / "source"
-    root_folder.mkdir(parents=True)
+    await root_folder.mkdir(parents=True)
 
     try:
         scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
@@ -206,18 +210,18 @@ def scan(
 
         if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
             call([*scanimage, "--batch-start=1", "--batch-increment=2"])
-            odd = root_folder.iterdir()
+            odd = [p async for p in root_folder.iterdir()]
             input("Put your document in the automatic document feeder for the other side, and press enter.")
             call(
                 [
                     *scanimage,
-                    f"--batch-start={len(list(odd)) * 2}",
+                    f"--batch-start={len(odd) * 2}",
                     "--batch-increment=-2",
-                    f"--batch-count={len(list(odd))}",
+                    f"--batch-count={len(odd)}",
                 ],
             )
             if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
-                for img in root_folder.iterdir():
+                async for img in root_folder.iterdir():
                     if img not in odd:
                         path = root_folder / img
                         with PIL.Image.open(path) as image:
@@ -235,7 +239,7 @@ def scan(
         print(exception)
         sys.exit(1)
 
-    for img in root_folder.iterdir():
+    async for img in root_folder.iterdir():
         if not img.name.startswith("image-"):
             continue
         if "dpi" not in args_:
@@ -245,10 +249,12 @@ def scan(
                         sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
                     )
 
-    subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # noqa: S603
+    viewer_cmd = [config.get("viewer", VIEWER_DEFAULT), str(root_folder)]
+    process = await asyncio.create_subprocess_exec(*viewer_cmd)
+    await process.wait()
 
     images = []
-    for img in root_folder.iterdir():
+    async for img in root_folder.iterdir():
         if not img.name.startswith("image-"):
             continue
         images.append(Path(img).relative_to(root_folder.parent))
@@ -268,15 +274,15 @@ def scan(
         }
         yaml = YAML()
         yaml.default_flow_style = False
-        with (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
-            process_file.write(
+        async with await (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
+            await process_file.write(
                 "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
                 "/master/scan_to_paperless/process_schema.json\n\n",
             )
             yaml.dump(process_config, process_file)
     else:
-        root_folder.rmdir()
-        base_folder.rmdir()
+        await root_folder.rmdir()
+        await base_folder.rmdir()
 
 
 if __name__ == "__main__":

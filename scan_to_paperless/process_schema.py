@@ -4,28 +4,35 @@
 
 from typing import Required, TypedDict
 
+
 APPEND_CREDIT_CARD_DEFAULT = False
 r""" Default value of the field path 'Arguments append_credit_card' """
+
 
 
 ASSISTED_SPLIT_DEFAULT = False
 r""" Default value of the field path 'Arguments assisted_split' """
 
 
+
 AUTO_CUT_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Cut operation enabled' """
+
 
 
 AUTO_DETECTION_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Auto mask enabled' """
 
 
+
 AUTO_LEVEL_DEFAULT = False
 r""" Default value of the field path 'Level auto' """
 
 
+
 AUTO_ROTATE_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Auto rotate enabled' """
+
 
 
 class Arguments(TypedDict, total=False):
@@ -264,6 +271,7 @@ class Arguments(TypedDict, total=False):
     """
 
 
+
 class AssistedSplit(TypedDict, total=False):
     r"""
     Assisted split.
@@ -286,6 +294,7 @@ class AssistedSplit(TypedDict, total=False):
 
     The (proposed) limits to do the assisted split, You should keep only the right one
     """
+
 
 
 class AutoMask(TypedDict, total=False):
@@ -383,6 +392,7 @@ class AutoMask(TypedDict, total=False):
     """
 
 
+
 class AutoRotate(TypedDict, total=False):
     r"""
     Auto rotate.
@@ -400,48 +410,59 @@ class AutoRotate(TypedDict, total=False):
     """
 
 
+
 BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
 r""" Default value of the field path 'Arguments background_color' """
+
 
 
 BUFFER_LEVEL_DEFAULT = 20
 r""" Default value of the field path 'Auto mask buffer_level' """
 
 
+
 BUFFER_SIZE_DEFAULT = 20
 r""" Default value of the field path 'Auto mask buffer_size' """
+
 
 
 COLORS_DEFAULT = 0
 r""" Default value of the field path 'Arguments colors' """
 
 
+
 CONSUME_FOLDER_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Consume folder enabled' """
+
 
 
 CONTOUR_KERNEL_SIZE_DEFAULT = 1.5
 r""" Default value of the field path 'Contour contour_kernel_size' """
 
 
+
 CROP_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Crop enabled' """
+
 
 
 CUT_BLACK_DEFAULT = 0
 r""" Default value of the field path 'Arguments cut_black' """
 
 
-CUT_OPERATION_DEFAULT = {"enabled": False}
+
+CUT_OPERATION_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments cut' """
+
 
 
 CUT_WHITE_DEFAULT = 255
 r""" Default value of the field path 'Arguments cut_white' """
 
 
+
 class Configuration(TypedDict, total=False):
-    r"""Configuration."""
+    r""" Configuration. """
 
     images: Required[list[str]]
     r"""
@@ -496,6 +517,7 @@ class ConsumeFolder(TypedDict, total=False):
 
     default: True
     """
+
 
 
 class Contour(TypedDict, total=False):
@@ -554,6 +576,7 @@ class Contour(TypedDict, total=False):
     """
 
 
+
 class Crop(TypedDict, total=False):
     r"""
     Crop.
@@ -596,6 +619,7 @@ class Crop(TypedDict, total=False):
     """
 
 
+
 class CutOperation(TypedDict, total=False):
     r"""
     Cut operation.
@@ -626,52 +650,65 @@ class CutOperation(TypedDict, total=False):
     r""" An image file used to add on the mask """
 
 
+
 DESKEW_ANGLE_DERIVATION_DEFAULT = 0.1
 r""" Default value of the field path 'Arguments deskew angle_derivation' """
+
 
 
 DESKEW_ANGLE_PM_90_DEFAULT = False
 r""" Default value of the field path 'Arguments deskew angle_pm_90' """
 
 
+
 DESKEW_MAX_ANGLE_DEFAULT = 45
 r""" Default value of the field path 'Arguments deskew max_angle' """
+
 
 
 DESKEW_MIN_ANGLE_DEFAULT = -45
 r""" Default value of the field path 'Arguments deskew min_angle' """
 
 
+
 DESKEW_NUM_PEAKS_DEFAULT = 20
 r""" Default value of the field path 'Arguments deskew num_peaks' """
+
 
 
 DESKEW_SIGMA_DEFAULT = 3.0
 r""" Default value of the field path 'Arguments deskew sigma' """
 
 
+
 DE_NOISE_LEVEL_DEFAULT = 220
 r""" Default value of the field path 'Auto mask de_noise_level' """
+
 
 
 DE_NOISE_MORPHOLOGY_DEFAULT = True
 r""" Default value of the field path 'Auto mask de_noise_morphology' """
 
 
+
 DE_NOISE_SIZE_DEFAULT = 1000
 r""" Default value of the field path 'Auto mask de_noise_size' """
 
 
-DITHER_DEFAULT = {"enabled": False}
+
+DITHER_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments dither' """
+
 
 
 DITHER_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Dither enabled' """
 
 
+
 DPI_DEFAULT = 300
 r""" Default value of the field path 'Arguments dpi' """
+
 
 
 class Dither(TypedDict, total=False):
@@ -694,16 +731,20 @@ class Dither(TypedDict, total=False):
     """
 
 
+
 EMPTY_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Empty enabled' """
 
 
-EXIFTOOL_DEFAULT = {"enabled": False}
+
+EXIFTOOL_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments exiftool' """
+
 
 
 EXIFTOOL_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Exiftool enabled' """
+
 
 
 class Empty(TypedDict, total=False):
@@ -730,6 +771,7 @@ class Empty(TypedDict, total=False):
     """
 
 
+
 class Exiftool(TypedDict, total=False):
     r"""
     Exiftool.
@@ -750,27 +792,32 @@ class Exiftool(TypedDict, total=False):
     """
 
 
+
 INVERSE_MASK_DEFAULT = False
 r""" Default value of the field path 'Auto mask inverse_mask' """
 
 
+
 class IntermediateError(TypedDict, total=False):
-    r"""Intermediate error."""
+    r""" Intermediate error. """
 
     error: str
     traceback: list[str]
 
 
-JPEG_DEFAULT = {"enabled": False}
+JPEG_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments jpeg' """
+
 
 
 JPEG_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Jpeg enabled' """
 
 
+
 JPEG_QUALITY_DEFAULT = 90
 r""" Default value of the field path 'Jpeg quality' """
+
 
 
 class Jpeg(TypedDict, total=False):
@@ -802,40 +849,50 @@ class Jpeg(TypedDict, total=False):
     """
 
 
+
 LEVEL_VALUE_DEFAULT = False
 r""" Default value of the field path 'Level value' """
+
 
 
 LINE_DETECTION_APERTURE_SIZE_DEFAULT = 3
 r""" Default value of the field path 'Line detection aperture_size' """
 
 
+
 LINE_DETECTION_HIGH_THRESHOLD_DEFAULT = 1000
 r""" Default value of the field path 'Line detection high_threshold' """
+
 
 
 LINE_DETECTION_LOW_THRESHOLD_DEFAULT = 0
 r""" Default value of the field path 'Line detection low_threshold' """
 
 
+
 LINE_DETECTION_MAX_LINE_GAP_DEFAULT = 100
 r""" Default value of the field path 'Line detection max_line_gap' """
+
 
 
 LINE_DETECTION_MIN_LINE_LENGTH_DEFAULT = 50
 r""" Default value of the field path 'Line detection min_line_length' """
 
 
+
 LINE_DETECTION_RHO_DEFAULT = 1
 r""" Default value of the field path 'Line detection rho' """
+
 
 
 LINE_DETECTION_THRESHOLD_DEFAULT = 100
 r""" Default value of the field path 'Line detection threshold' """
 
 
+
 LOWER_HSV_COLOR_DEFAULT = [0, 0, 250]
 r""" Default value of the field path 'Auto mask lower_hsv_color' """
+
 
 
 class Level(TypedDict, total=False):
@@ -882,6 +939,7 @@ class Level(TypedDict, total=False):
     """
 
 
+
 LevelValue = bool | int
 r"""
 Level value.
@@ -892,8 +950,9 @@ default: False
 """
 
 
+
 class Limit(TypedDict, total=False):
-    r"""Limit."""
+    r""" Limit. """
 
     name: str
     r""" The name visible on the generated image """
@@ -909,6 +968,7 @@ class Limit(TypedDict, total=False):
 
     margin: int
     r""" The margin around the split, can be used to remove a fold """
+
 
 
 class LimitDetection(TypedDict, total=False):
@@ -931,6 +991,7 @@ class LimitDetection(TypedDict, total=False):
 
     The line detection used in assisted split
     """
+
 
 
 class LineDetection(TypedDict, total=False):
@@ -1004,36 +1065,45 @@ class LineDetection(TypedDict, total=False):
     """
 
 
+
 MARGIN_HORIZONTAL_DEFAULT = 9
 r""" Default value of the field path 'Crop margin_horizontal' """
+
 
 
 MARGIN_VERTICAL_DEFAULT = 6
 r""" Default value of the field path 'Crop margin_vertical' """
 
 
+
 MASK_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Mask operation enabled' """
 
 
-MASK_OPERATION_DEFAULT = {"enabled": False}
+
+MASK_OPERATION_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments mask' """
+
 
 
 MAX_LEVEL_DEFAULT = 100
 r""" Default value of the field path 'Level max' """
 
 
+
 MIN_BOX_BLACK_DEFAULT = 2
 r""" Default value of the field path 'Contour min_box_black' """
 
 
-MIN_BOX_SIZE_DEFAULT = {"crop": 3, "empty": 10, "limit": 10}
+
+MIN_BOX_SIZE_DEFAULT = {'crop': 3, 'empty': 10, 'limit': 10}
 r""" Default value of the field path 'Contour min_box_size' """
+
 
 
 MIN_LEVEL_DEFAULT = 0
 r""" Default value of the field path 'Level min' """
+
 
 
 class MaskOperation(TypedDict, total=False):
@@ -1066,12 +1136,15 @@ class MaskOperation(TypedDict, total=False):
     r""" An image file used to add on the mask """
 
 
+
 NO_REMOVE_TO_CONTINUE_DEFAULT = False
 r""" Default value of the field path 'Arguments no_remove_to_continue' """
 
 
+
 OPTIPNG_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Optipng enabled' """
+
 
 
 class Optipng(TypedDict, total=False):
@@ -1091,28 +1164,35 @@ class Optipng(TypedDict, total=False):
     """
 
 
-PNGQUANT_DEFAULT = {"enabled": False}
+
+PNGQUANT_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments pngquant' """
+
 
 
 PNGQUANT_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Pngquant enabled' """
 
 
-PNGQUANT_OPTIONS_DEFAULT = ["--force", "--speed=1", "--strip", "--quality=0-32"]
+
+PNGQUANT_OPTIONS_DEFAULT = ['--force', '--speed=1', '--strip', '--quality=0-32']
 r""" Default value of the field path 'Pngquant options' """
+
 
 
 PROGRESS_DEFAULT = False
 r""" Default value of the field path 'Configuration progress' """
 
 
-PS2PDF_DEFAULT = {"enabled": False}
+
+PS2PDF_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments ps2pdf' """
+
 
 
 PS2PDF_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Ps2pdf enabled' """
+
 
 
 class Pngquant(TypedDict, total=False):
@@ -1148,6 +1228,7 @@ class Pngquant(TypedDict, total=False):
     """
 
 
+
 class Ps2Pdf(TypedDict, total=False):
     r"""
     Ps2pdf.
@@ -1168,60 +1249,75 @@ class Ps2Pdf(TypedDict, total=False):
     """
 
 
+
 REST_UPLOAD_ENABLED_DEFAULT = False
 r""" Default value of the field path 'REST upload enabled' """
+
 
 
 RULE_ENABLE_DEFAULT = True
 r""" Default value of the field path 'Rule enabled' """
 
 
+
 RULE_GRADUATION_COLOR_DEFAULT = [0, 0, 0]
 r""" Default value of the field path 'Rule graduation_color' """
+
 
 
 RULE_GRADUATION_TEXT_FONT_COLOR_DEFAULT = [0, 0, 0]
 r""" Default value of the field path 'Rule graduation_text_font_color' """
 
 
-RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+RULE_GRADUATION_TEXT_FONT_FILENAME_DEFAULT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 r""" Default value of the field path 'Rule graduation_text_font_filename' """
+
 
 
 RULE_GRADUATION_TEXT_FONT_SIZE_DEFAULT = 17
 r""" Default value of the field path 'Rule graduation_text_font_size' """
 
 
+
 RULE_GRADUATION_TEXT_MARGIN_DEFAULT = 6
 r""" Default value of the field path 'Rule graduation_text_margin' """
+
 
 
 RULE_LINES_COLOR_DEFAULT = [0, 0, 0]
 r""" Default value of the field path 'Rule lines_color' """
 
 
+
 RULE_LINES_OPACITY_DEFAULT = 0.2
 r""" Default value of the field path 'Rule lines_opacity' """
+
 
 
 RULE_LINES_SPACE_DEFAULT = 100
 r""" Default value of the field path 'Rule lines_space' """
 
 
+
 RULE_MAJOR_GRADUATION_SIZE_DEFAULT = 30
 r""" Default value of the field path 'Rule major_graduation_size' """
+
 
 
 RULE_MAJOR_GRADUATION_SPACE_DEFAULT = 100
 r""" Default value of the field path 'Rule major_graduation_space' """
 
 
+
 RULE_MINOR_GRADUATION_SIZE_DEFAULT = 10
 r""" Default value of the field path 'Rule minor_graduation_size' """
 
 
+
 RULE_MINOR_GRADUATION_SPACE_DEFAULT = 10
 r""" Default value of the field path 'Rule minor_graduation_space' """
+
 
 
 class RestUpload(TypedDict, total=False):
@@ -1257,6 +1353,7 @@ class RestUpload(TypedDict, total=False):
 
     Required property
     """
+
 
 
 class Rule(TypedDict, total=False):
@@ -1367,12 +1464,15 @@ class Rule(TypedDict, total=False):
     """
 
 
-SHARPEN_DEFAULT = {"enabled": False}
+
+SHARPEN_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments sharpen' """
+
 
 
 SHARPEN_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Sharpen enabled' """
+
 
 
 class Sharpen(TypedDict, total=False):
@@ -1395,8 +1495,9 @@ class Sharpen(TypedDict, total=False):
     """
 
 
+
 class Step(TypedDict, total=False):
-    r"""Step."""
+    r""" Step. """
 
     name: str
     r""" The step name """
@@ -1408,20 +1509,25 @@ class Step(TypedDict, total=False):
     r""" The step number """
 
 
+
 TESSERACT_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Tesseract enabled' """
 
 
-TESSERACT_LANG_DEFAULT = "fra+eng"
+
+TESSERACT_LANG_DEFAULT = 'fra+eng'
 r""" Default value of the field path 'Tesseract lang' """
+
 
 
 THRESHOLD_BLOCK_SIZE_DEFAULT = 1.5
 r""" Default value of the field path 'Contour threshold_block_size' """
 
 
+
 THRESHOLD_VALUE_C_DEFAULT = 70
 r""" Default value of the field path 'Contour threshold_value_c' """
+
 
 
 class Tesseract(TypedDict, total=False):
@@ -1450,12 +1556,14 @@ class Tesseract(TypedDict, total=False):
     """
 
 
+
 UPPER_HSV_COLOR_DEFAULT = [255, 10, 255]
 r""" Default value of the field path 'Auto mask upper_hsv_color' """
 
 
+
 class _ArgumentsDeskew(TypedDict, total=False):
-    r"""The deskew configuration"""
+    r""" The deskew configuration """
 
     min_angle: int | float
     r"""
@@ -1512,6 +1620,7 @@ class _ArgumentsDeskew(TypedDict, total=False):
     """
 
 
+
 class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
     angle: int | float | None
     r""" The used angle to deskew, can be change, restart by deleting one of the generated images """
@@ -1525,3 +1634,4 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=Fals
 
     size: list[int | float]
     r""" The image dimensions """
+

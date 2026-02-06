@@ -8,7 +8,6 @@ import math
 import os
 import random
 import tempfile
-from pathlib import Path
 from typing import TypedDict
 
 import aiofiles
@@ -16,6 +15,7 @@ import cv2
 import pikepdf
 import polygon_math
 import zxingcpp
+from anyio import Path
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
 from pyzbar import pyzbar
@@ -369,7 +369,7 @@ def _is_rectangular(geometry: list[tuple[float, float]]) -> bool:
 
 async def add_codes(
     input_filename: Path,
-    output_filename: Path,
+    output_filename: str,
     dpi: float = 200,
     pdf_dpi: float = 72,
     font_size: float = 16,
@@ -383,8 +383,8 @@ async def add_codes(
     # Codes information about the already found codes
     added_codes: dict[str, _AllCodes] = {}
 
-    with input_filename.open("rb") as input_file:
-        existing_pdf = PdfReader(input_file)
+    async with await input_filename.open("rb") as input_file:
+        existing_pdf = PdfReader(io.BytesIO(await input_file.read()))
         metadata = {**existing_pdf.metadata} if existing_pdf.metadata is not None else {}
         output_pdf = PdfWriter()
         for index, page in enumerate(existing_pdf.pages):

@@ -4,13 +4,14 @@ import asyncio
 import datetime
 import html
 import logging
-import os.path
+import os
 import traceback
-from collections.abc import AsyncGenerator, Generator, Iterable
+from collections.abc import AsyncGenerator, Iterable
 from enum import Enum
-from pathlib import Path
 from typing import NamedTuple
 
+import anyio
+import anyio.abc
 import asyncinotify
 import jinja2
 from ruamel.yaml.main import YAML
@@ -18,6 +19,9 @@ from ruamel.yaml.main import YAML
 from scan_to_paperless import process_schema
 
 _LOGGER = logging.getLogger(__name__)
+
+_CONFIG_FILENAME = "config.yaml"
+_STATUS_FILENAME = "status.html"
 
 _WAITING_STATUS_NAME = "Waiting validation"
 _WAITING_STATUS_DESCRIPTION = """<div class="sidebar-box"><p>You should validate that the generate images are correct ({generated_images}).<br />
@@ -90,7 +94,7 @@ class JobType(Enum):
     CODE = "code"
 
 
-def _get_directories_recursive(path: Path) -> Generator[Path, None, None]:
+async def _get_directories_recursive(path: anyio.Path) -> AsyncGenerator[anyio.Path, None]:
     """
     Recursively list all directories under path, Including path itself.
 
@@ -101,19 +105,20 @@ def _get_directories_recursive(path: Path) -> Generator[Path, None, None]:
     Passing a non-directory won't raise an error or anything, it'll just yield
     nothing.
     """
-    if path.is_dir():
+    if await path.is_dir():
         yield path
-        for child in path.iterdir():
-            yield from _get_directories_recursive(child)
+        async for child in path.iterdir():
+            async for subdir in _get_directories_recursive(child):
+                yield subdir
 
 
 class _WatchRecursive:
-    def __init__(self, path: Path, mask: asyncinotify.Mask) -> None:
-        self._watchers: dict[Path, asyncinotify.Watch] = {}
+    def __init__(self, path: anyio.Path, mask: asyncinotify.Mask) -> None:
+        self._watchers: dict[anyio.Path, asyncinotify.Watch] = {}
         self._path = path
         self._mask = mask
 
-    def get_watched_paths(self) -> Iterable[Path]:
+    def get_watched_paths(self) -> Iterable[anyio.Path]:
         """Get the list of watched paths."""
         return self._watchers.keys()
 
@@ -127,7 +132,7 @@ class _WatchRecursive:
             | asyncinotify.Mask.IGNORED
         )
         with asyncinotify.Inotify() as inotify:
-            for directory in _get_directories_recursive(self._path):
+            async for directory in _get_directories_recursive(self._path):
                 self._watchers[directory] = inotify.add_watch(directory, used_mask)
 
             # Things that can throw this off:
@@ -153,6 +158,7 @@ class _WatchRecursive:
             # * Deleting and recreating or moving the watched directory won't do
             #   anything special, but it probably should.
             async for event in inotify:
+                event_path = anyio.Path(event.path) if event.path is not None else None
                 # Add subdirectories to watch if a new directory is added.  We do
                 # this recursively here before processing events to make sure we
                 # have complete coverage of existing and newly-created directories
@@ -160,53 +166,57 @@ class _WatchRecursive:
                 # get_directories_recursive is depth-first and yields every
                 # directory before iterating their children, we know we won't miss
                 # anything.
-                if asyncinotify.Mask.CREATE in event.mask and event.path is not None and event.path.is_dir():
-                    for directory in _get_directories_recursive(event.path):
+                if (
+                    asyncinotify.Mask.CREATE in event.mask
+                    and event_path is not None
+                    and await event_path.is_dir()
+                ):
+                    async for directory in _get_directories_recursive(event_path):
                         if directory in self._watchers:
                             continue
                         print(f"EVENT: Watching {directory}")
                         self._watchers[directory] = inotify.add_watch(directory, used_mask)
                 elif asyncinotify.Mask.DELETE_SELF in event.mask:
-                    if event.path in self._watchers:
-                        print(f"EVENT: Removing watch (delete self) {event.path}")
-                        if event.path in self._watchers:
+                    if event_path in self._watchers:
+                        print(f"EVENT: Removing watch (delete self) {event_path}")
+                        if event_path in self._watchers:
                             try:
-                                inotify.rm_watch(self._watchers[event.path])
+                                inotify.rm_watch(self._watchers[event_path])
                             except OSError:
                                 _LOGGER.exception(
                                     "Failed to remove watch on %s",
-                                    event.path,
+                                    event_path,
                                 )
-                            del self._watchers[event.path]
+                            del self._watchers[event_path]
                 elif asyncinotify.Mask.IGNORED in event.mask:
-                    if event.path in self._watchers:
-                        print(f"EVENT: Removing watch (ignored) {event.path}")
-                        if event.path in self._watchers:
+                    if event_path in self._watchers:
+                        print(f"EVENT: Removing watch (ignored) {event_path}")
+                        if event_path in self._watchers:
                             try:
-                                inotify.rm_watch(self._watchers[event.path])
+                                inotify.rm_watch(self._watchers[event_path])
                             except OSError:
                                 _LOGGER.exception(
                                     "Failed to remove watch on %s",
-                                    event.path,
+                                    event_path,
                                 )
-                            del self._watchers[event.path]
+                            del self._watchers[event_path]
                 elif asyncinotify.Mask.MOVED_FROM in event.mask:
-                    if event.path in self._watchers:
-                        print(f"EVENT: Removing watch (moved from) {event.path}")
-                        if event.path in self._watchers:
+                    if event_path in self._watchers:
+                        print(f"EVENT: Removing watch (moved from) {event_path}")
+                        if event_path in self._watchers:
                             try:
-                                inotify.rm_watch(self._watchers[event.path])
+                                inotify.rm_watch(self._watchers[event_path])
                             except OSError:
                                 _LOGGER.exception(
                                     "Failed to remove watch on %s",
-                                    event.path,
+                                    event_path,
                                 )
-                            del self._watchers[event.path]
+                            del self._watchers[event_path]
                 elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in self._watchers:
-                    if event.path is None or event.path in self._watchers:
+                    if event.path is None or event_path is None or event_path in self._watchers:
                         continue
-                    print(f"EVENT: Watching (moved to) {event.path}")
-                    self._watchers[event.path] = inotify.add_watch(event.path, used_mask)
+                    print(f"EVENT: Watching (moved to) {event_path}")
+                    self._watchers[event_path] = inotify.add_watch(event.path, used_mask)
 
                 # If there is at least some overlap, assume the user wants this event.
                 if event.mask & self._mask:
@@ -230,7 +240,7 @@ class Status:
     def __init__(self, no_write: bool = False) -> None:
         """Construct."""
         self.no_write = no_write
-        self._file = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / "status.html"
+        self._file = anyio.Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / _STATUS_FILENAME
         self._status: dict[str, _Folder] = {}
         self._codes: list[str] = []
         self._consume: list[str] = []
@@ -242,43 +252,40 @@ class Status:
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
         if codes_folder[-1] != "/":
             codes_folder += "/"
-        self._codes_folder = Path(codes_folder)
+        self._codes_folder = anyio.Path(codes_folder)
         consume_folder = os.environ.get("SCAN_FINAL_FOLDER", "/destination")
         if consume_folder[-1] != "/":
             consume_folder += "/"
-        self._consume_folder = Path(consume_folder)
+        self._consume_folder = anyio.Path(consume_folder)
         source_folder = os.environ.get("SCAN_SOURCE_FOLDER", "/source")
         if source_folder[-1] != "/":
             source_folder += "/"
-        self._source_folder = Path(source_folder)
+        self._source_folder = anyio.Path(source_folder)
 
-        self._init()
-
-    def set_global_status(self, status: str) -> None:
+    async def set_global_status(self, status: str) -> None:
         """Set the global status."""
         if self._global_status != status:
             print(status)
             self._global_status = status
             self._global_status_update = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
 
-            self.write()
+            await self.write()
 
-    def set_current_folder(self, path: Path | str | None) -> None:
+    async def set_current_folder(self, path: anyio.Path | str | None) -> None:
         """Set the current folder."""
         if self._current_folder is not None:
             old_name = self._current_folder
             self._current_folder = None
-            self._update_status(old_name)
-            self.update_scan_codes()
-            self._update_consume()
+            await self._update_status(old_name)
+            await self.update_scan_codes()
+            await self._update_consume()
 
         if path is None:
-            if self._current_folder is not None:
-                self.write()
+            await self.write()
             return
 
-        if isinstance(path, Path):
-            if path.name == "config.yaml":
+        if isinstance(path, anyio.Path):
+            if path.name == _CONFIG_FILENAME:
                 path = path.parent
             name = path.name
         else:
@@ -287,11 +294,11 @@ class Status:
         self._current_folder = name
 
         if write:
-            self.write()
+            await self.write()
 
-    def set_status(
+    async def set_status(
         self,
-        path: Path | str,
+        path: anyio.Path | str,
         nb_images: int,
         status: str,
         details: str = "",
@@ -300,8 +307,8 @@ class Status:
     ) -> None:
         """Set the status of a folder."""
         # Config file name
-        if isinstance(path, Path):
-            name = path.parent.name if path.name == "config.yaml" else path.name
+        if isinstance(path, anyio.Path):
+            name = path.parent.name if path.name == _CONFIG_FILENAME else path.name
         else:
             name = path
         if nb_images <= 0 and name in self._status:
@@ -312,35 +319,36 @@ class Status:
             print(f"{name}: {status}")
 
         if write:
-            self.write()
+            await self.write()
 
-    def _init(self) -> None:
+    async def init(self) -> None:
         """Scan for changes for waiting documents."""
-        self.update_scan_codes()
-        self._update_consume()
-        self.write()
+        await self.update_scan_codes()
+        await self._update_consume()
+        await self.write()
 
-        for folder_path in self._source_folder.glob("*"):
-            if folder_path.is_dir():
+        async for folder_path in self._source_folder.iterdir():
+            if await folder_path.is_dir():
                 name = folder_path.name
-                self._update_source_error(name)
-                self.write()
+                await self._update_source_error(name)
+                await self.write()
 
-    def _update_status(self, name: str) -> None:
+    async def _update_status(self, name: str) -> None:
         yaml = YAML(typ="safe")
 
-        if not (self._source_folder / name).exists():
+        if not await (self._source_folder / name).exists():
             if name in self._status:
                 del self._status[name]
             return
 
-        if (self._source_folder / name / "error.yaml").exists():
-            with (self._source_folder / name / "error.yaml").open(
+        if await (self._source_folder / name / "error.yaml").exists():
+            async with await anyio.open_file(
+                self._source_folder / name / "error.yaml",
                 encoding="utf-8",
             ) as error_file:
-                error = yaml.load(error_file)
+                error = yaml.load(await error_file.read())
 
-            self.set_status(
+            await self.set_status(
                 name,
                 -1,
                 "Error: " + error["error"],
@@ -350,27 +358,28 @@ class Status:
             )
             return
 
-        if (self._source_folder / name / "DONE").exists():
-            self.set_status(name, -1, _DONE_STATUS)
+        if await (self._source_folder / name / "DONE").exists():
+            await self.set_status(name, -1, _DONE_STATUS)
             return
 
-        if not (self._source_folder / name / "config.yaml").exists():
+        if not await (self._source_folder / name / _CONFIG_FILENAME).exists():
             files = [
                 str(f.relative_to(self._source_folder / name))
-                for f in (self._source_folder / name).rglob("*")
-                if f.is_file() and not f.name.startswith(".")
+                async for f in (self._source_folder / name).rglob("*")
+                if await f.is_file() and not f.name.startswith(".")
             ]
             files = [f'<a href="./{name}/{f}" target="_blank"><code>{f}</code></a>' for f in files]
-            self.set_status(name, -1, "Missing config", ", ".join(files))
+            await self.set_status(name, -1, "Missing config", ", ".join(files))
             return
 
-        with (self._source_folder / name / "config.yaml").open(
+        async with await anyio.open_file(
+            self._source_folder / name / _CONFIG_FILENAME,
             encoding="utf-8",
         ) as config_file:
-            config = yaml.load(config_file)
+            config = yaml.load(await config_file.read())
 
         if config is None:
-            self.set_status(name, -1, "Empty config")
+            await self.set_status(name, -1, "Empty config")
             return
 
         run_step: process_schema.Step | None = None
@@ -378,7 +387,7 @@ class Status:
         for step in reversed(config.get("steps", [])):
             all_present = True
             for source in step["sources"]:
-                if not Path(source).exists():
+                if not await anyio.Path(source).exists():
                     rerun = True
                     all_present = False
                     break
@@ -393,8 +402,8 @@ class Status:
         nb_images = len(run_step["sources"])
 
         for source in run_step["sources"]:
-            if not (self._source_folder / name / source).exists():
-                self.set_status(
+            if not await (self._source_folder / name / source).exists():
+                await self.set_status(
                     name,
                     nb_images,
                     "Waiting for sources",
@@ -404,18 +413,19 @@ class Status:
 
         if (
             rerun
-            or not (self._source_folder / name / "REMOVE_TO_CONTINUE").exists()
+            or not await (self._source_folder / name / "REMOVE_TO_CONTINUE").exists()
             or len(config.get("steps", [])) == 0
         ):
-            self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
+            await self.set_status(name, nb_images, _WAITING_TO_STATUS.format(run_step["name"]), step=run_step)
         else:
             source_images = (
                 config["steps"][-2]["sources"] if len(config.get("steps", [])) >= 2 else config["images"]
             )
             generated_images = [
-                str(Path(f).relative_to(self._source_folder / name)) for f in config["steps"][-1]["sources"]
+                str(anyio.Path(f).relative_to(self._source_folder / name))
+                for f in config["steps"][-1]["sources"]
             ]
-            self.set_status(
+            await self.set_status(
                 name,
                 nb_images,
                 _WAITING_STATUS_NAME,
@@ -440,20 +450,20 @@ class Status:
                 ),
             )
 
-    def write(self) -> None:
+    async def write(self) -> None:
         """Write the status file."""
         if self.no_write:
             return
 
         import natsort  # noqa: PLC0415, RUF100
 
-        with self._file.open("w", encoding="utf-8") as status_file:
+        async with await anyio.open_file(str(self._file), "w", encoding="utf-8") as status_file:
             env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(Path(__file__).parent),
+                loader=jinja2.FileSystemLoader(str(self._file.parent)),
                 autoescape=jinja2.select_autoescape(),
             )
-            template = env.get_template("status.html")
-            status_file.write(
+            template = env.get_template(_STATUS_FILENAME)
+            await status_file.write(
                 template.render(
                     global_status=self._global_status,
                     global_status_update=self._global_status_update,
@@ -487,12 +497,12 @@ class Status:
 
         return None, JobType.NONE, None
 
-    def update_scan_codes(self) -> None:
+    async def update_scan_codes(self) -> None:
         """Update the list of files witch one we should scan the codes."""
         self._codes = [
-            path.relative_to(self._codes_folder).name
-            for path in self._codes_folder.rglob("*")
-            if path.is_file()
+            str(path.relative_to(self._codes_folder))
+            async for path in self._codes_folder.rglob("*")
+            if await path.is_file()
         ]
 
     async def _watch_scan_codes_debug(self) -> None:
@@ -516,14 +526,14 @@ class Status:
             self._codes_folder,
             asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
         ):
-            self.update_scan_codes()
-            self.write()
+            await self.update_scan_codes()
+            await self.write()
 
-    def _update_consume(self) -> None:
+    async def _update_consume(self) -> None:
         self._consume = [
-            path.relative_to(self._consume_folder).name
-            for path in self._consume_folder.rglob("*")
-            if path.is_file()
+            str(path.relative_to(self._consume_folder))
+            async for path in self._consume_folder.rglob("*")
+            if await path.is_file()
         ]
 
     async def _watch_destination_debug(self) -> None:
@@ -547,17 +557,17 @@ class Status:
             self._consume_folder,
             asyncinotify.Mask.CLOSE_WRITE | asyncinotify.Mask.DELETE | asyncinotify.Mask.MOVE,
         ):
-            self._update_consume()
-            self.write()
+            await self._update_consume()
+            await self.write()
 
-    def _update_source_error(self, name: str) -> bool:
+    async def _update_source_error(self, name: str) -> bool:
         if name != self._current_folder:
-            if (self._source_folder / name).is_dir():
+            if await (self._source_folder / name).is_dir():
                 try:
-                    self._update_status(name)
+                    await self._update_status(name)
                 except Exception as exception:  # noqa: BLE001
                     trace = traceback.format_exc().split("\n")
-                    self.set_status(
+                    await self.set_status(
                         name,
                         -1,
                         f"Error: {exception}",
@@ -596,13 +606,13 @@ class Status:
             if len(path.parents) > 1:
                 path = path.parents[-2]
             name = path.name
-            if name == "status.html":
+            if name == _STATUS_FILENAME:
                 continue
             if name.startswith("."):
                 continue
             print(f"Update source '{name}' from event")
-            if self._update_source_error(name):
-                self.write()
+            if await self._update_source_error(name):
+                await self.write()
 
     async def _watchdog(self) -> None:
         """Watchdog to update the status of the source files."""

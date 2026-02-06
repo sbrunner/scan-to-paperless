@@ -4,14 +4,6 @@ headers: |
   # Automatically generated file from a JSON schema
   # Used to correctly format the generated file
 
-pre_commit:
-  enabled: true
-  hooks_skip:
-    - jsonschema-gentypes
-    - shellcheck
-  arguments:
-    - --color=never
-
 python_version: '3.11'
 
 generate:

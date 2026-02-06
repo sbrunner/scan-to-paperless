@@ -677,7 +677,7 @@
       "title": "Merge strategies",
       "description": "The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies",
       "properties": {
-        "list": {
+        "for_list": {
           "type": "array",
           "description": "The merge strategy to use on list",
           "default": ["override"],
@@ -686,7 +686,7 @@
           },
           "title": "List"
         },
-        "dict": {
+        "for_dict": {
           "type": "array",
           "description": "The merge strategy to use on dict",
           "default": ["merge"],

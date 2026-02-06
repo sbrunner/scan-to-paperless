@@ -3,11 +3,11 @@
 import logging
 import math
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 import cv2
 import numpy as np
+from anyio import Path
 from PIL import Image
 
 import scan_to_paperless
@@ -106,7 +106,7 @@ class Context:
                 return None
         return str(mask_file)
 
-    def _get_mask(
+    async def _get_mask(
         self,
         auto_mask_config: schema.AutoMask | None,
         config_section: str,
@@ -182,7 +182,7 @@ class Context:
             final_mask = cast("NpNdarrayInt", cv2.bitwise_not(mask))
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
-                self.save_progress_images(config_section.replace("_", "-"), final_mask)
+                await self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
             final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)  # type: ignore[assignment]
             if self.image is not None and final_mask is not None:
@@ -192,7 +192,7 @@ class Context:
                 )
         return final_mask
 
-    def init_mask(self) -> None:
+    async def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
             "mask",
@@ -207,7 +207,7 @@ class Context:
             message = f"Mask file {additional_path} does not exist."
             raise scan_to_paperless.ScanToPaperlessError(message)
         self.mask = (
-            self._get_mask(
+            await self._get_mask(
                 mask_config.setdefault("auto_mask", {}),
                 "mask",
                 additional_path,
@@ -223,7 +223,7 @@ class Context:
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
         )
 
-    def do_initial_cut(self) -> None:
+    async def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
             "cut",
@@ -239,7 +239,7 @@ class Context:
             if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
                 message = f"Mask file {additional_path} does not exist."
                 raise scan_to_paperless.ScanToPaperlessError(message)
-            mask = self._get_mask(
+            mask = await self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
                 additional_path,
@@ -294,7 +294,7 @@ class Context:
             schema.PROGRESS_DEFAULT,
         )
 
-    def save_progress_images(
+    async def save_progress_images(
         self,
         name: str,
         image: NpNdarrayInt | None = None,
@@ -320,7 +320,7 @@ class Context:
             name = f"{process_count}-{name}" if self.is_progress() else name
             dest_folder = self.root_folder / name
             if not dest_folder.exists():
-                dest_folder.mkdir(parents=True)
+                await dest_folder.mkdir(parents=True)
             dest_image = dest_folder / (image_prefix + self.image_name)
             if image is not None:
                 try:
