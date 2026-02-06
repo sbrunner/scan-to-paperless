@@ -497,7 +497,7 @@ async def add_codes(
                     data = code_["data"].split("\r\n")
                     if len(data) == 1:
                         data = data[0].split("\n")
-                    data = [d if d else "|" for d in data]
+                    data = [d or "|" for d in data]
                     code_["data_formatted"] = "<br />".join(data)  # type: ignore[typeddict-unknown-key]
                 sections = [
                     f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data_formatted']}</p>"  # type: ignore[typeddict-item]
