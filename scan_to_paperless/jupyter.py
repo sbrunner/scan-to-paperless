@@ -163,7 +163,7 @@ context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("leve
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
-process.histogram(context)""",
+await process.histogram(context)""",
         ),
     )
 
@@ -180,7 +180,7 @@ Some of the used values are displayed in the histogram chart.""",
 
 context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("level", {}))}
 
-process.level(context)
+await process.level(context)
 context.display_image(context.image)
 
 images_context["level"] = context.image""",
@@ -201,7 +201,7 @@ Some of the used values are displayed in the histogram chart.""",
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
-process.color_cut(context)
+await process.color_cut(context)
 context.display_image(context.image)
 
 images_context["color_cut"] = context.image""",
@@ -297,7 +297,7 @@ upper_hsv_color: [255, 255, 255]
 
 context.config["args"]["mask"] = {_pretty_repr(context.config["args"].get("mask", {}))}
 
-context.init_mask()
+await context.init_mask()
 if context.mask is not None:
     context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
 context.display_image(context.get_masked())
@@ -332,7 +332,7 @@ hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
 print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
-process.cut(context)
+await process.cut(context)
 context.display_image(context.image)
 
 images_context["cut"] = context.image
@@ -351,7 +351,7 @@ context.mask = images_context["cut-mask"].copy()
 context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}))}
 
 # The angle can be forced in config.images_config.<image_name>.angle.
-process.deskew(context)
+await process.deskew(context)
 context.display_image(context.image)
 
 images_context["deskew"] = context.image
@@ -371,7 +371,7 @@ context.mask = images_context["deskew-mask"].copy()
 
 context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}))}
 
-process.docrop(context)
+await process.docrop(context)
 context.display_image(context.image)
 
 images_context["crop"] = context.image
@@ -389,7 +389,7 @@ context.mask = images_context["crop-mask"].copy()
 
 context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
 
-process.sharpen(context)
+await process.sharpen(context)
 context.display_image(context.image)
 
 images_context["sharpen"] = context.image
@@ -407,7 +407,7 @@ context.mask = images_context["sharpen-mask"].copy()
 
 context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
 
-process.dither(context)
+await process.dither(context)
 context.display_image(context.image)
 
 images_context["dither"] = context.image
@@ -428,7 +428,7 @@ This require Tesseract to be installed.""",
 context.mask = images_context["dither-mask"].copy()
 
 try:
-    process.autorotate(context)
+    await process.autorotate(context)
     context.display_image(context.image)
 except FileNotFoundError as e:
     print("Tesseract not found, skipping autorotate: ", e)""",
@@ -462,4 +462,5 @@ if save:
     )
 
     async with await (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
-        nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]
+        notebook_json = nbformat.writes(notebook)  # type: ignore[no-untyped-call]
+        await jupyter_file.write(notebook_json)

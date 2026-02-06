@@ -1273,7 +1273,7 @@ async def transform(
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
             assisted_split: schema.AssistedSplit = {}
             name = root_folder / context.image_name
-            source = context.save_progress_images("assisted-split", context.image, force=True)
+            source = await context.save_progress_images("assisted-split", context.image, force=True)
             assert source
             assisted_split["source"] = str(source)
 
@@ -1844,7 +1844,7 @@ async def finalize(
     tesseract_producer = None
     if pdf:
         async with await pdf[0].open("rb") as pdf_file:
-            with pikepdf.open(pdf_file) as pdf_:
+            with pikepdf.open(io.BytesIO(await pdf_file.read())) as pdf_:
                 pdf_producer = pdf_.docinfo.get("/Producer")
                 if tesseract_producer is None and pdf_producer is not None:
                     tesseract_producer = json.loads(pdf_producer.to_json())
@@ -1861,12 +1861,12 @@ async def finalize(
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
-        for pdf_file in pdf:
-            basename = pdf_file.name.split(".")
+        for pdf_path in pdf:
+            basename = pdf_path.name.split(".")
             await call(
                 [
                     "cp",
-                    str(pdf_file),
+                    str(pdf_path),
                     str(root_folder / f"1-{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
                 ],
             )

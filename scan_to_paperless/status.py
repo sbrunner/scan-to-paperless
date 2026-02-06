@@ -8,7 +8,7 @@ import os
 import traceback
 from collections.abc import AsyncGenerator, Iterable
 from enum import Enum
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 import anyio
 import anyio.abc
@@ -396,7 +396,7 @@ class Status:
 
         yaml = YAML(typ="safe")
         async with await anyio.open_file(config_path, encoding="utf-8") as config_file:
-            config = yaml.load(await config_file.read())
+            config = cast("dict[str, Any]", yaml.load(await config_file.read()))
 
         if config is None:
             await self.set_status(name, -1, "Empty config")
@@ -487,9 +487,9 @@ class Status:
 
         import natsort  # noqa: PLC0415, RUF100
 
-        async with await anyio.open_file(str(self._file), "w", encoding="utf-8") as status_file:
+        async with await self._file.open("w", encoding="utf-8") as status_file:
             env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(str(self._file.parent)),
+                loader=jinja2.FileSystemLoader(str(anyio.Path(__file__).parent)),
                 autoescape=jinja2.select_autoescape(),
             )
             template = env.get_template(_STATUS_FILENAME)

@@ -2,7 +2,6 @@ import os
 import re
 import shutil
 import subprocess
-from pathlib import Path
 from typing import Any
 
 import cv2
@@ -11,6 +10,7 @@ import pikepdf
 import pytest
 import skimage.color
 import skimage.io
+from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
 
@@ -34,19 +34,21 @@ def test_find_lines() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_find_limit_contour() -> None:
+@pytest.mark.asyncio
+async def test_find_limit_contour() -> None:
     context = process_utils.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
-    contours = process.find_contours(context.image, context, "limit", {})
+    contours = await process.find_contours(context.image, context, "limit", {})
     limits = process.find_limit_contour(context.image, vertical=True, contours=contours)
     assert limits == [1589]
 
 
 # @pytest.mark.skip(reason="for test")
-def test_crop() -> None:
+@pytest.mark.asyncio
+async def test_crop() -> None:
     image = load_image("image-1.png")
     root_folder = Path("/results/crop")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     check_image(
         str(root_folder),
         cv2.cvtColor(process_utils.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), cv2.COLOR_BGR2RGB),
@@ -93,10 +95,11 @@ def test_crop() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_rotate() -> None:
+@pytest.mark.asyncio
+async def test_rotate() -> None:
     image = load_image("image-1.png")
     root_folder = Path("/results/rotate")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     image = process_utils.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
     check_image(
         str(root_folder),
@@ -169,7 +172,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path(f"/results/assisted-split-full-{type_}")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
 
     shutil.copyfile(
         str(Path(__file__).parent / f"limit-{type_}-all-1.png"),
@@ -269,7 +272,7 @@ async def test_assisted_split_join_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/assisted-split-join-full")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
 
     for number in (1, 2):
         shutil.copyfile(
@@ -350,7 +353,7 @@ async def test_assisted_split_booth() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/assisted-split-booth")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
 
     shutil.copyfile(
         str(Path(__file__).parent / "image-1.png"),
@@ -426,7 +429,7 @@ async def test_full(progress) -> None:
     init_test()
     os.environ["PROGRESS"] = progress
     root_folder = Path(f"/results/full-{progress}")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {
         "args": {"level": {"value": 15}, "cut_white": 200},
         "images": [str(Path(__file__).parent / "all-1.png")],
@@ -443,9 +446,9 @@ async def test_full(progress) -> None:
     )
 
     if progress == "TRUE":
-        assert (root_folder / "1-level/all-1.png").exists()
+        assert await (root_folder / "1-level/all-1.png").exists()
     else:
-        assert not (root_folder / "1-level").exists()
+        assert not await (root_folder / "1-level").exists()
 
     assert step["name"] == "finalize"
     await process.finalize(config, step, root_folder)
@@ -492,7 +495,7 @@ async def test_credit_card_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/credit-card")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {
         "args": {
             "append_credit_card": True,
@@ -546,7 +549,7 @@ async def test_empty() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/empty")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {
         "args": {
             "level": {"value": True},
@@ -574,7 +577,7 @@ async def test_empty() -> None:
 async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
     root_folder = Path("/results/600")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {"args": args}
     step = {"sources": [str(Path(__file__).parent / f"{test}.png")]}
     step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
@@ -726,7 +729,7 @@ async def test_tiff_jupyter() -> None:
     init_test()
     root_folder = Path("/results/tiff")
     source_folder = root_folder / "source"
-    source_folder.mkdir(parents=True, exist_ok=True)
+    await source_folder.mkdir(parents=True, exist_ok=True)
 
     shutil.copyfile(
         str(Path(__file__).parent / "image-1.tiff"),
@@ -743,15 +746,19 @@ async def test_tiff_jupyter() -> None:
     config_file_name = str(root_folder / "config.yaml")
     step = await process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
-    assert list(root_folder.rglob("*.tiff")) == [root_folder / "source/image-1.tiff"]
+    tiff_files = [path async for path in root_folder.rglob("*.tiff")]
+    assert tiff_files == [root_folder / "source/image-1.tiff"]
 
-    with Path("/results/tiff/jupyter/jupyter.ipynb").open() as f:  # noqa: ASYNC230
-        nb = nbformat.read(f, as_version=4)
+    nb = nbformat.reads(
+        await Path("/results/tiff/jupyter/jupyter.ipynb").read_text(encoding="utf-8"),
+        as_version=4,
+    )
     ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
     ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
 
 
 # @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, only_rerun="ValueError")
 @pytest.mark.parametrize(
     ("name", "config"),
@@ -785,11 +792,11 @@ async def test_tiff_jupyter() -> None:
         ),
     ],
 )
-def test_auto_mask(config, name) -> None:
+async def test_auto_mask(config, name) -> None:
     init_test()
     context = process_utils.Context({"args": {"mask": {"auto_mask": config}}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
-    context.init_mask()
+    await context.init_mask()
     check_image(
         "/results/",
         cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
@@ -799,13 +806,14 @@ def test_auto_mask(config, name) -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_mask_combine() -> None:
+@pytest.mark.asyncio
+async def test_auto_mask_combine() -> None:
     init_test()
     context = process_utils.Context({"args": {"mask": {}}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
     context.root_folder = Path(__file__).parent / "auto-mask-other"
     context.image_name = "image.png"
-    context.init_mask()
+    await context.init_mask()
     check_image(
         "/results/",
         cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
@@ -815,11 +823,12 @@ def test_auto_mask_combine() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_cut() -> None:
+@pytest.mark.asyncio
+async def test_auto_cut() -> None:
     init_test()
     context = process_utils.Context({"args": {"cut": {}, "background_color": [255, 0, 0]}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
-    context.do_initial_cut()
+    await context.do_initial_cut()
     check_image(
         "/results/",
         cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),

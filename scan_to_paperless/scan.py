@@ -6,6 +6,7 @@ import asyncio
 import datetime
 import math
 import re
+import shlex
 import subprocess  # nosec
 import sys
 import time
@@ -24,26 +25,40 @@ from scan_to_paperless import config as schema
 from .config import VIEWER_DEFAULT
 
 
-def call(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> None:
+async def call(cmd: list[str], **kwargs: Any) -> None:
     """Verbose implementation of check_call."""
-    del cmd2
-    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    print(shlex.join(cmd))
     try:
-        subprocess.check_call(cmd, **kwargs)  # noqa: S603
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            **kwargs,
+        )
+        returncode = await process.wait()
+        if returncode != 0:
+            print(f"Command returned with code {returncode}")
+            sys.exit(returncode)
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
 
-def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> bytes:
+async def output(cmd: list[str], **kwargs: Any) -> bytes:
     """Verbose implementation of check_output."""
-    del cmd2
-    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    print(shlex.join(cmd))
     try:
-        return cast("bytes", subprocess.check_output(cmd, **kwargs))  # noqa: S603
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            **kwargs,
+        )
+        stdout, _ = await process.communicate()
+        if process.returncode != 0:
+            print(f"Command returned with code {process.returncode}")
+            sys.exit(process.returncode)
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
+    else:
+        return stdout
 
 
 def do_convert_clipboard() -> None:
@@ -189,7 +204,7 @@ async def scan(
     await root_folder.mkdir(parents=True)
 
     try:
-        scanimage_cmd = await _build_scanimage_command(config, root_folder, mode)
+        scanimage_cmd = _build_scanimage_command(config, root_folder, mode)
         await _perform_scan(scanimage_cmd, root_folder, config, mode)
 
         args_: schema.Arguments = {
@@ -241,7 +256,7 @@ async def _scan_adf_mode(
 ) -> None:
     """Scan using ADF mode."""
     del root_folder
-    call([*scanimage_cmd])
+    await call([*scanimage_cmd])
 
 
 async def _scan_double_mode(
@@ -249,13 +264,13 @@ async def _scan_double_mode(
     root_folder: Path,
 ) -> None:
     """Scan double-sided document using ADF."""
-    call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
+    await call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
     odd = [p async for p in root_folder.iterdir()]
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(
         None, input, "Put your document in the automatic document feeder for the other side, and press enter."
     )
-    call(
+    await call(
         [
             *scanimage_cmd,
             f"--batch-start={len(odd) * 2}",
@@ -270,7 +285,7 @@ async def _scan_double_mode(
                 image.rotate(180).save(path, dpi=image.info["dpi"])
 
 
-async def _build_scanimage_command(
+def _build_scanimage_command(
     config: schema.Configuration,
     root_folder: Path,
     mode: _Mode,
@@ -302,7 +317,7 @@ async def _perform_scan(
         if mode == _Mode.DOUBLE:
             await _scan_double_mode(scanimage_cmd, root_folder)
         else:
-            call([*scanimage_cmd])
+            await call([*scanimage_cmd])
     else:
         await _scan_adf_mode(scanimage_cmd, root_folder)
 
@@ -363,7 +378,8 @@ async def _save_process_config(
             "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
             "/master/scan_to_paperless/process_schema.json\n\n",
         )
-        yaml.dump(process_config, process_file)
+        yaml_text = yaml.dump(process_config)
+        await process_file.write(yaml_text)
 
 
 if __name__ == "__main__":

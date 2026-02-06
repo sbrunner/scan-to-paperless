@@ -32,7 +32,8 @@ async def get_config(config_filename: Path) -> schema.Configuration:
         yaml = YAML()
         yaml.default_flow_style = False
         async with await config_filename.open(encoding="utf-8") as config_file:
-            config = cast("schema.Configuration", yaml.load(config_file))
+            file_content = await config_file.read()
+            config = cast("schema.Configuration", yaml.load(file_content))
             if "extends" in config:
                 base_config = await get_config(
                     await (await (config_filename.parent / config["extends"]).expanduser()).resolve(),

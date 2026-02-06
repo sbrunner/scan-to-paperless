@@ -93,16 +93,16 @@ class Context:
 
         self.process_count = self.step.get("process_count", 0)
 
-    def _get_default_mask_file(self, default_file_name: str) -> str | None:
+    async def _get_default_mask_file(self, default_file_name: str) -> str | None:
         if not self.root_folder:
             return None
         mask_file = self.root_folder / default_file_name
-        if not mask_file.exists():
+        if not await mask_file.exists():
             base_folder = self.root_folder.parent
             if base_folder is None:
                 return None
             mask_file = base_folder / default_file_name
-            if not mask_file.exists():
+            if not await mask_file.exists():
                 return None
         return str(mask_file)
 
@@ -167,7 +167,7 @@ class Context:
 
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
-            if self.root_folder and mask_file is not None and mask_file.exists():
+            if self.root_folder and mask_file is not None and await mask_file.exists():
                 print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")
                 mask = cv2.add(
                     mask,
@@ -196,14 +196,16 @@ class Context:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
             "mask",
-            cast("schema.MaskOperation", schema.MASK_OPERATION_DEFAULT),
+            cast("schema.MaskOperation", dict(schema.MASK_OPERATION_DEFAULT)),
         )
         additional_filename = mask_config.setdefault(
             "additional_filename",
-            self._get_default_mask_file("mask.png"),
+            await self._get_default_mask_file("mask.png"),
         )
         additional_path = Path(additional_filename) if additional_filename else None
-        if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+        if additional_path is not None and (
+            not await additional_path.exists() or await additional_path.is_dir()
+        ):
             message = f"Mask file {additional_path} does not exist."
             raise scan_to_paperless.ScanToPaperlessError(message)
         self.mask = (
@@ -233,10 +235,12 @@ class Context:
             assert self.image is not None
             additional_filename = cut_config.setdefault(
                 "additional_filename",
-                self._get_default_mask_file("cut.png"),
+                await self._get_default_mask_file("cut.png"),
             )
             additional_path = Path(additional_filename) if additional_filename else None
-            if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+            if additional_path is not None and (
+                not await additional_path.exists() or await additional_path.is_dir()
+            ):
                 message = f"Mask file {additional_path} does not exist."
                 raise scan_to_paperless.ScanToPaperlessError(message)
             mask = await self._get_mask(
@@ -319,7 +323,7 @@ class Context:
         if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
             name = f"{process_count}-{name}" if self.is_progress() else name
             dest_folder = self.root_folder / name
-            if not dest_folder.exists():
+            if not await dest_folder.exists():
                 await dest_folder.mkdir(parents=True)
             dest_image = dest_folder / (image_prefix + self.image_name)
             if image is not None:

@@ -549,7 +549,7 @@ async def add_codes(
                         pdf.docinfo["/Codes"] = "\n-\n".join(
                             [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
                         )
-                        pdf.save(output_filename)
+                        pdf.save(str(output_filename))
         else:
             _LOG.info("No codes found, copy the input file")
             proc = await asyncio.create_subprocess_exec(

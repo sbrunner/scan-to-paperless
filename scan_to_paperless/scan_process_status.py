@@ -3,6 +3,7 @@
 """Get the status of current scan."""
 
 import argparse
+import asyncio
 import subprocess  # nosec
 
 import argcomplete
@@ -17,7 +18,12 @@ def _print_status(folder: Path, message: str, error: bool = False) -> None:
     print(f"{'[ERROR]' if error else ''} {message} - {folder}")
 
 
-async def main() -> None:
+def main() -> None:
+    """Get the status of current scan."""
+    asyncio.run(_main_async())
+
+
+async def _main_async() -> None:
     """Get the status of current scan."""
     parser = argparse.ArgumentParser("Process the scanned documents.")
     parser.add_argument("--in-progress", action="store_true", help="Also show the in progress process.")
