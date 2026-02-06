@@ -488,8 +488,10 @@ class Status:
         import natsort  # noqa: PLC0415, RUF100
 
         async with await anyio.open_file(str(self._file), "w", encoding="utf-8") as status_file:
+            # Load template from package directory, not scan source folder
+            template_dir = anyio.Path(__file__).parent
             env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(str(self._file.parent)),
+                loader=jinja2.FileSystemLoader(str(template_dir)),
                 autoescape=jinja2.select_autoescape(),
             )
             template = env.get_template(_STATUS_FILENAME)
