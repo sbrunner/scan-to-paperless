@@ -6,6 +6,7 @@ import asyncio
 import datetime
 import math
 import re
+import shlex
 import subprocess  # nosec
 import sys
 import time
@@ -24,26 +25,40 @@ from scan_to_paperless import config as schema
 from .config import VIEWER_DEFAULT
 
 
-def call(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> None:
+async def call(cmd: list[str], **kwargs: Any) -> None:
     """Verbose implementation of check_call."""
-    del cmd2
-    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    print(shlex.join(cmd))
     try:
-        subprocess.check_call(cmd, **kwargs)  # noqa: S603
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            **kwargs,
+        )
+        returncode = await process.wait()
+        if returncode != 0:
+            print(f"Command returned with code {returncode}")
+            sys.exit(returncode)
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
 
-def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> bytes:
+async def output(cmd: list[str], **kwargs: Any) -> bytes:
     """Verbose implementation of check_output."""
-    del cmd2
-    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    print(shlex.join(cmd))
     try:
-        return cast("bytes", subprocess.check_output(cmd, **kwargs))  # noqa: S603
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            **kwargs,
+        )
+        stdout, _ = await process.communicate()
+        if process.returncode != 0:
+            print(f"Command returned with code {process.returncode}")
+            sys.exit(process.returncode)
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
+    else:
+        return stdout
 
 
 def do_convert_clipboard() -> None:
@@ -241,7 +256,7 @@ async def _scan_adf_mode(
 ) -> None:
     """Scan using ADF mode."""
     del root_folder
-    call([*scanimage_cmd])
+    await call([*scanimage_cmd])
 
 
 async def _scan_double_mode(
@@ -249,13 +264,13 @@ async def _scan_double_mode(
     root_folder: Path,
 ) -> None:
     """Scan double-sided document using ADF."""
-    call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
+    await call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
     odd = [p async for p in root_folder.iterdir()]
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(
         None, input, "Put your document in the automatic document feeder for the other side, and press enter."
     )
-    call(
+    await call(
         [
             *scanimage_cmd,
             f"--batch-start={len(odd) * 2}",
@@ -302,7 +317,7 @@ async def _perform_scan(
         if mode == _Mode.DOUBLE:
             await _scan_double_mode(scanimage_cmd, root_folder)
         else:
-            call([*scanimage_cmd])
+            await call([*scanimage_cmd])
     else:
         await _scan_adf_mode(scanimage_cmd, root_folder)
 

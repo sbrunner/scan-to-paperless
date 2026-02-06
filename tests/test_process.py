@@ -2,7 +2,6 @@ import os
 import re
 import shutil
 import subprocess
-from pathlib import Path
 from typing import Any
 
 import cv2
@@ -11,6 +10,7 @@ import pikepdf
 import pytest
 import skimage.color
 import skimage.io
+from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
 
@@ -34,10 +34,11 @@ def test_find_lines() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_find_limit_contour() -> None:
+@pytest.mark.asyncio
+async def test_find_limit_contour() -> None:
     context = process_utils.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
-    contours = process.find_contours(context.image, context, "limit", {})
+    contours = await process.find_contours(context.image, context, "limit", {})
     limits = process.find_limit_contour(context.image, vertical=True, contours=contours)
     assert limits == [1589]
 

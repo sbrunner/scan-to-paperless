@@ -8,7 +8,7 @@ import os
 import traceback
 from collections.abc import AsyncGenerator, Iterable
 from enum import Enum
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 import anyio
 import anyio.abc
@@ -396,7 +396,7 @@ class Status:
 
         yaml = YAML(typ="safe")
         async with await anyio.open_file(config_path, encoding="utf-8") as config_file:
-            config = yaml.load(await config_file.read())
+            config = cast("dict[str, Any]", yaml.load(await config_file.read()))
 
         if config is None:
             await self.set_status(name, -1, "Empty config")
