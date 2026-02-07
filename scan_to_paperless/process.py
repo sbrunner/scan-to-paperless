@@ -1844,7 +1844,8 @@ async def finalize(
     tesseract_producer = None
     if pdf:
         async with await pdf[0].open("rb") as pdf_file:
-            with pikepdf.open(io.BytesIO(await pdf_file.read())) as pdf_:
+            pdf_content = await pdf_file.read()
+            with pikepdf.open(io.BytesIO(pdf_content)) as pdf_:
                 pdf_producer = pdf_.docinfo.get("/Producer")
                 if tesseract_producer is None and pdf_producer is not None:
                     tesseract_producer = json.loads(pdf_producer.to_json())
@@ -1900,7 +1901,11 @@ async def finalize(
                     count += 1
                 await call(["cp", temporary_ps2pdf.name, temporary_pdf.name])
 
-        with pikepdf.open(temporary_pdf.name, allow_overwriting_input=True) as pdf_:
+        async with await anyio.open_file(temporary_pdf.name, "rb") as temp_file:
+            pdf_content = await temp_file.read()
+
+        pdf_buffer = io.BytesIO(pdf_content)
+        with pikepdf.open(pdf_buffer) as pdf_:
             scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
             with pdf_.open_metadata() as meta:
                 meta["{http://purl.org/dc/elements/1.1/}creator"] = (
@@ -1908,7 +1913,12 @@ async def finalize(
                     if tesseract_producer
                     else [scan_to_paperless_meta]
                 )
-            pdf_.save(temporary_pdf.name)
+            pdf_buffer = io.BytesIO()
+            pdf_.save(pdf_buffer)
+
+        async with await anyio.open_file(temporary_pdf.name, "wb") as temp_file:
+            await temp_file.write(pdf_buffer.getvalue())
+
         if progress:
             await call(["cp", temporary_pdf.name, str(root_folder / f"{count}-pikepdf.pdf")])
             count += 1

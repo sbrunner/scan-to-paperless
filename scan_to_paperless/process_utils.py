@@ -298,6 +298,53 @@ class Context:
             schema.PROGRESS_DEFAULT,
         )
 
+    def _display_progress_image(self, image: NpNdarrayInt) -> None:
+        """Display image in IPython environment."""
+        from IPython.display import display  # noqa: PLC0415
+
+        display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
+
+    async def _save_to_file(
+        self,
+        dest_folder: Path,
+        image_prefix: str,
+        image: NpNdarrayInt | None = None,
+    ) -> Path | None:
+        """Save image(s) to file system."""
+        assert self.image_name is not None
+        dest_image = dest_folder / (image_prefix + self.image_name)
+
+        if image is not None:
+            try:
+                _, buffer = cv2.imencode(".png", image)
+                async with await dest_image.open("wb") as file:
+                    await file.write(buffer.tobytes())
+            except Exception as exception:  # noqa: BLE001
+                print(exception)
+                return None
+            else:
+                return dest_image
+
+        # Save main image
+        try:
+            assert self.image is not None
+            _, buffer = cv2.imencode(".png", self.image)
+            async with await dest_image.open("wb") as file:
+                await file.write(buffer.tobytes())
+        except Exception as exception:  # noqa: BLE001
+            print(exception)
+
+        # Save masked image
+        dest_masked = dest_folder / ("masked-" + self.image_name)
+        try:
+            _, buffer = cv2.imencode(".png", self.get_masked())
+            async with await dest_masked.open("wb") as file:
+                await file.write(buffer.tobytes())
+        except Exception as exception:  # noqa: BLE001
+            print(exception)
+
+        return dest_image
+
     async def save_progress_images(
         self,
         name: str,
@@ -308,53 +355,26 @@ class Context:
     ) -> Path | None:
         """Save the intermediate images."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            if image is None:
-                return None
-
-            from IPython.display import (  # noqa: PLC0415, RUF100
-                display,
-            )
-
-            display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
+            if image is not None:
+                self._display_progress_image(image)
             return None
 
         if process_count is None:
             process_count = self.get_process_count()
-        if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
-            name = f"{process_count}-{name}" if self.is_progress() else name
-            dest_folder = self.root_folder / name
-            if not await dest_folder.exists():
-                await dest_folder.mkdir(parents=True)
-            dest_image = dest_folder / (image_prefix + self.image_name)
-            if image is not None:
-                try:
-                    cv2.imwrite(str(dest_image), image)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                else:
-                    return dest_image
-            else:
-                try:
-                    assert self.image is not None
-                    cv2.imwrite(str(dest_image), self.image)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                dest_image = dest_folder / ("mask-" + self.image_name)
-                try:
-                    dest_image = dest_folder / ("masked-" + self.image_name)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                try:
-                    cv2.imwrite(str(dest_image), self.get_masked())
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-        return None
+
+        if not (self.is_progress() or force) or self.image_name is None or self.root_folder is None:
+            return None
+
+        name = f"{process_count}-{name}" if self.is_progress() else name
+        dest_folder = self.root_folder / name
+        if not await dest_folder.exists():
+            await dest_folder.mkdir(parents=True)
+
+        return await self._save_to_file(dest_folder, image_prefix, image)
 
     def display_image(self, image: NpNdarrayInt) -> None:
         """Display the image."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            from IPython.display import (  # noqa: PLC0415, RUF100
-                display,
-            )
+            from IPython.display import display  # noqa: PLC0415
 
             display(Image.fromarray(cv2.cvtColor(image[self.get_index(image)], cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
