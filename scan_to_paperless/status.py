@@ -212,11 +212,11 @@ class _WatchRecursive:
                                     event_path,
                                 )
                             del self._watchers[event_path]
-                elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in self._watchers:
-                    if event.path is None or event_path is None or event_path in self._watchers:
+                elif asyncinotify.Mask.MOVED_TO in event.mask and event_path not in self._watchers:
+                    if event_path is None or event_path in self._watchers:
                         continue
                     print(f"EVENT: Watching (moved to) {event_path}")
-                    self._watchers[event_path] = inotify.add_watch(event.path, used_mask)
+                    self._watchers[event_path] = inotify.add_watch(event_path, used_mask)
 
                 # If there is at least some overlap, assume the user wants this event.
                 if event.mask & self._mask:
