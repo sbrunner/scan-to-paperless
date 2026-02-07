@@ -10,7 +10,6 @@ import random
 import tempfile
 from typing import TypedDict
 
-import aiofiles
 import cv2
 import pikepdf
 import polygon_math
@@ -483,9 +482,9 @@ async def add_codes(
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
-            async with (
-                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
-                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
+            with (
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
             ):
                 assert isinstance(dest_1.name, str)
                 assert isinstance(dest_2.name, str)
