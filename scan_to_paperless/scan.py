@@ -5,6 +5,7 @@
 import asyncio
 import datetime
 import math
+import os
 import re
 import shlex
 import subprocess  # nosec
@@ -73,12 +74,23 @@ def do_convert_clipboard() -> None:
 app = typer.Typer(rich_markup_mode=None)
 
 
-async def available_presets() -> list[str]:
+def available_presets() -> list[str]:
     """Return the list of available presets."""
-    return [
-        e.stem[len(str(CONFIG_FILENAME)) - 4 :]
-        async for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")
-    ]
+    # Use synchronous os.listdir for Typer autocompletion callback
+    # Typer/Click expects synchronous callbacks, so we can't use async anyio.Path here
+    config_folder_str = str(CONFIG_FOLDER)
+    # Extract stem from filename (remove .yaml extension)
+    config_stem = str(CONFIG_FILENAME).rsplit(".", 1)[0] if "." in str(CONFIG_FILENAME) else str(CONFIG_FILENAME)
+    
+    try:
+        files = os.listdir(config_folder_str)  # noqa: PTH208
+        return [
+            f.rsplit(".", 1)[0][len(config_stem) + 1:]  # Remove prefix and .yaml extension
+            for f in files
+            if f.startswith(f"{config_stem}-") and f.endswith(".yaml")
+        ]
+    except (FileNotFoundError, PermissionError):
+        return []
 
 
 @app.command(name="config", help="Print the configuration.")
