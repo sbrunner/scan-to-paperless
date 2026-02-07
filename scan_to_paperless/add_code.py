@@ -8,14 +8,13 @@ import math
 import os
 import random
 import tempfile
-from pathlib import Path
 from typing import TypedDict
 
-import aiofiles
 import cv2
 import pikepdf
 import polygon_math
 import zxingcpp
+from anyio import Path
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
 from pyzbar import pyzbar
@@ -369,7 +368,7 @@ def _is_rectangular(geometry: list[tuple[float, float]]) -> bool:
 
 async def add_codes(
     input_filename: Path,
-    output_filename: Path,
+    output_filename: str,
     dpi: float = 200,
     pdf_dpi: float = 72,
     font_size: float = 16,
@@ -383,8 +382,8 @@ async def add_codes(
     # Codes information about the already found codes
     added_codes: dict[str, _AllCodes] = {}
 
-    with input_filename.open("rb") as input_file:
-        existing_pdf = PdfReader(input_file)
+    async with await input_filename.open("rb") as input_file:
+        existing_pdf = PdfReader(io.BytesIO(await input_file.read()))
         metadata = {**existing_pdf.metadata} if existing_pdf.metadata is not None else {}
         output_pdf = PdfWriter()
         for index, page in enumerate(existing_pdf.pages):
@@ -483,21 +482,24 @@ async def add_codes(
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
-            async with (
-                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
-                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
+            with (
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
             ):
                 assert isinstance(dest_1.name, str)
                 assert isinstance(dest_2.name, str)
 
                 # Finally, write "output" to a real file
-                output_pdf.write(dest_1.name)
+                output_stream = io.BytesIO()
+                output_pdf.write(output_stream)
+                async with await Path(dest_1.name).open("wb") as dest_1_file:
+                    await dest_1_file.write(output_stream.getvalue())
 
                 for code_ in all_codes:
                     data = code_["data"].split("\r\n")
                     if len(data) == 1:
                         data = data[0].split("\n")
-                    data = [d if d else "|" for d in data]
+                    data = [d or "|" for d in data]
                     code_["data_formatted"] = "<br />".join(data)  # type: ignore[typeddict-unknown-key]
                 sections = [
                     f"<h2>{code_['type']} [{code_['pos']}]</h2><p>{code_['data_formatted']}</p>"  # type: ignore[typeddict-item]
@@ -520,8 +522,11 @@ async def add_codes(
 
                 css = CSS(string="@page { size: A4; margin: 1.5cm } p { font-size: 5pt; font-family: sans; }")
 
-                html.write_pdf(dest_2.name, stylesheets=[css])
-
+                pdf_buffer = io.BytesIO()
+                html.write_pdf(target=pdf_buffer, stylesheets=[css])
+                pdf_buffer.seek(0)
+                async with await Path(dest_2.name).open("wb") as dest_2_file:
+                    await dest_2_file.write(pdf_buffer.getvalue())
                 proc = await asyncio.create_subprocess_exec(
                     "pdftk",
                     dest_1.name,
@@ -533,7 +538,9 @@ async def add_codes(
                 await proc.wait()
 
                 if metadata:
-                    with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
+                    async with await Path(output_filename).open("rb") as output_file:
+                        output_bytes = io.BytesIO(await output_file.read())
+                    with pikepdf.open(output_bytes) as pdf:
                         with pdf.open_metadata() as meta:
                             formatted_codes = "\n-\n".join(
                                 [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
@@ -549,7 +556,7 @@ async def add_codes(
                         pdf.docinfo["/Codes"] = "\n-\n".join(
                             [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
                         )
-                        pdf.save(output_filename)
+                        pdf.save(str(output_filename))
         else:
             _LOG.info("No codes found, copy the input file")
             proc = await asyncio.create_subprocess_exec(

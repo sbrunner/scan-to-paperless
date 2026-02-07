@@ -24,13 +24,11 @@ repos:
       - id: jsonschema2md
         files: schema.json
         args:
-          - --pre-commit
           - scan_to_paperless/config_schema.json
           - config.md
       - id: jsonschema2md
         files: schema.json
         args:
-          - --pre-commit
           - scan_to_paperless/process_schema.json
           - process.md
   - repo: https://github.com/camptocamp/jsonschema-gentypes
@@ -54,6 +52,11 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: end-of-file-fixer
+        exclude: |-
+          (?x)^(
+            scan_to_paperless/process_schema\.py
+            |scan_to_paperless/config\.py
+          )$
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
@@ -87,15 +90,10 @@ repos:
           - prettier-plugin-sh@0.18.0 # npm
           - prettier-plugin-toml@2.0.6 # npm
           - '@prettier/plugin-xml@0.12.0' # npm
-        exclude: ^scan_to_paperless/status\.html$
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.36.1
     hooks:
@@ -120,13 +118,18 @@ repos:
           )
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.14
+    rev: v0.15.0
     hooks:
       - id: ruff-format
         args:
           - --line-length=110
+        exclude: |-
+          (?x)^(
+            scan_to_paperless/config\.py
+            |scan_to_paperless/process_schema\.py
+          )$
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.17.3
+    rev: v1.18.0
     hooks:
       - id: prospector
         args:
@@ -142,12 +145,14 @@ repos:
             |(^|/)test_[_a-zA-Z0-9]+.py$
             |(^|/)[_a-zA-Z0-9]+_tests?.py$
             |(^|/)tests?.py$
+            |scan_to_paperless/config\.py
+            |scan_to_paperless/process_schema\.py
           )
         additional_dependencies:
           - prospector-profile-duplicated==1.11.0 # pypi
           - prospector-profile-utils==1.26.5 # pypi
-          - pylint[spelling]==3.3.9 # pypi
-          - ruff==0.14.14 # pypi
+          - pylint[spelling]==4.0.4 # pypi
+          - ruff==0.15.0 # pypi
       - id: prospector
         args:
           - --die-on-tool-error
@@ -156,8 +161,13 @@ repos:
           - --profile=utils:pre-commit
         additional_dependencies:
           - prospector-profile-utils==1.26.5 # pypi
+        exclude: |-
+          (?x)^(
+            scan_to_paperless/config\.py
+            |scan_to_paperless/process_schema\.py
+          )$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 43.0.9
+    rev: 43.4.0
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook

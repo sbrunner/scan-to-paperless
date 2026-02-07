@@ -3,11 +3,11 @@
 import logging
 import math
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 import cv2
 import numpy as np
+from anyio import Path
 from PIL import Image
 
 import scan_to_paperless
@@ -93,20 +93,20 @@ class Context:
 
         self.process_count = self.step.get("process_count", 0)
 
-    def _get_default_mask_file(self, default_file_name: str) -> str | None:
+    async def _get_default_mask_file(self, default_file_name: str) -> str | None:
         if not self.root_folder:
             return None
         mask_file = self.root_folder / default_file_name
-        if not mask_file.exists():
+        if not await mask_file.exists():
             base_folder = self.root_folder.parent
             if base_folder is None:
                 return None
             mask_file = base_folder / default_file_name
-            if not mask_file.exists():
+            if not await mask_file.exists():
                 return None
         return str(mask_file)
 
-    def _get_mask(
+    async def _get_mask(
         self,
         auto_mask_config: schema.AutoMask | None,
         config_section: str,
@@ -167,7 +167,7 @@ class Context:
 
             mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
-            if self.root_folder and mask_file is not None and mask_file.exists():
+            if self.root_folder and mask_file is not None and await mask_file.exists():
                 print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")
                 mask = cv2.add(
                     mask,
@@ -182,7 +182,7 @@ class Context:
             final_mask = cast("NpNdarrayInt", cv2.bitwise_not(mask))
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
-                self.save_progress_images(config_section.replace("_", "-"), final_mask)
+                await self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
             final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)  # type: ignore[assignment]
             if self.image is not None and final_mask is not None:
@@ -192,22 +192,24 @@ class Context:
                 )
         return final_mask
 
-    def init_mask(self) -> None:
+    async def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
             "mask",
-            cast("schema.MaskOperation", schema.MASK_OPERATION_DEFAULT),
+            cast("schema.MaskOperation", dict(schema.MASK_OPERATION_DEFAULT)),
         )
         additional_filename = mask_config.setdefault(
             "additional_filename",
-            self._get_default_mask_file("mask.png"),
+            await self._get_default_mask_file("mask.png"),
         )
         additional_path = Path(additional_filename) if additional_filename else None
-        if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+        if additional_path is not None and (
+            not await additional_path.exists() or await additional_path.is_dir()
+        ):
             message = f"Mask file {additional_path} does not exist."
             raise scan_to_paperless.ScanToPaperlessError(message)
         self.mask = (
-            self._get_mask(
+            await self._get_mask(
                 mask_config.setdefault("auto_mask", {}),
                 "mask",
                 additional_path,
@@ -223,7 +225,7 @@ class Context:
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
         )
 
-    def do_initial_cut(self) -> None:
+    async def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
             "cut",
@@ -233,13 +235,15 @@ class Context:
             assert self.image is not None
             additional_filename = cut_config.setdefault(
                 "additional_filename",
-                self._get_default_mask_file("cut.png"),
+                await self._get_default_mask_file("cut.png"),
             )
             additional_path = Path(additional_filename) if additional_filename else None
-            if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+            if additional_path is not None and (
+                not await additional_path.exists() or await additional_path.is_dir()
+            ):
                 message = f"Mask file {additional_path} does not exist."
                 raise scan_to_paperless.ScanToPaperlessError(message)
-            mask = self._get_mask(
+            mask = await self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
                 additional_path,
@@ -294,7 +298,54 @@ class Context:
             schema.PROGRESS_DEFAULT,
         )
 
-    def save_progress_images(
+    def _display_progress_image(self, image: NpNdarrayInt) -> None:
+        """Display image in IPython environment."""
+        from IPython.display import display  # noqa: PLC0415
+
+        display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
+
+    async def _save_to_file(
+        self,
+        dest_folder: Path,
+        image_prefix: str,
+        image: NpNdarrayInt | None = None,
+    ) -> Path | None:
+        """Save image(s) to file system."""
+        assert self.image_name is not None
+        dest_image = dest_folder / (image_prefix + self.image_name)
+
+        if image is not None:
+            try:
+                _, buffer = cv2.imencode(".png", image)
+                async with await dest_image.open("wb") as file:
+                    await file.write(buffer.tobytes())
+            except Exception as exception:  # noqa: BLE001
+                print(exception)
+                return None
+            else:
+                return dest_image
+
+        # Save main image
+        try:
+            assert self.image is not None
+            _, buffer = cv2.imencode(".png", self.image)
+            async with await dest_image.open("wb") as file:
+                await file.write(buffer.tobytes())
+        except Exception as exception:  # noqa: BLE001
+            print(exception)
+
+        # Save masked image
+        dest_masked = dest_folder / ("masked-" + self.image_name)
+        try:
+            _, buffer = cv2.imencode(".png", self.get_masked())
+            async with await dest_masked.open("wb") as file:
+                await file.write(buffer.tobytes())
+        except Exception as exception:  # noqa: BLE001
+            print(exception)
+
+        return dest_image
+
+    async def save_progress_images(
         self,
         name: str,
         image: NpNdarrayInt | None = None,
@@ -304,53 +355,26 @@ class Context:
     ) -> Path | None:
         """Save the intermediate images."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            if image is None:
-                return None
-
-            from IPython.display import (  # noqa: PLC0415, RUF100
-                display,
-            )
-
-            display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
+            if image is not None:
+                self._display_progress_image(image)
             return None
 
         if process_count is None:
             process_count = self.get_process_count()
-        if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
-            name = f"{process_count}-{name}" if self.is_progress() else name
-            dest_folder = self.root_folder / name
-            if not dest_folder.exists():
-                dest_folder.mkdir(parents=True)
-            dest_image = dest_folder / (image_prefix + self.image_name)
-            if image is not None:
-                try:
-                    cv2.imwrite(str(dest_image), image)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                else:
-                    return dest_image
-            else:
-                try:
-                    assert self.image is not None
-                    cv2.imwrite(str(dest_image), self.image)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                dest_image = dest_folder / ("mask-" + self.image_name)
-                try:
-                    dest_image = dest_folder / ("masked-" + self.image_name)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                try:
-                    cv2.imwrite(str(dest_image), self.get_masked())
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-        return None
+
+        if not (self.is_progress() or force) or self.image_name is None or self.root_folder is None:
+            return None
+
+        name = f"{process_count}-{name}" if self.is_progress() else name
+        dest_folder = self.root_folder / name
+        if not await dest_folder.exists():
+            await dest_folder.mkdir(parents=True)
+
+        return await self._save_to_file(dest_folder, image_prefix, image)
 
     def display_image(self, image: NpNdarrayInt) -> None:
         """Display the image."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            from IPython.display import (  # noqa: PLC0415, RUF100
-                display,
-            )
+            from IPython.display import display  # noqa: PLC0415
 
             display(Image.fromarray(cv2.cvtColor(image[self.get_index(image)], cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]

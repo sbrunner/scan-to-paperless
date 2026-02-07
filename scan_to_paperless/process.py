@@ -16,11 +16,10 @@ import sys
 import tempfile
 import time
 import traceback
-from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
-import aiofiles
 import aiohttp
+import anyio
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -28,6 +27,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
 import sentry_sdk
+from anyio import Path
 from deskew import determine_skew_debug_images
 from PIL import Image, ImageDraw, ImageFont
 from ruamel.yaml.main import YAML
@@ -54,6 +54,7 @@ else:
 CONVERT = ["gm", "convert"]
 _DESKEW_LOCK = asyncio.Lock()
 _LOG = logging.getLogger(__name__)
+_ERROR_FILENAME = "error.yaml"
 
 
 async def add_intermediate_error(
@@ -76,7 +77,7 @@ async def add_intermediate_error(
     temp_path = Path(str(config_file_name) + "_")
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
+        async with await temp_path.open("w", encoding="utf-8") as config_file:
             out = io.StringIO()
             yaml.dump(config, out)
             await config_file.write(out.getvalue())
@@ -84,11 +85,11 @@ async def add_intermediate_error(
         print(exception)
         config["intermediate_error"] = old_intermediate_error
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
+        async with await temp_path.open("w", encoding="utf-8") as config_file:
             out = io.StringIO()
             yaml.dump(config, out)
             await config_file.write(out.getvalue())
-    temp_path.rename(config_file_name)
+    await temp_path.rename(config_file_name)
 
 
 async def call(cmd: str | list[str], check: bool = True, **kwargs: Any) -> None:
@@ -207,7 +208,7 @@ class Process:
                 print(f"Elapsed time in {self.name}: {round(elapsed_time)}s.")
 
             if self.progress:
-                context.save_progress_images(self.name)
+                await context.save_progress_images(self.name)
 
         return wrapper
 
@@ -252,7 +253,7 @@ def get_contour_to_crop(
     )
 
 
-def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical: int) -> None:
+async def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical: int) -> None:
     """
     Do a crop on an image.
 
@@ -260,7 +261,7 @@ def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical
     """
     image = context.get_masked()
     process_count = context.get_process_count()
-    contours = find_contours(
+    contours = await find_contours(
         image,
         context,
         "crop",
@@ -270,7 +271,7 @@ def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical
     if contours:
         for contour in contours:
             draw_rectangle(image, contour)
-        context.save_progress_images(
+        await context.save_progress_images(
             "crop",
             image[context.get_index(image)] if jupyter_utils.is_ipython() else image,
             process_count=process_count,
@@ -359,7 +360,7 @@ async def _histogram(
             await proc.communicate()
             assert proc.returncode == 0
             image = cv2.imread(file.name)
-            context.save_progress_images(
+            await context.save_progress_images(
                 "histogram",
                 cast("NpNdarrayInt", image),
                 image_prefix="log-" if log else "",
@@ -430,7 +431,7 @@ async def color_cut(context: process_utils.Context) -> None:
 @Process("mask-cut")
 async def cut(context: process_utils.Context) -> None:
     """Mask the image with the cut mask."""
-    context.do_initial_cut()
+    await context.do_initial_cut()
 
 
 @Process("deskew")
@@ -467,7 +468,7 @@ async def deskew(context: process_utils.Context) -> None:
         if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
             for name, debug_image in debug_images:
-                context.save_progress_images("skew", debug_image, name, process_count, force=True)
+                await context.save_progress_images("skew", debug_image, name, process_count, force=True)
 
     if angle:
         context.rotate(angle)
@@ -507,7 +508,7 @@ async def docrop(context: process_utils.Context) -> None:
     margin_vertical = context.get_px_value(
         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
     )
-    crop(context, round(margin_horizontal), round(margin_vertical))
+    await crop(context, round(margin_horizontal), round(margin_vertical))
 
 
 @Process("sharpen")
@@ -762,7 +763,7 @@ def fill_limits(
     return limits
 
 
-def find_contours(
+async def find_contours(
     image: NpNdarrayInt,
     context: process_utils.Context,
     name: str,
@@ -790,7 +791,7 @@ def find_contours(
         if jupyter_utils.is_ipython():
             print("Threshold")
         thresh_rgb = cast("NpNdarrayInt", cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB))
-        context.save_progress_images(
+        await context.save_progress_images(
             "threshold",
             thresh_rgb[context.get_index(thresh_rgb)] if jupyter_utils.is_ipython() else thresh,
         )
@@ -1230,13 +1231,13 @@ async def transform(
     for index, image in enumerate(step["sources"]):
         image_path = Path(image)
         if status is not None:
-            status.set_status(config_file_name, -1, f"Transform ({image_path.name})", write=True)
+            await status.set_status(config_file_name, -1, f"Transform ({image_path.name})", write=True)
         image_name = f"{image_path.name.rsplit('.')[0]}.png"
         context = process_utils.Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
             msg = "Image name is required"
             raise scan_to_paperless.ScanToPaperlessError(msg)
-        async with aiofiles.open(root_folder / image, "rb") as f:
+        async with await anyio.open_file(root_folder / image, "rb") as f:
             img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
             context.image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         assert context.image is not None
@@ -1248,7 +1249,7 @@ async def transform(
         await histogram(context)
         await level(context)
         await color_cut(context)
-        context.init_mask()
+        await context.init_mask()
         await cut(context)
         await deskew(context)
         await docrop(context)
@@ -1259,7 +1260,7 @@ async def transform(
         # Is empty ?
         empty_config = config["args"].setdefault("empty", {})
         if empty_config.setdefault("enabled", schema.EMPTY_ENABLED_DEFAULT):
-            contours = find_contours(
+            contours = await find_contours(
                 context.get_masked(),
                 context,
                 "empty",
@@ -1272,7 +1273,7 @@ async def transform(
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
             assisted_split: schema.AssistedSplit = {}
             name = root_folder / context.image_name
-            source = context.save_progress_images("assisted-split", context.image, force=True)
+            source = await context.save_progress_images("assisted-split", context.image, force=True)
             assert source
             assisted_split["source"] = str(source)
 
@@ -1285,7 +1286,7 @@ async def transform(
             limits = []
             assert context.image is not None
 
-            contours = find_contours(
+            contours = await find_contours(
                 context.image,
                 context,
                 "limit",
@@ -1465,7 +1466,7 @@ async def transform(
 
     from scan_to_paperless import jupyter  # noqa: PLC0415, RUF100
 
-    jupyter.create_transform_notebook(root_folder, context, step)
+    await jupyter.create_transform_notebook(root_folder, context, step)
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
 
@@ -1501,7 +1502,8 @@ async def transform(
                     ],
                     check=False,
                 )
-                if Path(temp_file.name).stat().st_size > 0:
+                temp_path = Path(temp_file.name)
+                if (await temp_path.stat()).st_size > 0:
                     await call(["cp", temp_file.name, str(image_path)])
             if progress:
                 await _save_progress(context.root_folder, count, "pngquant", image_path.name, image_path)
@@ -1530,8 +1532,9 @@ async def transform(
                 str(image_path),
                 "-quality",
                 str(config["args"].setdefault("jpeg", {}).setdefault("quality", schema.JPEG_QUALITY_DEFAULT)),
-                jpeg_img,
+                str(jpeg_img),
             )
+            await proc.communicate()
             assert proc.returncode == 0
             new_images.append(jpeg_img)
             if progress:
@@ -1551,7 +1554,7 @@ async def transform(
         "assisted_split",
         schema.ASSISTED_SPLIT_DEFAULT,
     ):
-        with (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
+        async with await (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
             pass
 
     return {
@@ -1575,8 +1578,8 @@ async def _save_progress(
     assert root_folder
     name = f"{count}-{name}"
     dest_folder = root_folder / name
-    if not dest_folder.exists():
-        dest_folder.mkdir(parents=True)
+    if not await dest_folder.exists():
+        await dest_folder.mkdir(parents=True)
     dest_image = dest_folder / image_name
     try:
         await call(["cp", str(image), str(dest_image)])
@@ -1584,7 +1587,7 @@ async def _save_progress(
         print(exception)
 
 
-def save(
+async def save(
     context: process_utils.Context,
     root_folder: Path,
     image: Path,
@@ -1595,9 +1598,9 @@ def save(
     if force or context.is_progress():
         dest_folder = root_folder / folder
         if not dest_folder.exists():
-            dest_folder.mkdir(parents=True)
+            await dest_folder.mkdir(parents=True)
         dest_file = dest_folder / image.name
-        shutil.copyfile(image, dest_file)
+        await anyio.to_thread.run_sync(shutil.copyfile, image, dest_file)
         return dest_file
     return Path(image)
 
@@ -1641,8 +1644,8 @@ async def split(
     for assisted_split in config["assisted_split"]:
         if "image" in assisted_split:
             image_path = root_folder / assisted_split["image"]
-            if image_path.exists():
-                image_path.unlink()
+            if await image_path.exists():
+                await image_path.unlink()
 
     append: dict[str | int, list[Item]] = {}
     transformed_images = []
@@ -1705,7 +1708,7 @@ async def split(
                         page = int(destination)
                         page_pos = 0
 
-                    save(
+                    await save(
                         context,
                         root_folder,
                         Path(process_file.name),
@@ -1720,12 +1723,12 @@ async def split(
                     )
                     context.image = cv2.imread(process_file.name)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                        crop(context, round(margin_horizontal), round(margin_vertical))
+                        await crop(context, round(margin_horizontal), round(margin_vertical))
                         process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
                             suffix=".png",
                         )
                         cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
-                        save(
+                        await save(
                             context,
                             root_folder,
                             Path(process_file.name),
@@ -1758,7 +1761,7 @@ async def split(
                     process_file.name,
                 ],
             )
-            save(context, root_folder, Path(process_file.name), f"{process_count}-split")
+            await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
             img2 = root_folder / f"image-{page_number}.png"
             await call([*CONVERT, process_file.name, str(img2)])
             transformed_images.append(img2)
@@ -1785,15 +1788,15 @@ async def finalize(
     name = root_folder.name
     destination = Path(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")) / f"{name}.pdf"
 
-    if destination.exists():
+    if await destination.exists():
         return
 
     images_filenames = step["sources"]
 
     if config["args"].setdefault("append_credit_card", schema.APPEND_CREDIT_CARD_DEFAULT):
         if status is not None:
-            status.set_status(name, -1, "Finalize (credit card append)", write=True)
-        images2 = [image for image in images_filenames if Path(image).exists()]
+            await status.set_status(name, -1, "Finalize (credit card append)", write=True)
+        images2 = [image for image in images_filenames if await Path(image).exists()]
 
         file_path = root_folder / "append.png"
         await call(
@@ -1805,17 +1808,17 @@ async def finalize(
         # vis = np.concatenate((img1, img2), axis=1)
         images_filenames = [str(file_path)]
 
-    pdf = []
+    pdf: list[Path] = []
     for image_filename in images_filenames:
         image_path = Path(image_filename)
         if status is not None:
-            status.set_status(name, -1, f"Finalize ({image_path.name})", write=True)
-        if image_path.exists():
+            await status.set_status(name, -1, f"Finalize ({image_path.name})", write=True)
+        if await image_path.exists():
             image_name = image_path.stem
             file_path = root_folder / f"{image_name}.pdf"
             tesseract_configuration = config["args"].setdefault("tesseract", {})
             if tesseract_configuration.setdefault("enabled", schema.TESSERACT_ENABLED_DEFAULT):
-                with file_path.open("w", encoding="utf8") as output_file:
+                async with await file_path.open("w", encoding="utf8") as output_file:
                     _, stderr, _ = await run(
                         [
                             "tesseract",
@@ -1836,33 +1839,35 @@ async def finalize(
             pdf.append(file_path)
 
     if status is not None:
-        status.set_status(name, -1, "Finalize (optimize)", write=True)
+        await status.set_status(name, -1, "Finalize (optimize)", write=True)
 
     tesseract_producer = None
     if pdf:
-        with pikepdf.open(pdf[0]) as pdf_:
-            pdf_producer = pdf_.docinfo.get("/Producer")
-            if tesseract_producer is None and pdf_producer is not None:
-                tesseract_producer = json.loads(pdf_producer.to_json())
-                if "tesseract" not in tesseract_producer.lower():
-                    tesseract_producer = None
-                elif tesseract_producer.startswith("u:"):
-                    tesseract_producer = tesseract_producer[2:]
-            if tesseract_producer is None:
-                with pdf_.open_metadata() as meta:
-                    if "{http://purl.org/dc/elements/1.1/}producer" in meta:
-                        tesseract_producer = meta["{http://purl.org/dc/elements/1.1/}producer"]
-                        if "tesseract" not in tesseract_producer.lower():
-                            tesseract_producer = None
+        async with await pdf[0].open("rb") as pdf_file:
+            pdf_content = await pdf_file.read()
+            with pikepdf.open(io.BytesIO(pdf_content)) as pdf_:
+                pdf_producer = pdf_.docinfo.get("/Producer")
+                if tesseract_producer is None and pdf_producer is not None:
+                    tesseract_producer = json.loads(pdf_producer.to_json())
+                    if "tesseract" not in tesseract_producer.lower():
+                        tesseract_producer = None
+                    elif tesseract_producer.startswith("u:"):
+                        tesseract_producer = tesseract_producer[2:]
+                if tesseract_producer is None:
+                    with pdf_.open_metadata() as meta:
+                        if "{http://purl.org/dc/elements/1.1/}producer" in meta:
+                            tesseract_producer = meta["{http://purl.org/dc/elements/1.1/}producer"]
+                            if "tesseract" not in tesseract_producer.lower():
+                                tesseract_producer = None
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
-        for pdf_file in pdf:
-            basename = pdf_file.name.split(".")
+        for pdf_path in pdf:
+            basename = pdf_path.name.split(".")
             await call(
                 [
                     "cp",
-                    str(pdf_file),
+                    str(pdf_path),
                     str(root_folder / f"1-{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
                 ],
             )
@@ -1896,7 +1901,11 @@ async def finalize(
                     count += 1
                 await call(["cp", temporary_ps2pdf.name, temporary_pdf.name])
 
-        with pikepdf.open(temporary_pdf.name, allow_overwriting_input=True) as pdf_:
+        async with await anyio.open_file(temporary_pdf.name, "rb") as temp_file:
+            pdf_content = await temp_file.read()
+
+        pdf_buffer = io.BytesIO(pdf_content)
+        with pikepdf.open(pdf_buffer) as pdf_:
             scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
             with pdf_.open_metadata() as meta:
                 meta["{http://purl.org/dc/elements/1.1/}creator"] = (
@@ -1904,7 +1913,12 @@ async def finalize(
                     if tesseract_producer
                     else [scan_to_paperless_meta]
                 )
-            pdf_.save(temporary_pdf.name)
+            pdf_buffer = io.BytesIO()
+            pdf_.save(pdf_buffer)
+
+        async with await anyio.open_file(temporary_pdf.name, "wb") as temp_file:
+            await temp_file.write(pdf_buffer.getvalue())
+
         if progress:
             await call(["cp", temporary_pdf.name, str(root_folder / f"{count}-pikepdf.pdf")])
             count += 1
@@ -1925,11 +1939,11 @@ async def finalize(
             url = f"{url}/documents/post_document/"
             headers = {"authorization": f"Token {token}"}
 
-            async with aiofiles.open(temporary_pdf.name, "rb") as document_file:
+            async with await anyio.open_file(temporary_pdf.name, "rb") as document_file:
                 title = root_folder.name
                 async with aiohttp.ClientSession() as session:
                     form = aiohttp.FormData()
-                    form.add_field("document", document_file)
+                    form.add_field("document", await document_file.read())
                     form.add_field("title", title)
                     async with session.post(url, headers=headers, data=form, timeout=120) as response:  # type: ignore[arg-type]
                         if response.status != 200:
@@ -1945,18 +1959,18 @@ async def _process_code(name: str) -> bool:
 
     destination_filename = Path(os.environ.get("SCAN_FINAL_FOLDER", "/destination")) / pdf_filename.name
 
-    if destination_filename.exists():
+    if await destination_filename.exists():
         await asyncio.sleep(1)
         return False
 
     try:
-        if pdf_filename.exists():
+        if await pdf_filename.exists():
             _LOG.info("Processing codes for %s", pdf_filename)
             from scan_to_paperless import add_code  # noqa: PLC0415, RUF100
 
             await add_code.add_codes(
                 pdf_filename,
-                destination_filename,
+                str(destination_filename),
                 dpi=float(os.environ.get("SCAN_CODES_DPI", "200")),
                 pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", "72")),
                 font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
@@ -1964,9 +1978,9 @@ async def _process_code(name: str) -> bool:
                 margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", "0")),
                 margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", "2")),
             )
-            if destination_filename.exists():
+            if await destination_filename.exists():
                 # Remove the source file on success
-                pdf_filename.unlink()
+                await pdf_filename.unlink()
             _LOG.info("Down processing codes for %s", pdf_filename)
             return True
 
@@ -1991,11 +2005,11 @@ async def save_config(config: schema.Configuration, config_file_name: Path) -> N
     yaml = YAML()
     yaml.default_flow_style = False
     temp_path = Path(str(config_file_name) + "_")
-    async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
+    async with await temp_path.open("w", encoding="utf-8") as config_file:
         out = io.StringIO()
         yaml.dump(config, out)
         await config_file.write(out.getvalue())
-    temp_path.rename(config_file_name)
+    await temp_path.rename(config_file_name)
 
 
 async def _process(
@@ -2004,18 +2018,19 @@ async def _process(
     dirty: bool = False,
 ) -> bool:
     """Process one document."""
-    if not config_file_name.exists():
+    config_file_name_anyio = Path(config_file_name)
+    if not await config_file_name_anyio.exists():
         return dirty
 
     root_folder = config_file_name.parent
 
-    if (root_folder / "error.yaml").exists():
+    if await (root_folder / _ERROR_FILENAME).exists():
         return dirty
 
     yaml = YAML()
     yaml.default_flow_style = False
-    with config_file_name.open(encoding="utf-8") as config_file:
-        config: schema.Configuration = yaml.load(config_file)
+    async with await config_file_name_anyio.open(encoding="utf-8") as config_file:
+        config: schema.Configuration = yaml.load(await config_file.read())
     if config is None:
         return dirty
 
@@ -2033,8 +2048,8 @@ async def _process(
         while config.get("steps") and not is_sources_present(config["steps"][-1]["sources"], root_folder):
             config["steps"] = config["steps"][:-1]
             await save_config(config, config_file_name)
-            if (root_folder / "REMOVE_TO_CONTINUE").exists():
-                (root_folder / "REMOVE_TO_CONTINUE").unlink()
+            if await (root_folder / "REMOVE_TO_CONTINUE").exists():
+                await (root_folder / "REMOVE_TO_CONTINUE").unlink()
             rerun = True
 
         if "steps" not in config or not config["steps"]:
@@ -2046,14 +2061,18 @@ async def _process(
         step = config["steps"][-1]
 
         if is_sources_present(step["sources"], root_folder):
-            if not disable_remove_to_continue and (root_folder / "REMOVE_TO_CONTINUE").exists() and not rerun:
+            if (
+                not disable_remove_to_continue
+                and await (root_folder / "REMOVE_TO_CONTINUE").exists()
+                and not rerun
+            ):
                 return dirty
-            if (root_folder / "DONE").exists() and not rerun:
+            if await (root_folder / "DONE").exists() and not rerun:
                 return dirty
 
-            status.set_global_status(f"Processing '{config_file_name.parent.name}'...")
-            status.set_current_folder(config_file_name)
-            status.set_status(config_file_name, -1, "Processing")
+            await status.set_global_status(f"Processing '{config_file_name.parent.name}'...")
+            await status.set_current_folder(config_file_name)
+            await status.set_status(config_file_name, -1, "Processing")
             dirty = True
 
             done = False
@@ -2062,7 +2081,7 @@ async def _process(
                 _update_config(config)
                 next_step = await transform(config, step, config_file_name, root_folder, status=status)
             elif step["name"] == scan_to_paperless.status.STATUS_ASSISTED_SPLIT:
-                status.set_status(config_file_name, -1, "Split")
+                await status.set_status(config_file_name, -1, "Split")
                 next_step = await split(config, step, root_folder)
             elif step["name"] == scan_to_paperless.status.STATUS_FINALIZE:
                 await finalize(config, step, root_folder, status=status)
@@ -2075,14 +2094,14 @@ async def _process(
                     config["steps"].append(next_step)
                 await save_config(config, config_file_name)
                 if done:
-                    with (root_folder / "DONE").open("w", encoding="utf-8"):
+                    async with await (root_folder / "DONE").open("w", encoding="utf-8"):
                         pass
                 elif not disable_remove_to_continue:
-                    with (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
+                    async with await (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
                         pass
             # Be sure that the status is up to date especially about the modifief files in the current folder
             await asyncio.sleep(0.1)
-            status.set_current_folder(None)
+            await status.set_current_folder(None)
 
     except Exception as exception:  # noqa: BLE001
         trace = traceback.format_exc()
@@ -2098,7 +2117,9 @@ async def _process(
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
         try:
-            async with aiofiles.open(root_folder / "error.yaml", "w", encoding="utf-8") as error_file:
+            async with await anyio.open_file(
+                root_folder / _ERROR_FILENAME, "w", encoding="utf-8"
+            ) as error_file:
                 yaml_out = io.StringIO()
                 yaml.dump(out, yaml_out)
                 await error_file.write(yaml_out.getvalue())
@@ -2107,7 +2128,9 @@ async def _process(
             print(traceback.format_exc())
             yaml = YAML()
             yaml.default_flow_style = False
-            async with aiofiles.open(root_folder / "error.yaml", "w", encoding="utf-8") as error_file:
+            async with await anyio.open_file(
+                root_folder / _ERROR_FILENAME, "w", encoding="utf-8"
+            ) as error_file:
                 yaml_out = io.StringIO()
                 yaml.dump(out, yaml_out)
                 await error_file.write(yaml_out.getvalue())
@@ -2116,13 +2139,13 @@ async def _process(
 
 async def _task(status: scan_to_paperless.status.Status) -> None:
     while True:
-        status.set_current_folder(None)
+        await status.set_current_folder(None)
         # Be sure that the status is up to date
         await asyncio.sleep(0.1)
         name, job_type, step = status.get_next_job()
         if job_type == scan_to_paperless.status.JobType.NONE:
-            status.set_global_status("Waiting...")
-            status.set_current_folder(None)
+            await status.set_global_status("Waiting...")
+            await status.set_current_folder(None)
             await asyncio.sleep(1)
             continue
 
@@ -2136,14 +2159,14 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             assert isinstance(name, str)
             assert step is not None
 
-            status.set_global_status(f"Processing '{name}'...")
-            status.set_current_folder(name)
+            await status.set_global_status(f"Processing '{name}'...")
+            await status.set_current_folder(name)
             try:
                 root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
                 config_file_name = root_folder / "config.yaml"
                 yaml = YAML()
                 yaml.default_flow_style = False
-                async with aiofiles.open(config_file_name, encoding="utf-8") as config_file:
+                async with await config_file_name.open(encoding="utf-8") as config_file:
                     config: schema.Configuration = yaml.load(await config_file.read())
                     config.yaml_set_start_comment(  # type: ignore[attr-defined]
                         "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/"
@@ -2166,7 +2189,7 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
 
                 for image in step["sources"]:
                     image_path = root_folder / image
-                    if not image_path.exists():
+                    if not await image_path.exists():
                         _LOG.warning("Missing image %s", image_path)
                         continue
 
@@ -2175,34 +2198,34 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
                     _update_config(config)
                     next_step = await transform(config, step, config_file_name, root_folder, status=status)
                 if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
-                    status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
+                    await status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
                     next_step = await split(config, step, root_folder)
                 if job_type == scan_to_paperless.status.JobType.FINALIZE:
                     await finalize(config, step, root_folder, status=status)
-                    with (root_folder / "DONE").open("w", encoding="utf-8"):
+                    async with await (root_folder / "DONE").open("w", encoding="utf-8"):
                         pass
                 if next_step is not None:
                     config["steps"].append(next_step)
 
                 await save_config(config, config_file_name)
             finally:
-                status.set_current_folder(None)
+                await status.set_current_folder(None)
 
         elif job_type == scan_to_paperless.status.JobType.DOWN:
             assert name is not None
-            status.set_global_status(f"Removing '{name}'...")
-            status.set_current_folder(name)
+            await status.set_global_status(f"Removing '{name}'...")
+            await status.set_current_folder(name)
             root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
-            if root_folder.exists():
+            if await root_folder.exists():
                 shutil.rmtree(root_folder)
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert isinstance(name, str)
             print(f"Process code '{name}'")
-            status.set_global_status(f"Process code '{name}'...")
-            status.set_current_folder(name)
+            await status.set_global_status(f"Process code '{name}'...")
+            await status.set_current_folder(name)
             try:
                 if not await _process_code(name):
-                    status.update_scan_codes()
+                    await status.update_scan_codes()
             except Exception as exception:  # noqa: BLE001
                 print(exception)
                 trace = traceback.format_exc()
@@ -2211,7 +2234,7 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             msg = f"Unknown job type: {job_type}"
             raise ValueError(msg)
 
-        status.set_current_folder(None)
+        await status.set_current_folder(None)
 
         print(f"End processing '{name}' as {job_type}...")
 
@@ -2257,13 +2280,16 @@ async def async_main() -> None:
     args = parser.parse_args()
 
     if args.config:
-        await _process(args.config, scan_to_paperless.status.Status(no_write=True))
+        status = scan_to_paperless.status.Status(no_write=True)
+        await status.init()
+        await _process(args.config, status)
         sys.exit()
 
     print("Welcome to scanned images document to paperless.")
     print(f"Started at: {datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M')}")
 
     status = scan_to_paperless.status.Status()
+    await status.init()
 
     watch_dog_task = (
         asyncio.create_task(_watch_dog(), name="Watch dog")

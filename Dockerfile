@@ -102,7 +102,8 @@ FROM tests-dist AS tests
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
-COPY . ./
+COPY pyproject.toml poetry.lock README.md ./
+COPY scan_to_paperless/__init__.py scan_to_paperless/
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable .
 
@@ -118,6 +119,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get install --assume-yes --no-install-recommends chromium-browser npm
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+COPY . ./
 
 FROM base AS all
 
