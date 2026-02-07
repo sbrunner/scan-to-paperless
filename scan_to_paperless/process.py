@@ -1600,7 +1600,7 @@ async def save(
         if not dest_folder.exists():
             await dest_folder.mkdir(parents=True)
         dest_file = dest_folder / image.name
-        shutil.copyfile(image, dest_file)
+        await anyio.to_thread.run_sync(shutil.copyfile, image, dest_file)
         return dest_file
     return Path(image)
 
