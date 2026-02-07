@@ -79,18 +79,23 @@ def available_presets() -> list[str]:
     # Use synchronous os.listdir for Typer autocompletion callback
     # Typer/Click expects synchronous callbacks, so we can't use async anyio.Path here
     config_folder_str = str(CONFIG_FOLDER)
-    # Extract stem from filename (remove .yaml extension)
-    config_stem = str(CONFIG_FILENAME).rsplit(".", 1)[0] if "." in str(CONFIG_FILENAME) else str(CONFIG_FILENAME)
+    config_filename_str = str(CONFIG_FILENAME)
+    # Extract stem from filename (e.g., "scan-to-paperless" from "scan-to-paperless.yaml")
+    config_stem = config_filename_str.removesuffix(".yaml")
     
     try:
         files = os.listdir(config_folder_str)  # noqa: PTH208
-        return [
-            f.rsplit(".", 1)[0][len(config_stem) + 1:]  # Remove prefix and .yaml extension
-            for f in files
-            if f.startswith(f"{config_stem}-") and f.endswith(".yaml")
-        ]
     except (FileNotFoundError, PermissionError):
         return []
+    else:
+        presets = []
+        for filename in files:
+            # Look for files like "scan-to-paperless-test.yaml"
+            if filename.startswith(f"{config_stem}-") and filename.endswith(".yaml"):
+                # Extract preset name (e.g., "test" from "scan-to-paperless-test.yaml")
+                preset_name = filename[len(config_stem) + 1:-5]  # Remove prefix, dash, and .yaml
+                presets.append(preset_name)
+        return presets
 
 
 @app.command(name="config", help="Print the configuration.")

@@ -26,7 +26,7 @@ def test_available_presets_with_files():
         Path(tmpdir, "scan-to-paperless-prod.yaml").touch()
         Path(tmpdir, "scan-to-paperless.yaml").touch()  # Should be ignored
         Path(tmpdir, "other-file.yaml").touch()  # Should be ignored
-        
+
         with (
             patch("scan_to_paperless.scan.CONFIG_FOLDER", tmpdir),
             patch("scan_to_paperless.scan.CONFIG_FILENAME", "scan-to-paperless.yaml"),
