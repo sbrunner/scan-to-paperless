@@ -50,6 +50,8 @@ async def output(cmd: list[str], **kwargs: Any) -> bytes:
     try:
         process = await asyncio.create_subprocess_exec(
             *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
             **kwargs,
         )
         stdout, _ = await process.communicate()
