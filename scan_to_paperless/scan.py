@@ -4,6 +4,7 @@
 
 import asyncio
 import datetime
+import io
 import math
 import re
 import shlex
@@ -378,8 +379,9 @@ async def _save_process_config(
             "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
             "/master/scan_to_paperless/process_schema.json\n\n",
         )
-        yaml_text = yaml.dump(process_config)
-        await process_file.write(yaml_text)
+        out = io.StringIO()
+        yaml.dump(process_config, out)
+        await process_file.write(out.getvalue())
 
 
 if __name__ == "__main__":
