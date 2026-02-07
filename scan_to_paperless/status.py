@@ -212,7 +212,7 @@ class _WatchRecursive:
                                     event_path,
                                 )
                             del self._watchers[event_path]
-                elif asyncinotify.Mask.MOVED_TO in event.mask and event.path not in self._watchers:
+                elif asyncinotify.Mask.MOVED_TO in event.mask and event_path not in self._watchers:
                     if event.path is None or event_path is None or event_path in self._watchers:
                         continue
                     print(f"EVENT: Watching (moved to) {event_path}")
