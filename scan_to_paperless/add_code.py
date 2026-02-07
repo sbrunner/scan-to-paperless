@@ -10,7 +10,6 @@ import random
 import tempfile
 from typing import TypedDict
 
-import aiofiles
 import cv2
 import pikepdf
 import polygon_math
@@ -483,15 +482,18 @@ async def add_codes(
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
-            async with (
-                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
-                aiofiles.tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
+            with (
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
+                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
             ):
                 assert isinstance(dest_1.name, str)
                 assert isinstance(dest_2.name, str)
 
                 # Finally, write "output" to a real file
-                output_pdf.write(dest_1.name)
+                output_stream = io.BytesIO()
+                output_pdf.write(output_stream)
+                async with await Path(dest_1.name).open("wb") as dest_1_file:
+                    await dest_1_file.write(output_stream.getvalue())
 
                 for code_ in all_codes:
                     data = code_["data"].split("\r\n")
@@ -520,8 +522,11 @@ async def add_codes(
 
                 css = CSS(string="@page { size: A4; margin: 1.5cm } p { font-size: 5pt; font-family: sans; }")
 
-                html.write_pdf(dest_2.name, stylesheets=[css])
-
+                pdf_buffer = io.BytesIO()
+                html.write_pdf(target=pdf_buffer, stylesheets=[css])
+                pdf_buffer.seek(0)
+                async with await Path(dest_2.name).open("wb") as dest_2_file:
+                    await dest_2_file.write(pdf_buffer.getvalue())
                 proc = await asyncio.create_subprocess_exec(
                     "pdftk",
                     dest_1.name,
@@ -533,7 +538,9 @@ async def add_codes(
                 await proc.wait()
 
                 if metadata:
-                    with pikepdf.open(output_filename, allow_overwriting_input=True) as pdf:
+                    async with await Path(output_filename).open("rb") as output_file:
+                        output_bytes = io.BytesIO(await output_file.read())
+                    with pikepdf.open(output_bytes, allow_overwriting_input=True) as pdf:
                         with pdf.open_metadata() as meta:
                             formatted_codes = "\n-\n".join(
                                 [f"{code_['type']} [{code_['pos']}]\n{code_['data']}" for code_ in all_codes],
