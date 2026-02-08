@@ -1455,14 +1455,18 @@ async def transform(
 
                 context.image = np.array(pil_image)
 
-            _, buf = cv2.imencode(".png", context.image)
+            success, buf = cv2.imencode(".png", context.image)
+            if not success:
+                raise RuntimeError(f"Failed to encode image for {name}")
             async with await name.open("wb") as img_file:
                 await img_file.write(buf.tobytes())
             assisted_split["image"] = context.image_name
             images_path.append(name)
         else:
             img2 = root_folder / context.image_name
-            _, buf = cv2.imencode(".png", context.image)
+            success, buf = cv2.imencode(".png", context.image)
+            if not success:
+                raise RuntimeError(f"Failed to encode image for {img2}")
             async with await img2.open("wb") as img_file:
                 await img_file.write(buf.tobytes())
             images_path.append(img2)
@@ -1732,7 +1736,9 @@ async def split(
                             suffix=".png",
                         )
                         assert context.image is not None
-                        _, buf = cv2.imencode(".png", context.image)
+                        success, buf = cv2.imencode(".png", context.image)
+                        if not success:
+                            raise RuntimeError("Failed to encode cropped image")
 
                         async with await anyio.open_file(process_file.name, "wb") as img_file:
                             await img_file.write(buf.tobytes())

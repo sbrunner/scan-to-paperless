@@ -327,7 +327,10 @@ class Context:
 
         if image is not None:
             try:
-                _, buffer = cv2.imencode(".png", image)
+                success, buffer = cv2.imencode(".png", image)
+                if not success:
+                    _LOG.warning("Failed to encode image for %s", dest_image)
+                    return None
                 async with await dest_image.open("wb") as file:
                     await file.write(buffer.tobytes())
             except Exception as exception:  # noqa: BLE001
@@ -339,7 +342,10 @@ class Context:
         # Save main image
         try:
             assert self.image is not None
-            _, buffer = cv2.imencode(".png", self.image)
+            success, buffer = cv2.imencode(".png", self.image)
+            if not success:
+                _LOG.warning("Failed to encode main image for %s", dest_image)
+                return None
             async with await dest_image.open("wb") as file:
                 await file.write(buffer.tobytes())
         except Exception as exception:  # noqa: BLE001
@@ -348,9 +354,12 @@ class Context:
         # Save masked image
         dest_masked = dest_folder / ("masked-" + self.image_name)
         try:
-            _, buffer = cv2.imencode(".png", self.get_masked())
-            async with await dest_masked.open("wb") as file:
-                await file.write(buffer.tobytes())
+            success, buffer = cv2.imencode(".png", self.get_masked())
+            if not success:
+                _LOG.warning("Failed to encode masked image for %s", dest_masked)
+            else:
+                async with await dest_masked.open("wb") as file:
+                    await file.write(buffer.tobytes())
         except Exception as exception:  # noqa: BLE001
             print(exception)
 

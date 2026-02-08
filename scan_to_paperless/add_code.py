@@ -153,9 +153,12 @@ async def _get_bar_codes_with_open_cv(
                             math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
                             math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
                         ]
-                        _, buf = cv2.imencode(".png", cropped)
-                        async with await dest_filename.open("wb") as dest_file:
-                            await dest_file.write(buf.tobytes())
+                        success, buf = cv2.imencode(".png", cropped)
+                        if success:
+                            async with await dest_filename.open("wb") as dest_file:
+                                await dest_file.write(buf.tobytes())
+                        else:
+                            _LOG.warning("Failed to encode cropped barcode image for %s", dest_filename)
                 founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
                     bbox = points[index]
@@ -207,9 +210,12 @@ async def _get_qr_codes_with_open_cv(
                         dest_filename = (
                             base_path / f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png"
                         )
-                        _, buf = cv2.imencode(".png", img)
-                        async with await dest_filename.open("wb") as dest_file:
-                            await dest_file.write(buf.tobytes())
+                        success, buf = cv2.imencode(".png", img)
+                        if success:
+                            async with await dest_filename.open("wb") as dest_file:
+                                await dest_file.write(buf.tobytes())
+                        else:
+                            _LOG.warning("Failed to encode straight QR code image for %s", dest_filename)
                     for bbox_index, bbox in enumerate(points):
                         dest_filename = base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png"
                         bbox_x = [p[0] for p in bbox]
@@ -218,9 +224,12 @@ async def _get_qr_codes_with_open_cv(
                             math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
                             math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
                         ]
-                        _, buf = cv2.imencode(".png", cropped)
-                        async with await dest_filename.open("wb") as dest_file:
-                            await dest_file.write(buf.tobytes())
+                        success, buf = cv2.imencode(".png", cropped)
+                        if success:
+                            async with await dest_filename.open("wb") as dest_file:
+                                await dest_file.write(buf.tobytes())
+                        else:
+                            _LOG.warning("Failed to encode cropped QR code image for %s", dest_filename)
 
                 founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
