@@ -223,17 +223,40 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
             message = "Failed to encode source image"
             raise scan_to_paperless.ScanToPaperlessError(message)
 
-        async with anyio.NamedTemporaryFile(suffix=".png", delete=False) as source_file:
+        async with anyio.NamedTemporaryFile(suffix=".png") as source_file:
             assert isinstance(source_file.name, str)
             await source_file.write(bytes(source_buffer))
 
             async with anyio.NamedTemporaryFile(suffix=".png") as destination:
                 assert isinstance(destination.name, str)
                 await func(context, source_file.name, destination.name)
+
+                # Check if destination file exists and has content
+                dest_path = Path(destination.name)
+                if not await dest_path.exists():
+                    message = f"External tool did not create output file: {destination.name}"
+                    raise scan_to_paperless.ScanToPaperlessError(message)
+
+                stat_result = await dest_path.stat()
+                if stat_result.st_size == 0:
+                    message = f"External tool created empty output file: {destination.name}"
+                    raise scan_to_paperless.ScanToPaperlessError(message)
+
                 async with await anyio.open_file(destination.name, "rb") as dest_file:
                     image_data = await dest_file.read()
+
+                    if not image_data:
+                        message = f"Failed to read output from external tool: {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(message)
+
                     image_array = np.asarray(bytearray(image_data), dtype=np.uint8)
-                    return cast("NpNdarrayInt", cv2.imdecode(image_array, cv2.IMREAD_COLOR))
+                    decoded_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+                    if decoded_image is None:
+                        message = f"Failed to decode image from external tool output: {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(message)
+
+                    return cast("NpNdarrayInt", decoded_image)
 
     return wrapper
 
