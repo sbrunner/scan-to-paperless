@@ -369,11 +369,11 @@ async def _histogram(
     async with anyio.NamedTemporaryFile(suffix=".png") as file:
         assert isinstance(file.name, str)
         if not jupyter_utils.is_ipython():
-            plt.savefig(file.name)
+            await anyio.to_thread.run_sync(plt.savefig, file.name)
             proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
             await proc.communicate()
             assert proc.returncode == 0
-            image = cv2.imread(file.name)
+            image = await anyio.to_thread.run_sync(cv2.imread, file.name)
             await context.save_progress_images(
                 "histogram",
                 cast("NpNdarrayInt", image),
@@ -494,12 +494,16 @@ async def deskew(context: process_utils.Context) -> None:
             if len(sources) == 1:
                 assert context.root_folder
                 image = process_utils.rotate_image(
-                    cast("NpNdarrayInt", cv2.imread(str(context.root_folder / sources[0]))),
+                    cast(
+                        "NpNdarrayInt",
+                        await anyio.to_thread.run_sync(cv2.imread, str(context.root_folder / sources[0])),
+                    ),
                     angle,
                     context.get_background_color(),
                 )
                 source_path = Path(sources[0])
-                cv2.imwrite(
+                await anyio.to_thread.run_sync(
+                    cv2.imwrite,
                     str(
                         context.root_folder
                         / "source"
@@ -568,7 +572,7 @@ async def autorotate(context: process_utils.Context) -> None:
         return
     async with anyio.NamedTemporaryFile(suffix=".png") as source:
         assert context.image is not None
-        cv2.imwrite(cast("str", source.name), context.get_masked())
+        await anyio.to_thread.run_sync(cv2.imwrite, cast("str", source.name), context.get_masked())
         try:
             orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
             orientation_lst = [e for e in orientation_lst if "Orientation in degrees" in e]
@@ -1470,12 +1474,12 @@ async def transform(
 
                 context.image = np.array(pil_image)
 
-            cv2.imwrite(str(name), context.image)
+            await anyio.to_thread.run_sync(cv2.imwrite, str(name), context.image)
             assisted_split["image"] = context.image_name
             images_path.append(name)
         else:
             img2 = root_folder / context.image_name
-            cv2.imwrite(str(img2), context.image)
+            await anyio.to_thread.run_sync(cv2.imwrite, str(img2), context.image)
             images_path.append(img2)
         process_count = context.process_count
 
@@ -1738,14 +1742,14 @@ async def split(
                     margin_vertical = context.get_px_value(
                         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
                     )
-                    context.image = cv2.imread(process_file.name)
+                    context.image = await anyio.to_thread.run_sync(cv2.imread, process_file.name)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                         await crop(context, round(margin_horizontal), round(margin_vertical))
                         process_file = await anyio.NamedTemporaryFile(
                             suffix=".png",
                         ).__aenter__()
                         assert isinstance(process_file.name, str)
-                        cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
+                        await anyio.to_thread.run_sync(cv2.imwrite, process_file.name, context.image)  # type: ignore[arg-type]
                         await save(
                             context,
                             root_folder,
