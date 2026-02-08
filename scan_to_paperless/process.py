@@ -353,20 +353,19 @@ async def _histogram(
             )
 
     plt.tight_layout()
-    with tempfile.NamedTemporaryFile(suffix=".png") as file:
-        if not jupyter_utils.is_ipython():
-            plt.savefig(file.name)
-            proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
-            await proc.communicate()
-            assert proc.returncode == 0
-            image = cv2.imread(file.name)
-            await context.save_progress_images(
-                "histogram",
-                cast("NpNdarrayInt", image),
-                image_prefix="log-" if log else "",
-                process_count=process_count,
-                force=True,
-            )
+    if not jupyter_utils.is_ipython():
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_array = np.frombuffer(buffer.getvalue(), dtype=np.uint8)
+        image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        await context.save_progress_images(
+            "histogram",
+            cast("NpNdarrayInt", image),
+            image_prefix="log-" if log else "",
+            process_count=process_count,
+            force=True,
+        )
 
 
 @Process("histogram", progress=False)
