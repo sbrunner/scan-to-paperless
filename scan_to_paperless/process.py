@@ -1457,7 +1457,9 @@ async def transform(
 
             success, buf = cv2.imencode(".png", context.image)
             if not success:
-                raise RuntimeError(f"Failed to encode image for {name}")
+                raise RuntimeError(
+                    f"Failed to encode image for {name}. This may be due to an empty or corrupted image."
+                )
             async with await name.open("wb") as img_file:
                 await img_file.write(buf.tobytes())
             assisted_split["image"] = context.image_name
@@ -1466,7 +1468,9 @@ async def transform(
             img2 = root_folder / context.image_name
             success, buf = cv2.imencode(".png", context.image)
             if not success:
-                raise RuntimeError(f"Failed to encode image for {img2}")
+                raise RuntimeError(
+                    f"Failed to encode image for {img2}. This may be due to an empty or corrupted image."
+                )
             async with await img2.open("wb") as img_file:
                 await img_file.write(buf.tobytes())
             images_path.append(img2)
@@ -1738,7 +1742,10 @@ async def split(
                         assert context.image is not None
                         success, buf = cv2.imencode(".png", context.image)
                         if not success:
-                            raise RuntimeError("Failed to encode cropped image")
+                            raise RuntimeError(
+                                f"Failed to encode cropped image for {process_file.name}. "
+                                "This may be due to an empty or corrupted crop."
+                            )
 
                         async with await anyio.open_file(process_file.name, "wb") as img_file:
                             await img_file.write(buf.tobytes())
