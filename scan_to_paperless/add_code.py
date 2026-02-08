@@ -7,9 +7,9 @@ import logging
 import math
 import os
 import random
-import tempfile
-from typing import TypedDict
+from typing import TypedDict, cast
 
+import anyio
 import cv2
 import pikepdf
 import polygon_math
@@ -389,8 +389,8 @@ async def add_codes(
         for index, page in enumerate(existing_pdf.pages):
             _LOG.info("Processing page %s", index + 1)
             # Get the QR code from the page
-            with tempfile.NamedTemporaryFile(suffix=f"-{index}.png") as image_file:
-                image = Path(image_file.name)
+            async with anyio.NamedTemporaryFile(suffix=f"-{index}.png") as image_file:
+                image = Path(cast("str", image_file.name))
                 proc = await asyncio.create_subprocess_exec(
                     "gm",
                     "convert",
@@ -482,9 +482,9 @@ async def add_codes(
 
         if all_codes:
             _LOG.info("%s codes found, create the additional page", len(all_codes))
-            with (
-                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_1,
-                tempfile.NamedTemporaryFile(suffix=".pdf") as dest_2,
+            async with (
+                anyio.NamedTemporaryFile(suffix=".pdf") as dest_1,
+                anyio.NamedTemporaryFile(suffix=".pdf") as dest_2,
             ):
                 assert isinstance(dest_1.name, str)
                 assert isinstance(dest_2.name, str)

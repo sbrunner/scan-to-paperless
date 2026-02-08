@@ -13,10 +13,9 @@ import re
 import shutil
 import subprocess  # nosec
 import sys
-import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
 import aiohttp
 import anyio
@@ -217,12 +216,24 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
     async def wrapper(context: process_utils.Context) -> NpNdarrayInt | None:
-        with tempfile.NamedTemporaryFile(suffix=".png") as source:
-            assert context.image is not None
-            cv2.imwrite(source.name, context.image)
-            with tempfile.NamedTemporaryFile(suffix=".png") as destination:
-                await func(context, source.name, destination.name)
-                return cast("NpNdarrayInt", cv2.imread(destination.name))
+        # Write source image to BytesIO buffer
+        assert context.image is not None
+        success, source_buffer = cv2.imencode(".png", context.image)
+        if not success:
+            message = "Failed to encode source image"
+            raise scan_to_paperless.ScanToPaperlessError(message)
+
+        async with anyio.NamedTemporaryFile(suffix=".png", delete=False) as source_file:
+            assert isinstance(source_file.name, str)
+            await source_file.write(bytes(source_buffer))
+
+            async with anyio.NamedTemporaryFile(suffix=".png") as destination:
+                assert isinstance(destination.name, str)
+                await func(context, source_file.name, destination.name)
+                async with await anyio.open_file(destination.name, "rb") as dest_file:
+                    image_data = await dest_file.read()
+                    image_array = np.asarray(bytearray(image_data), dtype=np.uint8)
+                    return cast("NpNdarrayInt", cv2.imdecode(image_array, cv2.IMREAD_COLOR))
 
     return wrapper
 
@@ -353,7 +364,8 @@ async def _histogram(
             )
 
     plt.tight_layout()
-    with tempfile.NamedTemporaryFile(suffix=".png") as file:
+    async with anyio.NamedTemporaryFile(suffix=".png") as file:
+        assert isinstance(file.name, str)
         if not jupyter_utils.is_ipython():
             plt.savefig(file.name)
             proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
@@ -552,7 +564,9 @@ async def autorotate(context: process_utils.Context) -> None:
     auto_rotate_configuration = context.config["args"].setdefault("auto_rotate", {})
     if not auto_rotate_configuration.setdefault("enabled", schema.AUTO_ROTATE_ENABLED_DEFAULT):
         return
-    with tempfile.NamedTemporaryFile(suffix=".png") as source:
+    assert context.image is not None
+    async with anyio.NamedTemporaryFile(suffix=".png") as source:
+        assert isinstance(source.name, str)
         cv2.imwrite(source.name, context.get_masked())
         try:
             orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
@@ -1489,7 +1503,8 @@ async def transform(
     ) and pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT):
         count = context.get_process_count()
         for image_path in images_path:
-            with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
+            async with anyio.NamedTemporaryFile(suffix=".png") as temp_file:
+                assert isinstance(temp_file.name, str)
                 await call(
                     [
                         "pngquant",
@@ -1613,7 +1628,9 @@ class Item(TypedDict, total=False):
     """
 
     pos: int
-    file: IO[bytes]
+    file: anyio.AsyncFile[bytes]
+    file_name: str
+    temp_file: anyio.NamedTemporaryFile[bytes]
 
 
 async def split(
@@ -1686,9 +1703,11 @@ async def split(
                     else:
                         vertical_value = width
                         vertical_margin = 0
-                    process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
+                    process_temp_file = anyio.NamedTemporaryFile(
                         suffix=".png",
                     )
+                    process_file = await process_temp_file.__aenter__()
+                    assert isinstance(process_file.name, str)
                     await call(
                         [
                             *CONVERT,
@@ -1724,9 +1743,11 @@ async def split(
                     context.image = cv2.imread(process_file.name)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                         await crop(context, round(margin_horizontal), round(margin_vertical))
-                        process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
+                        process_temp_file = anyio.NamedTemporaryFile(
                             suffix=".png",
                         )
+                        process_file = await process_temp_file.__aenter__()
+                        assert isinstance(process_file.name, str)
                         cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
                         await save(
                             context,
@@ -1736,7 +1757,14 @@ async def split(
                         )
                     if page not in append:
                         append[page] = []
-                    append[page].append({"file": process_file, "pos": page_pos})
+                    append[page].append(
+                        {
+                            "file": process_file,
+                            "file_name": cast("str", process_file.name),
+                            "temp_file": process_temp_file,
+                            "pos": page_pos,
+                        }
+                    )
                 number += 1
             last_y = horizontal_value + horizontal_margin
         process_count = context.process_count
@@ -1748,10 +1776,11 @@ async def split(
             msg = f"Mix of limit type for page '{page_number}'"
             raise scan_to_paperless.ScanToPaperlessError(msg)
 
-        with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
+        async with anyio.NamedTemporaryFile(suffix=".png") as process_file:
+            assert isinstance(process_file.name, str)
             await call(
                 CONVERT
-                + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
+                + [e["file_name"] for e in sorted(items, key=lambda e: e["pos"])]
                 + [
                     "-background",
                     "#ffffff",
@@ -1761,6 +1790,8 @@ async def split(
                     process_file.name,
                 ],
             )
+            for item in items:
+                await item["temp_file"].__aexit__(None, None, None)
             await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
             img2 = root_folder / f"image-{page_number}.png"
             await call([*CONVERT, process_file.name, str(img2)])
@@ -1873,7 +1904,8 @@ async def finalize(
             )
 
     count = 1
-    with tempfile.NamedTemporaryFile(suffix=".png") as temporary_pdf:
+    async with anyio.NamedTemporaryFile(suffix=".pdf") as temporary_pdf:
+        assert isinstance(temporary_pdf.name, str)
         await call(["pdftk", *[str(e) for e in pdf], "output", temporary_pdf.name, "compress"])
         if progress:
             await call(["cp", temporary_pdf.name, str(root_folder / f"{count}-pdftk.pdf")])
@@ -1894,7 +1926,8 @@ async def finalize(
             .setdefault("ps2pdf", cast("schema.Ps2Pdf", schema.PS2PDF_DEFAULT))
             .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
         ):
-            with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
+            async with anyio.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
+                assert isinstance(temporary_ps2pdf.name, str)
                 await call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
                     await call(["cp", temporary_ps2pdf.name, f"{count}-ps2pdf.pdf"])
