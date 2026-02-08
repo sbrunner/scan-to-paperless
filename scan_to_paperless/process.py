@@ -1455,12 +1455,16 @@ async def transform(
 
                 context.image = np.array(pil_image)
 
-            cv2.imwrite(str(name), context.image)
+            _, buf = cv2.imencode(".png", context.image)
+            async with await name.open("wb") as img_file:
+                await img_file.write(buf.tobytes())
             assisted_split["image"] = context.image_name
             images_path.append(name)
         else:
             img2 = root_folder / context.image_name
-            cv2.imwrite(str(img2), context.image)
+            _, buf = cv2.imencode(".png", context.image)
+            async with await img2.open("wb") as img_file:
+                await img_file.write(buf.tobytes())
             images_path.append(img2)
         process_count = context.process_count
 
@@ -1727,7 +1731,11 @@ async def split(
                         process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
                             suffix=".png",
                         )
-                        cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
+                        assert context.image is not None
+                        _, buf = cv2.imencode(".png", context.image)
+
+                        async with await anyio.open_file(process_file.name, "wb") as img_file:
+                            await img_file.write(buf.tobytes())
                         await save(
                             context,
                             root_folder,
