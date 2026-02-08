@@ -177,7 +177,7 @@ app_scan = typer.Typer(rich_markup_mode=None)
 
 @app.command(help="Scan a new document.")
 @app_scan.command(help="Scan a new document.")
-async def scan(
+def scan(
     mode: Annotated[
         _Mode,
         typer.Option(
@@ -211,6 +211,16 @@ async def scan(
             help="Split operation, see help",
         ),
     ] = False,
+) -> None:
+    """Scan a new document."""
+    asyncio.run(_scan_async(mode, preset, append_credit_card, assisted_split))
+
+
+async def _scan_async(
+    mode: _Mode,
+    preset: str | None,
+    append_credit_card: bool,
+    assisted_split: bool,
 ) -> None:
     """Scan a new document."""
     config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
