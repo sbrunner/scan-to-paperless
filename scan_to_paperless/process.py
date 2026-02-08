@@ -222,7 +222,9 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
             cv2.imwrite(source.name, context.image)
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
                 await func(context, source.name, destination.name)
-                return cast("NpNdarrayInt", cv2.imread(destination.name))
+                async with await anyio.open_file(destination.name, "rb") as f:
+                    img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+                    return cast("NpNdarrayInt", cv2.imdecode(img_array, cv2.IMREAD_COLOR))
 
     return wrapper
 
@@ -359,7 +361,9 @@ async def _histogram(
             proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
             await proc.communicate()
             assert proc.returncode == 0
-            image = cv2.imread(file.name)
+            async with await anyio.open_file(file.name, "rb") as f:
+                img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+                image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
             await context.save_progress_images(
                 "histogram",
                 cast("NpNdarrayInt", image),
@@ -479,8 +483,11 @@ async def deskew(context: process_utils.Context) -> None:
             ]
             if len(sources) == 1:
                 assert context.root_folder
+                async with await anyio.open_file(str(context.root_folder / sources[0]), "rb") as f:
+                    img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+                    source_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                 image = process_utils.rotate_image(
-                    cast("NpNdarrayInt", cv2.imread(str(context.root_folder / sources[0]))),
+                    cast("NpNdarrayInt", source_image),
                     angle,
                     context.get_background_color(),
                 )
@@ -1735,7 +1742,9 @@ async def split(
                     margin_vertical = context.get_px_value(
                         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
                     )
-                    context.image = cv2.imread(process_file.name)
+                    async with await anyio.open_file(process_file.name, "rb") as f:
+                        img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+                        context.image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                         await crop(context, round(margin_horizontal), round(margin_vertical))
                         process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
