@@ -11,6 +11,7 @@ import tempfile
 from typing import TypedDict
 
 import cv2
+import numpy as np
 import pikepdf
 import polygon_math
 import zxingcpp
@@ -116,7 +117,7 @@ def _add_code(
         )
 
 
-def _get_bar_codes_with_open_cv(
+async def _get_bar_codes_with_open_cv(
     image: Path,
     alpha: float,
     page: int,
@@ -131,7 +132,10 @@ def _get_bar_codes_with_open_cv(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
+    async with await image.open("rb") as f:
+        img_bytes = await f.read()
+    img_array = np.frombuffer(img_bytes, dtype=np.uint8)
+    decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     if decoded_image is not None:
         try:
             detector = cv2.barcode.BarcodeDetector()  # pylint: disable=c-extension-no-member
@@ -142,16 +146,19 @@ def _get_bar_codes_with_open_cv(
                     filename = ".".join(image.name.split(".")[:-1])
                     suffix = random.randint(0, 1000)  # noqa: S311  # nosec
                     for bbox_index, bbox in enumerate(points):
-                        dest_filename = (base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png",)
+                        dest_filename = base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png"
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
-                        cv2.imwrite(
-                            str(dest_filename),
-                            decoded_image[
-                                math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
-                                math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
-                            ],
-                        )
+                        cropped = decoded_image[
+                            math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
+                            math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
+                        ]
+                        success, buf = cv2.imencode(".png", cropped)
+                        if success:
+                            async with await dest_filename.open("wb") as dest_file:
+                                await dest_file.write(buf.tobytes())
+                        else:
+                            _LOG.warning("Failed to encode cropped barcode image for %s", dest_filename)
                 founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
                     bbox = points[index]
@@ -171,7 +178,7 @@ def _get_bar_codes_with_open_cv(
     return codes
 
 
-def _get_qr_codes_with_open_cv(
+async def _get_qr_codes_with_open_cv(
     image: Path,
     alpha: float,
     page: int,
@@ -188,7 +195,10 @@ def _get_qr_codes_with_open_cv(
 
     try:
         detector = cv2.QRCodeDetector()
-        decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
+        async with await image.open("rb") as f:
+            img_bytes = await f.read()
+        img_array = np.frombuffer(img_bytes, dtype=np.uint8)
+        decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         if decoded_image is not None:
             retval, decoded_info, points, straight_qr_code = detector.detectAndDecodeMulti(decoded_image)
             if retval:
@@ -200,18 +210,26 @@ def _get_qr_codes_with_open_cv(
                         dest_filename = (
                             base_path / f"{filename}-qrcode-straight-{page}-{suffix}-{img_index}.png"
                         )
-                        cv2.imwrite(str(dest_filename), img)
+                        success, buf = cv2.imencode(".png", img)
+                        if success:
+                            async with await dest_filename.open("wb") as dest_file:
+                                await dest_file.write(buf.tobytes())
+                        else:
+                            _LOG.warning("Failed to encode straight QR code image for %s", dest_filename)
                     for bbox_index, bbox in enumerate(points):
                         dest_filename = base_path / f"{filename}-qrcode-{page}-{suffix}-{bbox_index}.png"
                         bbox_x = [p[0] for p in bbox]
                         bbox_y = [p[1] for p in bbox]
-                        cv2.imwrite(
-                            str(dest_filename),
-                            decoded_image[
-                                math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
-                                math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
-                            ],
-                        )
+                        cropped = decoded_image[
+                            math.floor(min(bbox_y)) : math.ceil(max(bbox_y)),
+                            math.floor(min(bbox_x)) : math.ceil(max(bbox_x)),
+                        ]
+                        success, buf = cv2.imencode(".png", cropped)
+                        if success:
+                            async with await dest_filename.open("wb") as dest_file:
+                                await dest_file.write(buf.tobytes())
+                        else:
+                            _LOG.warning("Failed to encode cropped QR code image for %s", dest_filename)
 
                 founds: list[_FoundCode] = []
                 for index, data in enumerate(decoded_info):
@@ -253,7 +271,7 @@ def _get_qr_codes_with_open_cv(
     return codes
 
 
-def _get_codes_with_open_cv_we_chat(
+async def _get_codes_with_open_cv_we_chat(
     image: Path,
     alpha: float,
     page: int,
@@ -268,7 +286,10 @@ def _get_codes_with_open_cv_we_chat(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
+    async with await image.open("rb") as f:
+        img_bytes = await f.read()
+    img_array = np.frombuffer(img_bytes, dtype=np.uint8)
+    decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     if decoded_image is not None:
         detector = cv2.wechat_qrcode_WeChatQRCode()  # type: ignore[attr-defined]
         try:
@@ -292,7 +313,7 @@ def _get_codes_with_open_cv_we_chat(
     return codes
 
 
-def _get_codes_with_zxing(
+async def _get_codes_with_zxing(
     image: Path,
     alpha: float,
     page: int,
@@ -307,7 +328,10 @@ def _get_codes_with_zxing(
         all_codes = []
     codes: list[_PageCode] = []
 
-    decoded_image = cv2.imread(str(image), flags=cv2.IMREAD_COLOR)
+    async with await image.open("rb") as f:
+        img_bytes = await f.read()
+    img_array = np.frombuffer(img_bytes, dtype=np.uint8)
+    decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     if decoded_image is not None:
         founds: list[_FoundCode] = [
             {
@@ -328,7 +352,7 @@ def _get_codes_with_zxing(
     return codes
 
 
-def _get_codes_with_z_bar(
+async def _get_codes_with_z_bar(
     image: str,
     alpha: float,
     page: int,
@@ -343,7 +367,11 @@ def _get_codes_with_z_bar(
         all_codes = []
     codes: list[_PageCode] = []
 
-    img = Image.open(image)
+    image_path = Path(image)
+    async with await image_path.open("rb") as f:
+        img_bytes = await f.read()
+    img_array = np.frombuffer(img_bytes, dtype=np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     founds: list[_FoundCode] = [
         {
             "data": output.data.decode().replace("\\n", "\n"),
@@ -400,11 +428,13 @@ async def add_codes(
                     str(image),
                 )
                 await proc.wait()
-                img0 = Image.open(image)
+                async with await image.open("rb") as img_file:
+                    img_bytes = await img_file.read()
+                img0 = Image.open(io.BytesIO(img_bytes))
 
                 # Codes information to add the mask and number on the page
                 codes: list[_PageCode] = []
-                codes += _get_codes_with_zxing(
+                codes += await _get_codes_with_zxing(
                     image,
                     0,
                     index,
@@ -413,7 +443,7 @@ async def add_codes(
                     all_codes,
                     added_codes,
                 )
-                codes += _get_bar_codes_with_open_cv(
+                codes += await _get_bar_codes_with_open_cv(
                     image,
                     0,
                     index,
@@ -422,7 +452,7 @@ async def add_codes(
                     all_codes,
                     added_codes,
                 )
-                codes += _get_qr_codes_with_open_cv(
+                codes += await _get_qr_codes_with_open_cv(
                     image,
                     0,
                     index,
@@ -431,7 +461,7 @@ async def add_codes(
                     all_codes,
                     added_codes,
                 )
-                codes += _get_codes_with_open_cv_we_chat(
+                codes += await _get_codes_with_open_cv_we_chat(
                     image,
                     0,
                     index,
