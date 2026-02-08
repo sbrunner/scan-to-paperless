@@ -354,18 +354,18 @@ async def _histogram(
 
     plt.tight_layout()
     if not jupyter_utils.is_ipython():
-        buffer = io.BytesIO()
-        plt.savefig(buffer, format="png")
-        buffer.seek(0)
-        img_array = np.frombuffer(buffer.getvalue(), dtype=np.uint8)
-        image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-        await context.save_progress_images(
-            "histogram",
-            cast("NpNdarrayInt", image),
-            image_prefix="log-" if log else "",
-            process_count=process_count,
-            force=True,
-        )
+        with io.BytesIO() as buffer:
+            plt.savefig(buffer, format="png")
+            buffer.seek(0)
+            img_array = np.frombuffer(buffer.getbuffer(), dtype=np.uint8)
+            image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+            await context.save_progress_images(
+                "histogram",
+                cast("NpNdarrayInt", image),
+                image_prefix="log-" if log else "",
+                process_count=process_count,
+                force=True,
+            )
 
 
 @Process("histogram", progress=False)
