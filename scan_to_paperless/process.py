@@ -1947,7 +1947,7 @@ async def finalize(
             .setdefault("ps2pdf", cast("schema.Ps2Pdf", schema.PS2PDF_DEFAULT))
             .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
         ):
-            async with anyio.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
+            async with anyio.NamedTemporaryFile(suffix=".pdf") as temporary_ps2pdf:
                 assert isinstance(temporary_ps2pdf.name, str)
                 await call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
