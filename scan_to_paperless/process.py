@@ -227,6 +227,12 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
         async with anyio.NamedTemporaryFile(suffix=".png") as source_file:
             assert isinstance(source_file.name, str)
             await source_file.write(bytes(source_buffer))
+            # Flush to ensure data is written to disk before external tool reads it
+            try:
+                await source_file.flush()
+            except OSError as e:
+                message = f"Failed to flush source file buffer: {e}"
+                raise scan_to_paperless.ScanToPaperlessError(message) from e
 
             async with anyio.NamedTemporaryFile(suffix=".png") as destination:
                 assert isinstance(destination.name, str)
