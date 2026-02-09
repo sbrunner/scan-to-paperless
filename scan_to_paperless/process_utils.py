@@ -169,11 +169,16 @@ class Context:
 
             if self.root_folder and mask_file is not None and await mask_file.exists():
                 print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")
+                async with await mask_file.open("rb") as f:
+                    mask_file_bytes = await f.read()
+                mask_file_array = np.frombuffer(mask_file_bytes, dtype=np.uint8)
+                mask_file_image = cv2.imdecode(mask_file_array, cv2.IMREAD_GRAYSCALE)
+                assert mask_file_image is not None
                 mask = cv2.add(
                     mask,
                     cv2.bitwise_not(
                         cv2.resize(
-                            cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE),  # type: ignore[arg-type]
+                            mask_file_image,
                             (mask.shape[1], mask.shape[0]),
                         ),
                     ),
@@ -184,7 +189,13 @@ class Context:
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
                 await self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
-            final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)  # type: ignore[assignment]
+            async with await mask_file.open("rb") as f:
+                mask_file_bytes = await f.read()
+            mask_file_array = np.frombuffer(mask_file_bytes, dtype=np.uint8)
+            assert mask_file_array is not None
+            final_mask_none = cv2.imdecode(mask_file_array, cv2.IMREAD_GRAYSCALE)
+            assert final_mask_none is not None
+            final_mask = final_mask_none
             if self.image is not None and final_mask is not None:
                 return cast(
                     "NpNdarrayInt",
@@ -316,7 +327,10 @@ class Context:
 
         if image is not None:
             try:
-                _, buffer = cv2.imencode(".png", image)
+                success, buffer = cv2.imencode(".png", image)
+                if not success:
+                    _LOG.warning("Failed to encode image for %s", dest_image)
+                    return None
                 async with await dest_image.open("wb") as file:
                     await file.write(buffer.tobytes())
             except Exception as exception:  # noqa: BLE001
@@ -328,7 +342,10 @@ class Context:
         # Save main image
         try:
             assert self.image is not None
-            _, buffer = cv2.imencode(".png", self.image)
+            success, buffer = cv2.imencode(".png", self.image)
+            if not success:
+                _LOG.warning("Failed to encode main image for %s", dest_image)
+                return None
             async with await dest_image.open("wb") as file:
                 await file.write(buffer.tobytes())
         except Exception as exception:  # noqa: BLE001
@@ -337,9 +354,12 @@ class Context:
         # Save masked image
         dest_masked = dest_folder / ("masked-" + self.image_name)
         try:
-            _, buffer = cv2.imencode(".png", self.get_masked())
-            async with await dest_masked.open("wb") as file:
-                await file.write(buffer.tobytes())
+            success, buffer = cv2.imencode(".png", self.get_masked())
+            if not success:
+                _LOG.warning("Failed to encode masked image for %s", dest_masked)
+            else:
+                async with await dest_masked.open("wb") as file:
+                    await file.write(buffer.tobytes())
         except Exception as exception:  # noqa: BLE001
             print(exception)
 

@@ -219,10 +219,27 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     async def wrapper(context: process_utils.Context) -> NpNdarrayInt | None:
         with tempfile.NamedTemporaryFile(suffix=".png") as source:
             assert context.image is not None
-            cv2.imwrite(source.name, context.image)
+            success, encoded_image = cv2.imencode(".png", context.image)
+            if not success:
+                msg = "Failed to encode source image to PNG"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            async with await anyio.open_file(source.name, "wb") as f:
+                await f.write(encoded_image.tobytes())
             with tempfile.NamedTemporaryFile(suffix=".png") as destination:
                 await func(context, source.name, destination.name)
-                return cast("NpNdarrayInt", cv2.imread(destination.name))
+                async with await anyio.open_file(destination.name, "rb") as f:
+                    file_content = await f.read()
+                    if not file_content:
+                        return None
+                    img_array = np.frombuffer(file_content, dtype=np.uint8)
+                    if img_array.size == 0:
+                        msg = f"Empty image array from {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(msg)
+                    image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                    if image is None:
+                        msg = f"Failed to decode image from {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(msg)
+                    return cast("NpNdarrayInt", image)
 
     return wrapper
 
@@ -478,20 +495,28 @@ async def deskew(context: process_utils.Context) -> None:
             ]
             if len(sources) == 1:
                 assert context.root_folder
+                async with await anyio.open_file(str(context.root_folder / sources[0]), "rb") as f:
+                    img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+                    source_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                 image = process_utils.rotate_image(
-                    cast("NpNdarrayInt", cv2.imread(str(context.root_folder / sources[0]))),
+                    cast("NpNdarrayInt", source_image),
                     angle,
                     context.get_background_color(),
                 )
                 source_path = Path(sources[0])
-                cv2.imwrite(
-                    str(
-                        context.root_folder
-                        / "source"
-                        / (source_path.stem + "-skew-corrected" + source_path.suffix),
-                    ),
-                    image,
+                output_path = (
+                    context.root_folder
+                    / "source"
+                    / (source_path.stem + "-skew-corrected" + source_path.suffix)
                 )
+                if not await output_path.parent.exists():
+                    await output_path.parent.mkdir(parents=True)
+                success, encoded_image = cv2.imencode(source_path.suffix, image)
+                if not success:
+                    msg = f"Failed to encode skew-corrected image to {source_path.suffix} for {output_path}"
+                    raise scan_to_paperless.ScanToPaperlessError(msg)
+                async with await anyio.open_file(str(output_path), "wb") as f:
+                    await f.write(encoded_image.tobytes())
 
 
 @Process("docrop")
@@ -1236,9 +1261,24 @@ async def transform(
         if context.image_name is None:
             msg = "Image name is required"
             raise scan_to_paperless.ScanToPaperlessError(msg)
-        async with await anyio.open_file(root_folder / image, "rb") as f:
-            img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
-            context.image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        source_path = root_folder / image
+        if not await source_path.exists():
+            msg = f"Source image does not exist: {source_path}"
+            raise scan_to_paperless.ScanToPaperlessError(msg)
+        async with await anyio.open_file(source_path, "rb") as f:
+            file_content = await f.read()
+            if not file_content:
+                msg = f"Empty file content from {source_path}"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
+            if img_array.size == 0:
+                msg = f"Empty image array from {source_path}"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+            if decoded_image is None:
+                msg = f"Failed to decode image from {source_path}"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            context.image = decoded_image
         assert context.image is not None
         images_config = context.config.setdefault("images_config", {})
         image_config = images_config.setdefault(context.image_name, {})
@@ -1454,12 +1494,26 @@ async def transform(
 
                 context.image = np.array(pil_image)
 
-            cv2.imwrite(str(name), context.image)
+            success, buf = cv2.imencode(".png", context.image)
+            if not success:
+                message = (
+                    f"Failed to encode image for {name}. This may be due to an empty or corrupted image."
+                )
+                raise scan_to_paperless.ScanToPaperlessError(message)
+            async with await name.open("wb") as img_file:
+                await img_file.write(buf.tobytes())
             assisted_split["image"] = context.image_name
             images_path.append(name)
         else:
             img2 = root_folder / context.image_name
-            cv2.imwrite(str(img2), context.image)
+            success, buf = cv2.imencode(".png", context.image)
+            if not success:
+                message = (
+                    f"Failed to encode image for {img2}. This may be due to an empty or corrupted image."
+                )
+                raise scan_to_paperless.ScanToPaperlessError(message)
+            async with await img2.open("wb") as img_file:
+                await img_file.write(buf.tobytes())
             images_path.append(img2)
         process_count = context.process_count
 
@@ -1720,13 +1774,33 @@ async def split(
                     margin_vertical = context.get_px_value(
                         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
                     )
-                    context.image = cv2.imread(process_file.name)
+                    async with await anyio.open_file(process_file.name, "rb") as f:
+                        file_content = await f.read()
+                        if not file_content:
+                            msg = f"Empty file content from {process_file.name}"
+                            raise scan_to_paperless.ScanToPaperlessError(msg)
+                        img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
+                        if img_array.size == 0:
+                            msg = f"Empty image array from {process_file.name}"
+                            raise scan_to_paperless.ScanToPaperlessError(msg)
+                        decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                        if decoded_image is None:
+                            msg = f"Failed to decode image from {process_file.name}"
+                            raise scan_to_paperless.ScanToPaperlessError(msg)
+                        context.image = decoded_image
                     if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                         await crop(context, round(margin_horizontal), round(margin_vertical))
                         process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
                             suffix=".png",
                         )
-                        cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
+                        assert context.image is not None
+                        success, buf = cv2.imencode(".png", context.image)
+                        if not success:
+                            message = f"Failed to encode cropped image for {process_file.name}. This may be due to an empty or corrupted crop."
+                            raise scan_to_paperless.ScanToPaperlessError(message)
+
+                        async with await anyio.open_file(process_file.name, "wb") as img_file:
+                            await img_file.write(buf.tobytes())
                         await save(
                             context,
                             root_folder,
