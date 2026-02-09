@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from typing import Any
 
+import anyio
 import cv2
 import nbformat
 import pikepdf
@@ -964,8 +965,6 @@ async def test_external_decorator_empty_file() -> None:
     @process.external
     async def dummy_empty_file(context: process_utils.Context, source: str, destination: str) -> None:
         """Dummy function that creates an empty file."""
-        import anyio
-
         async with await anyio.open_file(destination, "wb") as f:
             # Write nothing - create empty file
             pass
@@ -986,8 +985,6 @@ async def test_external_decorator_valid_output() -> None:
     @process.external
     async def dummy_copy(context: process_utils.Context, source: str, destination: str) -> None:
         """Dummy function that copies source to destination."""
-        import anyio
-
         async with await anyio.open_file(source, "rb") as src:
             content = await src.read()
         async with await anyio.open_file(destination, "wb") as dst:
