@@ -511,7 +511,7 @@ async def deskew(context: process_utils.Context) -> None:
                 )
                 success, encoded_image = cv2.imencode(source_path.suffix, image)
                 if not success:
-                    msg = f"Failed to encode skew-corrected image to {source_path.suffix}"
+                    msg = f"Failed to encode skew-corrected image to {source_path.suffix} for {output_path}"
                     raise scan_to_paperless.ScanToPaperlessError(msg)
                 async with await anyio.open_file(str(output_path), "wb") as f:
                     await f.write(encoded_image.tobytes())
