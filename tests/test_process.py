@@ -885,3 +885,117 @@ async def test_histogram() -> None:
         str(Path(__file__).parent / "histogram-log.expected.png"),
         generate_expected_image=REGENERATE,
     )
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_with_dither() -> None:
+    """Test the external decorator with the dither function (if gm is available)."""
+    init_test()
+    
+    # Check if gm (GraphicsMagick) is available
+    try:
+        result = subprocess.run(["which", "gm"], capture_output=True, text=True)
+        if result.returncode != 0:
+            pytest.skip("GraphicsMagick (gm) not available - skipping dither test")
+    except Exception:
+        pytest.skip("Cannot check for GraphicsMagick availability - skipping dither test")
+    
+    # Test with dither enabled
+    context = process_utils.Context(
+        {
+            "args": {
+                "dither": {"enabled": True},
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    context.image_name = "test_dither.png"
+    context.root_folder = Path("/tmp")  # noqa: S108
+    original_image = context.image.copy()
+    
+    # Call dither function - it's wrapped by @Process so returns None
+    result = await process.dither(context)
+    
+    # The @Process wrapper returns None but may update context.image
+    assert result is None
+    # The image should have been processed (could be same or different)
+    assert context.image is not None
+    
+    # Test with dither disabled - should return early
+    context_disabled = process_utils.Context(
+        {
+            "args": {
+                "dither": {"enabled": False},
+            },
+        },
+        {},
+    )
+    context_disabled.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    result_disabled = await process.dither(context_disabled)
+    # When disabled, dither should return None (and not process the image)
+    assert result_disabled is None
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_empty_output() -> None:
+    """Test the external decorator when the external tool doesn't create output."""
+    
+    # Create a dummy external function that doesn't create output
+    @process.external
+    async def dummy_no_output(context: process_utils.Context, source: str, destination: str) -> None:
+        """Dummy function that doesn't write to destination."""
+        # Do nothing - don't create the destination file
+        pass
+    
+    context = process_utils.Context({"args": {}}, {})
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    
+    # Call the dummy function - should return None when no output is created
+    result = await dummy_no_output(context)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_empty_file() -> None:
+    """Test the external decorator when the external tool creates an empty file."""
+    
+    # Create a dummy external function that creates an empty file
+    @process.external
+    async def dummy_empty_file(context: process_utils.Context, source: str, destination: str) -> None:
+        """Dummy function that creates an empty file."""
+        import anyio
+        async with await anyio.open_file(destination, "wb") as f:
+            # Write nothing - create empty file
+            pass
+    
+    context = process_utils.Context({"args": {}}, {})
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    
+    # Call the dummy function - should return None when empty file is created
+    result = await dummy_empty_file(context)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_valid_output() -> None:
+    """Test the external decorator with a valid external tool that produces output."""
+    
+    # Create a dummy external function that copies the source to destination
+    @process.external
+    async def dummy_copy(context: process_utils.Context, source: str, destination: str) -> None:
+        """Dummy function that copies source to destination."""
+        import anyio
+        async with await anyio.open_file(source, "rb") as src:
+            content = await src.read()
+        async with await anyio.open_file(destination, "wb") as dst:
+            await dst.write(content)
+    
+    context = process_utils.Context({"args": {}}, {})
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    
+    # Call the dummy function - should return a valid decoded image
+    result = await dummy_copy(context)
+    assert result is not None
+    assert isinstance(result, type(context.image))  # Should be same type as input (numpy array)
+    assert result.shape == context.image.shape  # Should have same dimensions
