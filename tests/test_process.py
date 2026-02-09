@@ -909,7 +909,6 @@ async def test_external_decorator_with_dither() -> None:
     context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
     context.image_name = "test_dither.png"
     context.root_folder = Path("/tmp")  # noqa: S108
-    original_image = context.image.copy()
 
     # Call dither function - it's wrapped by @Process so returns None
     result = await process.dither(context)
@@ -938,11 +937,12 @@ async def test_external_decorator_with_dither() -> None:
 async def test_external_decorator_empty_output() -> None:
     """Test the external decorator when the external tool doesn't create output."""
 
-    # Create a dummy external function that doesn't create output
+    # Create a dummy external function that deletes the destination file
     @process.external
     async def dummy_no_output(context: process_utils.Context, source: str, destination: str) -> None:
-        """Dummy function that doesn't write to destination."""
-        # Do nothing - don't create the destination file
+        """Dummy function that removes the destination file to simulate missing output."""
+        # Delete the destination file to trigger FileNotFoundError path
+        await anyio.Path(destination).unlink()
 
     context = process_utils.Context({"args": {}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
@@ -960,7 +960,7 @@ async def test_external_decorator_empty_file() -> None:
     @process.external
     async def dummy_empty_file(context: process_utils.Context, source: str, destination: str) -> None:
         """Dummy function that creates an empty file."""
-        async with await anyio.open_file(destination, "wb") as f:
+        async with await anyio.open_file(destination, "wb") as _:
             # Write nothing - create empty file
             pass
 
