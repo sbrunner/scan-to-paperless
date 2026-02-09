@@ -943,7 +943,6 @@ async def test_external_decorator_empty_output() -> None:
     async def dummy_no_output(context: process_utils.Context, source: str, destination: str) -> None:
         """Dummy function that doesn't write to destination."""
         # Do nothing - don't create the destination file
-        pass
 
     context = process_utils.Context({"args": {}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
