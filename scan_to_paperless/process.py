@@ -1766,6 +1766,8 @@ async def split(
                             crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
                         )
                         context.image = cv2.imread(process_file.name)
+                        final_file = process_file
+                        final_temp_file = process_temp_file
                         if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
                             await crop(context, round(margin_horizontal), round(margin_vertical))
                             crop_temp_file = anyio.NamedTemporaryFile(
@@ -1780,16 +1782,15 @@ async def split(
                                 Path(crop_file.name),
                                 f"{context.get_process_count()}-crop",
                             )
-                            # Update process_file to point to the cropped version
-                            process_file = crop_file
-                            process_temp_file = crop_temp_file
+                            final_file = crop_file
+                            final_temp_file = crop_temp_file
                         if page not in append:
                             append[page] = []
                         append[page].append(
                             {
-                                "file": process_file,
-                                "file_name": cast("str", process_file.name),
-                                "temp_file": process_temp_file,
+                                "file": final_file,
+                                "file_name": cast("str", final_file.name),
+                                "temp_file": final_temp_file,
                                 "pos": page_pos,
                             }
                         )
