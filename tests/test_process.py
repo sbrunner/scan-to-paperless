@@ -894,12 +894,8 @@ async def test_external_decorator_with_dither() -> None:
     init_test()
 
     # Check if gm (GraphicsMagick) is available
-    try:
-        result = subprocess.run(["which", "gm"], capture_output=True, text=True)
-        if result.returncode != 0:
-            pytest.skip("GraphicsMagick (gm) not available - skipping dither test")
-    except Exception:
-        pytest.skip("Cannot check for GraphicsMagick availability - skipping dither test")
+    if shutil.which("gm") is None:
+        pytest.skip("GraphicsMagick (gm) not available - skipping dither test")
 
     # Test with dither enabled
     context = process_utils.Context(
