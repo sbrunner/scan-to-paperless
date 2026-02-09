@@ -237,10 +237,10 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
                 try:
                     stat_result = await dest_path.stat()
                 except FileNotFoundError:
-                    print(f"Warning: External tool '{func}' did not create output file: {destination.name}")
+                    _LOG.warning("External tool '%s' did not create output file: %s", func, destination.name)
                     return None
                 if stat_result.st_size == 0:
-                    print(f"Warning: External tool '{func}' created an empty output file: {destination.name}")
+                    _LOG.warning("External tool '%s' created an empty output file: %s", func, destination.name)
                     return None
 
                 async with await anyio.open_file(destination.name, "rb") as dest_file:
