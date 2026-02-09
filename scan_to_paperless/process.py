@@ -232,13 +232,13 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
                 assert isinstance(destination.name, str)
                 await func(context, source_file.name, destination.name)
 
-                # Check if destination file exists and has content
+                # Check destination file size and content
                 dest_path = Path(destination.name)
-                if not await dest_path.exists():
+                try:
+                    stat_result = await dest_path.stat()
+                except FileNotFoundError:
                     print(f"Warning: External tool '{func}' did not create output file: {destination.name}")
                     return None
-
-                stat_result = await dest_path.stat()
                 if stat_result.st_size == 0:
                     print(f"Warning: External tool '{func}' created an empty output file: {destination.name}")
                     return None
