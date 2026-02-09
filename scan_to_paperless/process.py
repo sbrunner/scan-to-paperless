@@ -231,7 +231,7 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
             try:
                 await source_file.flush()
             except OSError as e:
-                message = f"Failed to flush source file buffer: {e}"
+                message = f"Failed to flush source file buffer: {type(e).__name__}: {e!s}"
                 raise scan_to_paperless.ScanToPaperlessError(message) from e
 
             async with anyio.NamedTemporaryFile(suffix=".png") as destination:
