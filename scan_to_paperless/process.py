@@ -15,6 +15,7 @@ import subprocess  # nosec
 import sys
 import time
 import traceback
+from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
 import aiohttp
@@ -1689,137 +1690,139 @@ async def split(
 
     append: dict[str | int, list[Item]] = {}
     transformed_images = []
-    for assisted_split in config["assisted_split"]:
-        image = assisted_split["source"]
-        context = process_utils.Context(config, step)
-        width, height = (
-            int(e) for e in output([*CONVERT, image, "-format", "%w %h", "info:-"]).strip().split(" ")
-        )
+    async with AsyncExitStack() as stack:
+        for assisted_split in config["assisted_split"]:
+            image = assisted_split["source"]
+            context = process_utils.Context(config, step)
+            width, height = (
+                int(e) for e in output([*CONVERT, image, "-format", "%w %h", "info:-"]).strip().split(" ")
+            )
 
-        horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
-        vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
+            horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
+            vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
 
-        last_y = 0
-        number = 0
-        for horizontal_number in range(len(horizontal_limits) + 1):
-            if horizontal_number < len(horizontal_limits):
-                horizontal_limit = horizontal_limits[horizontal_number]
-                horizontal_value = horizontal_limit["value"]
-                horizontal_margin = horizontal_limit["margin"]
-            else:
-                horizontal_value = height
-                horizontal_margin = 0
-            last_x = 0
-            for vertical_number in range(len(vertical_limits) + 1):
-                destination = assisted_split["destinations"][number]
-                if destination == "-" or destination is None:
-                    if vertical_number < len(vertical_limits):
-                        last_x = (
-                            vertical_limits[vertical_number]["value"]
-                            + vertical_limits[vertical_number]["margin"]
-                        )
+            last_y = 0
+            number = 0
+            for horizontal_number in range(len(horizontal_limits) + 1):
+                if horizontal_number < len(horizontal_limits):
+                    horizontal_limit = horizontal_limits[horizontal_number]
+                    horizontal_value = horizontal_limit["value"]
+                    horizontal_margin = horizontal_limit["margin"]
                 else:
-                    if vertical_number < len(vertical_limits):
-                        vertical_limit = vertical_limits[vertical_number]
-                        vertical_value = vertical_limit["value"]
-                        vertical_margin = vertical_limit["margin"]
+                    horizontal_value = height
+                    horizontal_margin = 0
+                last_x = 0
+                for vertical_number in range(len(vertical_limits) + 1):
+                    destination = assisted_split["destinations"][number]
+                    if destination == "-" or destination is None:
+                        if vertical_number < len(vertical_limits):
+                            last_x = (
+                                vertical_limits[vertical_number]["value"]
+                                + vertical_limits[vertical_number]["margin"]
+                            )
                     else:
-                        vertical_value = width
-                        vertical_margin = 0
-                    process_temp_file = anyio.NamedTemporaryFile(
-                        suffix=".png",
-                    )
-                    process_file = await process_temp_file.__aenter__()
-                    assert isinstance(process_file.name, str)
-                    await call(
-                        [
-                            *CONVERT,
-                            "-crop",
-                            f"{vertical_value - vertical_margin - last_x}x"
-                            f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
-                            "+repage",
-                            image,
-                            process_file.name,
-                        ],
-                    )
-                    last_x = vertical_value + vertical_margin
-
-                    if re.match(r"[0-9]+\.[0-9]+", str(destination)):
-                        page, page_pos = (int(e) for e in str(destination).split("."))
-                    else:
-                        page = int(destination)
-                        page_pos = 0
-
-                    await save(
-                        context,
-                        root_folder,
-                        Path(process_file.name),
-                        f"{context.get_process_count()}-split",
-                    )
-                    crop_config = context.config["args"].setdefault("crop", {})
-                    margin_horizontal = context.get_px_value(
-                        crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT),
-                    )
-                    margin_vertical = context.get_px_value(
-                        crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
-                    )
-                    context.image = cv2.imread(process_file.name)
-                    if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                        await crop(context, round(margin_horizontal), round(margin_vertical))
+                        if vertical_number < len(vertical_limits):
+                            vertical_limit = vertical_limits[vertical_number]
+                            vertical_value = vertical_limit["value"]
+                            vertical_margin = vertical_limit["margin"]
+                        else:
+                            vertical_value = width
+                            vertical_margin = 0
                         process_temp_file = anyio.NamedTemporaryFile(
                             suffix=".png",
                         )
-                        process_file = await process_temp_file.__aenter__()
+                        process_file = await stack.enter_async_context(process_temp_file)
                         assert isinstance(process_file.name, str)
-                        cv2.imwrite(process_file.name, context.image)  # type: ignore[arg-type]
+                        await call(
+                            [
+                                *CONVERT,
+                                "-crop",
+                                f"{vertical_value - vertical_margin - last_x}x"
+                                f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
+                                "+repage",
+                                image,
+                                process_file.name,
+                            ],
+                        )
+                        last_x = vertical_value + vertical_margin
+
+                        if re.match(r"[0-9]+\.[0-9]+", str(destination)):
+                            page, page_pos = (int(e) for e in str(destination).split("."))
+                        else:
+                            page = int(destination)
+                            page_pos = 0
+
                         await save(
                             context,
                             root_folder,
                             Path(process_file.name),
-                            f"{context.get_process_count()}-crop",
+                            f"{context.get_process_count()}-split",
                         )
-                    if page not in append:
-                        append[page] = []
-                    append[page].append(
-                        {
-                            "file": process_file,
-                            "file_name": cast("str", process_file.name),
-                            "temp_file": process_temp_file,
-                            "pos": page_pos,
-                        }
-                    )
-                number += 1
-            last_y = horizontal_value + horizontal_margin
-        process_count = context.process_count
+                        crop_config = context.config["args"].setdefault("crop", {})
+                        margin_horizontal = context.get_px_value(
+                            crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT),
+                        )
+                        margin_vertical = context.get_px_value(
+                            crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
+                        )
+                        context.image = cv2.imread(process_file.name)
+                        if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
+                            await crop(context, round(margin_horizontal), round(margin_vertical))
+                            crop_temp_file = anyio.NamedTemporaryFile(
+                                suffix=".png",
+                            )
+                            crop_file = await stack.enter_async_context(crop_temp_file)
+                            assert isinstance(crop_file.name, str)
+                            cv2.imwrite(crop_file.name, context.image)  # type: ignore[arg-type]
+                            await save(
+                                context,
+                                root_folder,
+                                Path(crop_file.name),
+                                f"{context.get_process_count()}-crop",
+                            )
+                            # Update process_file to point to the cropped version
+                            process_file = crop_file
+                            process_temp_file = crop_temp_file
+                        if page not in append:
+                            append[page] = []
+                        append[page].append(
+                            {
+                                "file": process_file,
+                                "file_name": cast("str", process_file.name),
+                                "temp_file": process_temp_file,
+                                "pos": page_pos,
+                            }
+                        )
+                    number += 1
+                last_y = horizontal_value + horizontal_margin
+            process_count = context.process_count
 
-    for page_number in sorted(append.keys()):
-        items: list[Item] = append[page_number]
-        vertical = len(horizontal_limits) == 0
-        if not vertical and len(vertical_limits) != 0 and len(items) > 1:
-            msg = f"Mix of limit type for page '{page_number}'"
-            raise scan_to_paperless.ScanToPaperlessError(msg)
+        for page_number in sorted(append.keys()):
+            items: list[Item] = append[page_number]
+            vertical = len(horizontal_limits) == 0
+            if not vertical and len(vertical_limits) != 0 and len(items) > 1:
+                msg = f"Mix of limit type for page '{page_number}'"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
 
-        async with anyio.NamedTemporaryFile(suffix=".png") as process_file:
-            assert isinstance(process_file.name, str)
-            await call(
-                CONVERT
-                + [e["file_name"] for e in sorted(items, key=lambda e: e["pos"])]
-                + [
-                    "-background",
-                    "#ffffff",
-                    "-gravity",
-                    "center",
-                    "+append" if vertical else "-append",
-                    process_file.name,
-                ],
-            )
-            for item in items:
-                await item["temp_file"].__aexit__(None, None, None)
-            await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
-            img2 = root_folder / f"image-{page_number}.png"
-            await call([*CONVERT, process_file.name, str(img2)])
-            transformed_images.append(img2)
-    process_count += 1
+            async with anyio.NamedTemporaryFile(suffix=".png") as process_file:
+                assert isinstance(process_file.name, str)
+                await call(
+                    CONVERT
+                    + [e["file_name"] for e in sorted(items, key=lambda e: e["pos"])]
+                    + [
+                        "-background",
+                        "#ffffff",
+                        "-gravity",
+                        "center",
+                        "+append" if vertical else "-append",
+                        process_file.name,
+                    ],
+                )
+                await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
+                img2 = root_folder / f"image-{page_number}.png"
+                await call([*CONVERT, process_file.name, str(img2)])
+                transformed_images.append(img2)
+        process_count += 1
 
     return {
         "sources": [str(path) for path in transformed_images],
