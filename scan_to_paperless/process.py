@@ -504,14 +504,17 @@ async def deskew(context: process_utils.Context) -> None:
                     context.get_background_color(),
                 )
                 source_path = Path(sources[0])
-                cv2.imwrite(
-                    str(
-                        context.root_folder
-                        / "source"
-                        / (source_path.stem + "-skew-corrected" + source_path.suffix),
-                    ),
-                    image,
+                output_path = (
+                    context.root_folder
+                    / "source"
+                    / (source_path.stem + "-skew-corrected" + source_path.suffix)
                 )
+                success, encoded_image = cv2.imencode(source_path.suffix, image)
+                if not success:
+                    msg = f"Failed to encode skew-corrected image to {source_path.suffix}"
+                    raise scan_to_paperless.ScanToPaperlessError(msg)
+                async with await anyio.open_file(str(output_path), "wb") as f:
+                    await f.write(encoded_image.tobytes())
 
 
 @Process("docrop")
