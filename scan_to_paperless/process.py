@@ -231,7 +231,7 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
                     file_content = await f.read()
                     if not file_content:
                         return None
-                    img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
+                    img_array = np.frombuffer(file_content, dtype=np.uint8)
                     if img_array.size == 0:
                         msg = f"Empty image array from {destination.name}"
                         raise scan_to_paperless.ScanToPaperlessError(msg)
