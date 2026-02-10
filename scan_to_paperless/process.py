@@ -13,10 +13,10 @@ import re
 import shutil
 import subprocess  # nosec
 import sys
-import tempfile
 import time
 import traceback
-from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
+from contextlib import AsyncExitStack
+from typing import TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
 import aiohttp
 import anyio
@@ -217,29 +217,55 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
     async def wrapper(context: process_utils.Context) -> NpNdarrayInt | None:
-        with tempfile.NamedTemporaryFile(suffix=".png") as source:
-            assert context.image is not None
-            success, encoded_image = cv2.imencode(".png", context.image)
-            if not success:
-                msg = "Failed to encode source image to PNG"
-                raise scan_to_paperless.ScanToPaperlessError(msg)
-            async with await anyio.open_file(source.name, "wb") as f:
-                await f.write(encoded_image.tobytes())
-            with tempfile.NamedTemporaryFile(suffix=".png") as destination:
-                await func(context, source.name, destination.name)
-                async with await anyio.open_file(destination.name, "rb") as f:
-                    file_content = await f.read()
-                    if not file_content:
-                        return None
-                    img_array = np.frombuffer(file_content, dtype=np.uint8)
-                    if img_array.size == 0:
-                        msg = f"Empty image array from {destination.name}"
-                        raise scan_to_paperless.ScanToPaperlessError(msg)
-                    image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                    if image is None:
-                        msg = f"Failed to decode image from {destination.name}"
-                        raise scan_to_paperless.ScanToPaperlessError(msg)
-                    return cast("NpNdarrayInt", image)
+        # Write source image to BytesIO buffer
+        assert context.image is not None
+        success, source_buffer = cv2.imencode(".png", context.image)
+        if not success:
+            message = "Failed to encode source image"
+            raise scan_to_paperless.ScanToPaperlessError(message)
+
+        async with anyio.NamedTemporaryFile(suffix=".png") as source_file:
+            assert isinstance(source_file.name, str)
+            await source_file.write(bytes(source_buffer))
+            # Flush to ensure data is written to disk before external tool reads it
+            try:
+                await source_file.flush()
+            except OSError as e:
+                message = f"Failed to flush source file buffer: {type(e).__name__}: {e!s}"
+                raise scan_to_paperless.ScanToPaperlessError(message) from e
+
+            async with anyio.NamedTemporaryFile(suffix=".png") as destination:
+                assert isinstance(destination.name, str)
+                await func(context, source_file.name, destination.name)
+
+                # Check destination file size and content
+                dest_path = Path(destination.name)
+                try:
+                    stat_result = await dest_path.stat()
+                except FileNotFoundError:
+                    _LOG.warning("External tool '%s' did not create output file: %s", func, destination.name)
+                    return None
+                if stat_result.st_size == 0:
+                    _LOG.warning(
+                        "External tool '%s' created an empty output file: %s", func, destination.name
+                    )
+                    return None
+
+                async with await anyio.open_file(destination.name, "rb") as dest_file:
+                    image_data = await dest_file.read()
+
+                    if not image_data:
+                        message = f"Failed to read output from external tool: {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(message)
+
+                    image_array = np.frombuffer(image_data, dtype=np.uint8)
+                    decoded_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+                    if decoded_image is None:
+                        message = f"Failed to decode image from external tool output: {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(message)
+
+                    return cast("NpNdarrayInt", decoded_image)
 
     return wrapper
 
@@ -576,7 +602,9 @@ async def autorotate(context: process_utils.Context) -> None:
     auto_rotate_configuration = context.config["args"].setdefault("auto_rotate", {})
     if not auto_rotate_configuration.setdefault("enabled", schema.AUTO_ROTATE_ENABLED_DEFAULT):
         return
-    with tempfile.NamedTemporaryFile(suffix=".png") as source:
+    assert context.image is not None
+    async with anyio.NamedTemporaryFile(suffix=".png") as source:
+        assert isinstance(source.name, str)
         cv2.imwrite(source.name, context.get_masked())
         try:
             orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
@@ -1542,7 +1570,8 @@ async def transform(
     ) and pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT):
         count = context.get_process_count()
         for image_path in images_path:
-            with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
+            async with anyio.NamedTemporaryFile(suffix=".png") as temp_file:
+                assert isinstance(temp_file.name, str)
                 await call(
                     [
                         "pngquant",
@@ -1666,7 +1695,8 @@ class Item(TypedDict, total=False):
     """
 
     pos: int
-    file: IO[bytes]
+    file: anyio.AsyncFile[bytes]
+    file_name: str
 
 
 async def split(
@@ -1700,144 +1730,157 @@ async def split(
             if await image_path.exists():
                 await image_path.unlink()
 
-    append: dict[str | int, list[Item]] = {}
-    transformed_images = []
-    for assisted_split in config["assisted_split"]:
-        image = assisted_split["source"]
-        context = process_utils.Context(config, step)
-        width, height = (
-            int(e) for e in output([*CONVERT, image, "-format", "%w %h", "info:-"]).strip().split(" ")
-        )
+    async with AsyncExitStack() as stack:
+        append: dict[str | int, list[Item]] = {}
+        transformed_images = []
+        for assisted_split in config["assisted_split"]:
+            image = assisted_split["source"]
+            context = process_utils.Context(config, step)
+            width, height = (
+                int(e) for e in output([*CONVERT, image, "-format", "%w %h", "info:-"]).strip().split(" ")
+            )
 
-        horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
-        vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
+            horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
+            vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
 
-        last_y = 0
-        number = 0
-        for horizontal_number in range(len(horizontal_limits) + 1):
-            if horizontal_number < len(horizontal_limits):
-                horizontal_limit = horizontal_limits[horizontal_number]
-                horizontal_value = horizontal_limit["value"]
-                horizontal_margin = horizontal_limit["margin"]
-            else:
-                horizontal_value = height
-                horizontal_margin = 0
-            last_x = 0
-            for vertical_number in range(len(vertical_limits) + 1):
-                destination = assisted_split["destinations"][number]
-                if destination == "-" or destination is None:
-                    if vertical_number < len(vertical_limits):
-                        last_x = (
-                            vertical_limits[vertical_number]["value"]
-                            + vertical_limits[vertical_number]["margin"]
-                        )
+            last_y = 0
+            number = 0
+            for horizontal_number in range(len(horizontal_limits) + 1):
+                if horizontal_number < len(horizontal_limits):
+                    horizontal_limit = horizontal_limits[horizontal_number]
+                    horizontal_value = horizontal_limit["value"]
+                    horizontal_margin = horizontal_limit["margin"]
                 else:
-                    if vertical_number < len(vertical_limits):
-                        vertical_limit = vertical_limits[vertical_number]
-                        vertical_value = vertical_limit["value"]
-                        vertical_margin = vertical_limit["margin"]
+                    horizontal_value = height
+                    horizontal_margin = 0
+                last_x = 0
+                for vertical_number in range(len(vertical_limits) + 1):
+                    destination = assisted_split["destinations"][number]
+                    if destination == "-" or destination is None:
+                        if vertical_number < len(vertical_limits):
+                            last_x = (
+                                vertical_limits[vertical_number]["value"]
+                                + vertical_limits[vertical_number]["margin"]
+                            )
                     else:
-                        vertical_value = width
-                        vertical_margin = 0
-                    process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
-                        suffix=".png",
-                    )
-                    await call(
-                        [
-                            *CONVERT,
-                            "-crop",
-                            f"{vertical_value - vertical_margin - last_x}x"
-                            f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
-                            "+repage",
-                            image,
-                            process_file.name,
-                        ],
-                    )
-                    last_x = vertical_value + vertical_margin
-
-                    if re.match(r"[0-9]+\.[0-9]+", str(destination)):
-                        page, page_pos = (int(e) for e in str(destination).split("."))
-                    else:
-                        page = int(destination)
-                        page_pos = 0
-
-                    await save(
-                        context,
-                        root_folder,
-                        Path(process_file.name),
-                        f"{context.get_process_count()}-split",
-                    )
-                    crop_config = context.config["args"].setdefault("crop", {})
-                    margin_horizontal = context.get_px_value(
-                        crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT),
-                    )
-                    margin_vertical = context.get_px_value(
-                        crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
-                    )
-                    async with await anyio.open_file(process_file.name, "rb") as f:
-                        file_content = await f.read()
-                        if not file_content:
-                            msg = f"Empty file content from {process_file.name}"
-                            raise scan_to_paperless.ScanToPaperlessError(msg)
-                        img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
-                        if img_array.size == 0:
-                            msg = f"Empty image array from {process_file.name}"
-                            raise scan_to_paperless.ScanToPaperlessError(msg)
-                        decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                        if decoded_image is None:
-                            msg = f"Failed to decode image from {process_file.name}"
-                            raise scan_to_paperless.ScanToPaperlessError(msg)
-                        context.image = decoded_image
-                    if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                        await crop(context, round(margin_horizontal), round(margin_vertical))
-                        process_file = tempfile.NamedTemporaryFile(  # noqa: SIM115
+                        if vertical_number < len(vertical_limits):
+                            vertical_limit = vertical_limits[vertical_number]
+                            vertical_value = vertical_limit["value"]
+                            vertical_margin = vertical_limit["margin"]
+                        else:
+                            vertical_value = width
+                            vertical_margin = 0
+                        process_temp_file = anyio.NamedTemporaryFile(
                             suffix=".png",
                         )
-                        assert context.image is not None
-                        success, buf = cv2.imencode(".png", context.image)
-                        if not success:
-                            message = f"Failed to encode cropped image for {process_file.name}. This may be due to an empty or corrupted crop."
-                            raise scan_to_paperless.ScanToPaperlessError(message)
+                        process_file = await stack.enter_async_context(process_temp_file)
+                        assert isinstance(process_file.name, str)
+                        await call(
+                            [
+                                *CONVERT,
+                                "-crop",
+                                f"{vertical_value - vertical_margin - last_x}x"
+                                f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
+                                "+repage",
+                                image,
+                                process_file.name,
+                            ],
+                        )
+                        last_x = vertical_value + vertical_margin
 
-                        async with await anyio.open_file(process_file.name, "wb") as img_file:
-                            await img_file.write(buf.tobytes())
+                        if re.match(r"[0-9]+\.[0-9]+", str(destination)):
+                            page, page_pos = (int(e) for e in str(destination).split("."))
+                        else:
+                            page = int(destination)
+                            page_pos = 0
+
                         await save(
                             context,
                             root_folder,
                             Path(process_file.name),
-                            f"{context.get_process_count()}-crop",
+                            f"{context.get_process_count()}-split",
                         )
-                    if page not in append:
-                        append[page] = []
-                    append[page].append({"file": process_file, "pos": page_pos})
-                number += 1
-            last_y = horizontal_value + horizontal_margin
-        process_count = context.process_count
+                        crop_config = context.config["args"].setdefault("crop", {})
+                        margin_horizontal = context.get_px_value(
+                            crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT),
+                        )
+                        margin_vertical = context.get_px_value(
+                            crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
+                        )
+                        async with await anyio.open_file(process_file.name, "rb") as f:
+                            file_content = await f.read()
+                            if not file_content:
+                                msg = f"Empty file content from {process_file.name}"
+                                raise scan_to_paperless.ScanToPaperlessError(msg)
+                            img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
+                            if img_array.size == 0:
+                                msg = f"Empty image array from {process_file.name}"
+                                raise scan_to_paperless.ScanToPaperlessError(msg)
+                            decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                            if decoded_image is None:
+                                msg = f"Failed to decode image from {process_file.name}"
+                                raise scan_to_paperless.ScanToPaperlessError(msg)
+                            context.image = decoded_image
+                        final_file = process_file
+                        if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
+                            await crop(context, round(margin_horizontal), round(margin_vertical))
+                            crop_temp_file = anyio.NamedTemporaryFile(
+                                suffix=".png",
+                            )
+                            crop_file = await stack.enter_async_context(crop_temp_file)
+                            assert isinstance(crop_file.name, str)
+                            assert context.image is not None
+                            success, buf = cv2.imencode(".png", context.image)
+                            if not success:
+                                message = f"Failed to encode cropped image for {crop_file.name}. This may be due to an empty or corrupted crop."
+                                raise scan_to_paperless.ScanToPaperlessError(message)
+                            async with await anyio.open_file(crop_file.name, "wb") as img_file:
+                                await img_file.write(buf.tobytes())
+                            await save(
+                                context,
+                                root_folder,
+                                Path(crop_file.name),
+                                f"{context.get_process_count()}-crop",
+                            )
+                            final_file = crop_file
+                        if page not in append:
+                            append[page] = []
+                        append[page].append(
+                            {
+                                "file": final_file,
+                                "file_name": cast("str", final_file.name),
+                                "pos": page_pos,
+                            }
+                        )
+                    number += 1
+                last_y = horizontal_value + horizontal_margin
+            process_count = context.process_count
 
-    for page_number in sorted(append.keys()):
-        items: list[Item] = append[page_number]
-        vertical = len(horizontal_limits) == 0
-        if not vertical and len(vertical_limits) != 0 and len(items) > 1:
-            msg = f"Mix of limit type for page '{page_number}'"
-            raise scan_to_paperless.ScanToPaperlessError(msg)
+        for page_number in sorted(append.keys()):
+            items: list[Item] = append[page_number]
+            vertical = len(horizontal_limits) == 0
+            if not vertical and len(vertical_limits) != 0 and len(items) > 1:
+                msg = f"Mix of limit type for page '{page_number}'"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
 
-        with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
-            await call(
-                CONVERT
-                + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
-                + [
-                    "-background",
-                    "#ffffff",
-                    "-gravity",
-                    "center",
-                    "+append" if vertical else "-append",
-                    process_file.name,
-                ],
-            )
-            await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
-            img2 = root_folder / f"image-{page_number}.png"
-            await call([*CONVERT, process_file.name, str(img2)])
-            transformed_images.append(img2)
+            async with anyio.NamedTemporaryFile(suffix=".png") as process_file:
+                assert isinstance(process_file.name, str)
+                await call(
+                    CONVERT
+                    + [e["file_name"] for e in sorted(items, key=lambda e: e["pos"])]
+                    + [
+                        "-background",
+                        "#ffffff",
+                        "-gravity",
+                        "center",
+                        "+append" if vertical else "-append",
+                        process_file.name,
+                    ],
+                )
+                await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
+                img2 = root_folder / f"image-{page_number}.png"
+                await call([*CONVERT, process_file.name, str(img2)])
+                transformed_images.append(img2)
     process_count += 1
 
     return {
@@ -1946,7 +1989,8 @@ async def finalize(
             )
 
     count = 1
-    with tempfile.NamedTemporaryFile(suffix=".png") as temporary_pdf:
+    async with anyio.NamedTemporaryFile(suffix=".pdf") as temporary_pdf:
+        assert isinstance(temporary_pdf.name, str)
         await call(["pdftk", *[str(e) for e in pdf], "output", temporary_pdf.name, "compress"])
         if progress:
             await call(["cp", temporary_pdf.name, str(root_folder / f"{count}-pdftk.pdf")])
@@ -1967,7 +2011,8 @@ async def finalize(
             .setdefault("ps2pdf", cast("schema.Ps2Pdf", schema.PS2PDF_DEFAULT))
             .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
         ):
-            with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
+            async with anyio.NamedTemporaryFile(suffix=".pdf") as temporary_ps2pdf:
+                assert isinstance(temporary_ps2pdf.name, str)
                 await call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
                     await call(["cp", temporary_ps2pdf.name, f"{count}-ps2pdf.pdf"])
