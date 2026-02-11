@@ -30,7 +30,7 @@ scikit-image = { version = "0.26.0", optional = true }
 opencv-contrib-python-headless = { version = "4.13.0.90", optional = true }
 deskew = { version = "1.5.3", optional = true }
 "ruamel.yaml" = "0.19.1"
-Pillow = "12.1.0"
+Pillow = "12.1.1"
 pypdf = { version = "6.6.2", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.4.9", optional = true }
