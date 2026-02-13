@@ -88,7 +88,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libdevmapper1.02.1: 2:1.02.175-2.1ubuntu5
   ubuntu_22_04/libdw1: 0.186-1ubuntu0.1
   ubuntu_22_04/libelf1: 0.186-1ubuntu0.1
-  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.6
+  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.7
   ubuntu_22_04/libext2fs2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libffi8: 3.4.2-4
   ubuntu_22_04/libfontconfig1: 2.13.1-4.2ubuntu5
@@ -168,7 +168,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
-  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.3
+  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.4
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
@@ -392,7 +392,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libdevmapper1.02.1: 2:1.02.175-2.1ubuntu5
   ubuntu_22_04/libdw1: 0.186-1ubuntu0.1
   ubuntu_22_04/libelf1: 0.186-1ubuntu0.1
-  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.6
+  ubuntu_22_04/libexpat1: 2.4.7-1ubuntu0.7
   ubuntu_22_04/libext2fs2: 1.46.5-2ubuntu1.2
   ubuntu_22_04/libffi8: 3.4.2-4
   ubuntu_22_04/libfontconfig1: 2.13.1-4.2ubuntu5
@@ -472,7 +472,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
-  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.3
+  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.4
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
