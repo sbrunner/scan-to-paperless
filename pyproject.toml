@@ -21,7 +21,7 @@ deskew = { version = "1.5.3", optional = true }
 "ruamel.yaml" = "0.18.17"
 argcomplete = "3.6.3"
 pillow = "12.1.1"
-pypdf = { version = "6.7.1", optional = true }
+pypdf = { version = "6.7.2", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "4.4.9", optional = true }
 weasyprint = { version = "68.0", optional = true }
@@ -128,7 +128,7 @@ classifiers = [
 ]
 authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
 requires-python = ">=3.10"
-dependencies = ["ruamel.yaml", "argcomplete", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "pillow", "brotli==1.2.0", "brotlicffi==1.2.0.0", "fonttools==4.61.1", "urllib3==2.6.3", "pypdf==6.7.2"]
+dependencies = ["ruamel.yaml", "argcomplete", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "pillow", "brotli==1.2.0", "brotlicffi==1.2.0.0", "fonttools==4.61.1", "urllib3==2.6.3"]
 
 [project.urls]
 homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
