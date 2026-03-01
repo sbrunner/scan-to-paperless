@@ -48,7 +48,7 @@ jobs:
       - run: git diff --exit-code --patch > /tmp/pre-commit.patch; git diff --color; git reset --hard || true
         if: failure()
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: Apply pre-commit fix.patch
           path: /tmp/pre-commit.patch
@@ -81,7 +81,7 @@ jobs:
       - name: Get the status images
         run: cp tests/status/*.png results/status/ || true
         if: failure()
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: results
           path: results
@@ -126,7 +126,7 @@ jobs:
         if: failure()
       - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
         if: failure()
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: Update dpkg versions list.patch
           path: /tmp/dpkg-versions.patch
