@@ -167,7 +167,7 @@ repos:
             |scan_to_paperless/process_schema\.py
           )$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 43.46.2
+    rev: 43.46.5
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
