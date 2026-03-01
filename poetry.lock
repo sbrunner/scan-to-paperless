@@ -3802,15 +3802,15 @@ typing-extensions = {version = ">=4.4.0", markers = "python_version < \"3.13\""}
 
 [[package]]
 name = "reportlab"
-version = "4.4.9"
+version = "4.4.10"
 description = "The Reportlab Toolkit"
 optional = true
 python-versions = "<4,>=3.9"
 groups = ["main"]
 markers = "extra == \"process\""
 files = [
-    {file = "reportlab-4.4.9-py3-none-any.whl", hash = "sha256:68e2d103ae8041a37714e8896ec9b79a1c1e911d68c3bd2ea17546568cf17bfd"},
-    {file = "reportlab-4.4.9.tar.gz", hash = "sha256:7cf487764294ee791a4781f5a157bebce262a666ae4bbb87786760a9676c9378"},
+    {file = "reportlab-4.4.10-py3-none-any.whl", hash = "sha256:5abc815746ae2bc44e7ff25db96814f921349ca814c992c7eac3c26029bf7c24"},
+    {file = "reportlab-4.4.10.tar.gz", hash = "sha256:5cbbb34ac3546039d0086deb2938cdec06b12da3cdb836e813258eb33cd28487"},
 ]
 
 [package.dependencies]
@@ -5187,4 +5187,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "0c8dee526afce39aab9b7fcfd98bfde73a09625653f0bb6983eceeb79fead864"
+content-hash = "4a574cbc1920d0d77187eef5fe5db41290bd3ea5e45a551637f4bf7f7133ba31"
