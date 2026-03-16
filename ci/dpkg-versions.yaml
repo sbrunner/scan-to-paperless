@@ -188,7 +188,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libsmartcols1: 2.37.2-4ubuntu3.5
   ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.5
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.2
-  ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.6
+  ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.7
   ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.21
   ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04.3
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
@@ -256,7 +256,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/python3-apt: 2.4.0ubuntu4.1
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
-  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.3
+  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.4
   ubuntu_22_04/python3-dbus: 1.2.18-3build1
   ubuntu_22_04/python3-distro: 1.7.0-1
   ubuntu_22_04/python3-distutils: 3.10.8-1~22.04
@@ -492,7 +492,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libsmartcols1: 2.37.2-4ubuntu3.5
   ubuntu_22_04/libsqlite3-0: 3.37.2-2ubuntu0.5
   ubuntu_22_04/libss2: 1.46.5-2ubuntu1.2
-  ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.6
+  ubuntu_22_04/libssh-4: 0.9.6-2ubuntu0.22.04.7
   ubuntu_22_04/libssl3: 3.0.2-0ubuntu1.21
   ubuntu_22_04/libstdc++6: 12.3.0-1ubuntu1~22.04.3
   ubuntu_22_04/libstemmer0d: 2.2.0-1build1
@@ -560,7 +560,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/python3-apt: 2.4.0ubuntu4.1
   ubuntu_22_04/python3-blinker: 1.4+dfsg1-0.4
   ubuntu_22_04/python3-cffi-backend: 1.15.0-1build2
-  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.3
+  ubuntu_22_04/python3-cryptography: 3.4.8-1ubuntu2.4
   ubuntu_22_04/python3-dbus: 1.2.18-3build1
   ubuntu_22_04/python3-distro: 1.7.0-1
   ubuntu_22_04/python3-distutils: 3.10.8-1~22.04
