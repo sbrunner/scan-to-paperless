@@ -15,7 +15,7 @@ from scan_to_paperless import status
 pytestmark = pytest.mark.skipif(sys.platform != "linux", reason="asyncinotify only works on Linux")
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_dirs():
     """Create temporary directories for testing and configure env vars."""
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -161,8 +161,10 @@ async def test_watch_sources_detects_file_deletion_and_updates_status(temp_dirs)
         await (folder_path / "image1.png").unlink()
 
         result = await _wait_for_condition(
-            lambda: status_obj._status.get("deletejob", None) is not None
-            and status_obj._status["deletejob"].status == "Waiting for sources"
+            lambda: (
+                status_obj._status.get("deletejob", None) is not None
+                and status_obj._status["deletejob"].status == "Waiting for sources"
+            )
         )
 
         assert result, "_status for 'deletejob' was not updated to 'Waiting for sources' within the timeout"
