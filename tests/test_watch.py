@@ -2,12 +2,12 @@
 
 import asyncio
 import io
-import os
 import sys
 import tempfile
 
 import anyio
 import pytest
+import pytest_asyncio
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import status
@@ -15,21 +15,21 @@ from scan_to_paperless import status
 pytestmark = pytest.mark.skipif(sys.platform != "linux", reason="asyncinotify only works on Linux")
 
 
-@pytest.fixture
-def temp_dirs():
+@pytest_asyncio.fixture()
+async def temp_dirs(monkeypatch):
     """Create temporary directories for testing and configure env vars."""
     with tempfile.TemporaryDirectory() as tmpdir:
         source_dir = anyio.Path(tmpdir) / "source"
         codes_dir = anyio.Path(tmpdir) / "codes"
         consume_dir = anyio.Path(tmpdir) / "consume"
 
-        os.makedirs(str(source_dir))
-        os.makedirs(str(codes_dir))
-        os.makedirs(str(consume_dir))
+        await source_dir.mkdir(parents=True)
+        await codes_dir.mkdir(parents=True)
+        await consume_dir.mkdir(parents=True)
 
-        os.environ["SCAN_SOURCE_FOLDER"] = str(source_dir)
-        os.environ["SCAN_CODES_FOLDER"] = str(codes_dir)
-        os.environ["SCAN_FINAL_FOLDER"] = str(consume_dir)
+        monkeypatch.setenv("SCAN_SOURCE_FOLDER", str(source_dir))
+        monkeypatch.setenv("SCAN_CODES_FOLDER", str(codes_dir))
+        monkeypatch.setenv("SCAN_FINAL_FOLDER", str(consume_dir))
 
         yield {
             "source": source_dir,
