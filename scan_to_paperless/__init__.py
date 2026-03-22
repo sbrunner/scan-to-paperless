@@ -26,7 +26,7 @@ class ScanToPaperlessError(Exception):
     """Base exception for this module."""
 
 
-async def get_config(config_filename: Path) -> schema.Configuration:
+async def get_config(config_filename: Path, verbose: bool = True) -> schema.Configuration:
     """Get the configuration."""
     if await config_filename.exists():
         yaml = YAML()
@@ -37,6 +37,7 @@ async def get_config(config_filename: Path) -> schema.Configuration:
             if "extends" in config:
                 base_config = await get_config(
                     await (await (config_filename.parent / config["extends"]).expanduser()).resolve(),
+                    verbose=verbose,
                 )
 
                 strategies_config = config.get("merge_strategies", cast("schema.MergeStrategies", {}))
@@ -50,5 +51,6 @@ async def get_config(config_filename: Path) -> schema.Configuration:
                 )
                 config = merger.merge(base_config, config)
             return config
-    print(f"Missing config file: {config_filename}")
+    if verbose:
+        print(f"Missing config file: {config_filename}")
     return {}
