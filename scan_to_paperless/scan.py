@@ -12,9 +12,9 @@ import shlex
 import subprocess  # nosec
 import sys
 import time
-from enum import StrEnum
 from typing import Annotated, Any, cast
 
+import anyio
 import PIL.Image
 import pyperclip
 import typer
@@ -99,6 +99,28 @@ def available_presets() -> list[str]:
         return []
 
 
+def _config_path_for_preset(preset: str | None) -> Path:
+    """Return the configuration path for the given preset."""
+    if preset is None:
+        return CONFIG_PATH
+    return Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
+
+
+async def _load_mode_config(preset: str | None) -> schema.Configuration:
+    """Load the configuration for mode autocompletion."""
+    return await get_config(_config_path_for_preset(preset), verbose=False)
+
+
+def available_modes(ctx: typer.Context) -> list[str]:
+    """Return the list of available scan modes."""
+    preset = cast("str | None", ctx.params.get("preset"))
+    try:
+        config = anyio.run(_load_mode_config, preset)
+    except RuntimeError:
+        config = cast("schema.Configuration", {})
+    return _available_modes(config)
+
+
 @app.command(name="config", help="Print the configuration.")
 async def main_config(
     preset: Annotated[
@@ -165,33 +187,12 @@ def convert_clipboard() -> None:
         sys.exit()
 
 
-class _Mode(StrEnum):
-    ADF = "adf"
-    MULTI = "multi"
-    ONE = "one"
-    DOUBLE = "double"
-
-
 app_scan = typer.Typer(rich_markup_mode=None)
 
 
 @app.command(help="Scan a new document.")
 @app_scan.command(help="Scan a new document.")
 def scan(
-    mode: Annotated[
-        _Mode,
-        typer.Option(
-            help="\n\n".join(  # noqa: FLY002
-                [
-                    "The scan mode: ",
-                    "'adf': use Auto Document Feeder (Default) (default used arguments: --source=ADF)",
-                    "'one': scan one page (default used arguments: --batch-count=1)",
-                    "'multi': scan multiple pages (default used arguments: --batch-prompt)",
-                    "'double': scan double sided document using the ADF (default used arguments: --source=ADF, auto_bash: true, rotate_even: true)",
-                ],
-            ),
-        ),
-    ] = _Mode.ADF,
     preset: Annotated[
         str | None,
         typer.Option(
@@ -199,6 +200,23 @@ def scan(
             autocompletion=available_presets,
         ),
     ] = None,
+    mode: Annotated[
+        str,
+        typer.Option(
+            help="\n\n".join(  # noqa: FLY002
+                [
+                    "The scan mode name from the configuration file (config.modes).",
+                    "Default used values:",
+                    "'adf': use Auto Document Feeder (Default) (default used arguments: --source=ADF)",
+                    "'one': scan one page (default used arguments: --batch-count=1)",
+                    "'multi': scan multiple pages (default used arguments: --batch-prompt)",
+                    "'double': scan double sided document using the ADF (default used arguments: --source=ADF, auto_bash: true, rotate_even: true)",
+                    "Example: --mode=double.",
+                ],
+            ),
+            autocompletion=available_modes,
+        ),
+    ] = "adf",
     append_credit_card: Annotated[
         bool,
         typer.Option(
@@ -217,7 +235,7 @@ def scan(
 
 
 async def _scan_async(
-    mode: _Mode,
+    mode: str,
     preset: str | None,
     append_credit_card: bool,
     assisted_split: bool,
@@ -290,6 +308,7 @@ async def _scan_adf_mode(
 async def _scan_double_mode(
     scanimage_cmd: list[str],
     root_folder: Path,
+    rotate_even: bool,
 ) -> None:
     """Scan double-sided document using ADF."""
     await call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
@@ -306,17 +325,43 @@ async def _scan_double_mode(
             f"--batch-count={len(odd)}",
         ],
     )
-    async for img in root_folder.iterdir():
-        if img not in odd:
-            path = root_folder / img
-            with PIL.Image.open(path) as image:
-                image.rotate(180).save(path, dpi=image.info["dpi"])
+    if rotate_even:
+        async for img in root_folder.iterdir():
+            if img not in odd:
+                path = root_folder / img
+                with PIL.Image.open(path) as image:
+                    image.rotate(180).save(path, dpi=image.info["dpi"])
+
+
+def _available_modes(config: schema.Configuration) -> list[str]:
+    """Return the list of available mode names."""
+    config_modes = list(config.get("modes", {}).keys())
+    default_modes = list(schema.MODES_DEFAULT.keys())
+    return sorted(set(config_modes + default_modes))
+
+
+def _get_mode_config(
+    config: schema.Configuration,
+    mode: str,
+) -> schema.Mode:
+    """Return the merged configuration for the scan mode."""
+    modes_config = config.get("modes", {})
+    if mode not in modes_config and mode not in schema.MODES_DEFAULT:
+        available_modes = _available_modes(config)
+        print(
+            f"Unknown scan mode '{mode}'. Available modes: {', '.join(available_modes)}",
+        )
+        sys.exit(1)
+
+    mode_config = modes_config.get(mode, {})
+    mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode, {}))
+    return cast("schema.Mode", {**mode_default, **mode_config})
 
 
 def _build_scanimage_command(
     config: schema.Configuration,
     root_folder: Path,
-    mode: _Mode,
+    mode: str,
 ) -> list[str]:
     """Build the scanimage command based on configuration and mode."""
     scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
@@ -324,9 +369,8 @@ def _build_scanimage_command(
     extension = config.get("extension", schema.EXTENSION_DEFAULT)
     scanimage += [f"--batch={root_folder}/image-%d.{extension}"]
 
-    mode_config = config.get("modes", {}).get(mode.value, {})
-    mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode.value, {}))
-    scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
+    mode_config = _get_mode_config(config, mode)
+    scanimage += mode_config.get("scanimage_arguments", [])
 
     return scanimage
 
@@ -335,17 +379,14 @@ async def _perform_scan(
     scanimage_cmd: list[str],
     root_folder: Path,
     config: schema.Configuration,
-    mode: _Mode,
+    mode: str,
 ) -> None:
     """Perform the actual scan based on mode."""
-    mode_config = config.get("modes", {}).get(mode.value, {})
-    mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode.value, {}))
+    mode_config = _get_mode_config(config, mode)
 
-    if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
-        if mode == _Mode.DOUBLE:
-            await _scan_double_mode(scanimage_cmd, root_folder)
-        else:
-            await call([*scanimage_cmd])
+    if mode_config.get("auto_bash", schema.AUTO_BASH_DEFAULT):
+        rotate_even = mode_config.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)
+        await _scan_double_mode(scanimage_cmd, root_folder, rotate_even)
     else:
         await _scan_adf_mode(scanimage_cmd, root_folder)
 

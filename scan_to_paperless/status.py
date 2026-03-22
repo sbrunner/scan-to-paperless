@@ -12,7 +12,6 @@ from enum import Enum
 from typing import Any, NamedTuple, cast
 
 import anyio
-import anyio.abc
 import asyncinotify
 import jinja2
 from ruamel.yaml.main import YAML
@@ -527,7 +526,7 @@ class Status:
             async for event in inotify:
                 if event.path is None:
                     continue
-                path = event.path.relative_to(self._source_folder)
+                path = anyio.Path(event.path).relative_to(self._source_folder)
                 if len(path.parents) > 1:
                     path = path.parents[-2]
                 name = path.name
