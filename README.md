@@ -229,9 +229,17 @@ If you put destination like that: 2.1, it means that it will be the first part o
 ## The scan modes configuration
 
 First of all the `scanimage` command and arguments can be configured with the `scanimage` and
-`scanimage_argumentss` options in the configuration file (`~/.config/scan-to-paperless.yaml`).
+`scanimage_arguments` options in the configuration file (`~/.config/scan-to-paperless.yaml`).
 
-In this file there is also a `modes` section that can configure each modes.
+In this file there is also a `modes` section that can configure each mode.
+The `scan --mode` value is not restricted to a fixed enum anymore: any key in `modes` is accepted.
+Built-in defaults are `adf`, `one`, `multi`, and `double`.
+
+Example:
+
+```bash
+scan --mode=custom
+```
 
 See also: [The documentation](./config.md)
 
