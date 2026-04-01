@@ -83,11 +83,11 @@ pytest-asyncio = "1.1.0"
 pyroma = "4.2"
 typing-extensions = "4.13.2"
 c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
-types-requests = "2.32.4.20260107"
+types-requests = "2.32.4.20260324"
 nbconvert = "7.17.0"
 ipykernel = "6.29.5"
 brotli = "1.2.0"
-brotlicffi = "1.2.0.0"
+brotlicffi = "1.2.0.1"
 fonttools = "4.61.1"
 urllib3 = "2.6.3"
 
