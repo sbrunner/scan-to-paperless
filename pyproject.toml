@@ -61,7 +61,7 @@ anyio = "4.13.0"
 prospector = { version = "1.18.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
-pytest = "9.0.2"
+pytest = "9.0.3"
 pytest-profiling = "1.8.1"
 pytest-rerunfailures = "16.1"
 pytest-asyncio = "1.3.0"
