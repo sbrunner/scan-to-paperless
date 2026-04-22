@@ -63,7 +63,7 @@ repos:
       - id: workflows-require-timeout
       - id: poetry2-lock
         additional_dependencies:
-          - poetry==2.3.3 # pypi
+          - poetry==2.3.4 # pypi
       - id: canonicalize
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2
