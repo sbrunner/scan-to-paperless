@@ -113,6 +113,7 @@ base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""# Open Source image
 context = process_utils.Context({{"args": {{}}}}, {{}})
+context.image_name = "jupyter-preview.png"
 
 # Open one of the images
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
@@ -164,6 +165,30 @@ context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", s
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
 await process.histogram(context)""",
+        ),
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Display suggested values derived from histogram and HSV analysis.""",
+        ),
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """status = context.config.get("images_config", {}).get(context.image_name, {}).get("status", {})
+
+print("Suggested cut_black/cut_white:")
+print(status.get("histogram", {}).get("suggested", {}))
+print()
+print("Current clipping (%):")
+print(status.get("histogram", {}).get("current", {}))
+print()
+print("Suggested HSV ranges for auto_mask:")
+print(status.get("auto_mask_hsv", {}).get("suggestions", {}))
+print()
+print("Text histogram:")
+for line in status.get("histogram", {}).get("text", []):
+    print(line)""",
         ),
     )
 

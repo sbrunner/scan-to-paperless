@@ -437,6 +437,17 @@ async def test_full(progress) -> None:
     }
     step = {"sources": [str(Path(__file__).parent / "all-1.png")]}
     step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
+
+    image_config = config["images_config"]["all-1.png"]
+    assert len(image_config["status"]["size"]) == 2
+    assert image_config["status"]["size"][0] > 0
+    assert image_config["status"]["size"][1] > 0
+    assert len(image_config["status"]["histogram"]["text"]) == 32
+    assert image_config["status"]["histogram"]["current"]["cut_white"] == 200
+    assert "cut_black" in image_config["status"]["histogram"]["suggested"]
+    assert "page_white" in image_config["status"]["auto_mask_hsv"]["suggestions"]
+    assert "deskew" in image_config["status"]
+
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
     check_image_file(
@@ -886,6 +897,39 @@ async def test_histogram() -> None:
         str(Path(__file__).parent / "histogram-log.expected.png"),
         generate_expected_image=REGENERATE,
     )
+
+
+@pytest.mark.asyncio
+async def test_ensure_scan_agents_file(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source_file = Path(process.__file__).parent / "AGENTS.md"
+    source_content = await source_file.read_text(encoding="utf-8")
+
+    destination_folder = Path(str(tmp_path))
+    monkeypatch.setenv("SCAN_SOURCE_FOLDER", str(destination_folder))
+
+    destination_file = destination_folder / "AGENTS.md"
+    assert not await destination_file.exists()
+
+    await process.ensure_scan_agents_file()
+
+    assert await destination_file.exists()
+    assert await destination_file.read_text(encoding="utf-8") == source_content
+
+
+@pytest.mark.asyncio
+async def test_ensure_scan_agents_file_overwrite(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source_file = Path(process.__file__).parent / "AGENTS.md"
+    source_content = await source_file.read_text(encoding="utf-8")
+
+    destination_folder = Path(str(tmp_path))
+    monkeypatch.setenv("SCAN_SOURCE_FOLDER", str(destination_folder))
+
+    destination_file = destination_folder / "AGENTS.md"
+    await destination_file.write_text("old content", encoding="utf-8")
+
+    await process.ensure_scan_agents_file()
+
+    assert await destination_file.read_text(encoding="utf-8") == source_content
 
 
 @pytest.mark.asyncio

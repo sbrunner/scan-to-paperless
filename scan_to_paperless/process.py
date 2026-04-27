@@ -57,6 +57,25 @@ _LOG = logging.getLogger(__name__)
 _ERROR_FILENAME = "error.yaml"
 
 
+async def ensure_scan_agents_file() -> None:
+    """Create or update AGENTS.md in the scan source folder."""
+    source_agents = Path(__file__).parent / "AGENTS.md"
+    if not await source_agents.exists():
+        _LOG.warning("Missing bundled AGENTS.md at %s", source_agents)
+        return
+
+    scan_source_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source"))
+    if not await scan_source_folder.exists() or not await scan_source_folder.is_dir():
+        return
+
+    destination_agents = scan_source_folder / "AGENTS.md"
+    async with await source_agents.open(encoding="utf-8") as source_file:
+        agents_content = await source_file.read()
+    async with await destination_agents.open("w", encoding="utf-8") as destination_file:
+        await destination_file.write(agents_content)
+    _LOG.info("Updated %s", destination_agents)
+
+
 async def add_intermediate_error(
     config: schema.Configuration,
     config_file_name: Path | None,
@@ -345,6 +364,102 @@ def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
     return level_ is not False, min_, max_
 
 
+def _set_image_status(context: process_utils.Context, key: str, value: Any) -> None:
+    if context.image_name is None:
+        return
+    images_config = context.config.setdefault("images_config", {})
+    image_config = images_config.setdefault(context.image_name, {})
+    image_status = cast("dict[str, Any]", image_config.setdefault("status", {}))
+    image_status[key] = value
+
+
+def _textual_histogram(histogram_data: Any, bins: int = 32, bar_size: int = 42) -> list[str]:
+    hist_array = np.asarray(histogram_data, dtype=np.float64)
+    if hist_array.size == 0:
+        return []
+
+    groups = np.array_split(hist_array, bins)
+    grouped = np.array([group.sum() for group in groups], dtype=np.float64)
+    total = float(grouped.sum())
+    if total == 0:
+        return []
+
+    max_value = float(grouped.max())
+    lines: list[str] = []
+    step = 256 / bins
+    for index, value in enumerate(grouped):
+        start = round(index * step)
+        end = round((index + 1) * step) - 1
+        end = min(255, end)
+        ratio = 0.0 if max_value == 0 else value / max_value
+        bar_text = "#" * max(1, round(ratio * bar_size)) if value > 0 else ""
+        percent = value / total * 100
+        lines.append(f"{start:03d}-{end:03d} | {bar_text:<{bar_size}} | {percent:5.2f}%")
+    return lines
+
+
+def _gray_percentile(grayscale: NpNdarrayInt, percentile: float) -> int:
+    return round(float(np.percentile(grayscale, percentile)))
+
+
+def _build_hsv_auto_mask_analysis(image: NpNdarrayInt) -> dict[str, Any]:
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    white_candidates = (saturation <= 40) & (value >= 140)
+
+    white_pixels = int(np.count_nonzero(white_candidates))
+    total_pixels = int(white_candidates.size)
+
+    suggestions: dict[str, Any] = {
+        "page_white": {
+            "lower_hsv_color": [0, 0, schema.LOWER_HSV_COLOR_DEFAULT[2]],
+            "upper_hsv_color": list(schema.UPPER_HSV_COLOR_DEFAULT),
+            "inverse_mask": False,
+            "de_noise_morphology": True,
+        },
+    }
+
+    if white_pixels > 0:
+        white_s = saturation[white_candidates]
+        white_v = value[white_candidates]
+        lower_v = max(0, round(float(np.percentile(white_v, 5))) - 5)
+        upper_s = min(255, round(float(np.percentile(white_s, 95))) + 5)
+        suggestions["page_white"] = {
+            "lower_hsv_color": [0, 0, lower_v],
+            "upper_hsv_color": [255, upper_s, 255],
+            "inverse_mask": False,
+            "de_noise_morphology": True,
+        }
+
+    background_candidates = ~white_candidates
+    background_pixels = int(np.count_nonzero(background_candidates))
+    if background_pixels > 0:
+        background_h = hsv[:, :, 0][background_candidates]
+        background_s = hsv[:, :, 1][background_candidates]
+        background_v = hsv[:, :, 2][background_candidates]
+        suggestions["scanner_background"] = {
+            "lower_hsv_color": [
+                round(float(np.percentile(background_h, 5))),
+                round(float(np.percentile(background_s, 5))),
+                round(float(np.percentile(background_v, 5))),
+            ],
+            "upper_hsv_color": [
+                round(float(np.percentile(background_h, 95))),
+                round(float(np.percentile(background_s, 95))),
+                round(float(np.percentile(background_v, 95))),
+            ],
+            "inverse_mask": True,
+            "de_noise_morphology": False,
+        }
+
+    return {
+        "white_candidate_ratio": round(white_pixels / max(1, total_pixels), 6),
+        "suggestions": suggestions,
+        "note": "Use page_white to keep only paper; use scanner_background with inverse_mask=true for dark platen.",
+    }
+
+
 async def _histogram(
     context: process_utils.Context,
     histogram_data: Any,
@@ -414,10 +529,50 @@ async def _histogram(
 @Process("histogram", progress=False)
 async def histogram(context: process_utils.Context) -> None:
     """Create an image with the histogram of the current image."""
+    assert context.image is not None
     noisy_image = img_as_ubyte(context.image)  # type: ignore[no-untyped-call]
     histogram_data, histogram_centers = skimage_histogram(noisy_image)
     histogram_max = max(histogram_data)
     process_count = context.get_process_count()
+
+    grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
+    cut_black_current = round(context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT))
+    cut_white_current = round(context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT))
+    textual_histogram = _textual_histogram(skimage_histogram(grayscale)[0])
+    clip_black_current = float(np.mean(grayscale <= cut_black_current) * 100.0)
+    clip_white_current = float(np.mean(grayscale >= cut_white_current) * 100.0)
+
+    histogram_analysis = {
+        "text": textual_histogram,
+        "percentiles": {
+            "p01": _gray_percentile(grayscale, 1),
+            "p05": _gray_percentile(grayscale, 5),
+            "p50": _gray_percentile(grayscale, 50),
+            "p95": _gray_percentile(grayscale, 95),
+            "p99": _gray_percentile(grayscale, 99),
+        },
+        "current": {
+            "cut_black": cut_black_current,
+            "cut_white": cut_white_current,
+            "clip_black_percent": round(clip_black_current, 4),
+            "clip_white_percent": round(clip_white_current, 4),
+        },
+        "suggested": {
+            "cut_black": {
+                "conservative": _gray_percentile(grayscale, 0.5),
+                "balanced": _gray_percentile(grayscale, 1),
+                "aggressive": _gray_percentile(grayscale, 2),
+            },
+            "cut_white": {
+                "conservative": _gray_percentile(grayscale, 99.5),
+                "balanced": _gray_percentile(grayscale, 99),
+                "aggressive": _gray_percentile(grayscale, 98),
+            },
+        },
+        "note": "Increase cut_white until white background clipping is acceptable; increase cut_black only for dark scanner noise.",
+    }
+    _set_image_status(context, "histogram", histogram_analysis)
+    _set_image_status(context, "auto_mask_hsv", _build_hsv_auto_mask_analysis(context.image))
 
     await _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, log=False)
     await _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, log=True)
@@ -483,6 +638,7 @@ async def deskew(context: process_utils.Context) -> None:
     image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
     image_status = image_config.setdefault("status", {})
     angle = image_config.setdefault("angle", None)
+    manual_angle = angle is not None
     if angle is None:
         image = context.get_masked()
         image_rgb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image  # type: ignore[no-untyped-call]
@@ -503,14 +659,80 @@ async def deskew(context: process_utils.Context) -> None:
                 num_peaks=deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
                 angle_pm_90=deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
             )
-        if skew_angle is not None:
-            image_status["angle"] = float(skew_angle)
-            angle = float(skew_angle)
+            if skew_angle is not None:
+                image_status["angle"] = float(skew_angle)
+                angle = float(skew_angle)
+
+            derivation = float(
+                deskew_configuration.setdefault("angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT),
+            )
+            min_angle = float(deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT))
+            max_angle = float(deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT))
+            detected_angle = float(skew_angle) if skew_angle is not None else None
+            at_limit = detected_angle is not None and (
+                abs(detected_angle - min_angle) <= derivation or abs(detected_angle - max_angle) <= derivation
+            )
+            _set_image_status(
+                context,
+                "deskew",
+                {
+                    "angle_from": "detected" if detected_angle is not None else "none",
+                    "detected_angle": detected_angle,
+                    "applied_angle": float(angle) if angle is not None else None,
+                    "near_search_limit": at_limit,
+                    "search": {
+                        "min_angle": min_angle,
+                        "max_angle": max_angle,
+                        "angle_derivation": derivation,
+                        "num_peaks": int(
+                            deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
+                        ),
+                        "sigma": float(deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT)),
+                        "angle_pm_90": bool(
+                            deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
+                        ),
+                    },
+                },
+            )
 
         if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
             for name, debug_image in debug_images:
                 await context.save_progress_images("skew", debug_image, name, process_count, force=True)
+
+    else:
+        deskew_configuration = context.config["args"].setdefault("deskew", {})
+        _set_image_status(
+            context,
+            "deskew",
+            {
+                "angle_from": "manual" if manual_angle else "none",
+                "detected_angle": image_status.get("angle"),
+                "applied_angle": float(angle) if angle is not None else None,
+                "near_search_limit": False,
+                "search": {
+                    "min_angle": float(
+                        deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
+                    ),
+                    "max_angle": float(
+                        deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
+                    ),
+                    "angle_derivation": float(
+                        deskew_configuration.setdefault(
+                            "angle_derivation",
+                            schema.DESKEW_ANGLE_DERIVATION_DEFAULT,
+                        ),
+                    ),
+                    "num_peaks": int(
+                        deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
+                    ),
+                    "sigma": float(deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT)),
+                    "angle_pm_90": bool(
+                        deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
+                    ),
+                },
+            },
+        )
 
     if angle:
         context.rotate(angle)
@@ -2396,6 +2618,8 @@ async def async_main() -> None:
     parser = argparse.ArgumentParser("Process the scanned documents.")
     parser.add_argument("config", nargs="?", help="The config file to process.")
     args = parser.parse_args()
+
+    await ensure_scan_agents_file()
 
     if args.config:
         status = scan_to_paperless.status.Status(no_write=True)

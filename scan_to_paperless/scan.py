@@ -243,6 +243,7 @@ async def _scan_async(
     """Scan a new document."""
     config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
     config: schema.Configuration = await get_config(config_filename)
+    config_sources, default_args_sources = await _get_config_sources_and_default_args_sources(config_filename)
 
     scan_folder = await _validate_scan_folder(config)
     base_folder = await _get_base_folder(scan_folder)
@@ -257,7 +258,12 @@ async def _scan_async(
             "append_credit_card": append_credit_card,
             "assisted_split": assisted_split,
         }
+        args_sources: dict[str, str] = {
+            "append_credit_card": "CLI --append-credit-card",
+            "assisted_split": "CLI --assisted-split",
+        }
         args_.update(config.get("default_args", {}))
+        args_sources.update(dict(default_args_sources.items()))
 
         await _detect_image_dpi(args_, root_folder)
 
@@ -271,7 +277,49 @@ async def _scan_async(
 
     extension = config.get("extension", schema.EXTENSION_DEFAULT)
     images = await _get_sorted_images(root_folder, extension)
-    await _save_process_config(root_folder, images, args_)
+    await _save_process_config(root_folder, images, args_, config_sources, args_sources)
+
+
+async def _get_config_sources_and_default_args_sources(
+    config_filename: Path,
+) -> tuple[list[Path], dict[str, str]]:
+    """Get configuration files used and the source file for each default_args key."""
+    yaml = YAML()
+    yaml.default_flow_style = False
+
+    chain: list[Path] = []
+    current = config_filename
+    seen: set[str] = set()
+    while True:
+        resolved = await (await current.expanduser()).resolve()
+        resolved_str = str(resolved)
+        if resolved_str in seen:
+            break
+        seen.add(resolved_str)
+        chain.append(resolved)
+
+        if not await resolved.exists():
+            break
+        async with await resolved.open(encoding="utf-8") as config_file:
+            loaded = cast("dict[str, Any] | None", yaml.load(await config_file.read()))
+        if not loaded or "extends" not in loaded:
+            break
+        current = resolved.parent / cast("str", loaded["extends"])
+
+    ordered_chain = list(reversed(chain))
+    default_args_sources: dict[str, str] = {}
+    for source_file in ordered_chain:
+        if not await source_file.exists():
+            continue
+        async with await source_file.open(encoding="utf-8") as config_file:
+            loaded = cast("dict[str, Any] | None", yaml.load(await config_file.read()))
+        if not loaded:
+            continue
+        default_args = cast("dict[str, Any]", loaded.get("default_args", {}))
+        for key in default_args:
+            default_args_sources[key] = str(source_file)
+
+    return ordered_chain, default_args_sources
 
 
 async def _validate_scan_folder(config: schema.Configuration) -> Path:
@@ -429,6 +477,8 @@ async def _save_process_config(
     root_folder: Path,
     images: list[Path],
     args_: schema.Arguments,
+    config_sources: list[Path],
+    args_sources: dict[str, str],
 ) -> None:
     """Save the process configuration file."""
     if not images:
@@ -447,6 +497,13 @@ async def _save_process_config(
             "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
             "/master/scan_to_paperless/process_schema.json\n\n",
         )
+        await process_file.write("# Base configuration files used to create this config:\n")
+        for source in config_sources:
+            await process_file.write(f"# - {source}\n")
+        await process_file.write("# Property source (which file/option sets each args.<property>):\n")
+        for key in sorted(args_sources):
+            await process_file.write(f"# - args.{key}: {args_sources[key]}\n")
+        await process_file.write("\n")
         out = io.StringIO()
         yaml.dump(process_config, out)
         await process_file.write(out.getvalue())
