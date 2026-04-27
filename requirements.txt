@@ -1,7 +1,7 @@
 poetry==2.3.4
 poetry-dynamic-versioning==1.8.2
 poetry-plugin-export==1.9.0
-pip==26.0.1
+pip==26.1
 urllib3>=2.6.3 # not directly required, pinned by Snyk to avoid a vulnerability
 virtualenv>=20.36.1 # not directly required, pinned by Snyk to avoid a vulnerability
 requests>=2.33.0 # not directly required, pinned by Snyk to avoid a vulnerability
