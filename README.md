@@ -143,6 +143,20 @@ the images.
 
 [Full job config documentation](./process.md)
 
+### AI tuning helpers in `config.yaml`
+
+During processing, each image now gets additional analysis in `images_config.<image>.status`:
+
+- `histogram.text`: textual grayscale histogram (easy to parse by an AI).
+- `histogram.current`: current `cut_black` / `cut_white` and clipping percentages.
+- `histogram.suggested`: conservative/balanced/aggressive suggestions for `cut_black` and `cut_white`.
+- `auto_mask_hsv`: HSV-based suggestions for `auto_mask.lower_hsv_color` and `auto_mask.upper_hsv_color`
+  (`page_white` and `scanner_background` presets).
+- `deskew`: detected/applied angle and deskew search settings.
+
+Those values are intended to help a human or an AI iterate on `args.cut_black`, `args.cut_white`,
+`args.mask.auto_mask` and `args.cut.auto_mask`.
+
 ## Advance feature
 
 ### Add a mask

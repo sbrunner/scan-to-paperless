@@ -1,4 +1,5 @@
 import pytest
+from anyio import Path
 
 from scan_to_paperless import config as schema
 from scan_to_paperless import scan
@@ -46,3 +47,40 @@ def test_get_mode_config_unknown(capsys: pytest.CaptureFixture[str]) -> None:
     assert "Unknown scan mode" in captured.out
     assert "custom" in captured.out
     assert "adf" in captured.out
+
+
+@pytest.mark.asyncio
+async def test_get_config_sources_and_default_args_sources(tmp_path) -> None:
+    base = Path(str(tmp_path)) / "base.yaml"
+    child = Path(str(tmp_path)) / "child.yaml"
+    grand_child = Path(str(tmp_path)) / "grand-child.yaml"
+
+    await base.write_text(
+        """default_args:
+  cut_white: 210
+  cut_black: 10
+""",
+        encoding="utf-8",
+    )
+    await child.write_text(
+        """extends: base.yaml
+default_args:
+  cut_white: 205
+  dpi: 300
+""",
+        encoding="utf-8",
+    )
+    await grand_child.write_text(
+        """extends: child.yaml
+default_args:
+  dpi: 400
+""",
+        encoding="utf-8",
+    )
+
+    sources, default_args_sources = await scan._get_config_sources_and_default_args_sources(grand_child)
+
+    assert [source.name for source in sources] == ["base.yaml", "child.yaml", "grand-child.yaml"]
+    assert default_args_sources["cut_black"].endswith("base.yaml")
+    assert default_args_sources["cut_white"].endswith("child.yaml")
+    assert default_args_sources["dpi"].endswith("grand-child.yaml")

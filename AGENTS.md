@@ -1,3 +1,5 @@
+# AI instructions
+
 The project should fully be in async mode.
 `pathlib` must not be used.
 Adding an `async` to a non-async function is completely possible.
@@ -14,6 +16,11 @@ Use the long parameter names for clarity and maintainability.
 ## Documentation
 
 The user documentation in the `README.md` file should be updated to reflect the changes in the codebase.
+
+## Generated files
+
+- scan_to_paperless/process_schema.py
+- process.md
 
 ## Tests
 
