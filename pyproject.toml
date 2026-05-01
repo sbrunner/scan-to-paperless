@@ -68,7 +68,7 @@ pytest-asyncio = "1.3.0"
 pyroma = "5.0.1"
 typing-extensions = "4.15.0"
 c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
-types-requests = "2.32.4.20260324"
+types-requests = "2.33.0.20260408"
 nbconvert = "7.17.1"
 ipykernel = "7.2.0"
 
