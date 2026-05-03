@@ -130,7 +130,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libjson-c5: 0.15-3~ubuntu1.22.04.2
   ubuntu_22_04/libk5crypto3: 1.19.2-2ubuntu0.7
   ubuntu_22_04/libkeyutils1: 1.6.1-2ubuntu3
-  ubuntu_22_04/libkmod2: 29-1ubuntu1
+  ubuntu_22_04/libkmod2: 29-1ubuntu1.1
   ubuntu_22_04/libkrb5-3: 1.19.2-2ubuntu0.7
   ubuntu_22_04/libkrb5support0: 1.19.2-2ubuntu0.7
   ubuntu_22_04/libksba8: 1.6.0-2ubuntu0.2
@@ -434,7 +434,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libjson-c5: 0.15-3~ubuntu1.22.04.2
   ubuntu_22_04/libk5crypto3: 1.19.2-2ubuntu0.7
   ubuntu_22_04/libkeyutils1: 1.6.1-2ubuntu3
-  ubuntu_22_04/libkmod2: 29-1ubuntu1
+  ubuntu_22_04/libkmod2: 29-1ubuntu1.1
   ubuntu_22_04/libkrb5-3: 1.19.2-2ubuntu0.7
   ubuntu_22_04/libkrb5support0: 1.19.2-2ubuntu0.7
   ubuntu_22_04/libksba8: 1.6.0-2ubuntu0.2
