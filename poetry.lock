@@ -4637,7 +4637,6 @@ description = "Read and write TIFF files"
 optional = false
 python-versions = ">=3.11"
 groups = ["main", "dev"]
-markers = "python_version == \"3.11\""
 files = [
     {file = "tifffile-2026.3.3-py3-none-any.whl", hash = "sha256:e8be15c94273113d31ecb7aa3a39822189dd11c4967e3cc88c178f1ad2fd1170"},
     {file = "tifffile-2026.3.3.tar.gz", hash = "sha256:d9a1266bed6f2ee1dd0abde2018a38b4f8b2935cb843df381d70ac4eac5458b7"},
@@ -4653,30 +4652,6 @@ plot = ["matplotlib"]
 test = ["cmapfile", "czifile", "dask", "defusedxml", "fsspec", "imagecodecs", "kerchunk", "lfdfiles", "lxml", "ndtiff", "oiffile", "psdtags", "pytest", "requests", "roifile", "xarray", "zarr (>=3.1.5)"]
 xml = ["defusedxml", "lxml"]
 zarr = ["fsspec", "kerchunk", "zarr (>=3.1.5)"]
-
-[[package]]
-name = "tifffile"
-version = "2026.5.2"
-description = "Read and write TIFF files"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-markers = "python_version >= \"3.12\""
-files = [
-    {file = "tifffile-2026.5.2-py3-none-any.whl", hash = "sha256:5129b53b826e768a5b1af26b765eeea75c2d0a227d2d12849617e0737588e105"},
-    {file = "tifffile-2026.5.2.tar.gz", hash = "sha256:21b10227ede8493814a34676774797f721f487e36cb0530e7c3bd882caa87f5a"},
-]
-
-[package.dependencies]
-numpy = ">=2.1"
-
-[package.extras]
-all = ["fsspec", "imagecodecs (>=2026.3.6)", "kerchunk", "lxml", "matplotlib", "xarray", "zarr (>=3.2.0)"]
-codecs = ["imagecodecs (>=2026.3.6)"]
-plot = ["matplotlib"]
-test = ["cmapfile", "czifile", "dask", "fsspec", "imagecodecs", "kerchunk", "lfdfiles", "lxml", "ndtiff", "oiffile", "psdtags", "pytest", "requests", "roifile", "xarray", "zarr (>=3.2.0)"]
-xml = ["lxml"]
-zarr = ["fsspec", "kerchunk", "zarr (>=3.2.0)"]
 
 [[package]]
 name = "tinycss2"
