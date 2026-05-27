@@ -95,7 +95,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libfreetype6: 2.11.1+dfsg-1ubuntu0.3
   ubuntu_22_04/libfribidi0: 1.0.8-2ubuntu3.1
   ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04.3
-  ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
+  ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3.2
   ubuntu_22_04/libgdbm-compat4: 1.23-1
   ubuntu_22_04/libgdbm6: 1.23-1
   ubuntu_22_04/libgif7: 5.1.9-2ubuntu0.1
@@ -399,7 +399,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libfreetype6: 2.11.1+dfsg-1ubuntu0.3
   ubuntu_22_04/libfribidi0: 1.0.8-2ubuntu3.1
   ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04.3
-  ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
+  ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3.2
   ubuntu_22_04/libgdbm-compat4: 1.23-1
   ubuntu_22_04/libgdbm6: 1.23-1
   ubuntu_22_04/libgif7: 5.1.9-2ubuntu0.1
