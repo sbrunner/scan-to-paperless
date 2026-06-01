@@ -1,3 +1,48 @@
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+dynamic = ["dependencies", "version"]
+name = "scan-to-paperless"
+description = "Tool to scan and process documents to Paperless"
+readme = "README.md"
+keywords = ["scan", "paperless"]
+license = "BSD-2-Clause"
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Typing :: Typed',
+]
+authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
+requires-python = ">=3.11"
+dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "lxml", "pyperclip", "deepmerge", "typing-extensions", "polygon-math", "aiohttp", "sentry-sdk", "typer-slim", "shellingham", "scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "python-sane", "asyncinotify", "numpy", "anyio"]
+
+[project.urls]
+homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
+repository = "https://github.com/sbrunner/scan-to-paperless"
+"Bug Tracker" = "https://github.com/sbrunner/scan-to-paperless/issues"
+
+[project.scripts]
+scan = "scan_to_paperless.scan:app_scan"
+scan-to-paperless = "scan_to_paperless.scan:app"
+scan-sane = "scan_to_paperless.scan_sane:_main"
+scan-process-status = "scan_to_paperless.scan_process_status:main"
+scan-process = "scan_to_paperless.process:main"
+add-codes-page = "scan_to_paperless.add_code:main"
+
+[project.optional-dependencies]
+process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify"]
+jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
+sane = ["python-sane"]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 110
@@ -90,47 +135,3 @@ format-jinja = """
 
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
-
-[project]
-dynamic = ["dependencies", "version"]
-name = "scan-to-paperless"
-description = "Tool to scan and process documents to Paperless"
-readme = "README.md"
-keywords = ["scan", "paperless"]
-license = "BSD-2-Clause"
-classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Environment :: Console',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
-    'Programming Language :: Python :: 3.13',
-    'Typing :: Typed',
-]
-authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
-requires-python = ">=3.11"
-dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "lxml", "pyperclip", "deepmerge", "typing-extensions", "polygon-math", "aiohttp", "sentry-sdk", "typer-slim", "shellingham", "scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "python-sane", "asyncinotify", "numpy", "anyio"]
-
-[project.urls]
-homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
-repository = "https://github.com/sbrunner/scan-to-paperless"
-"Bug Tracker" = "https://github.com/sbrunner/scan-to-paperless/issues"
-
-[project.scripts]
-scan = "scan_to_paperless.scan:app_scan"
-scan-to-paperless = "scan_to_paperless.scan:app"
-scan-sane = "scan_to_paperless.scan_sane:_main"
-scan-process-status = "scan_to_paperless.scan_process_status:main"
-scan-process = "scan_to_paperless.process:main"
-add-codes-page = "scan_to_paperless.add_code:main"
-
-[project.optional-dependencies]
-process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify"]
-jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
-sane = ["python-sane"]
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry.core.masonry.api"
