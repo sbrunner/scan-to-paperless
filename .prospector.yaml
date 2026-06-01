@@ -21,8 +21,8 @@ pylint:
 
 mypy:
   options:
-    python-version: '3.11'
+    python-version: '3.12'
 
 ruff:
   options:
-    target-version: py311
+    target-version: py312
