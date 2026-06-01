@@ -4,7 +4,7 @@ headers: |
   # Automatically generated file from a JSON schema
   # Used to correctly format the generated file
 
-python_version: '3.11'
+python_version: '3.12'
 
 generate:
   - source: scan_to_paperless/config_schema.json
