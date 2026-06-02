@@ -72,7 +72,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.3
   ubuntu_22_04/libcap2-bin: 1:2.44-1ubuntu0.22.04.3
   ubuntu_22_04/libcom-err2: 1.46.5-2ubuntu1.2
-  ubuntu_22_04/libcommons-lang3-java: 3.11-1
+  ubuntu_22_04/libcommons-lang3-java: 3.11-1ubuntu0.1
   ubuntu_22_04/libcommons-parent-java: 43-1
   ubuntu_22_04/libcrypt1: 1:4.4.27-1
   ubuntu_22_04/libcryptsetup12: 2:2.4.3-1ubuntu1.3
@@ -138,7 +138,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libldap-2.5-0: 2.5.19+dfsg-0ubuntu0.22.04.1
   ubuntu_22_04/liblept5: 1.82.0-3build1
   ubuntu_22_04/liblz4-1: 1.9.3-2build2
-  ubuntu_22_04/liblzma5: 5.2.5-2ubuntu1
+  ubuntu_22_04/liblzma5: 5.2.5-2ubuntu1.1
   ubuntu_22_04/libmd0: 1.0.4-1build1
   ubuntu_22_04/libmount1: 2.37.2-4ubuntu3.5
   ubuntu_22_04/libmpdec3: 2.5.1-2build2
@@ -376,7 +376,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libcap2: 1:2.44-1ubuntu0.22.04.3
   ubuntu_22_04/libcap2-bin: 1:2.44-1ubuntu0.22.04.3
   ubuntu_22_04/libcom-err2: 1.46.5-2ubuntu1.2
-  ubuntu_22_04/libcommons-lang3-java: 3.11-1
+  ubuntu_22_04/libcommons-lang3-java: 3.11-1ubuntu0.1
   ubuntu_22_04/libcommons-parent-java: 43-1
   ubuntu_22_04/libcrypt1: 1:4.4.27-1
   ubuntu_22_04/libcryptsetup12: 2:2.4.3-1ubuntu1.3
@@ -442,7 +442,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libldap-2.5-0: 2.5.19+dfsg-0ubuntu0.22.04.1
   ubuntu_22_04/liblept5: 1.82.0-3build1
   ubuntu_22_04/liblz4-1: 1.9.3-2build2
-  ubuntu_22_04/liblzma5: 5.2.5-2ubuntu1
+  ubuntu_22_04/liblzma5: 5.2.5-2ubuntu1.1
   ubuntu_22_04/libmd0: 1.0.4-1build1
   ubuntu_22_04/libmount1: 2.37.2-4ubuntu3.5
   ubuntu_22_04/libmpdec3: 2.5.1-2build2
