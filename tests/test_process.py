@@ -661,6 +661,11 @@ async def test_qr_code_metadata() -> None:
             "/Producer": "GraphicsMagick 1.3.38 2022-03-26 Q16 http://www.GraphicsMagick.org/",
         }.items():
             assert pdf.docinfo[k] == pikepdf.objects.String(v)
+        keywords = pdf.docinfo["/Keywords"]
+        if isinstance(keywords, pikepdf.Array):
+            assert "".join(str(value) for value in keywords) == "qrbill"
+        else:
+            assert keywords == pikepdf.objects.String("qrbill")
         with pdf.open_metadata() as meta:
             assert (
                 meta.get("{http://purl.org/dc/elements/1.1/}description") == """QR code [0]
