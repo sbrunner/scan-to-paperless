@@ -654,6 +654,7 @@ async def test_qr_code_metadata() -> None:
     await add_code.add_codes(Path(__file__).parent / "qrbill.pdf", Path("/results/qrbill.pdf"))
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
+
         def as_text(value: object) -> str:
             if isinstance(value, pikepdf.Array):
                 return "".join(str(item) for item in value)
