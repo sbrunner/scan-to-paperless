@@ -654,13 +654,20 @@ async def test_qr_code_metadata() -> None:
     await add_code.add_codes(Path(__file__).parent / "qrbill.pdf", Path("/results/qrbill.pdf"))
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
+
+        def as_text(value: object) -> str:
+            if isinstance(value, pikepdf.Array):
+                return "".join(str(item) for item in value)
+
+            return str(value)
+
         for k, v in {
             "/Title": "qrbill",
             "/CreationDate": "D:20220720213803",
             "/ModDate": "D:20220720213803",
             "/Producer": "GraphicsMagick 1.3.38 2022-03-26 Q16 http://www.GraphicsMagick.org/",
         }.items():
-            assert pdf.docinfo[k] == pikepdf.objects.String(v)
+            assert as_text(pdf.docinfo[k]) == v
         with pdf.open_metadata() as meta:
             assert (
                 meta.get("{http://purl.org/dc/elements/1.1/}description") == """QR code [0]
