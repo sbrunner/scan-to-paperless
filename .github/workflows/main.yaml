@@ -26,20 +26,20 @@ jobs:
 
     steps:
       - run: docker system prune --all --force
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         if: env.HAS_SECRETS != 'HAS_SECRETS'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           token: ${{ secrets.TOKEN }}
           fetch-depth: 0
         if: env.HAS_SECRETS == 'HAS_SECRETS'
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.13'
       - run: python3 -m pip install --requirement=ci/requirements.txt
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -48,7 +48,7 @@ jobs:
       - run: git diff --exit-code --patch > /tmp/pre-commit.patch; git diff --color; git reset --hard || true
         if: failure()
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Apply pre-commit fix.patch
           path: /tmp/pre-commit.patch
@@ -81,7 +81,7 @@ jobs:
       - name: Get the status images
         run: cp tests/status/*.png results/status/ || true
         if: failure()
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: results
           path: results
@@ -128,7 +128,7 @@ jobs:
         if: failure()
       - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch || true
         if: failure()
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Update dpkg versions list.patch
           path: /tmp/dpkg-versions.patch
