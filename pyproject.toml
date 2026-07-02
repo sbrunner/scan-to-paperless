@@ -102,7 +102,7 @@ numpy = { version = "2.4.6", optional = true }
 anyio = "4.13.0"
 
 [tool.poetry.group.dev.dependencies]
-prospector = { version = "1.18.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
+prospector = { version = "1.19.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
 pytest = "9.0.3"
