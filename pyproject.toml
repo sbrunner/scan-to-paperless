@@ -1,7 +1,95 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 110
+exclude = ["scan_to_paperless/config.py", "scan_to_paperless/process_schema.py"]
 
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+select = []
+ignore = ["ANN401", "C90", "COM812", "D100", "D104", "D105", "D107", "D200", "D202", "D207", "D208", "D212", "E501", "EM101", "EM102", "ERA001", "FA", "FBT001", "FBT002", "FIX002", "I001", "PERF203", "PLR09", "PLR2004", "Q000", "S101", "SIM105", "T201", "TD002", "W293"]
+extend-select = ["UP", "I", "S", "B", "ALL"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
+"**/tests/**" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
+"**/test_*.py" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
+"**/*_test.py" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
+
+[tool.poetry]
+version = "0.0.0"
+
+[tool.poetry.dependencies]
+# Minimal version should also be set in the jsonschema-gentypes.yaml file
+python = ">=3.12,<3.15"
+scikit-image = { version = "0.26.0", optional = true }
+opencv-contrib-python-headless = { version = "4.13.0.92", optional = true }
+deskew = { version = "1.6.1", optional = true }
+"ruamel.yaml" = "0.19.1"
+Pillow = "12.2.0"
+pypdf = { version = "6.13.3", optional = true }
+pyzbar = { version = "0.1.9", optional = true }
+reportlab = { version = "5.0.0", optional = true }
+weasyprint = { version = "69.0", optional = true }
+cffi = { version = "2.0.0", optional = true }
+pikepdf = { version = "10.7.2", optional = true }
+lxml= { version = "6.1.1", optional = true }
+zxing-cpp = { version = "3.0.0", optional = true }
+pyperclip = "1.11.0"
+deepmerge = "2.0"
+matplotlib = { version = "3.10.9", optional = true }
+typing-extensions = "4.15.0"
+Jinja2 = { version = "3.1.6", optional = true }
+natsort = { version = "8.4.0", optional = true }
+nbformat = { version = "5.10.4", optional = true }
+requests = { version = "2.34.2", optional = true }
+python-sane = { version = "2.9.2", optional = true }
+asyncinotify = { version = "4.4.4", optional = true }
+polygon-math = "1.3.3"
+aiohttp = "3.14.1"
+sentry-sdk = "2.61.1"
+typer-slim = "0.24.0"
+shellingham = "1.5.4" # Used by typer to detect the shell
+numpy = { version = "2.4.6", optional = true }
+anyio = "4.13.0"
+
+[tool.poetry.group.dev.dependencies]
+prospector = { version = "1.19.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
+prospector-profile-duplicated = "1.12.0"
+prospector-profile-utils = "1.27.0"
+pytest = "9.0.3"
+pytest-profiling = "1.8.1"
+pytest-rerunfailures = "16.3"
+pytest-asyncio = "1.4.0"
+pyroma = "5.0.1"
+typing-extensions = "4.15.0"
+c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
+types-requests = "2.33.0.20260518"
+nbconvert = "7.17.1"
+ipykernel = "7.2.0"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+pattern = "^(?P<base>\\d+(\\.\\d+)*)"
+format-jinja = """
+{%- if env.get("VERSION_TYPE") == "default_branch" -%}
+{{serialize_pep440(bump_version(base, 1), dev=distance)}}
+{%- elif env.get("VERSION_TYPE") == "stabilization_branch" -%}
+{{serialize_pep440(bump_version(base, 2), dev=distance)}}
+{%- elif distance == 0 -%}
+{{serialize_pep440(base)}}
+{%- else -%}
+{{serialize_pep440(bump_version(base), dev=distance)}}
+{%- endif -%}
+"""
+
+[tool.poetry-plugin-tweak-dependencies-version]
+default = "present"
+
+[tool.pytest.ini_options]
+pytest_plugins = ["pytest_profiling"]
 
 [project]
 dynamic = ["dependencies", "version"]
@@ -42,95 +130,6 @@ process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", 
 jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
 sane = ["python-sane"]
 
-[tool.ruff]
-target-version = "py312"
-line-length = 110
-exclude = ["scan_to_paperless/config.py", "scan_to_paperless/process_schema.py"]
-
-[tool.ruff.lint]
-select = []
-ignore = ["ANN401", "C90", "COM812", "D100", "D104", "D105", "D107", "D200", "D202", "D207", "D208", "D212", "E501", "EM101", "EM102", "ERA001", "FA", "FBT001", "FBT002", "FIX002", "I001", "PERF203", "PLR09", "PLR2004", "Q000", "S101", "SIM105", "T201", "TD002", "W293"]
-extend-select = ["UP", "I", "S", "B", "ALL"]
-
-[tool.ruff.lint.pydocstyle]
-convention = "numpy"
-
-[tool.ruff.lint.extend-per-file-ignores]
-"tests/**" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
-"**/tests/**" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
-"**/test_*.py" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
-"**/*_test.py" = ["ANN", "ARG", "ASYNC", "BLE001", "D", "DTZ", "E722", "FBT003", "INP001", "N", "PGH003", "PLC", "PLR2004", "PLW0603", "PLW1641", "RET", "RUF012", "RUF100", "S104", "S105", "S106", "S108", "S113", "S324", "S603", "S607", "S608", "SLF", "TRY003", "TRY301"]
-
-[tool.pytest.ini_options]
-pytest_plugins = ["pytest_profiling"]
-
-[tool.poetry]
-version = "0.0.0"
-
-[tool.poetry.dependencies]
-# Minimal version should also be set in the jsonschema-gentypes.yaml file
-python = ">=3.12,<3.15"
-scikit-image = { version = "0.26.0", optional = true }
-opencv-contrib-python-headless = { version = "4.13.0.92", optional = true }
-deskew = { version = "1.6.1", optional = true }
-"ruamel.yaml" = "0.19.1"
-Pillow = "12.2.0"
-pypdf = { version = "6.13.3", optional = true }
-pyzbar = { version = "0.1.9", optional = true }
-reportlab = { version = "5.0.0", optional = true }
-weasyprint = { version = "69.0", optional = true }
-cffi = { version = "2.0.0", optional = true }
-pikepdf = { version = "10.7.2", optional = true }
-lxml= { version = "6.1.1", optional = true }
-zxing-cpp = { version = "3.0.0", optional = true }
-pyperclip = "1.11.0"
-deepmerge = "2.0"
-matplotlib = { version = "3.10.9", optional = true }
-typing-extensions = "4.15.0"
-Jinja2 = { version = "3.1.6", optional = true }
-natsort = { version = "8.4.0", optional = true }
-nbformat = { version = "5.10.4", optional = true }
-requests = { version = "2.34.2", optional = true }
-python-sane = { version = "2.9.2", optional = true }
-asyncinotify = { version = "4.4.4", optional = true }
-polygon-math = "1.3.3"
-aiohttp = "3.14.1"
-sentry-sdk = "2.61.1"
-typer-slim = "0.24.0"
-shellingham = "1.5.4" # Used by typer to detect the shell
-numpy = { version = "2.4.6", optional = true }
-anyio = "4.13.0"
-
-[tool.poetry.group.dev.dependencies]
-prospector = { version = "1.18.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
-prospector-profile-duplicated = "1.12.0"
-prospector-profile-utils = "1.27.0"
-pytest = "9.0.3"
-pytest-profiling = "1.8.1"
-pytest-rerunfailures = "16.3"
-pytest-asyncio = "1.4.0"
-pyroma = "5.0.1"
-typing-extensions = "4.15.0"
-c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
-types-requests = "2.33.0.20260518"
-nbconvert = "7.17.1"
-ipykernel = "7.2.0"
-
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-pattern = "^(?P<base>\\d+(\\.\\d+)*)"
-format-jinja = """
-{%- if env.get("VERSION_TYPE") == "default_branch" -%}
-{{serialize_pep440(bump_version(base, 1), dev=distance)}}
-{%- elif env.get("VERSION_TYPE") == "stabilization_branch" -%}
-{{serialize_pep440(bump_version(base, 2), dev=distance)}}
-{%- elif distance == 0 -%}
-{{serialize_pep440(base)}}
-{%- else -%}
-{{serialize_pep440(bump_version(base), dev=distance)}}
-{%- endif -%}
-"""
-
-[tool.poetry-plugin-tweak-dependencies-version]
-default = "present"
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
