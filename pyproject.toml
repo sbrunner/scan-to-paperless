@@ -28,17 +28,17 @@ opencv-contrib-python-headless = { version = "4.13.0.92", optional = true }
 deskew = { version = "1.6.1", optional = true }
 "ruamel.yaml" = "0.19.1"
 Pillow = "12.2.0"
-pypdf = { version = "6.13.3", optional = true }
+pypdf = { version = "6.14.2", optional = true }
 pyzbar = { version = "0.1.9", optional = true }
 reportlab = { version = "5.0.0", optional = true }
 weasyprint = { version = "69.0", optional = true }
 cffi = { version = "2.0.0", optional = true }
-pikepdf = { version = "10.7.2", optional = true }
+pikepdf = { version = "10.9.1", optional = true }
 lxml= { version = "6.1.1", optional = true }
 zxing-cpp = { version = "3.0.0", optional = true }
 pyperclip = "1.11.0"
-deepmerge = "2.0"
-matplotlib = { version = "3.10.9", optional = true }
+deepmerge = "2.1.0"
+matplotlib = { version = "3.11.0", optional = true }
 typing-extensions = "4.15.0"
 Jinja2 = { version = "3.1.6", optional = true }
 natsort = { version = "8.4.0", optional = true }
@@ -48,26 +48,26 @@ python-sane = { version = "2.9.2", optional = true }
 asyncinotify = { version = "4.4.4", optional = true }
 polygon-math = "1.3.3"
 aiohttp = "3.14.1"
-sentry-sdk = "2.61.1"
+sentry-sdk = "2.64.0"
 typer-slim = "0.24.0"
 shellingham = "1.5.4" # Used by typer to detect the shell
-numpy = { version = "2.4.6", optional = true }
-anyio = "4.13.0"
+numpy = { version = "2.5.0", optional = true }
+anyio = "4.14.1"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.19.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
-pytest = "9.0.3"
+pytest = "9.1.1"
 pytest-profiling = "1.8.1"
-pytest-rerunfailures = "16.3"
+pytest-rerunfailures = "16.4"
 pytest-asyncio = "1.4.0"
 pyroma = "5.0.1"
 typing-extensions = "4.15.0"
 c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
 types-requests = "2.33.0.20260518"
 nbconvert = "7.17.1"
-ipykernel = "7.2.0"
+ipykernel = "7.3.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
