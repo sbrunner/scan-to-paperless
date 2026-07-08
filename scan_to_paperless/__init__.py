@@ -41,7 +41,7 @@ async def get_config(config_filename: Path, verbose: bool = True) -> schema.Conf
                 )
 
                 strategies_config = config.get("merge_strategies", cast("schema.MergeStrategies", {}))
-                merger = Merger(
+                merger = Merger(  # type: ignore[arg-type]
                     [
                         (list, strategies_config.get("for_list", ["override"])),
                         (dict, strategies_config.get("for_dict", ["merge"])),
