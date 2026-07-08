@@ -2,7 +2,7 @@
 
 import os
 import pathlib
-from typing import cast
+from typing import Any, cast
 
 from anyio import Path
 from deepmerge.merger import Merger
@@ -41,13 +41,17 @@ async def get_config(config_filename: Path, verbose: bool = True) -> schema.Conf
                 )
 
                 strategies_config = config.get("merge_strategies", cast("schema.MergeStrategies", {}))
-                merger = Merger(  # type: ignore[arg-type]
+                for_list: list[Any] = strategies_config.get("for_list", ["override"])
+                for_dict: list[Any] = strategies_config.get("for_dict", ["merge"])
+                fallback: list[Any] = strategies_config.get("fallback", ["override"])
+                type_conflict: list[Any] = strategies_config.get("type_conflict", ["override"])
+                merger = Merger(
                     [
-                        (list, strategies_config.get("for_list", ["override"])),
-                        (dict, strategies_config.get("for_dict", ["merge"])),
+                        (list, for_list),
+                        (dict, for_dict),
                     ],
-                    strategies_config.get("fallback", ["override"]),
-                    strategies_config.get("type_conflict", ["override"]),
+                    fallback,
+                    type_conflict,
                 )
                 config = merger.merge(base_config, config)
             return config
