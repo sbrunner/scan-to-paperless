@@ -2,13 +2,16 @@
 
 import os
 import pathlib
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from anyio import Path
 from deepmerge.merger import Merger
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import config as schema
+
+if TYPE_CHECKING:
+    from deepmerge.strategy import StrategyListInitable
 
 CONFIG_FILENAME = "scan-to-paperless.yaml"
 
