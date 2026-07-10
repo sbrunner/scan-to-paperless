@@ -117,7 +117,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libheif1: 1.12.0-2build1
   ubuntu_22_04/libhogweed6: 3.7.3-1build2
   ubuntu_22_04/libicu70: 70.1-2
-  ubuntu_22_04/libidn12: 1.38-4ubuntu1
+  ubuntu_22_04/libidn12: 1.38-4ubuntu1.1
   ubuntu_22_04/libidn2-0: 2.3.2-2build1
   ubuntu_22_04/libijs-0.35: 0.35-15build2
   ubuntu_22_04/libimage-exiftool-perl: 12.40+dfsg-1
@@ -421,7 +421,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libheif1: 1.12.0-2build1
   ubuntu_22_04/libhogweed6: 3.7.3-1build2
   ubuntu_22_04/libicu70: 70.1-2
-  ubuntu_22_04/libidn12: 1.38-4ubuntu1
+  ubuntu_22_04/libidn12: 1.38-4ubuntu1.1
   ubuntu_22_04/libidn2-0: 2.3.2-2build1
   ubuntu_22_04/libijs-0.35: 0.35-15build2
   ubuntu_22_04/libimage-exiftool-perl: 12.40+dfsg-1
