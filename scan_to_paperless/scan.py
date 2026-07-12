@@ -168,23 +168,25 @@ async def set_config(
     help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
     "see requirement: https://pypi.org/project/pyperclip/",
 )
-def convert_clipboard() -> None:
+def convert_clipboard(one: bool = False) -> None:
     """
     Convert clipboard content.
     """
-    print("Wait for clipboard content to be converted, press Ctrl+C to stop")
+    if not one:
+        print("Wait for clipboard content to be converted, press Ctrl+C to stop")
     do_convert_clipboard()
-    try:
-        previous = pyperclip.paste()
-        while True:
-            current = pyperclip.paste()
-            if current != previous:
-                previous = current
-                do_convert_clipboard()
-            time.sleep(0.1)
-    except KeyboardInterrupt:
-        print()
-        sys.exit()
+    if not one:
+        try:
+            previous = pyperclip.paste()
+            while True:
+                current = pyperclip.paste()
+                if current != previous:
+                    previous = current
+                    do_convert_clipboard()
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print()
+            sys.exit()
 
 
 app_scan = typer.Typer(rich_markup_mode=None)
