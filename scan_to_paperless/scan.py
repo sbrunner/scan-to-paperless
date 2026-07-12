@@ -168,7 +168,7 @@ async def set_config(
     help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
     "see requirement: https://pypi.org/project/pyperclip/",
 )
-def convert_clipboard(one:bool=False) -> None:
+def convert_clipboard(one: bool = False) -> None:
     """
     Convert clipboard content.
     """
