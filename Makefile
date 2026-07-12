@@ -22,7 +22,8 @@ prospector: build-tests
 prospector-fast:
 	docker run --rm  --volume=$$(pwd):/opt/ sbrunner/scan-to-paperless-tests prospector --die-on-tool-error --output=pylint
 
-DOCKER_RUN_TESTS = docker run --rm --env=PYTHONPATH=/opt/ --volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless
+DOCKER_RUN_TESTS = docker run --rm --env=PYTHONPATH=/opt/ --env=HF_TOKEN \
+	--volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless
 # --volume=$$(pwd)/../c2cwsgiutils/c2cwsgiutils:/usr/local/lib/python3.10/dist-packages/c2cwsgiutils
 DOCKER_RUN_TESTS_IMAGE = $(DOCKER_RUN_TESTS) sbrunner/scan-to-paperless-tests
 .PHONY: pytest

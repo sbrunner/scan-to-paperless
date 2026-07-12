@@ -16,6 +16,7 @@ permissions:
 
 env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
+  HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
 jobs:
   build:
@@ -70,7 +71,7 @@ jobs:
       - run: mkdir -p results/status
       - name: Pytest
         run: >
-          docker run --rm --env=PYTHONPATH=/opt/
+          docker run --rm --env=PYTHONPATH=/opt/  --env=HF_TOKEN
           --volume=$(pwd)/results:/results --volume=$(pwd)/tests:/tests
           sbrunner/scan-to-paperless-tests bash -c '
           cd /tests &&

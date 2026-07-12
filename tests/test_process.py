@@ -513,7 +513,7 @@ async def test_credit_card_full() -> None:
             "append_credit_card": True,
             "deskew": {"num_angles": 179},
             "cut_white": 200,
-            "mask": {},
+            "mask": {"auto_mask": {"sam3": {"enabled": False}}},
             "auto_rotate": {"enabled": False},
         },
     }
@@ -565,7 +565,7 @@ async def test_empty() -> None:
     config = {
         "args": {
             "level": {"value": True},
-            "mask": {},
+            "mask": {"auto_mask": {"sam3": {"enabled": False}}},
         },
     }
     step = {
@@ -581,7 +581,7 @@ async def test_empty() -> None:
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3)
+@pytest.mark.flaky(reruns=1)
 @pytest.mark.parametrize(
     ("test", "args"),
     [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")],
@@ -782,7 +782,7 @@ async def test_tiff_jupyter() -> None:
 @pytest.mark.parametrize(
     ("name", "config"),
     [
-        pytest.param("default", {}, id="default"),
+        pytest.param("default", {"sam3": {"enabled": False}}, id="default"),
         pytest.param(
             "inverse",
             {
@@ -790,12 +790,13 @@ async def test_tiff_jupyter() -> None:
                 "upper_hsv_color": [255, 10, 148],
                 "inverse_mask": True,
                 "de_noise_size": 20,
+                "sam3": {"enabled": False},
             },
             id="inverse",
         ),
         pytest.param(
             "no-morphology",
-            {"de_noise_morphology": False, "de_noise_size": 20},
+            {"de_noise_morphology": False, "de_noise_size": 20, "sam3": {"enabled": False}},
             id="no-morphology",
         ),
         pytest.param(
@@ -806,6 +807,7 @@ async def test_tiff_jupyter() -> None:
                 "inverse_mask": True,
                 "de_noise_morphology": False,
                 "de_noise_size": 20,
+                "sam3": {"enabled": False},
             },
             id="inverse-no-morphology",
         ),
@@ -828,7 +830,7 @@ async def test_auto_mask(config, name) -> None:
 @pytest.mark.asyncio
 async def test_auto_mask_combine() -> None:
     init_test()
-    context = process_utils.Context({"args": {"mask": {}}}, {})
+    context = process_utils.Context({"args": {"mask": {"auto_mask": {"sam3": {"enabled": False}}}}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
     context.root_folder = Path(__file__).parent / "auto-mask-other"
     context.image_name = "image.png"
@@ -845,13 +847,112 @@ async def test_auto_mask_combine() -> None:
 @pytest.mark.asyncio
 async def test_auto_cut() -> None:
     init_test()
-    context = process_utils.Context({"args": {"cut": {}, "background_color": [255, 0, 0]}}, {})
+    context = process_utils.Context(
+        {"args": {"cut": {"auto_mask": {"sam3": {"enabled": False}}}, "background_color": [255, 0, 0]}}, {}
+    )
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
     await context.do_initial_cut()
     check_image(
         "/results/",
         cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
         str(Path(__file__).parent / "auto_cut.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_sam3_page_mask() -> None:
+    """Test SAM3 mask generation on a synthetic page image."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {
+            "args": {
+                "mask": {
+                    "auto_mask": {
+                        "sam3": {
+                            "enabled": True,
+                        },
+                    },
+                },
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
+    assert context.image is not None
+    await context.init_mask()
+    assert context.mask is not None
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "sam-page.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_sam3_ticket_mask() -> None:
+    """Test SAM3 mask generation on a synthetic ticket image."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {
+            "args": {
+                "mask": {
+                    "auto_mask": {
+                        "sam3": {
+                            "enabled": True,
+                        },
+                    },
+                },
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-ticket.png"))
+    assert context.image is not None
+    await context.init_mask()
+    assert context.mask is not None
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "sam-ticket.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_sam3_cut() -> None:
+    """Test SAM3 cut mask generation."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {
+            "args": {
+                "cut": {
+                    "enabled": True,
+                    "auto_mask": {
+                        "sam3": {
+                            "enabled": True,
+                        },
+                    },
+                },
+                "background_color": [255, 0, 0],
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
+    assert context.image is not None
+    await context.do_initial_cut()
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "sam-page.cut.expected.png"),
         generate_expected_image=REGENERATE,
     )
 

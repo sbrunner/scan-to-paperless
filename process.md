@@ -113,6 +113,11 @@
   - <a id="definitions/auto_mask/properties/de_noise_level"></a>**`de_noise_level`** *(integer)*: The threshold level used in de noise on the blurry image. Default: `220`.
   - <a id="definitions/auto_mask/properties/buffer_size"></a>**`buffer_size`** *(integer)*: The size of the buffer add on the mask. Default: `20`.
   - <a id="definitions/auto_mask/properties/buffer_level"></a>**`buffer_level`** *(integer)*: The threshold level used in buffer on the blurry image. Default: `20`.
+  - <a id="definitions/auto_mask/properties/sam3"></a>**`sam3`**: Refer to *[#/definitions/sam3](#definitions/sam3)*.
+- <a id="definitions/sam3"></a>**`sam3`** *(object)*: SAM3 auto-mask configuration.
+  - <a id="definitions/sam3/properties/enabled"></a>**`enabled`** *(boolean)*: Enable SAM3 mask generation. Default: `true`.
+  - <a id="definitions/sam3/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
+  - <a id="definitions/sam3/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
 - <a id="definitions/args"></a>**`args`** *(object)*
   - <a id="definitions/args/properties/level"></a>**`level`** *(object)*: The level configuration.
     - <a id="definitions/args/properties/level/properties/value"></a>**`value`** *(boolean or integer)*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.

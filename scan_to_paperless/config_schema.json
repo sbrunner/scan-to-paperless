@@ -68,6 +68,34 @@
           "description": "The threshold level used in buffer on the blurry image",
           "default": 20,
           "title": "Buffer level"
+        },
+        "sam3": {
+          "$ref": "#/definitions/sam3"
+        }
+      }
+    },
+    "sam3": {
+      "type": "object",
+      "title": "SAM3",
+      "description": "SAM3 auto-mask configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SAM3 mask generation",
+          "title": "SAM3 enabled"
+        },
+        "prompt": {
+          "type": "string",
+          "default": "document",
+          "description": "Text prompt for SAM3 segmentation",
+          "title": "SAM3 prompt"
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Confidence threshold for mask prediction",
+          "default": 0.5,
+          "title": "SAM3 threshold"
         }
       }
     },
