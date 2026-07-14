@@ -5,10 +5,13 @@ import math
 import os
 from typing import TYPE_CHECKING, Any, cast
 
+import anyio
 import cv2
 import numpy as np
+import torch
 from anyio import Path
 from PIL import Image
+from transformers import Sam3Model, Sam3Processor
 
 import scan_to_paperless
 import scan_to_paperless.jupyter_utils
@@ -23,6 +26,82 @@ else:
     NpNdarrayInt = np.ndarray
 
 _LOG = logging.getLogger(__name__)
+
+_MODEL: Sam3Model | None = None
+_PROCESSOR: Sam3Processor | None = None
+_DEVICE: str | None = None
+
+
+def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
+    """Load the SAM3 model and processor, handling optional dependencies."""
+
+    global _MODEL, _PROCESSOR, _DEVICE  # noqa: PLW0603
+
+    if _MODEL is not None and _PROCESSOR is not None and _DEVICE is not None:
+        return _MODEL, _PROCESSOR, _DEVICE
+
+    _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    if _DEVICE == "cpu":
+        _LOG.warning("CUDA not available, falling back to CPU (this will be slow)")
+
+    _LOG.info("Loading SAM3 model...")
+    _MODEL = Sam3Model.from_pretrained(
+        "facebook/sam3",
+        revision="main",
+    )  # nosec
+    _PROCESSOR = Sam3Processor.from_pretrained(
+        "facebook/sam3",
+        revision="main",
+    )  # nosec
+    return _MODEL, _PROCESSOR, _DEVICE
+
+
+def _run_sam3_inference(
+    image: "Image.Image",
+    text_prompt: str,
+    threshold: float,
+) -> np.ndarray:
+    """
+    Generate a binary mask from an RGB numpy array using SAM3.
+
+    Parameters
+    ----------
+    image
+        A Pil image.
+    text_prompt
+        Text prompt for SAM3 to identify the object to segment.
+    threshold
+        Confidence threshold for mask prediction.
+
+    Returns
+    -------
+    np.ndarray
+        Binary mask as uint8: 255 for page area, 0 for background.
+    """
+
+    model, processor, device = _load_model_and_processor()
+
+    inputs = processor(images=image, text=text_prompt, return_tensors="pt").to(device)
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    results = processor.post_process_instance_segmentation(  # type: ignore[no-untyped-call]
+        outputs,
+        threshold=threshold,
+        mask_threshold=0.5,
+        target_sizes=inputs.get("original_sizes").tolist(),
+    )[0]
+
+    masks = results["masks"]
+    if len(masks) == 0:
+        _LOG.warning("No masks found for prompt '%s', saving empty mask", text_prompt)
+        return np.zeros((image.height, image.width), dtype=np.uint8)
+
+    return cast(
+        "np.ndarray",
+        (masks.sum(dim=0) == 0).numpy().astype(np.uint8) * 255,
+    )
 
 
 def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int, int, int]) -> NpNdarrayInt:
@@ -115,57 +194,82 @@ class Context:
         """Init the mask."""
         if auto_mask_config is not None:
             assert self.image is not None
-            hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
-            lower_val = np.array(
-                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT),
-            )
-            upper_val = np.array(
-                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT),
-            )
-            mask = cv2.inRange(hsv, lower_val, upper_val)
+            sam3_config: schema.Sam3 = auto_mask_config.get("sam3", {})
+            if sam3_config.get("enabled", schema.SAM3_ENABLED_DEFAULT):
+                image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
-            de_noise_size = auto_mask_config.setdefault("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)
-            mask = cv2.copyMakeBorder(
-                mask,
-                de_noise_size,
-                de_noise_size,
-                de_noise_size,
-                de_noise_size,
-                cv2.BORDER_REPLICATE,
-            )
-            if auto_mask_config.setdefault("de_noise_morphology", schema.DE_NOISE_MORPHOLOGY_DEFAULT):
-                mask = cv2.morphologyEx(
-                    mask,
-                    cv2.MORPH_CLOSE,
-                    cv2.getStructuringElement(cv2.MORPH_RECT, (de_noise_size, de_noise_size)),
+                mask = await anyio.to_thread.run_sync(
+                    _run_sam3_inference,
+                    Image.fromarray(image_rgb, mode="RGB"),
+                    sam3_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
+                    sam3_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),
                 )
-            else:
-                blur = cv2.blur(
-                    mask,
-                    (de_noise_size, de_noise_size),
-                )
+
+                inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
+                if inverse_mask:
+                    mask = cv2.bitwise_not(mask)
+
+                buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
+                blur = cv2.blur(mask, (buffer_size, buffer_size))
                 _, mask = cv2.threshold(
                     blur,
-                    auto_mask_config.setdefault("de_noise_level", schema.DE_NOISE_LEVEL_DEFAULT),
+                    auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
+                    255,
+                    cv2.THRESH_BINARY,
+                )
+            else:
+                hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+
+                lower_val = np.array(
+                    auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT),
+                )
+                upper_val = np.array(
+                    auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT),
+                )
+                mask = cv2.inRange(hsv, lower_val, upper_val)
+
+                de_noise_size = auto_mask_config.setdefault("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)
+                mask = cv2.copyMakeBorder(
+                    mask,
+                    de_noise_size,
+                    de_noise_size,
+                    de_noise_size,
+                    de_noise_size,
+                    cv2.BORDER_REPLICATE,
+                )
+                if auto_mask_config.setdefault("de_noise_morphology", schema.DE_NOISE_MORPHOLOGY_DEFAULT):
+                    mask = cv2.morphologyEx(
+                        mask,
+                        cv2.MORPH_CLOSE,
+                        cv2.getStructuringElement(cv2.MORPH_RECT, (de_noise_size, de_noise_size)),
+                    )
+                else:
+                    blur = cv2.blur(
+                        mask,
+                        (de_noise_size, de_noise_size),
+                    )
+                    _, mask = cv2.threshold(
+                        blur,
+                        auto_mask_config.setdefault("de_noise_level", schema.DE_NOISE_LEVEL_DEFAULT),
+                        255,
+                        cv2.THRESH_BINARY,
+                    )
+
+                inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
+                if not inverse_mask:
+                    mask = cv2.bitwise_not(mask)
+
+                buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
+                blur = cv2.blur(mask, (buffer_size, buffer_size))
+                _, mask = cv2.threshold(
+                    blur,
+                    auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
                     255,
                     cv2.THRESH_BINARY,
                 )
 
-            inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
-            if not inverse_mask:
-                mask = cv2.bitwise_not(mask)
-
-            buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
-            blur = cv2.blur(mask, (buffer_size, buffer_size))
-            _, mask = cv2.threshold(
-                blur,
-                auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
-                255,
-                cv2.THRESH_BINARY,
-            )
-
-            mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
+                mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
             if self.root_folder and mask_file is not None and await mask_file.exists():
                 print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")

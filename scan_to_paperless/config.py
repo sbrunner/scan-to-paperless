@@ -363,6 +363,13 @@ class AutoMask(TypedDict, total=False):
     default: 20
     """
 
+    sam3: "Sam3"
+    r"""
+    SAM3.
+
+    SAM3 auto-mask configuration
+    """
+
 
 
 class AutoRotate(TypedDict, total=False):
@@ -1544,6 +1551,21 @@ class Rule(TypedDict, total=False):
 
 
 
+SAM3_ENABLED_DEFAULT = True
+r""" Default value of the field path 'SAM3 enabled' """
+
+
+
+SAM3_PROMPT_DEFAULT = 'document'
+r""" Default value of the field path 'SAM3 prompt' """
+
+
+
+SAM3_THRESHOLD_DEFAULT = 0.5
+r""" Default value of the field path 'SAM3 threshold' """
+
+
+
 SCANIMAGE_ARGUMENTS_DEFAULT = ['--format=png', '--mode=color', '--resolution=300']
 r""" Default value of the field path 'Configuration scanimage_arguments' """
 
@@ -1561,6 +1583,42 @@ r""" Default value of the field path 'Arguments sharpen' """
 
 SHARPEN_ENABLED_DEFAULT = True
 r""" Default value of the field path 'Sharpen enabled' """
+
+
+
+class Sam3(TypedDict, total=False):
+    r"""
+    SAM3.
+
+    SAM3 auto-mask configuration
+    """
+
+    enabled: bool
+    r"""
+    SAM3 enabled.
+
+    Enable SAM3 mask generation
+
+    default: True
+    """
+
+    prompt: str
+    r"""
+    SAM3 prompt.
+
+    Text prompt for SAM3 segmentation
+
+    default: document
+    """
+
+    threshold: int | float
+    r"""
+    SAM3 threshold.
+
+    Confidence threshold for mask prediction
+
+    default: 0.5
+    """
 
 
 

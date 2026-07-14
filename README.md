@@ -279,6 +279,7 @@ Environment variable:
 - `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.
 - `TIME`: Print the elapsed time.
 - `PROGRESS`: Save some intermediate files, don't clean the folder at the end.
+- `HF_TOKEN`: The HuggingFace token to access the SAM3 model (required for `mask.sam3` or `cut.sam3`).
 
 ## Contributing
 
