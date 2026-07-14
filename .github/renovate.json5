@@ -15,6 +15,12 @@
     'github>camptocamp/gs-renovate-config-preset:security.json5#1.10.1',
   ],
   baseBranchPatterns: ['test', 'master'],
+  dockerfile: {
+    enabled: true,
+  },
+  docker: {
+    enabled: true,
+  },
   packageRules: [
     /** Accept only the patch on stabilization branches */
     {
