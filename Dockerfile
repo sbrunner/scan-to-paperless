@@ -107,18 +107,10 @@ COPY scan_to_paperless/__init__.py scan_to_paperless/
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable .
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get install --assume-yes --no-install-recommends software-properties-common \
-    && add-apt-repository ppa:savoury1/pipewire \
-    && add-apt-repository ppa:savoury1/chromium \
-    && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends chromium-browser npm
-
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    && apt-get install --assume-yes --no-install-recommends npm
 
 COPY . ./
 
