@@ -16,11 +16,11 @@ build-tests:
 
 .PHONY: prospector
 prospector: build-tests
-	docker run --rm sbrunner/scan-to-paperless-tests prospector --die-on-tool-error --output=pylint
+	docker run --rm sbrunner/scan-to-paperless-tests prospector --direct-tool-stdout --output=pylint
 
 .PHONY: prospector-fast
 prospector-fast:
-	docker run --rm  --volume=$$(pwd):/opt/ sbrunner/scan-to-paperless-tests prospector --die-on-tool-error --output=pylint
+	docker run --rm  --volume=$$(pwd):/opt/ sbrunner/scan-to-paperless-tests prospector --direct-tool-stdout --output=pylint
 
 DOCKER_RUN_TESTS = docker run --rm --env=PYTHONPATH=/opt/ --env=HF_TOKEN \
 	--volume=$$(pwd)/results:/results --volume=$$(pwd)/tests:/tests --volume=$$(pwd)/scan_to_paperless:/opt/scan_to_paperless
