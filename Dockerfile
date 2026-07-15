@@ -110,7 +110,12 @@ RUN --mount=type=cache,target=/root/.cache \
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get install --assume-yes --no-install-recommends npm
+    && apt-get install --assume-yes --no-install-recommends npm \
+        libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 \
+        libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2t64 \
+        libpango-1.0-0 libcairo2 libxfixes3 libxshmfence1 libxxf86vm1 \
+        libxcb-shm0 libxcb-dri3-0 libxcb-glx0 libegl1 libgl1 \
+        libgtk-3-0t64 libgdk-pixbuf-2.0-0 libnss3 libnspr4
 
 COPY . ./
 
