@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import Literal, Required, TypedDict
+from typing import Any, Literal, Required, TypedDict
 
 
 APPEND_CREDIT_CARD_DEFAULT = False
@@ -268,6 +268,16 @@ class Arguments(TypedDict, total=False):
     Consume folder.
 
     Send the final PDF to Paperless using the consume folder
+    """
+
+    sam_test: dict[str, "SamTestConfiguration"]
+    r"""
+    SAM test configurations.
+
+    Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.
+
+    default:
+      {}
     """
 
 
@@ -1487,6 +1497,26 @@ r""" Default value of the field path 'SAM3 threshold' """
 
 
 
+SAM_TEST_CONFIGURATIONS_DEFAULT: dict[str, Any] = {}
+r""" Default value of the field path 'Arguments sam_test' """
+
+
+
+SAM_TEST_ENABLED_DEFAULT = True
+r""" Default value of the field path 'SAM test configuration enabled' """
+
+
+
+SAM_TEST_PROMPT_DEFAULT = 'document'
+r""" Default value of the field path 'SAM test configuration prompt' """
+
+
+
+SAM_TEST_THRESHOLD_DEFAULT = 0.5
+r""" Default value of the field path 'SAM test configuration threshold' """
+
+
+
 SHARPEN_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments sharpen' """
 
@@ -1525,6 +1555,38 @@ class Sam3(TypedDict, total=False):
     threshold: int | float
     r"""
     SAM3 threshold.
+
+    Confidence threshold for mask prediction
+
+    default: 0.5
+    """
+
+
+
+class SamTestConfiguration(TypedDict, total=False):
+    r""" SAM test configuration. """
+
+    enabled: bool
+    r"""
+    SAM test enabled.
+
+    Enable this SAM test
+
+    default: True
+    """
+
+    prompt: str
+    r"""
+    SAM test prompt.
+
+    Text prompt for SAM3 segmentation
+
+    default: document
+    """
+
+    threshold: int | float
+    r"""
+    SAM test threshold.
 
     Confidence threshold for mask prediction
 

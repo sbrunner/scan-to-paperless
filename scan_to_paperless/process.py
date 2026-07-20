@@ -910,6 +910,18 @@ def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], bord
         cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
 
 
+def draw_mask_overlay(image: NpNdarrayInt, mask: NpNdarrayInt) -> NpNdarrayInt:
+    """Draw a green semi-transparent overlay on the masked area (same style as draw_rectangle)."""
+    color = (0, 255, 0)
+    opacity = 0.1
+    mask_overlay = np.zeros_like(image, dtype=np.uint8)
+    mask_overlay[mask == 255] = color
+    blended = cv2.addWeighted(image, 1 - opacity, mask_overlay, opacity, 1.0)
+    result = image.copy()
+    result[mask == 255] = blended[mask == 255]
+    return result
+
+
 def find_lines(
     image: NpNdarrayInt,
     vertical: bool,
@@ -1539,6 +1551,29 @@ async def transform(
         await level(context)
         await color_cut(context)
         await context.init_mask()
+        sam_test_configs = config["args"].setdefault("sam_test", schema.SAM_TEST_CONFIGURATIONS_DEFAULT)
+        if sam_test_configs and context.image is not None and context.mask is not None:
+            for test_name, test_config in sam_test_configs.items():
+                if not test_config.get("enabled", True):
+                    continue
+                image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+                mask = await anyio.to_thread.run_sync(
+                    process_utils.run_sam3_inference,
+                    Image.fromarray(image_rgb, mode="RGB"),
+                    test_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
+                    test_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),
+                )
+                overlay = draw_mask_overlay(context.image, mask)
+                dest_folder = root_folder / test_name
+                if not await dest_folder.exists():
+                    await dest_folder.mkdir(parents=True)
+                success, buffer = cv2.imencode(".png", overlay)
+                if success:
+                    async with await anyio.open_file(
+                        str(dest_folder / context.image_name),
+                        "wb",
+                    ) as file:
+                        await file.write(buffer.tobytes())
         await cut(context)
         await deskew(context)
         await docrop(context)

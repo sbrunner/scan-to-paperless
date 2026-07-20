@@ -692,6 +692,36 @@
               "title": "Consume folder enabled"
             }
           }
+        },
+        "sam_test": {
+          "type": "object",
+          "title": "SAM test configurations",
+          "description": "Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.",
+          "default": {},
+          "additionalProperties": {
+            "type": "object",
+            "title": "SAM test configuration",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable this SAM test",
+                "title": "SAM test enabled"
+              },
+              "prompt": {
+                "type": "string",
+                "default": "document",
+                "description": "Text prompt for SAM3 segmentation",
+                "title": "SAM test prompt"
+              },
+              "threshold": {
+                "type": "number",
+                "default": 0.5,
+                "description": "Confidence threshold for mask prediction",
+                "title": "SAM test threshold"
+              }
+            }
+          }
         }
       }
     }

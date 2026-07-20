@@ -27,6 +27,8 @@ to verify that the result is OK (and do some advance operations describe below) 
 - Scan the QR code and Bar code and add a new page with the values (separate process)
 - Manage the empty lines in the QR code (replace by a pipe (`|`) in the PDF,
   and run `scan --convert-clipboard` to scan your clipboard to do the inverse transform)
+- SAM test overlays: configure `args.sam_test` with arbitrary test names and SAM3 prompts
+  to generate green semi-transparent overlay images showing the detected mask
 
 ## Requirements
 
@@ -157,6 +159,31 @@ During processing, each image now gets additional analysis in `images_config.<im
 Those values are intended to help a human or an AI iterate on `args.cut_black`, `args.cut_white`,
 `args.mask.auto_mask` and `args.cut.auto_mask`.
 
+### SAM test overlays
+
+The `args.sam_test` configuration allows generating visual overlays to evaluate SAM3 mask quality
+for different prompts and thresholds. Each key in the dictionary becomes a subfolder in the job
+directory containing the image with a green semi-transparent overlay (same style as crop rectangles)
+showing the detected mask.
+
+Example configuration in `config.yaml`:
+
+```yaml
+args:
+  sam_test:
+    page:
+      prompt: 'document'
+      threshold: 0.5
+    ticket:
+      prompt: 'receipt, ticket'
+      threshold: 0.3
+```
+
+This generates two subfolders `page/` and `ticket/` in the job directory, each containing the
+processed image with the SAM mask overlay.
+
+See also: [The documentation](./process.md#sam_test)
+
 ## Advance feature
 
 ### Add a mask
@@ -279,7 +306,7 @@ Environment variable:
 - `SCAN_CODES_MARGIN_LEFT`:The left margin of code number.
 - `TIME`: Print the elapsed time.
 - `PROGRESS`: Save some intermediate files, don't clean the folder at the end.
-- `HF_TOKEN`: The HuggingFace token to access the SAM3 model (required for `mask.sam3` or `cut.sam3`).
+- `HF_TOKEN`: The HuggingFace token to access the SAM3 model (required for `mask.sam3`, `cut.sam3`, or `sam_test`).
 
 ## Contributing
 

@@ -211,3 +211,8 @@
     - <a id="definitions/args/properties/rest_upload/properties/api_token"></a>**`api_token`** *(string, required)*: The API token.
   - <a id="definitions/args/properties/consume_folder"></a>**`consume_folder`** *(object)*: Send the final PDF to Paperless using the consume folder.
     - <a id="definitions/args/properties/consume_folder/properties/enabled"></a>**`enabled`** *(boolean)*: Enable using the consume folder. Default: `true`.
+  - <a id="definitions/args/properties/sam_test"></a>**`sam_test`** *(object)*: Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images. Can contain additional properties. Default: `{}`.
+    - <a id="definitions/args/properties/sam_test/additionalProperties"></a>**Additional properties** *(object)*
+      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/enabled"></a>**`enabled`** *(boolean)*: Enable this SAM test. Default: `true`.
+      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
+      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
