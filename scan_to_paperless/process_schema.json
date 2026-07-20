@@ -60,7 +60,11 @@
         "lower_hsv_color": {
           "type": "array",
           "description": "The lower color in HSV representation",
-          "default": [0, 0, 250],
+          "default": [
+            0,
+            0,
+            250
+          ],
           "items": {
             "type": "integer"
           },
@@ -69,7 +73,11 @@
         "upper_hsv_color": {
           "type": "array",
           "description": "The upper color in HSV representation",
-          "default": [255, 10, 255],
+          "default": [
+            255,
+            10,
+            255
+          ],
           "items": {
             "type": "integer"
           },
@@ -152,7 +160,10 @@
           "description": "The level configuration",
           "properties": {
             "value": {
-              "type": ["boolean", "integer"],
+              "type": [
+                "boolean",
+                "integer"
+              ],
               "description": "true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%",
               "title": "Level value",
               "default": false
@@ -397,7 +408,12 @@
             "options": {
               "type": "array",
               "description": "The pngquant options",
-              "default": ["--force", "--speed=1", "--strip", "--quality=0-32"],
+              "default": [
+                "--force",
+                "--speed=1",
+                "--strip",
+                "--quality=0-32"
+              ],
               "items": {
                 "type": "string"
               },
@@ -474,7 +490,11 @@
         },
         "background_color": {
           "type": "array",
-          "default": [255, 255, 255],
+          "default": [
+            255,
+            255,
+            255
+          ],
           "description": "The background color",
           "items": {
             "type": "integer"
@@ -499,7 +519,10 @@
               "$ref": "#/definitions/auto_mask"
             },
             "additional_filename": {
-              "type": ["string", "null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "description": "An image file used to add on the mask"
             }
           }
@@ -522,7 +545,10 @@
               "$ref": "#/definitions/auto_mask"
             },
             "additional_filename": {
-              "type": ["string", "null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "description": "An image file used to add on the mask"
             }
           }
@@ -613,7 +639,11 @@
             "graduation_color": {
               "title": "Rule graduation color",
               "type": "array",
-              "default": [0, 0, 0],
+              "default": [
+                0,
+                0,
+                0
+              ],
               "items": {
                 "type": "integer"
               }
@@ -621,7 +651,11 @@
             "lines_color": {
               "title": "Rule lines color",
               "type": "array",
-              "default": [0, 0, 0],
+              "default": [
+                0,
+                0,
+                0
+              ],
               "items": {
                 "type": "integer"
               }
@@ -644,7 +678,11 @@
             "graduation_text_font_color": {
               "title": "Rule graduation text font color",
               "type": "array",
-              "default": [0, 0, 0],
+              "default": [
+                0,
+                0,
+                0
+              ],
               "items": {
                 "type": "integer"
               }
@@ -678,7 +716,10 @@
               "title": "REST upload API token"
             }
           },
-          "required": ["api_url", "api_token"]
+          "required": [
+            "api_url",
+            "api_token"
+          ]
         },
         "consume_folder": {
           "type": "object",
@@ -690,6 +731,36 @@
               "default": true,
               "description": "Enable using the consume folder",
               "title": "Consume folder enabled"
+            }
+          }
+        },
+        "sam_test": {
+          "type": "object",
+          "title": "SAM test configurations",
+          "description": "Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.",
+          "default": {},
+          "additionalProperties": {
+            "type": "object",
+            "title": "SAM test configuration",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable this SAM test",
+                "title": "SAM test enabled"
+              },
+              "prompt": {
+                "type": "string",
+                "default": "document",
+                "description": "Text prompt for SAM3 segmentation",
+                "title": "SAM test prompt"
+              },
+              "threshold": {
+                "type": "number",
+                "default": 0.5,
+                "description": "Confidence threshold for mask prediction",
+                "title": "SAM test threshold"
+              }
             }
           }
         }
@@ -755,7 +826,10 @@
             "type": "array",
             "title": "The destination image positions",
             "items": {
-              "type": ["integer", "string"]
+              "type": [
+                "integer",
+                "string"
+              ]
             }
           },
           "image": {
@@ -831,7 +905,10 @@
         "additionalProperties": false,
         "properties": {
           "angle": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "description": "The used angle to deskew, can be change, restart by deleting one of the generated images"
           },
           "status": {
@@ -1015,13 +1092,23 @@
                 "properties": {
                   "angle_from": {
                     "type": "string",
-                    "enum": ["detected", "manual", "none"]
+                    "enum": [
+                      "detected",
+                      "manual",
+                      "none"
+                    ]
                   },
                   "detected_angle": {
-                    "type": ["number", "null"]
+                    "type": [
+                      "number",
+                      "null"
+                    ]
                   },
                   "applied_angle": {
-                    "type": ["number", "null"]
+                    "type": [
+                      "number",
+                      "null"
+                    ]
                   },
                   "near_search_limit": {
                     "type": "boolean"
@@ -1058,5 +1145,8 @@
       }
     }
   },
-  "required": ["images", "args"]
+  "required": [
+    "images",
+    "args"
+  ]
 }

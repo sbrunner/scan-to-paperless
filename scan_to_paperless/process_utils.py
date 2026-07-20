@@ -56,7 +56,7 @@ def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
     return _MODEL, _PROCESSOR, _DEVICE
 
 
-def _run_sam3_inference(
+def run_sam3_inference(
     image: "Image.Image",
     text_prompt: str,
     threshold: float,
@@ -200,7 +200,7 @@ class Context:
                 image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
                 mask = await anyio.to_thread.run_sync(
-                    _run_sam3_inference,
+                    run_sam3_inference,
                     Image.fromarray(image_rgb, mode="RGB"),
                     sam3_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
                     sam3_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),

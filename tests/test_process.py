@@ -7,6 +7,7 @@ from typing import Any
 import anyio
 import cv2
 import nbformat
+import numpy as np
 import pikepdf
 import pytest
 import skimage.color
@@ -14,6 +15,7 @@ import skimage.io
 from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
+from PIL import Image
 
 from scan_to_paperless import add_code, process, process_utils
 
@@ -1145,3 +1147,74 @@ async def test_external_decorator_valid_output() -> None:
     assert result is not None
     assert isinstance(result, type(context.image))  # Should be same type as input (numpy array)
     assert result.shape == context.image.shape  # Should have same dimensions
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_draw_mask_overlay() -> None:
+    """Test the draw_mask_overlay function."""
+    image = np.zeros((100, 100, 3), dtype=np.uint8)
+    image[:, :] = [255, 255, 255]
+    mask = np.zeros((100, 100), dtype=np.uint8)
+    mask[25:75, 25:75] = 255
+
+    overlay = process.draw_mask_overlay(image, mask)
+
+    assert overlay.shape == image.shape
+    assert overlay.dtype == image.dtype
+
+    # Pixel inside mask should differ from original due to green overlay
+    assert not np.array_equal(overlay[50, 50], image[50, 50])
+    # Pixel outside mask should remain unchanged
+    assert np.array_equal(overlay[0, 0], image[0, 0])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("test_name", "test_config"),
+    [
+        pytest.param("page", {"prompt": "document"}, id="page"),
+        pytest.param("ticket", {"prompt": "receipt", "threshold": 0.3}, id="ticket"),
+    ],
+)
+async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
+    """Test SAM test configuration execution."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {"args": {"sam_test": {test_name: test_config}}},
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
+    assert context.image is not None
+    context.image_name = "sam-page.png"
+    root_folder = Path("/tmp/sam-test-output")  # noqa: S108
+    if await root_folder.exists():
+        shutil.rmtree(str(root_folder))
+
+    sam_test_configs = context.config["args"].get("sam_test", {})
+    for sam_test_name, sam_test_cfg in sam_test_configs.items():
+        if not sam_test_cfg.get("enabled", True):
+            continue
+        image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+        mask = await anyio.to_thread.run_sync(
+            process_utils.run_sam3_inference,
+            Image.fromarray(image_rgb, mode="RGB"),
+            sam_test_cfg.get("prompt", "document"),
+            sam_test_cfg.get("threshold", 0.5),
+        )
+        overlay = process.draw_mask_overlay(context.image, mask)
+
+        dest_folder = root_folder / sam_test_name
+        await dest_folder.mkdir(parents=True)
+        success, buffer = cv2.imencode(".png", overlay)
+        assert success
+        file_path = dest_folder / context.image_name
+        async with await anyio.open_file(str(file_path), "wb") as f:
+            await f.write(buffer.tobytes())
+
+        assert await file_path.exists()
+        # Check alpha channel is not present (BGR image)
+        assert overlay.shape[2] == 3
+
+    shutil.rmtree(str(root_folder))

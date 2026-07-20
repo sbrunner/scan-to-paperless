@@ -79,6 +79,8 @@ then yon can all those changes in the `config.yaml` file, in the `args` section.
             """import os
 import cv2
 import numpy as np
+import anyio
+from PIL import Image
 
 from scan_to_paperless import process, process_utils""",
         ),
@@ -330,6 +332,43 @@ if context.mask is None:
     context.mask = np.zeros(context.image.shape[:2], dtype=np.uint8)
 
 images_context["original-mask"] = context.mask""",
+        ),
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Generate SAM test overlays.
+
+If `args.sam_test` is configured in the config file, this will run SAM3 inference for each test entry
+and display the mask as a green semi-transparent overlay on the image (same style as crop rectangles).""",
+        ),
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.image = images_context["original"].copy()
+
+context.config["args"]["sam_test"] = {_pretty_repr(context.config["args"].get("sam_test", {}))}
+
+sam_test_configs = context.config["args"].get("sam_test", {{}})
+if sam_test_configs:
+    from scan_to_paperless.process_utils import run_sam3_inference
+
+    for test_name, test_config in sam_test_configs.items():
+        if not test_config.get("enabled", True):
+            continue
+        print(f"Running SAM test: {{test_name}}")
+        image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+        mask = await anyio.to_thread.run_sync(
+            run_sam3_inference,
+            Image.fromarray(image_rgb, mode="RGB"),
+            test_config.get("prompt", "document"),
+            test_config.get("threshold", 0.5),
+        )
+        overlay = process.draw_mask_overlay(context.image, mask)
+        context.display_image(overlay)
+else:
+    print("No sam_test configured, add args.sam_test to your config.yaml to enable.")
+""",
         ),
     )
 
