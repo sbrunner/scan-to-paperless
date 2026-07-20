@@ -172,10 +172,10 @@ Example configuration in `config.yaml`:
 args:
   sam_test:
     page:
-      prompt: "document"
+      prompt: 'document'
       threshold: 0.5
     ticket:
-      prompt: "receipt, ticket"
+      prompt: 'receipt, ticket'
       threshold: 0.3
 ```
 

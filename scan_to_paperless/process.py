@@ -1567,7 +1567,8 @@ async def transform(
                 success, buffer = cv2.imencode(".png", overlay)
                 if success:
                     async with await anyio.open_file(
-                        str(dest_folder / context.image_name), "wb",
+                        str(dest_folder / context.image_name),
+                        "wb",
                     ) as file:
                         await file.write(buffer.tobytes())
         await cut(context)

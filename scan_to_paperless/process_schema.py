@@ -2,7 +2,7 @@
 # Used to correctly format the generated file
 
 
-from typing import Literal, Required, TypedDict
+from typing import Any, Literal, Required, TypedDict
 
 
 APPEND_CREDIT_CARD_DEFAULT = False
@@ -263,20 +263,21 @@ class Arguments(TypedDict, total=False):
     Upload the final PDF via Paperless REST API
     """
 
-    sam_test: dict[str, "SamTestConfig"]
-    r"""
-    SAM test configurations.
-
-    Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.
-
-    default: {}
-    """
-
     consume_folder: "ConsumeFolder"
     r"""
     Consume folder.
 
     Send the final PDF to Paperless using the consume folder
+    """
+
+    sam_test: dict[str, "SamTestConfiguration"]
+    r"""
+    SAM test configurations.
+
+    Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.
+
+    default:
+      {}
     """
 
 
@@ -478,7 +479,7 @@ r""" Default value of the field path 'Arguments cut_white' """
 
 
 class Configuration(TypedDict, total=False):
-    r"""Configuration."""
+    r""" Configuration. """
 
     images: Required[list[str]]
     r"""
@@ -815,7 +816,7 @@ r""" Default value of the field path 'Auto mask inverse_mask' """
 
 
 class IntermediateError(TypedDict, total=False):
-    r"""Intermediate error."""
+    r""" Intermediate error. """
 
     error: str
     traceback: list[str]
@@ -968,7 +969,7 @@ default: False
 
 
 class Limit(TypedDict, total=False):
-    r"""Limit."""
+    r""" Limit. """
 
     name: str
     r""" The name visible on the generated image """
@@ -1496,6 +1497,26 @@ r""" Default value of the field path 'SAM3 threshold' """
 
 
 
+SAM_TEST_CONFIGURATIONS_DEFAULT: dict[str, Any] = {}
+r""" Default value of the field path 'Arguments sam_test' """
+
+
+
+SAM_TEST_ENABLED_DEFAULT = True
+r""" Default value of the field path 'SAM test configuration enabled' """
+
+
+
+SAM_TEST_PROMPT_DEFAULT = 'document'
+r""" Default value of the field path 'SAM test configuration prompt' """
+
+
+
+SAM_TEST_THRESHOLD_DEFAULT = 0.5
+r""" Default value of the field path 'SAM test configuration threshold' """
+
+
+
 SHARPEN_DEFAULT = {'enabled': False}
 r""" Default value of the field path 'Arguments sharpen' """
 
@@ -1542,17 +1563,8 @@ class Sam3(TypedDict, total=False):
 
 
 
-SAM_TEST_CONFIG_DEFAULT: dict[str, "SamTestConfig"] = {}
-r""" Default value of the field path 'Arguments sam_test' """
-
-
-
-class SamTestConfig(TypedDict, total=False):
-    r"""
-    SAM test configuration.
-
-    A single SAM test entry in the sam_test dictionary.
-    """
+class SamTestConfiguration(TypedDict, total=False):
+    r""" SAM test configuration. """
 
     enabled: bool
     r"""
@@ -1605,7 +1617,7 @@ class Sharpen(TypedDict, total=False):
 
 
 class Step(TypedDict, total=False):
-    r"""Step."""
+    r""" Step. """
 
     name: str
     r""" The step name """
@@ -1671,7 +1683,7 @@ r""" Default value of the field path 'Auto mask upper_hsv_color' """
 
 
 class _ArgumentsDeskew(TypedDict, total=False):
-    r"""The deskew configuration"""
+    r""" The deskew configuration """
 
     min_angle: int | float
     r"""
@@ -1755,7 +1767,7 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=Fals
 
 
 class _ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsv(TypedDict, total=False):
-    r"""HSV analysis and suggested ranges for auto_mask lower_hsv_color and upper_hsv_color"""
+    r""" HSV analysis and suggested ranges for auto_mask lower_hsv_color and upper_hsv_color """
 
     white_candidate_ratio: int | float
     suggestions: "_ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestions"
@@ -1782,7 +1794,7 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestions
 
 
 class _ConfigurationImagesConfigAdditionalpropertiesStatusDeskew(TypedDict, total=False):
-    r"""Deskew analysis with detected/applied angle and search configuration"""
+    r""" Deskew analysis with detected/applied angle and search configuration """
 
     angle_from: "_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom"
     detected_angle: int | float | None
@@ -1791,7 +1803,7 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatusDeskew(TypedDict, tota
     search: "_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewSearch"
 
 
-_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom = Literal['detected', 'manual', 'none']
+_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom = Literal['detected'] | Literal['manual'] | Literal['none']
 _CONFIGURATIONIMAGESCONFIGADDITIONALPROPERTIESSTATUSDESKEWANGLEFROM_DETECTED: Literal['detected'] = "detected"
 r"""The values for the '_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom' enum"""
 _CONFIGURATIONIMAGESCONFIGADDITIONALPROPERTIESSTATUSDESKEWANGLEFROM_MANUAL: Literal['manual'] = "manual"
@@ -1811,7 +1823,7 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatusDeskewSearch(TypedDict
 
 
 class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogram(TypedDict, total=False):
-    r"""Information based on the image histogram to help tune cut_black/cut_white"""
+    r""" Information based on the image histogram to help tune cut_black/cut_white """
 
     text: list[str]
     r""" Textual histogram lines """
