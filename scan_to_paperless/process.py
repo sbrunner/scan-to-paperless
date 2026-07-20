@@ -916,7 +916,10 @@ def draw_mask_overlay(image: NpNdarrayInt, mask: NpNdarrayInt) -> NpNdarrayInt:
     opacity = 0.1
     mask_overlay = np.zeros_like(image, dtype=np.uint8)
     mask_overlay[mask == 255] = color
-    return cv2.addWeighted(image, 1 - opacity, mask_overlay, opacity, 1.0)
+    blended = cv2.addWeighted(image, 1 - opacity, mask_overlay, opacity, 1.0)
+    result = image.copy()
+    result[mask == 255] = blended[mask == 255]
+    return result
 
 
 def find_lines(
