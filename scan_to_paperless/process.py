@@ -1548,7 +1548,7 @@ async def transform(
         await level(context)
         await color_cut(context)
         await context.init_mask()
-        sam_test_configs = config["args"].setdefault("sam_test", schema.SAM_TEST_CONFIG_DEFAULT)
+        sam_test_configs = config["args"].setdefault("sam_test", schema.SAM_TEST_CONFIGURATIONS_DEFAULT)
         if sam_test_configs and context.image is not None and context.mask is not None:
             for test_name, test_config in sam_test_configs.items():
                 if not test_config.get("enabled", True):
