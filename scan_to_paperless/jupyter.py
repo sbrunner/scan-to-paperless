@@ -363,6 +363,7 @@ if sam_test_configs:
             Image.fromarray(image_rgb, mode="RGB"),
             test_config.get("prompt", "document"),
             test_config.get("threshold", 0.5),
+            test_config.get("scale", 4),
         )
         overlay = process.draw_mask_overlay(context.image, mask)
         context.display_image(overlay)

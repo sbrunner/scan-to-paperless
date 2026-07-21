@@ -1492,6 +1492,11 @@ r""" Default value of the field path 'SAM3 prompt' """
 
 
 
+SAM3_SCALE_DEFAULT = 4
+r""" Default value of the field path 'SAM3 scale' """
+
+
+
 SAM3_THRESHOLD_DEFAULT = 0.5
 r""" Default value of the field path 'SAM3 threshold' """
 
@@ -1509,6 +1514,11 @@ r""" Default value of the field path 'SAM test configuration enabled' """
 
 SAM_TEST_PROMPT_DEFAULT = 'document'
 r""" Default value of the field path 'SAM test configuration prompt' """
+
+
+
+SAM_TEST_SCALE_DEFAULT = 4
+r""" Default value of the field path 'SAM test configuration scale' """
 
 
 
@@ -1561,6 +1571,15 @@ class Sam3(TypedDict, total=False):
     default: 0.5
     """
 
+    scale: int | float
+    r"""
+    SAM3 scale.
+
+    Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size.
+
+    default: 4
+    """
+
 
 
 class SamTestConfiguration(TypedDict, total=False):
@@ -1591,6 +1610,15 @@ class SamTestConfiguration(TypedDict, total=False):
     Confidence threshold for mask prediction
 
     default: 0.5
+    """
+
+    scale: int | float
+    r"""
+    SAM test scale.
+
+    Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.
+
+    default: 4
     """
 
 

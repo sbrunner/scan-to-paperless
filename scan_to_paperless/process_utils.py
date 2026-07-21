@@ -60,6 +60,7 @@ def run_sam3_inference(
     image: "Image.Image",
     text_prompt: str,
     threshold: float,
+    scale: float = 1.0,
 ) -> np.ndarray:
     """
     Generate a binary mask from an RGB numpy array using SAM3.
@@ -72,12 +73,22 @@ def run_sam3_inference(
         Text prompt for SAM3 to identify the object to segment.
     threshold
         Confidence threshold for mask prediction.
+    scale
+        Divide image dimensions by this factor before inference for speed.
+        The mask is resized back to the original image size. Default 1.0 (no scaling).
 
     Returns
     -------
     np.ndarray
         Binary mask as uint8: 255 for page area, 0 for background.
     """
+
+    original_size = (image.height, image.width)
+
+    if scale != 1.0:
+        new_width = int(image.width / scale)
+        new_height = int(image.height / scale)
+        image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
     model, processor, device = _load_model_and_processor()
 
@@ -96,12 +107,20 @@ def run_sam3_inference(
     masks = results["masks"]
     if len(masks) == 0:
         _LOG.warning("No masks found for prompt '%s', saving empty mask", text_prompt)
-        return np.zeros((image.height, image.width), dtype=np.uint8)
+        mask = np.zeros((image.height, image.width), dtype=np.uint8)
+    else:
+        mask = cast(
+            "np.ndarray",
+            (masks.sum(dim=0) == 0).numpy().astype(np.uint8) * 255,
+        )
 
-    return cast(
-        "np.ndarray",
-        (masks.sum(dim=0) == 0).numpy().astype(np.uint8) * 255,
-    )
+    if scale != 1.0:
+        mask = cast(
+            "np.ndarray",
+            cv2.resize(mask, (original_size[1], original_size[0]), interpolation=cv2.INTER_NEAREST),
+        )
+
+    return mask
 
 
 def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int, int, int]) -> NpNdarrayInt:
@@ -204,6 +223,7 @@ class Context:
                     Image.fromarray(image_rgb, mode="RGB"),
                     sam3_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
                     sam3_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),
+                    sam3_config.get("scale", schema.SAM3_SCALE_DEFAULT),
                 )
 
                 inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)

@@ -96,6 +96,12 @@
           "description": "Confidence threshold for mask prediction",
           "default": 0.5,
           "title": "SAM3 threshold"
+        },
+        "scale": {
+          "type": "number",
+          "default": 4,
+          "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size.",
+          "title": "SAM3 scale"
         }
       }
     },
@@ -677,6 +683,12 @@
                 "default": 0.5,
                 "description": "Confidence threshold for mask prediction",
                 "title": "SAM test threshold"
+              },
+              "scale": {
+                "type": "number",
+                "default": 4,
+                "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.",
+                "title": "SAM test scale"
               }
             }
           }
