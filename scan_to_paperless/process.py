@@ -1562,6 +1562,7 @@ async def transform(
                     Image.fromarray(image_rgb, mode="RGB"),
                     test_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
                     test_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),
+                    test_config.get("scale", schema.SAM3_SCALE_DEFAULT),
                 )
                 overlay = draw_mask_overlay(context.image, mask)
                 dest_folder = root_folder / test_name

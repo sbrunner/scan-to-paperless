@@ -118,6 +118,7 @@
   - <a id="definitions/sam3/properties/enabled"></a>**`enabled`** *(boolean)*: Enable SAM3 mask generation. Default: `true`.
   - <a id="definitions/sam3/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
   - <a id="definitions/sam3/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
+  - <a id="definitions/sam3/properties/scale"></a>**`scale`** *(number)*: Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size. Default: `4`.
 - <a id="definitions/args"></a>**`args`** *(object)*
   - <a id="definitions/args/properties/level"></a>**`level`** *(object)*: The level configuration.
     - <a id="definitions/args/properties/level/properties/value"></a>**`value`** *(boolean or integer)*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
@@ -216,3 +217,4 @@
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/enabled"></a>**`enabled`** *(boolean)*: Enable this SAM test. Default: `true`.
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
+      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/scale"></a>**`scale`** *(number)*: Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size. Default: `4`.
