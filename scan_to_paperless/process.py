@@ -1682,57 +1682,58 @@ async def split(
                     else:
                         vertical_value = width
                         vertical_margin = 0
-                    process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
-                        suffix=".png",
-                    )
-                    await call(
-                        [
-                            *CONVERT,
-                            "-crop",
-                            f"{vertical_value - vertical_margin - last_x}x"
-                            f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
-                            "+repage",
-                            image,
-                            process_file.name,
-                        ],
-                    )
-                    last_x = vertical_value + vertical_margin
-
-                    if re.match(r"[0-9]+\.[0-9]+", str(destination)):
-                        page, page_pos = (int(e) for e in str(destination).split("."))
-                    else:
-                        page = int(destination)
-                        page_pos = 0
-
-                    save(
-                        context,
-                        root_folder,
-                        Path(process_file.name),
-                        f"{context.get_process_count()}-split",
-                    )
-                    crop_config = context.config["args"].setdefault("crop", {})
-                    margin_horizontal = context.get_px_value(
-                        crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT),
-                    )
-                    margin_vertical = context.get_px_value(
-                        crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
-                    )
-                    context.image = cv2.imread(process_file.name)
-                    if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                        crop(context, round(margin_horizontal), round(margin_vertical))
-                        process_file = tempfile.NamedTemporaryFile(  # pylint: disable=consider-using-with
-                            suffix=".png",
+                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as split_file:
+                        await call(
+                            [
+                                *CONVERT,
+                                "-crop",
+                                (
+                                    f"{vertical_value - vertical_margin - last_x}x"
+                                    f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}"
+                                ),
+                                "+repage",
+                                image,
+                                split_file.name,
+                            ],
                         )
-                        cv2.imwrite(process_file.name, context.image)
+                        last_x = vertical_value + vertical_margin
+
+                        if re.match(r"[0-9]+\.[0-9]+", str(destination)):
+                            page, page_pos = (int(e) for e in str(destination).split("."))
+                        else:
+                            page = int(destination)
+                            page_pos = 0
+
                         save(
                             context,
                             root_folder,
-                            Path(process_file.name),
-                            f"{context.get_process_count()}-crop",
+                            Path(split_file.name),
+                            f"{context.get_process_count()}-split",
                         )
-                    if page not in append:
-                        append[page] = []
-                    append[page].append({"file": process_file, "pos": page_pos})
+                        crop_config = context.config["args"].setdefault("crop", {})
+                        margin_horizontal = context.get_px_value(
+                            crop_config.setdefault("margin_horizontal", schema.MARGIN_HORIZONTAL_DEFAULT),
+                        )
+                        margin_vertical = context.get_px_value(
+                            crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
+                        )
+                        context.image = cv2.imread(split_file.name)
+                        if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
+                            crop(context, round(margin_horizontal), round(margin_vertical))
+                            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as crop_file:
+                                cv2.imwrite(crop_file.name, context.image)
+                                save(
+                                    context,
+                                    root_folder,
+                                    Path(crop_file.name),
+                                    f"{context.get_process_count()}-crop",
+                                )
+                                processed_file = crop_file
+                        else:
+                            processed_file = split_file
+                        if page not in append:
+                            append[page] = []
+                        append[page].append({"file": processed_file, "pos": page_pos})
                 number += 1
             last_y = horizontal_value + horizontal_margin
         process_count = context.process_count

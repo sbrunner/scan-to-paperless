@@ -252,7 +252,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'assisted-split-{type_}-5.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'assisted-split-{type_}-5.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -333,7 +333,7 @@ async def test_assisted_split_join_full() -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'assisted-split-join-2.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'assisted-split-join-2.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -475,7 +475,7 @@ async def test_full(progress) -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'all-2.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'all-2.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -529,7 +529,7 @@ async def test_credit_card_full() -> None:
         ],
     )
     print(
-        f"Compare '{str(Path('/results') / f'{root_folder.name}.png')}' with expected image 'credit-card-1.expected.png'.",
+        f"Compare '{Path('/results') / f'{root_folder.name}.png'!s}' with expected image 'credit-card-1.expected.png'.",
     )
     check_image_file(
         str(root_folder),
@@ -607,7 +607,7 @@ async def test_qr_code(name) -> None:
     await add_code.add_codes(Path(__file__).parent / f"{name}.pdf", Path(f"/results/{name}.pdf"))
     root_folder = Path("/results/qrcode")
     for page in range(2):
-        subprocess.run(
+        subprocess.run(  # noqa: ASYNC221
             [
                 "gm",
                 "convert",
@@ -697,7 +697,7 @@ async def test_multi_code() -> None:
     )
     root_folder = Path("/results/qrcode")
     for page in range(3):
-        subprocess.run(
+        subprocess.run(  # noqa: ASYNC221
             [
                 "gm",
                 "convert",
@@ -746,7 +746,7 @@ async def test_tiff_jupyter() -> None:
     assert step["sources"] == ["/results/tiff/image-1.png"]
     assert [p for p in root_folder.rglob("*.tiff")] == [root_folder / "source/image-1.tiff"]
 
-    with open("/results/tiff/jupyter/jupyter.ipynb") as f:
+    with open("/results/tiff/jupyter/jupyter.ipynb") as f:  # noqa: ASYNC230
         nb = nbformat.read(f, as_version=4)
     ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
     ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
