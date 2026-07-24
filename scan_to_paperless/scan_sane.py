@@ -92,7 +92,7 @@ def _all_options(device: sane.SaneDev) -> None:
             value = getattr(device, name)
             if value is not None:
                 print(f"Default value: {value}")
-        except:  # pylint: disable=bare-except
+        except Exception:  # noqa: S110, BLE001  # pylint: disable=broad-exception-caught
             pass
         print()
 
@@ -249,7 +249,7 @@ def _main() -> None:
                         sys.exit(1)
                     try:
                         setattr(device, name, typed_value)
-                    except:  # pylint: disable=bare-except
+                    except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
                         print(f"{name}, is not supported by this device")
                         sys.exit(1)
                     break

@@ -607,7 +607,7 @@ async def test_qr_code(name) -> None:
     await add_code.add_codes(Path(__file__).parent / f"{name}.pdf", Path(f"/results/{name}.pdf"))
     root_folder = Path("/results/qrcode")
     for page in range(2):
-        subprocess.run(
+        subprocess.run(  # noqa: ASYNC221
             [
                 "gm",
                 "convert",
@@ -697,7 +697,7 @@ async def test_multi_code() -> None:
     )
     root_folder = Path("/results/qrcode")
     for page in range(3):
-        subprocess.run(
+        subprocess.run(  # noqa: ASYNC221
             [
                 "gm",
                 "convert",
@@ -746,7 +746,7 @@ async def test_tiff_jupyter() -> None:
     assert step["sources"] == ["/results/tiff/image-1.png"]
     assert [p for p in root_folder.rglob("*.tiff")] == [root_folder / "source/image-1.tiff"]
 
-    with open("/results/tiff/jupyter/jupyter.ipynb") as f:
+    with open("/results/tiff/jupyter/jupyter.ipynb") as f:  # noqa: ASYNC230
         nb = nbformat.read(f, as_version=4)
     ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
     ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
