@@ -214,16 +214,16 @@ class Context:
         if auto_mask_config is not None:
             assert self.image is not None
 
-            sam3_config: schema.Sam3 = auto_mask_config.get("sam3", {})
-            if sam3_config.get("enabled", schema.SAM3_ENABLED_DEFAULT):
+            sam3_config: schema.Sam3 = auto_mask_config.setdefault("sam3", {})
+            if sam3_config.setdefault("enabled", schema.SAM3_ENABLED_DEFAULT):
                 image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
                 mask = await anyio.to_thread.run_sync(
                     run_sam3_inference,
                     Image.fromarray(image_rgb, mode="RGB"),
-                    sam3_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
-                    sam3_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),
-                    sam3_config.get("scale", schema.SAM3_SCALE_DEFAULT),
+                    sam3_config.setdefault("prompt", schema.SAM3_PROMPT_DEFAULT),
+                    sam3_config.setdefault("threshold", schema.SAM3_THRESHOLD_DEFAULT),
+                    sam3_config.setdefault("scale", schema.SAM3_SCALE_DEFAULT),
                 )
 
                 inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)

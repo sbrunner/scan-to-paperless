@@ -1554,15 +1554,15 @@ async def transform(
         sam_test_configs = config["args"].setdefault("sam_test", schema.SAM_TEST_CONFIGURATIONS_DEFAULT)
         if sam_test_configs and context.image is not None and context.mask is not None:
             for test_name, test_config in sam_test_configs.items():
-                if not test_config.get("enabled", True):
+                if not test_config.setdefault("enabled", True):
                     continue
                 image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
                 mask = await anyio.to_thread.run_sync(
                     process_utils.run_sam3_inference,
                     Image.fromarray(image_rgb, mode="RGB"),
-                    test_config.get("prompt", schema.SAM3_PROMPT_DEFAULT),
-                    test_config.get("threshold", schema.SAM3_THRESHOLD_DEFAULT),
-                    test_config.get("scale", schema.SAM3_SCALE_DEFAULT),
+                    test_config.setdefault("prompt", schema.SAM3_PROMPT_DEFAULT),
+                    test_config.setdefault("threshold", schema.SAM3_THRESHOLD_DEFAULT),
+                    test_config.setdefault("scale", schema.SAM3_SCALE_DEFAULT),
                 )
                 overlay = draw_mask_overlay(context.image, mask)
                 dest_folder = root_folder / test_name
