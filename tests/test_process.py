@@ -1178,31 +1178,68 @@ async def test_draw_mask_overlay() -> None:
     ],
 )
 async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
-    """Test SAM test configuration execution."""
+    """Test SAM test configuration execution with cache."""
     pytest.importorskip("transformers")
     init_test()
+    root_folder = Path("/tmp/sam-test-output")  # noqa: S108
+    if await root_folder.exists():
+        shutil.rmtree(str(root_folder))
+
     context = process_utils.Context(
         {"args": {"sam_test": {test_name: test_config}}},
         {},
+        root_folder=root_folder,
     )
     context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
     assert context.image is not None
     context.image_name = "sam-page.png"
-    root_folder = Path("/tmp/sam-test-output")  # noqa: S108
-    if await root_folder.exists():
-        shutil.rmtree(str(root_folder))
 
     sam_test_configs = context.config["args"].get("sam_test", {})
     for sam_test_name, sam_test_cfg in sam_test_configs.items():
         if not sam_test_cfg.get("enabled", True):
             continue
+        prompt = sam_test_cfg.get("prompt", "document")
+        threshold = sam_test_cfg.get("threshold", 0.5)
+        scale = sam_test_cfg.get("scale", 4)
+
+        # First run: run inference and save to cache
         image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
         mask = await anyio.to_thread.run_sync(
             process_utils.run_sam3_inference,
             Image.fromarray(image_rgb, mode="RGB"),
-            sam_test_cfg.get("prompt", "document"),
-            sam_test_cfg.get("threshold", 0.5),
+            prompt,
+            threshold,
+            scale,
         )
+
+        await process_utils.save_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+            mask,
+        )
+
+        # Verify cache files exist
+        cache_dir = root_folder / "sam3"
+        mask_path = cache_dir / context.image_name
+        yaml_path = cache_dir / f"{context.image_name}.yaml"
+        assert await mask_path.exists()
+        assert await yaml_path.exists()
+
+        # Verify can load from cache
+        loaded_mask = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+        )
+        assert loaded_mask is not None
+        assert np.array_equal(mask, loaded_mask)
+
+        # Generate and save overlay (original behavior)
         overlay = process.draw_mask_overlay(context.image, mask)
 
         dest_folder = root_folder / sam_test_name
@@ -1216,5 +1253,35 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         assert await file_path.exists()
         # Check alpha channel is not present (BGR image)
         assert overlay.shape[2] == 3
+
+        # Verify cache miss with different params
+        different_cache = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            "different_prompt",
+            scale,
+            threshold,
+        )
+        assert different_cache is None
+
+        # Verify cache miss with different scale
+        different_scale = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            2.0,
+            threshold,
+        )
+        assert different_scale is None
+
+        # Verify cache miss with different threshold
+        different_threshold = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            0.9,
+        )
+        assert different_threshold is None
 
     shutil.rmtree(str(root_folder))

@@ -351,20 +351,42 @@ context.config["args"]["sam_test"] = {_pretty_repr(context.config["args"].get("s
 
 sam_test_configs = context.config["args"].get("sam_test", {{}})
 if sam_test_configs:
-    from scan_to_paperless.process_utils import run_sam3_inference
+    from scan_to_paperless.process_utils import load_sam3_cache, save_sam3_cache, run_sam3_inference
 
     for test_name, test_config in sam_test_configs.items():
         if not test_config.get("enabled", True):
             continue
         print(f"Running SAM test: {{test_name}}")
-        image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
-        mask = await anyio.to_thread.run_sync(
-            run_sam3_inference,
-            Image.fromarray(image_rgb, mode="RGB"),
-            test_config.get("prompt", "document"),
-            test_config.get("threshold", 0.5),
-            test_config.get("scale", 4),
+        prompt = test_config.get("prompt", "document")
+        threshold = test_config.get("threshold", 0.5)
+        scale = test_config.get("scale", 4)
+
+        cached_mask = await load_sam3_cache(
+            context.root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
         )
+        if cached_mask is not None:
+            mask = cached_mask
+        else:
+            image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+            mask = await anyio.to_thread.run_sync(
+                run_sam3_inference,
+                Image.fromarray(image_rgb, mode="RGB"),
+                prompt,
+                threshold,
+                scale,
+            )
+            await save_sam3_cache(
+                context.root_folder,
+                context.image_name,
+                prompt,
+                scale,
+                threshold,
+                mask,
+            )
         overlay = process.draw_mask_overlay(context.image, mask)
         context.display_image(overlay)
 else:
