@@ -1224,7 +1224,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         # Verify cache files exist
         cache_dir = root_folder / "sam3"
         mask_path = cache_dir / context.image_name
-        yaml_path = cache_dir / f"{context.image_name}.yaml"
+        yaml_path = cache_dir / f"{Path(context.image_name).stem}.yaml"
         assert await mask_path.exists()
         assert await yaml_path.exists()
 

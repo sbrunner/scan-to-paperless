@@ -81,7 +81,7 @@ async def save_sam3_cache(
         async with await anyio.open_file(str(mask_path), "wb") as file:
             await file.write(buffer.tobytes())
 
-    yaml_path = cache_dir / f"{image_name}.yaml"
+    yaml_path = cache_dir / f"{Path(image_name).stem}.yaml"
     meta = {"prompt": prompt, "scale": scale, "threshold": threshold}
     yaml = YAML()
     yaml.default_flow_style = False
@@ -103,7 +103,7 @@ async def load_sam3_cache(
         return None
     cache_dir = root_folder / _SAM3_CACHE_DIR
     mask_path = cache_dir / image_name
-    yaml_path = cache_dir / f"{image_name}.yaml"
+    yaml_path = cache_dir / f"{Path(image_name).stem}.yaml"
 
     if not await mask_path.exists() or not await yaml_path.exists():
         return None
