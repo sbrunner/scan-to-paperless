@@ -1492,7 +1492,7 @@ r""" Default value of the field path 'SAM3 prompt' """
 
 
 
-SAM3_SCALE_DEFAULT = 4
+SAM3_SCALE_DEFAULT = 8
 r""" Default value of the field path 'SAM3 scale' """
 
 
@@ -1577,7 +1577,7 @@ class Sam3(TypedDict, total=False):
 
     Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size.
 
-    default: 4
+    default: 8
     """
 
 
