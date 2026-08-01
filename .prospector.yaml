@@ -22,7 +22,6 @@ pylint:
 mypy:
   options:
     python-version: '3.12'
-    exclude: 'zxingcpp'
 
 ruff:
   options:
