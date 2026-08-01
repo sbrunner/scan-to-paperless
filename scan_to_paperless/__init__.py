@@ -1,3 +1,5 @@
+# Copyright (c) 2018-2026, Stéphane Brunner
+
 """The scan to Paperless main module."""
 
 import os

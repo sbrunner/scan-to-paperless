@@ -1,3 +1,5 @@
+# Copyright (c) 2018-2026, Stéphane Brunner
+
 """Utility functions and context used in the process."""
 
 import io

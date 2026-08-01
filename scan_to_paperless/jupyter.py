@@ -1,3 +1,5 @@
+# Copyright (c) 2018-2026, Stéphane Brunner
+
 """Functions used to generate a Jupyter notebook from the transform."""
 
 from typing import TYPE_CHECKING, Any
