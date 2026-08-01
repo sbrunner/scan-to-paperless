@@ -94,6 +94,12 @@ default = "present"
 [tool.pytest.ini_options]
 pytest_plugins = ["pytest_profiling"]
 
+[tool.mypy]
+
+[[tool.mypy.overrides]]
+module = "zxingcpp"
+follow_imports = "skip"
+
 [project]
 dynamic = ["dependencies", "version"]
 name = "scan-to-paperless"
