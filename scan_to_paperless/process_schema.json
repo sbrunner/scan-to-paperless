@@ -728,7 +728,7 @@
               },
               "scale": {
                 "type": "number",
-                "default": 4,
+                "default": 8,
                 "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.",
                 "title": "SAM test scale"
               }
