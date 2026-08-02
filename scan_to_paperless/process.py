@@ -2059,8 +2059,10 @@ async def split(
                             [
                                 *CONVERT,
                                 "-crop",
-                                f"{vertical_value - vertical_margin - last_x}x"
-                                f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
+                                (
+                                    f"{vertical_value - vertical_margin - last_x}x"
+                                    f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}"
+                                ),
                                 "+repage",
                                 image,
                                 process_file.name,
