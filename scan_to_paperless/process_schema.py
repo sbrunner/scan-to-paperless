@@ -1517,7 +1517,7 @@ r""" Default value of the field path 'SAM test configuration prompt' """
 
 
 
-SAM_TEST_SCALE_DEFAULT = 4
+SAM_TEST_SCALE_DEFAULT = 8
 r""" Default value of the field path 'SAM test configuration scale' """
 
 
@@ -1618,7 +1618,7 @@ class SamTestConfiguration(TypedDict, total=False):
 
     Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.
 
-    default: 4
+    default: 8
     """
 
 

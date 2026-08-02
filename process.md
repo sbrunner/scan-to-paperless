@@ -217,4 +217,4 @@
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/enabled"></a>**`enabled`** *(boolean)*: Enable this SAM test. Default: `true`.
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
-      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/scale"></a>**`scale`** *(number)*: Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size. Default: `4`.
+      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/scale"></a>**`scale`** *(number)*: Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size. Default: `8`.
