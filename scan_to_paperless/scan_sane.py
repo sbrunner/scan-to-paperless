@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Copyright (c) 2018-2026, Stéphane Brunner
 
 """
 A simple sane frontend to scan images from the command line.
