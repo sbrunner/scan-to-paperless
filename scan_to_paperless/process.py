@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) 2018-2026, Stéphane Brunner
 
 """Process the scanned documents."""
 
@@ -2059,8 +2060,10 @@ async def split(
                             [
                                 *CONVERT,
                                 "-crop",
-                                f"{vertical_value - vertical_margin - last_x}x"
-                                f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}",
+                                (
+                                    f"{vertical_value - vertical_margin - last_x}x"
+                                    f"{horizontal_value - horizontal_margin - last_y}+{last_x}+{last_y}"
+                                ),
                                 "+repage",
                                 image,
                                 process_file.name,

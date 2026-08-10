@@ -1,3 +1,5 @@
+# Copyright (c) 2018-2026, Stéphane Brunner
+
 """Add the QRCode and the BarCodes to a PDF in an additional page."""
 
 import argparse
