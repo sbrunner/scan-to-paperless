@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Stéphane Brunner
 """Test the Status class state transitions."""
 
 import io
