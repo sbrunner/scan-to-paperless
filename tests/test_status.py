@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Stéphane Brunner
+
 import asyncio
 import os
 

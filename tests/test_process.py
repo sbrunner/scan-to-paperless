@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Stéphane Brunner
+
 import os
 import re
 import shutil

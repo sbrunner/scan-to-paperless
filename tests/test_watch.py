@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Stéphane Brunner
 """Integration tests for Status filesystem watching via asyncinotify."""
 
 import asyncio

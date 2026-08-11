@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Stéphane Brunner
+
 from scan_to_paperless.add_code import _is_rectangular
 
 
