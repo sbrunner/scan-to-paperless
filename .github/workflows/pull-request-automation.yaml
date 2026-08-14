@@ -5,6 +5,9 @@ on:
     types:
       - opened
       - reopened
+permissions:
+  contents: read
+
 jobs:
   auto-merge:
     name: Auto reviews pull requests from bots
