@@ -3354,21 +3354,21 @@ files = [
 
 [[package]]
 name = "opencv-contrib-python-headless"
-version = "4.14.0.94"
+version = "5.0.0.93"
 description = "Wrapper package for OpenCV python bindings."
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-macosx_13_0_arm64.whl", hash = "sha256:5f3b3eaa8390356da6b82828b6d63af10b24fa9ffdc056c5aceedc5457dad602"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-macosx_14_0_x86_64.whl", hash = "sha256:e122e46efe6abf0023d297cb5691a56dfd7395cdff794711e36ea508f128d0e4"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:0e7ae8c2cda93d2a2ae790d75f226afefb98b3755e9f5773a84d250171f3a1e2"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4c0a7f18921a010b7418b2059d934ab9206b20cc1b13bd9eac97307f5d973c3e"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:2a821a02a87a10961c9e37beffd22e81458d996ca80902080e6d737e3c719f1a"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:3ee9718fc1eb2d4439c72ec6ad65831ff6d0802ff6eacab834905d67686f2a38"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-win32.whl", hash = "sha256:69d97639c66454c69fbabf919cd163c2241930bca753c317c922f7cb4c7a67b6"},
-    {file = "opencv_contrib_python_headless-4.14.0.94-cp37-abi3-win_amd64.whl", hash = "sha256:498ee35b13a4f1274564634d4d45ed19edd7949db8b548b84fcbabacc54aa2ed"},
-    {file = "opencv_contrib_python_headless-4.14.0.94.tar.gz", hash = "sha256:6cd98a20010c80bf9e6a9cff6189dd2c10bd111fb0aa4d5c6361389514a0ff6c"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-macosx_13_0_arm64.whl", hash = "sha256:bf1e2b3c502b4fbe7b06e307bd15c4e7bea7da8895de19c189db01d53062f997"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-macosx_14_0_x86_64.whl", hash = "sha256:68eb7b803f68998552a83b5f3c69bfb1c7d6c114dc30f828657bddc7ca68573a"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:c035e12b6078b3351ad577e90a4ff4ead74155fa5470eb8df8f5b54a8ce7727f"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:2ff190c4ebfa2839bdcaff1810061bc82f9ce5cf37e28953fb57fa5ed519b9d1"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:01331ae1a65a21d81310b5584900f73c3012ab4bdcf6aa26085c1870eea45da8"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:63ddadd47e36fbc903d5ac141d5c90bd305a8044188dd4936a73de80007c9e6c"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-win32.whl", hash = "sha256:ca47e569680df6eb7317b54f463bc766832d3d87854988168673bb0c52d6d9d4"},
+    {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl", hash = "sha256:72605e3ae78f66592705b1abe62e60f57dd9050787fdd99711b85a02760d5259"},
+    {file = "opencv_contrib_python_headless-5.0.0.93.tar.gz", hash = "sha256:6a8c34de905f59b038f6ab0475e73fb0a0f345c3582ec3aeaeb1c0912e80cddb"},
 ]
 
 [package.dependencies]
@@ -6110,4 +6110,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,!=3.14.1,<3.15"
-content-hash = "dc6579e0649c8c78311d9b2f8a6d6364bb4a5004a35849df021a7a93a3c910bc"
+content-hash = "fa80f4c28422a897244af35f0ac3c0bd206a432041d0893b155d650c846d374d"
