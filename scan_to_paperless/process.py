@@ -949,7 +949,9 @@ def find_lines(
     if lines is None:
         return []
 
-    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
+    if lines.ndim == 3:
+        lines = lines[:, 0, :]
+    new_lines = [line for line in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]

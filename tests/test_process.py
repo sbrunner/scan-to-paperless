@@ -155,25 +155,23 @@ def init_test() -> None:
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("type_", "limit", "better_value", "cut_white"),
+    ("type_", "limit", "cut_white"),
     [
         pytest.param(
             "lines",
-            {"name": "VL0", "type": "line detection", "value": 979, "vertical": True, "margin": 0},
-            979,
+            {"name": "VL2", "type": "line detection", "value": 979, "vertical": True, "margin": 0},
             240,
             id="lines",
         ),
         pytest.param(
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 864, "vertical": True, "margin": 0},
-            864,
             200,
             id="contour",
         ),
     ],
 )
-async def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
+async def test_assisted_split_full(type_, limit, cut_white) -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path(f"/results/assisted-split-full-{type_}")
@@ -220,7 +218,6 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
     limits = [item for item in limits if item["name"] == limit["name"]]
     assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
-    config["assisted_split"][0]["limits"][0]["value"] = better_value
     print("Starting split")
     step = await process.split(config, step, root_folder)
     print("End of split")
