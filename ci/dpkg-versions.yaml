@@ -168,7 +168,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.7
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
-  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.5
+  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.6
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33ubuntu0.1
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33ubuntu0.1
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
@@ -472,7 +472,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libpcsclite1: 1.9.5-3ubuntu1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.7
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
-  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.5
+  ubuntu_22_04/libpng16-16: 1.6.37-3ubuntu0.6
   ubuntu_22_04/libpolkit-agent-1-0: 0.105-33ubuntu0.1
   ubuntu_22_04/libpolkit-gobject-1-0: 0.105-33ubuntu0.1
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
