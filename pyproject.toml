@@ -72,7 +72,7 @@ reportlab = { version = "4.4.10", optional = true }
 weasyprint = { version = "69.0", optional = true }
 cffi = { version = "1.17.1", optional = true }
 pikepdf = { version = "9.8.1", optional = true }
-lxml= { version = "6.1.1", optional = true }
+lxml= { version = "6.1.2", optional = true }
 zxing-cpp = { version = "2.3.0", optional = true }
 pyperclip = "1.9.0"
 deepmerge = "2.0"
@@ -132,7 +132,7 @@ types-requests = "2.32.4.20260324"
 nbconvert = "7.17.1"
 ipykernel = "6.29.5"
 brotli = "1.2.0"
-brotlicffi = "1.2.0.1"
+brotlicffi = "1.2.0.2"
 fonttools = "4.61.1"
 urllib3 = "2.7.0"
 
