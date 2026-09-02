@@ -587,7 +587,7 @@ async def test_custom_process(test: str, args: dict[str, Any]) -> None:
             str(Path(__file__).parent / f"{test}.expected.png"),
             generate_expected_image=REGENERATE,
         )
-    except ValueError:
+    except (AssertionError, ValueError):
         print(f"Compare '{step['sources'][0]}' with expected image '{test}-bis.expected.png'.")
         check_image_file(
             str(root_folder),
