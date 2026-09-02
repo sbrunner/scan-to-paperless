@@ -475,7 +475,7 @@ files = [
     {file = "brotli-1.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:1ce223652fd4ed3eb2b7f78fbea31c52314baecfac68db44037bb4167062a937"},
     {file = "brotli-1.2.0.tar.gz", hash = "sha256:e310f77e41941c13340a95976fe66a8a95b01e783d430eeaf7a2f87e0a57dd0a"},
 ]
-markers = {main = "platform_python_implementation == \"CPython\" and extra == \"process\""}
+markers = {main = "extra == \"process\" and platform_python_implementation == \"CPython\""}
 
 [[package]]
 name = "brotlicffi"
@@ -501,7 +501,7 @@ files = [
     {file = "brotlicffi-1.2.0.2-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:5eb5563173afb92c9111b180349ff17d7c83c79febabadca5de983b552565c3c"},
     {file = "brotlicffi-1.2.0.2.tar.gz", hash = "sha256:5e0fbd13644cf1f6015e75fa5e0ad8fdce1048d9c9ff90b0ce826174b249ee35"},
 ]
-markers = {main = "platform_python_implementation != \"CPython\" and extra == \"process\""}
+markers = {main = "extra == \"process\" and platform_python_implementation != \"CPython\""}
 
 [package.dependencies]
 cffi = [
@@ -2582,7 +2582,7 @@ files = [
     {file = "networkx-3.5-py3-none-any.whl", hash = "sha256:0030d386a9a06dee3565298b4a734b68589749a544acbb6c412dc9e2489ec6ec"},
     {file = "networkx-3.5.tar.gz", hash = "sha256:d4c6f9cf81f52d69230866796b82afbccdec3db7ae4fbd1b65ea750feed50037"},
 ]
-markers = {main = "python_version >= \"3.11\" and (extra == \"process\" or extra == \"jupyter\")", dev = "python_version >= \"3.11\""}
+markers = {main = "(extra == \"process\" or extra == \"jupyter\") and python_version >= \"3.11\"", dev = "python_version >= \"3.11\""}
 
 [package.extras]
 default = ["matplotlib (>=3.8)", "numpy (>=1.25)", "pandas (>=2.0)", "scipy (>=1.11.2)"]
@@ -3427,15 +3427,15 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pypdf"
-version = "6.15.0"
+version = "6.16.1"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"process\""
 files = [
-    {file = "pypdf-6.15.0-py3-none-any.whl", hash = "sha256:14e001d6504822cb1ca9c7ed9a69bccb320f59b320730f55af804361abe4d5ee"},
-    {file = "pypdf-6.15.0.tar.gz", hash = "sha256:d39c4d955a76409284a905e2d65b40076d77ab76129e0faaeeb6612403ecfc79"},
+    {file = "pypdf-6.16.1-py3-none-any.whl", hash = "sha256:63fec31c4092ae50b6729beedcb469055b60d20c834bde1c402df241f371f644"},
+    {file = "pypdf-6.16.1.tar.gz", hash = "sha256:c4d1b43ddae921387321cf63936cd16a7743b91d2da92f165c149a195c972ba9"},
 ]
 
 [package.dependencies]
@@ -3645,7 +3645,7 @@ files = [
     {file = "pywin32-310-cp39-cp39-win32.whl", hash = "sha256:851c8d927af0d879221e616ae1f66145253537bbdd321a77e8ef701b443a9a1a"},
     {file = "pywin32-310-cp39-cp39-win_amd64.whl", hash = "sha256:96867217335559ac619f00ad70e513c0fcf84b8a3af9fc2bba3b59b97da70475"},
 ]
-markers = {main = "platform_python_implementation != \"PyPy\" and extra == \"process\" and sys_platform == \"win32\"", dev = "platform_python_implementation != \"PyPy\" and sys_platform == \"win32\""}
+markers = {main = "sys_platform == \"win32\" and platform_python_implementation != \"PyPy\" and extra == \"process\"", dev = "sys_platform == \"win32\" and platform_python_implementation != \"PyPy\""}
 
 [[package]]
 name = "pyyaml"
@@ -4511,7 +4511,7 @@ files = [
     {file = "tifffile-2025.6.1-py3-none-any.whl", hash = "sha256:ff7163f1aaea519b769a2ac77c43be69e7d83e5b5d5d6a676497399de50535e5"},
     {file = "tifffile-2025.6.1.tar.gz", hash = "sha256:63cff7cf7305c26e3f3451c0b05fd95a09252beef4f1663227d4b70cb75c5fdb"},
 ]
-markers = {main = "python_version >= \"3.11\" and (extra == \"process\" or extra == \"jupyter\")", dev = "python_version >= \"3.11\""}
+markers = {main = "(extra == \"process\" or extra == \"jupyter\") and python_version >= \"3.11\"", dev = "python_version >= \"3.11\""}
 
 [package.dependencies]
 numpy = "*"
@@ -5239,4 +5239,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "616267f078fe79d70da275be60b97bdc14fba1c59b226c705667161bcc5314b4"
+content-hash = "d1fab80ef857cb199a58c9aa4451e3cb04aaadfcf733c4df5cb591a67a3418bf"
