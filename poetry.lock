@@ -1248,14 +1248,14 @@ files = [
 
 [[package]]
 name = "deepmerge"
-version = "2.1.0"
+version = "3.0"
 description = "A toolset for deeply merging Python dictionaries."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "deepmerge-2.1.0-py3-none-any.whl", hash = "sha256:8f148339a91d680a75ecb74ade235d9e759a93df373a0b04e9d31c8666cfeb75"},
-    {file = "deepmerge-2.1.0.tar.gz", hash = "sha256:07ca7a7b8935df596c512fa8161877c0487ac61f691c07766e7d71d2b23bdd2f"},
+    {file = "deepmerge-3.0-py3-none-any.whl", hash = "sha256:c8541c3e186dc88d19a5513ad3a0b2d0b22beaa780969fc0c13b995a64265365"},
+    {file = "deepmerge-3.0.tar.gz", hash = "sha256:14ed69f063de64b7743985c732ccff5d6c34ff4560946e7fbfd99086b853b9ce"},
 ]
 
 [package.extras]
@@ -6282,4 +6282,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,!=3.14.1,<3.15"
-content-hash = "c3d146e11625b07ef719aecd89a36d4931aa8fe06337a235a582bb91c61230d6"
+content-hash = "24279e7db78e1eb82469c4b7f6d9b2ab01dd0322d327bc91d52cc77c0b2a17ef"
