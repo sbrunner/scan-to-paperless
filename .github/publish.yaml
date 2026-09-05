@@ -1,4 +1,11 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/tag-publish/1.2.2/tag_publish/schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/tag-publish/1.2.6/tag_publish/schema.json
+
+transformers:
+  branch_to_version:
+    - from_re: master
+      to: latest
+    - from_re: test
+      to: test
 
 docker:
   images:
