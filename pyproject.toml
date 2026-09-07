@@ -71,8 +71,8 @@ c2cwsgiutils = { version = "6.1.10", extras = ["test_images"] }
 types-requests = "2.33.0.20260712"
 nbconvert = "7.17.1"
 ipykernel = "7.3.0"
-ruff = "0.16.1"
-pylint = "4.0.6"
+ruff = "0.16.6"
+pylint = "4.0.7"
 
 [tool.poetry-dynamic-versioning]
 enable = true
