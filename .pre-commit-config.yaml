@@ -69,7 +69,7 @@ repos:
       - id: workflows-require-timeout
       - id: poetry2-lock
         additional_dependencies:
-          - poetry==2.4.1 # pypi
+          - poetry==2.5.1 # pypi
       - id: canonicalize
       - id: prospector-to-ruff
         additional_dependencies:
@@ -89,8 +89,8 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@3.9.6 # npm
-          - prettier-plugin-sh@0.19.0 # npm
+          - prettier@3.9.9 # npm
+          - prettier-plugin-sh@0.20.0 # npm
           - prettier-plugin-toml@2.0.6 # npm
           - '@prettier/plugin-xml@0.12.0' # npm
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -98,7 +98,7 @@ repos:
     hooks:
       - id: shellcheck
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.38.0
+    rev: 0.38.2
     hooks:
       - id: check-github-workflows
       - id: check-github-actions
@@ -121,7 +121,7 @@ repos:
           )
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.5
+    rev: v0.16.8
     hooks:
       - id: ruff-format
         args:
@@ -154,8 +154,8 @@ repos:
         additional_dependencies:
           - prospector-profile-duplicated==1.12.0 # pypi
           - prospector-profile-utils==1.27.0 # pypi
-          - pylint[spelling]==4.0.7 # pypi
-          - ruff==0.16.6 # pypi
+          - pylint[spelling]==4.0.9 # pypi
+          - ruff==0.16.8 # pypi
       - id: prospector
         args:
           - --direct-tool-stdout
@@ -164,15 +164,15 @@ repos:
           - --profile=utils:pre-commit
         additional_dependencies:
           - prospector-profile-utils==1.27.0 # pypi
-          - ruff==0.16.6 # pypi
-          - pylint[spelling]==4.0.7 # pypi
+          - ruff==0.16.8 # pypi
+          - pylint[spelling]==4.0.9 # pypi
         exclude: |-
           (?x)^(
             scan_to_paperless/config\.py
             |scan_to_paperless/process_schema\.py
           )$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 44.50.3
+    rev: 44.112.3
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
