@@ -134,7 +134,7 @@ ipykernel = "6.29.5"
 brotli = "1.2.0"
 brotlicffi = "1.2.0.2"
 fonttools = "4.61.1"
-urllib3 = "2.7.0"
+urllib3 = "2.8.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
