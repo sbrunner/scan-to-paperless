@@ -90,7 +90,7 @@ repos:
       - id: prettier
         additional_dependencies:
           - prettier@3.9.9 # npm
-          - prettier-plugin-sh@0.20.0 # npm
+          - prettier-plugin-sh@0.20.2 # npm
           - prettier-plugin-toml@3.0.2 # npm
           - '@prettier/plugin-xml@0.12.0' # npm
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -121,7 +121,7 @@ repos:
           )
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.8
+    rev: v0.16.9
     hooks:
       - id: ruff-format
         args:
@@ -155,7 +155,7 @@ repos:
           - prospector-profile-duplicated==1.12.0 # pypi
           - prospector-profile-utils==1.27.0 # pypi
           - pylint[spelling]==4.0.9 # pypi
-          - ruff==0.16.8 # pypi
+          - ruff==0.16.9 # pypi
       - id: prospector
         args:
           - --direct-tool-stdout
@@ -164,7 +164,7 @@ repos:
           - --profile=utils:pre-commit
         additional_dependencies:
           - prospector-profile-utils==1.27.0 # pypi
-          - ruff==0.16.8 # pypi
+          - ruff==0.16.9 # pypi
           - pylint[spelling]==4.0.9 # pypi
         exclude: |-
           (?x)^(
@@ -172,7 +172,7 @@ repos:
             |scan_to_paperless/process_schema\.py
           )$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 44.112.3
+    rev: 44.115.1
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
