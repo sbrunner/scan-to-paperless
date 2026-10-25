@@ -132,7 +132,7 @@ types-requests = "2.32.4.20260324"
 nbconvert = "7.17.2"
 ipykernel = "6.29.5"
 brotli = "1.2.1"
-brotlicffi = "1.2.0.2"
+brotlicffi = "1.2.1.0"
 fonttools = "4.61.1"
 urllib3 = "2.8.0"
 
