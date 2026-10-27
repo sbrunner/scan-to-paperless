@@ -62,7 +62,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_22_04/libavahi-common3: 0.8-5ubuntu5.5
   ubuntu_22_04/libbcprov-java: 1.68-5
   ubuntu_22_04/libblkid1: 2.37.2-4ubuntu3.6
-  ubuntu_22_04/libbrotli1: 1.0.9-2build6
+  ubuntu_22_04/libbrotli1: 1.0.9-2ubuntu0.1
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5ubuntu0.1
   ubuntu_22_04/libc-bin: 2.35-0ubuntu3.15
@@ -366,7 +366,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_22_04/libavahi-common3: 0.8-5ubuntu5.5
   ubuntu_22_04/libbcprov-java: 1.68-5
   ubuntu_22_04/libblkid1: 2.37.2-4ubuntu3.6
-  ubuntu_22_04/libbrotli1: 1.0.9-2build6
+  ubuntu_22_04/libbrotli1: 1.0.9-2ubuntu0.1
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5ubuntu0.1
   ubuntu_22_04/libc-bin: 2.35-0ubuntu3.15
