@@ -16,14 +16,13 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
     'Typing :: Typed',
 ]
 authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["ruamel.yaml", "argcomplete", "lxml", "pyperclip", "deepmerge", "typing-extensions", "aiofiles", "types-aiofiles", "polygon-math", "aiohttp", "sentry-sdk", "pillow"]
 
 [project.urls]
@@ -44,7 +43,7 @@ jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
 sane = ["python-sane"]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 110
 
 [tool.ruff.lint.pydocstyle]
@@ -58,7 +57,7 @@ version = "0.0.0"
 
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
-python = ">=3.10,<3.14"
+python = ">=3.11,<3.14"
 numpy = { version = "2.2.6", optional = true }
 scikit-image = { version = "0.25.2", optional = true }
 opencv-contrib-python-headless = { version = "4.11.0.86", optional = true }

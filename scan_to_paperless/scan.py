@@ -162,7 +162,7 @@ def main() -> None:
     This should be shared with the process container in 'source'.""",
         )
         sys.exit(1)
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
     base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
     while base_folder.exists():
         now += datetime.timedelta(seconds=1)
