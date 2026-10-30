@@ -68,6 +68,40 @@
           "description": "The threshold level used in buffer on the blurry image",
           "default": 20,
           "title": "Buffer level"
+        },
+        "sam3": {
+          "$ref": "#/definitions/sam3"
+        }
+      }
+    },
+    "sam3": {
+      "type": "object",
+      "title": "SAM3",
+      "description": "SAM3 auto-mask configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SAM3 mask generation",
+          "title": "SAM3 enabled"
+        },
+        "prompt": {
+          "type": "string",
+          "default": "document",
+          "description": "Text prompt for SAM3 segmentation",
+          "title": "SAM3 prompt"
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Confidence threshold for mask prediction",
+          "default": 0.5,
+          "title": "SAM3 threshold"
+        },
+        "scale": {
+          "type": "number",
+          "default": 8,
+          "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size.",
+          "title": "SAM3 scale"
         }
       }
     },
@@ -622,6 +656,42 @@
               "title": "Consume folder enabled"
             }
           }
+        },
+        "sam_test": {
+          "type": "object",
+          "title": "SAM test configurations",
+          "description": "Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.",
+          "default": {},
+          "additionalProperties": {
+            "type": "object",
+            "title": "SAM test configuration",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable this SAM test",
+                "title": "SAM test enabled"
+              },
+              "prompt": {
+                "type": "string",
+                "default": "document",
+                "description": "Text prompt for SAM3 segmentation",
+                "title": "SAM test prompt"
+              },
+              "threshold": {
+                "type": "number",
+                "default": 0.5,
+                "description": "Confidence threshold for mask prediction",
+                "title": "SAM test threshold"
+              },
+              "scale": {
+                "type": "number",
+                "default": 8,
+                "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.",
+                "title": "SAM test scale"
+              }
+            }
+          }
         }
       }
     },
@@ -677,7 +747,7 @@
       "title": "Merge strategies",
       "description": "The merge strategy to use, see https://deepmerge.readthedocs.io/en/latest/strategies.html#builtin-strategies",
       "properties": {
-        "list": {
+        "for_list": {
           "type": "array",
           "description": "The merge strategy to use on list",
           "default": ["override"],
@@ -686,7 +756,7 @@
           },
           "title": "List"
         },
-        "dict": {
+        "for_dict": {
           "type": "array",
           "description": "The merge strategy to use on dict",
           "default": ["merge"],

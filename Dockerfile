@@ -1,9 +1,10 @@
-FROM ubuntu:24.04 AS upstream
+FROM ubuntu:26.04 AS upstream
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get upgrade --yes \
+    && ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime \
     && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install --assume-yes --no-install-recommends tzdata
 
 FROM upstream AS base-all
@@ -46,10 +47,14 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         libimage-exiftool-perl software-properties-common ghostscript optipng pngquant libzbar0
 
 RUN --mount=type=cache,target=/root/.cache \
-    --mount=type=bind,from=poetry,source=/tmp,target=/tmp \
-    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/tmp/requirements.txt \
+    --mount=type=bind,from=poetry,source=/tmp,target=/requirements \
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends build-essential python3-dev libsane-dev \
+    && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/requirements/requirements.txt \
     && python3 -m pip freeze > /requirements.txt \
-    && mkdir -p /source /destination /scan-codes
+    && mkdir -p /source /destination /scan-codes \
+    && apt-get remove --assume-yes build-essential python3-dev libsane-dev \
+    && apt-get autoremove --assume-yes
 
 VOLUME /source \
     /destination \
@@ -97,22 +102,22 @@ FROM tests-dist AS tests
 
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
-COPY . ./
+COPY pyproject.toml poetry.lock README.md ./
+COPY scan_to_paperless/__init__.py scan_to_paperless/
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --editable .
-
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
-    && apt-get install --assume-yes --no-install-recommends software-properties-common \
-    && add-apt-repository ppa:savoury1/pipewire \
-    && add-apt-repository ppa:savoury1/chromium \
-    && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends chromium-browser npm
+    && apt-get install --assume-yes --no-install-recommends npm \
+        libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 \
+        libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2t64 \
+        libpango-1.0-0 libcairo2 libxfixes3 libxshmfence1 libxxf86vm1 \
+        libxcb-shm0 libxcb-dri3-0 libxcb-glx0 libegl1 libgl1 \
+        libgtk-3-0t64 libgdk-pixbuf-2.0-0 libnss3 libnspr4
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+COPY . ./
 
 FROM base AS all
 

@@ -1,3 +1,6 @@
+default_language_version:
+  python: '3.14'
+
 repos:
   - repo: local
     hooks:
@@ -19,22 +22,20 @@ repos:
             |\.github/publish\.yaml
           )$
   - repo: https://github.com/sbrunner/jsonschema2md2
-    rev: 1.5.2
+    rev: 1.7.0
     hooks:
       - id: jsonschema2md
         files: schema.json
         args:
-          - --pre-commit
           - scan_to_paperless/config_schema.json
           - config.md
       - id: jsonschema2md
         files: schema.json
         args:
-          - --pre-commit
           - scan_to_paperless/process_schema.json
           - process.md
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.12.0 # Use the ref you want to point at
+    rev: 2.13.0 # Use the ref you want to point at
     hooks:
       - id: jsonschema-gentypes
         files: |-
@@ -44,7 +45,7 @@ repos:
             |scan_to_paperless/config_schema\.json
           )$
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: detect-private-key
       - id: check-merge-conflict
@@ -54,17 +55,28 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: end-of-file-fixer
+        exclude: |-
+          (?x)^(
+            scan_to_paperless/process_schema\.py
+            |scan_to_paperless/config\.py
+          )$
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/hooks
-    rev: 1.4.1
+    rev: 1.8.0
     hooks:
       - id: copyright
       - id: workflows-require-timeout
       - id: poetry2-lock
         additional_dependencies:
-          - poetry==2.3.4 # pypi
+          - poetry==2.5.1 # pypi
       - id: canonicalize
+      - id: prospector-to-ruff
+        additional_dependencies:
+          - prospector-profile-duplicated==1.12.0 # pypi
+          - prospector-profile-utils==1.27.0 # pypi
+        args:
+          - --test=utils:tests
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.3
     hooks:
@@ -77,21 +89,16 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@3.5.3 # npm
-          - prettier-plugin-sh@0.17.4 # npm
-          - prettier-plugin-toml@2.0.6 # npm
+          - prettier@3.9.9 # npm
+          - prettier-plugin-sh@0.20.2 # npm
+          - prettier-plugin-toml@3.0.2 # npm
           - '@prettier/plugin-xml@0.12.0' # npm
-        exclude: ^scan_to_paperless/status\.html$
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.2
+    rev: 0.38.2
     hooks:
       - id: check-github-workflows
       - id: check-github-actions
@@ -114,18 +121,23 @@ repos:
           )
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.12
+    rev: v0.16.9
     hooks:
       - id: ruff-format
         args:
           - --line-length=110
+        exclude: |-
+          (?x)^(
+            scan_to_paperless/config\.py
+            |scan_to_paperless/process_schema\.py
+          )$
   - repo: https://github.com/prospector-dev/prospector
-    rev: v1.17.3
+    rev: v1.19.1
     hooks:
       - id: prospector
         args:
           - --profile=utils:pre-commit
-          - --die-on-tool-error
+          - --direct-tool-stdout
           - --output-format=pylint
           - --profile=.prospector.yaml
         exclude: |-
@@ -136,25 +148,34 @@ repos:
             |(^|/)test_[_a-zA-Z0-9]+.py$
             |(^|/)[_a-zA-Z0-9]+_tests?.py$
             |(^|/)tests?.py$
+            |scan_to_paperless/config\.py
+            |scan_to_paperless/process_schema\.py
           )
         additional_dependencies:
-          - prospector-profile-duplicated==1.10.5 # pypi
-          - prospector-profile-utils==1.23.0 # pypi
+          - prospector-profile-duplicated==1.12.0 # pypi
+          - prospector-profile-utils==1.27.0 # pypi
           - pylint[spelling]==4.0.9 # pypi
-          - ruff==0.11.12 # pypi
+          - ruff==0.16.9 # pypi
       - id: prospector
         args:
-          - --die-on-tool-error
+          - --direct-tool-stdout
           - --output-format=pylint
           - --profile=utils:tests
           - --profile=utils:pre-commit
         additional_dependencies:
-          - prospector-profile-utils==1.23.0 # pypi
+          - prospector-profile-utils==1.27.0 # pypi
+          - ruff==0.16.9 # pypi
+          - pylint[spelling]==4.0.9 # pypi
+        exclude: |-
+          (?x)^(
+            scan_to_paperless/config\.py
+            |scan_to_paperless/process_schema\.py
+          )$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 40.36.8
+    rev: 44.115.1
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
-    rev: 1.1.2
+    rev: 1.4.1
     hooks:
       - id: python-versions

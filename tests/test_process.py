@@ -1,18 +1,23 @@
-import os.path
+# Copyright (c) 2026 Stéphane Brunner
+
+import os
 import re
 import shutil
 import subprocess
-from pathlib import Path
 from typing import Any
 
+import anyio
 import cv2
 import nbformat
+import numpy as np
 import pikepdf
 import pytest
 import skimage.color
 import skimage.io
+from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
+from PIL import Image
 
 from scan_to_paperless import add_code, process, process_utils
 
@@ -29,24 +34,26 @@ def test_should_not_commit() -> None:
 
 # @pytest.mark.skip(reason="for test")
 def test_find_lines() -> None:
-    lines = process.find_lines(load_image("limit-lines-1.png"), True, {})
+    lines = process.find_lines(load_image("limit-lines-1.png"), vertical=True, config={})
     assert 1821 in [line[0] for line in lines]
 
 
 # @pytest.mark.skip(reason="for test")
-def test_find_limit_contour() -> None:
+@pytest.mark.asyncio
+async def test_find_limit_contour() -> None:
     context = process_utils.Context({"args": {}}, {})
     context.image = load_image("limit-contour-1.png")
-    contours = process.find_contours(context.image, context, "limit", {})
-    limits = process.find_limit_contour(context.image, True, contours)
+    contours = await process.find_contours(context.image, context, "limit", {})
+    limits = process.find_limit_contour(context.image, vertical=True, contours=contours)
     assert limits == [1589]
 
 
 # @pytest.mark.skip(reason="for test")
-def test_crop() -> None:
+@pytest.mark.asyncio
+async def test_crop() -> None:
     image = load_image("image-1.png")
     root_folder = Path("/results/crop")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     check_image(
         str(root_folder),
         cv2.cvtColor(process_utils.crop_image(image, 100, 0, 100, 300, (255, 255, 255)), cv2.COLOR_BGR2RGB),
@@ -93,10 +100,11 @@ def test_crop() -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_rotate() -> None:
+@pytest.mark.asyncio
+async def test_rotate() -> None:
     image = load_image("image-1.png")
     root_folder = Path("/results/rotate")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     image = process_utils.crop_image(image, 0, 50, 300, 200, (255, 255, 255))
     check_image(
         str(root_folder),
@@ -147,29 +155,27 @@ def init_test() -> None:
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("type_", "limit", "better_value", "cut_white"),
+    ("type_", "limit", "cut_white"),
     [
         pytest.param(
             "lines",
-            {"name": "VL0", "type": "line detection", "value": 979, "vertical": True, "margin": 0},
-            979,
+            {"name": "VL2", "type": "line detection", "value": 979, "vertical": True, "margin": 0},
             240,
             id="lines",
         ),
         pytest.param(
             "contour",
             {"name": "VC0", "type": "contour detection", "value": 864, "vertical": True, "margin": 0},
-            864,
             200,
             id="contour",
         ),
     ],
 )
-async def test_assisted_split_full(type_, limit, better_value, cut_white) -> None:
+async def test_assisted_split_full(type_, limit, cut_white) -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path(f"/results/assisted-split-full-{type_}")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
 
     shutil.copyfile(
         str(Path(__file__).parent / f"limit-{type_}-all-1.png"),
@@ -199,7 +205,7 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
     assert step["name"] == "split"
     images = step["sources"]
     assert len(images) == 1
-    assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
+    assert Path(images[0]).name == Path(config["assisted_split"][0]["image"]).name
     print(f"Compare '{images[0]}' with expected image 'assisted-split-{type_}-1.expected.png'.")
     check_image_file(
         str(root_folder),
@@ -212,7 +218,6 @@ async def test_assisted_split_full(type_, limit, better_value, cut_white) -> Non
     limits = [item for item in limits if item["name"] == limit["name"]]
     assert limits == [limit], limits
     config["assisted_split"][0]["limits"] = limits
-    config["assisted_split"][0]["limits"][0]["value"] = better_value
     print("Starting split")
     step = await process.split(config, step, root_folder)
     print("End of split")
@@ -269,7 +274,7 @@ async def test_assisted_split_join_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/assisted-split-join-full")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
 
     for number in (1, 2):
         shutil.copyfile(
@@ -290,11 +295,11 @@ async def test_assisted_split_join_full() -> None:
         "sources": ["image-1.png", "image-2.png"],
     }
     config_file_name = root_folder / "config.yaml"
-    step = await process.transform(config, step, config_file_name, root_folder)
+    step = await process.transform(config, step, str(config_file_name), root_folder)
     assert step["name"] == "split"
     images = step["sources"]
-    assert os.path.basename(images[0]) == config["assisted_split"][0]["image"]
     assert len(images) == 2
+    assert Path(images[0]).name == Path(config["assisted_split"][0]["image"]).name
     for number, elements in enumerate(
         [
             ({"value": 738, "vertical": True, "margin": 0}, ["-", "1.2"]),
@@ -350,7 +355,7 @@ async def test_assisted_split_booth() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/assisted-split-booth")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
 
     shutil.copyfile(
         str(Path(__file__).parent / "image-1.png"),
@@ -426,13 +431,24 @@ async def test_full(progress) -> None:
     init_test()
     os.environ["PROGRESS"] = progress
     root_folder = Path(f"/results/full-{progress}")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {
         "args": {"level": {"value": 15}, "cut_white": 200},
         "images": [str(Path(__file__).parent / "all-1.png")],
     }
     step = {"sources": [str(Path(__file__).parent / "all-1.png")]}
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
+
+    image_config = config["images_config"]["all-1.png"]
+    assert len(image_config["status"]["size"]) == 2
+    assert image_config["status"]["size"][0] > 0
+    assert image_config["status"]["size"][1] > 0
+    assert len(image_config["status"]["histogram"]["text"]) == 32
+    assert image_config["status"]["histogram"]["current"]["cut_white"] == 200
+    assert "cut_black" in image_config["status"]["histogram"]["suggested"]
+    assert "page_white" in image_config["status"]["auto_mask_hsv"]["suggestions"]
+    assert "deskew" in image_config["status"]
+
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
     check_image_file(
@@ -443,9 +459,9 @@ async def test_full(progress) -> None:
     )
 
     if progress == "TRUE":
-        assert (root_folder / "1-level/all-1.png").exists()
+        assert await (root_folder / "1-level/all-1.png").exists()
     else:
-        assert not (root_folder / "1-level").exists()
+        assert not await (root_folder / "1-level").exists()
 
     assert step["name"] == "finalize"
     await process.finalize(config, step, root_folder)
@@ -492,13 +508,13 @@ async def test_credit_card_full() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/credit-card")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {
         "args": {
             "append_credit_card": True,
             "deskew": {"num_angles": 179},
             "cut_white": 200,
-            "mask": {},
+            "mask": {"auto_mask": {"sam3": {"enabled": False}}},
             "auto_rotate": {"enabled": False},
         },
     }
@@ -508,7 +524,7 @@ async def test_credit_card_full() -> None:
             str(Path(__file__).parent / "credit-card-2.png"),
         ],
     }
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 2
     assert step["name"] == "finalize"
     await process.finalize(config, step, root_folder)
@@ -546,11 +562,11 @@ async def test_empty() -> None:
     init_test()
     #    os.environ['PROGRESS'] = 'TRUE'
     root_folder = Path("/results/empty")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {
         "args": {
             "level": {"value": True},
-            "mask": {},
+            "mask": {"auto_mask": {"sam3": {"enabled": False}}},
         },
     }
     step = {
@@ -558,7 +574,7 @@ async def test_empty() -> None:
             str(Path(__file__).parent / "empty.png"),
         ],
     }
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 0
     assert step["name"] == "finalize"
     shutil.rmtree(root_folder)
@@ -566,7 +582,7 @@ async def test_empty() -> None:
 
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3)
+@pytest.mark.flaky(reruns=1)
 @pytest.mark.parametrize(
     ("test", "args"),
     [pytest.param("600", {"dpi": 600, "deskew": {"num_angles": 179}}, id="600")],
@@ -574,10 +590,10 @@ async def test_empty() -> None:
 async def test_custom_process(test: str, args: dict[str, Any]) -> None:
     init_test()
     root_folder = Path("/results/600")
-    root_folder.mkdir(parents=True, exist_ok=True)
+    await root_folder.mkdir(parents=True, exist_ok=True)
     config = {"args": args}
     step = {"sources": [str(Path(__file__).parent / f"{test}.png")]}
-    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)
+    step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
     assert len(step["sources"]) == 1
     try:
         print(f"Compare '{step['sources'][0]}' with expected image '{test}.expected.png'.")
@@ -607,8 +623,8 @@ async def test_qr_code(name) -> None:
     await add_code.add_codes(Path(__file__).parent / f"{name}.pdf", Path(f"/results/{name}.pdf"))
     root_folder = Path("/results/qrcode")
     for page in range(2):
-        subprocess.run(  # noqa: ASYNC221
-            [
+        subprocess.run(  # noqa: S603, ASYNC221
+            [  # noqa: S607
                 "gm",
                 "convert",
                 "-density",
@@ -639,17 +655,23 @@ async def test_qr_code_metadata() -> None:
     await add_code.add_codes(Path(__file__).parent / "qrbill.pdf", Path("/results/qrbill.pdf"))
 
     with pikepdf.open("/results/qrbill.pdf") as pdf:
+
+        def as_text(value: object) -> str:
+            if isinstance(value, pikepdf.Array):
+                return "".join(str(item) for item in value)
+
+            return str(value)
+
         for k, v in {
             "/Title": "qrbill",
             "/CreationDate": "D:20220720213803",
             "/ModDate": "D:20220720213803",
             "/Producer": "GraphicsMagick 1.3.38 2022-03-26 Q16 http://www.GraphicsMagick.org/",
         }.items():
-            assert pdf.docinfo[k] == pikepdf.objects.String(v)
+            assert as_text(pdf.docinfo[k]) == v
         with pdf.open_metadata() as meta:
             assert (
-                meta.get("{http://purl.org/dc/elements/1.1/}description")
-                == """QR code [0]
+                meta.get("{http://purl.org/dc/elements/1.1/}description") == """QR code [0]
 SPC
 0200
 1
@@ -680,7 +702,7 @@ CH
 SCOR
 RF9720200227JS
 20200227JS- - """
-                + """
+                """
 EPD
 
 """
@@ -697,8 +719,8 @@ async def test_multi_code() -> None:
     )
     root_folder = Path("/results/qrcode")
     for page in range(3):
-        subprocess.run(  # noqa: ASYNC221
-            [
+        subprocess.run(  # noqa: S603, ASYNC221
+            [  # noqa: S607
                 "gm",
                 "convert",
                 "-density",
@@ -727,7 +749,7 @@ async def test_tiff_jupyter() -> None:
     init_test()
     root_folder = Path("/results/tiff")
     source_folder = root_folder / "source"
-    source_folder.mkdir(parents=True, exist_ok=True)
+    await source_folder.mkdir(parents=True, exist_ok=True)
 
     shutil.copyfile(
         str(Path(__file__).parent / "image-1.tiff"),
@@ -744,20 +766,24 @@ async def test_tiff_jupyter() -> None:
     config_file_name = str(root_folder / "config.yaml")
     step = await process.transform(config, step, config_file_name, root_folder)
     assert step["sources"] == ["/results/tiff/image-1.png"]
-    assert [p for p in root_folder.rglob("*.tiff")] == [root_folder / "source/image-1.tiff"]
+    tiff_files = [path async for path in root_folder.rglob("*.tiff")]
+    assert tiff_files == [root_folder / "source/image-1.tiff"]
 
-    with open("/results/tiff/jupyter/jupyter.ipynb") as f:  # noqa: ASYNC230
-        nb = nbformat.read(f, as_version=4)
+    nb = nbformat.reads(
+        await Path("/results/tiff/jupyter/jupyter.ipynb").read_text(encoding="utf-8"),
+        as_version=4,
+    )
     ep = ExecutePreprocessor(timeout=600, kernel_name="python3")
     ep.preprocess(nb, {"metadata": {"path": "/results/tiff/jupyter/"}})
 
 
 # @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, only_rerun="ValueError")
 @pytest.mark.parametrize(
     ("name", "config"),
     [
-        pytest.param("default", {}, id="default"),
+        pytest.param("default", {"sam3": {"enabled": False}}, id="default"),
         pytest.param(
             "inverse",
             {
@@ -765,12 +791,13 @@ async def test_tiff_jupyter() -> None:
                 "upper_hsv_color": [255, 10, 148],
                 "inverse_mask": True,
                 "de_noise_size": 20,
+                "sam3": {"enabled": False},
             },
             id="inverse",
         ),
         pytest.param(
             "no-morphology",
-            {"de_noise_morphology": False, "de_noise_size": 20},
+            {"de_noise_morphology": False, "de_noise_size": 20, "sam3": {"enabled": False}},
             id="no-morphology",
         ),
         pytest.param(
@@ -781,16 +808,17 @@ async def test_tiff_jupyter() -> None:
                 "inverse_mask": True,
                 "de_noise_morphology": False,
                 "de_noise_size": 20,
+                "sam3": {"enabled": False},
             },
             id="inverse-no-morphology",
         ),
     ],
 )
-def test_auto_mask(config, name) -> None:
+async def test_auto_mask(config, name) -> None:
     init_test()
     context = process_utils.Context({"args": {"mask": {"auto_mask": config}}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
-    context.init_mask()
+    await context.init_mask()
     check_image(
         "/results/",
         cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
@@ -800,31 +828,132 @@ def test_auto_mask(config, name) -> None:
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_mask_combine() -> None:
+@pytest.mark.asyncio
+async def test_auto_mask_combine() -> None:
     init_test()
-    context = process_utils.Context({"args": {"mask": {}}}, {})
+    context = process_utils.Context({"args": {"mask": {"auto_mask": {"sam3": {"enabled": False}}}}}, {})
     context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
     context.root_folder = Path(__file__).parent / "auto-mask-other"
     context.image_name = "image.png"
-    context.init_mask()
+    await context.init_mask()
     check_image(
         "/results/",
         cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
-        os.path.join(os.path.dirname(__file__), "auto_mask_combine.expected.png"),
+        str(Path(__file__).parent / "auto_mask_combine.expected.png"),
         generate_expected_image=REGENERATE,
     )
 
 
 # @pytest.mark.skip(reason="for test")
-def test_auto_cut() -> None:
+@pytest.mark.asyncio
+async def test_auto_cut() -> None:
     init_test()
-    context = process_utils.Context({"args": {"cut": {}, "background_color": [255, 0, 0]}}, {})
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "auto-mask-source.png"))
-    context.do_initial_cut()
+    context = process_utils.Context(
+        {"args": {"cut": {"auto_mask": {"sam3": {"enabled": False}}}, "background_color": [255, 0, 0]}}, {}
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "auto-mask-source.png"))
+    await context.do_initial_cut()
     check_image(
         "/results/",
         cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
-        os.path.join(os.path.dirname(__file__), "auto_cut.expected.png"),
+        str(Path(__file__).parent / "auto_cut.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_sam3_page_mask() -> None:
+    """Test SAM3 mask generation on a synthetic page image."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {
+            "args": {
+                "mask": {
+                    "auto_mask": {
+                        "sam3": {
+                            "enabled": True,
+                        },
+                    },
+                },
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
+    assert context.image is not None
+    await context.init_mask()
+    assert context.mask is not None
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "sam-page.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_sam3_ticket_mask() -> None:
+    """Test SAM3 mask generation on a synthetic ticket image."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {
+            "args": {
+                "mask": {
+                    "auto_mask": {
+                        "sam3": {
+                            "enabled": True,
+                        },
+                    },
+                },
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-ticket.png"))
+    assert context.image is not None
+    await context.init_mask()
+    assert context.mask is not None
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.mask, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "sam-ticket.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_sam3_cut() -> None:
+    """Test SAM3 cut mask generation."""
+    pytest.importorskip("transformers")
+    init_test()
+    context = process_utils.Context(
+        {
+            "args": {
+                "cut": {
+                    "enabled": True,
+                    "auto_mask": {
+                        "sam3": {
+                            "enabled": True,
+                        },
+                    },
+                },
+                "background_color": [255, 0, 0],
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
+    assert context.image is not None
+    await context.do_initial_cut()
+    check_image(
+        "/results/",
+        cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "sam-page.cut.expected.png"),
         generate_expected_image=REGENERATE,
     )
 
@@ -834,13 +963,13 @@ def test_auto_cut() -> None:
 async def test_color_cut() -> None:
     init_test()
     context = process_utils.Context({"args": {"cut_white": 200}}, {})
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "white-cut.png"))
+    context.image = cv2.imread(str(Path(__file__).parent / "white-cut.png"))
     await process.color_cut(context)
     cv2.imwrite("/results/white-cut.actual.png", context.image)
     check_image(
         "/results/",
         cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB),
-        os.path.join(os.path.dirname(__file__), "white-cut.expected.png"),
+        str(Path(__file__).parent / "white-cut.expected.png"),
         generate_expected_image=REGENERATE,
     )
 
@@ -859,21 +988,299 @@ async def test_histogram() -> None:
         },
         {},
     )
-    context.image = cv2.imread(os.path.join(os.path.dirname(__file__), "limit-contour-all-1.png"))
+    context.image = cv2.imread(str(Path(__file__).parent / "limit-contour-all-1.png"))
     context.image_name = "histogram.png"
-    context.root_folder = Path("/tmp")
+    context.root_folder = Path("/tmp")  # noqa: S108
     await process.histogram(context)
     print("Compare '/results/histogram/histogram.png' with expected image 'histogram.expected.png'.")
     check_image_file(
         "/results/histogram/",
-        "/tmp/histogram/histogram.png",
-        os.path.join(os.path.dirname(__file__), "histogram.expected.png"),
+        str(Path("/tmp") / "histogram" / "histogram.png"),  # noqa: S108
+        str(Path(__file__).parent / "histogram.expected.png"),
         generate_expected_image=REGENERATE,
     )
     print("Compare '/results/histogram/log-histogram.png' with expected image 'histogram-log.expected.png'.")
     check_image_file(
         "/results/histogram/",
-        "/tmp/histogram/log-histogram.png",
-        os.path.join(os.path.dirname(__file__), "histogram-log.expected.png"),
+        str(Path("/tmp") / "histogram" / "log-histogram.png"),  # noqa: S108
+        str(Path(__file__).parent / "histogram-log.expected.png"),
         generate_expected_image=REGENERATE,
     )
+
+
+@pytest.mark.asyncio
+async def test_ensure_scan_agents_file(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source_file = Path(process.__file__).parent / "AGENTS.md"
+    source_content = await source_file.read_text(encoding="utf-8")
+
+    destination_folder = Path(str(tmp_path))
+    monkeypatch.setenv("SCAN_SOURCE_FOLDER", str(destination_folder))
+
+    destination_file = destination_folder / "AGENTS.md"
+    assert not await destination_file.exists()
+
+    await process.ensure_scan_agents_file()
+
+    assert await destination_file.exists()
+    assert await destination_file.read_text(encoding="utf-8") == source_content
+
+
+@pytest.mark.asyncio
+async def test_ensure_scan_agents_file_overwrite(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source_file = Path(process.__file__).parent / "AGENTS.md"
+    source_content = await source_file.read_text(encoding="utf-8")
+
+    destination_folder = Path(str(tmp_path))
+    monkeypatch.setenv("SCAN_SOURCE_FOLDER", str(destination_folder))
+
+    destination_file = destination_folder / "AGENTS.md"
+    await destination_file.write_text("old content", encoding="utf-8")
+
+    await process.ensure_scan_agents_file()
+
+    assert await destination_file.read_text(encoding="utf-8") == source_content
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_with_dither() -> None:
+    """Test the external decorator with the dither function (if gm is available)."""
+    init_test()
+
+    # Check if gm (GraphicsMagick) is available
+    if shutil.which("gm") is None:
+        pytest.skip("GraphicsMagick (gm) not available - skipping dither test")
+
+    # Test with dither enabled
+    context = process_utils.Context(
+        {
+            "args": {
+                "dither": {"enabled": True},
+            },
+        },
+        {},
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    context.image_name = "test_dither.png"
+    context.root_folder = Path("/tmp")  # noqa: S108
+
+    # Call dither function - it's wrapped by @Process so returns None
+    result = await process.dither(context)
+
+    # The @Process wrapper returns None but may update context.image
+    assert result is None
+    # The image should have been processed (could be same or different)
+    assert context.image is not None
+
+    # Test with dither disabled - should return early
+    context_disabled = process_utils.Context(
+        {
+            "args": {
+                "dither": {"enabled": False},
+            },
+        },
+        {},
+    )
+    context_disabled.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+    result_disabled = await process.dither(context_disabled)
+    # When disabled, dither should return None (and not process the image)
+    assert result_disabled is None
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_empty_output() -> None:
+    """Test the external decorator when the external tool doesn't create output."""
+
+    # Create a dummy external function that deletes the destination file
+    @process.external
+    async def dummy_no_output(context: process_utils.Context, source: str, destination: str) -> None:
+        """Dummy function that removes the destination file to simulate missing output."""
+        # Delete the destination file to trigger FileNotFoundError path
+        await anyio.Path(destination).unlink()
+
+    context = process_utils.Context({"args": {}}, {})
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+
+    # Call the dummy function - should return None when no output is created
+    result = await dummy_no_output(context)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_empty_file() -> None:
+    """Test the external decorator when the external tool creates an empty file."""
+
+    # Create a dummy external function that creates an empty file
+    @process.external
+    async def dummy_empty_file(context: process_utils.Context, source: str, destination: str) -> None:
+        """Dummy function that creates an empty file."""
+        async with await anyio.open_file(destination, "wb") as _:
+            # Write nothing - create empty file
+            pass
+
+    context = process_utils.Context({"args": {}}, {})
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+
+    # Call the dummy function - should return None when empty file is created
+    result = await dummy_empty_file(context)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_external_decorator_valid_output() -> None:
+    """Test the external decorator with a valid external tool that produces output."""
+
+    # Create a dummy external function that copies the source to destination
+    @process.external
+    async def dummy_copy(context: process_utils.Context, source: str, destination: str) -> None:
+        """Dummy function that copies source to destination."""
+        async with await anyio.open_file(source, "rb") as src:
+            content = await src.read()
+        async with await anyio.open_file(destination, "wb") as dst:
+            await dst.write(content)
+
+    context = process_utils.Context({"args": {}}, {})
+    context.image = cv2.imread(str(Path(__file__).parent / "image-1.png"))
+
+    # Call the dummy function - should return a valid decoded image
+    result = await dummy_copy(context)
+    assert result is not None
+    assert isinstance(result, type(context.image))  # Should be same type as input (numpy array)
+    assert result.shape == context.image.shape  # Should have same dimensions
+
+
+# @pytest.mark.skip(reason="for test")
+@pytest.mark.asyncio
+async def test_draw_mask_overlay() -> None:
+    """Test the draw_mask_overlay function."""
+    image = np.zeros((100, 100, 3), dtype=np.uint8)
+    image[:, :] = [255, 255, 255]
+    mask = np.zeros((100, 100), dtype=np.uint8)
+    mask[25:75, 25:75] = 255
+
+    overlay = process.draw_mask_overlay(image, mask)
+
+    assert overlay.shape == image.shape
+    assert overlay.dtype == image.dtype
+
+    # Pixel inside mask should differ from original due to green overlay
+    assert not np.array_equal(overlay[50, 50], image[50, 50])
+    # Pixel outside mask should remain unchanged
+    assert np.array_equal(overlay[0, 0], image[0, 0])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("test_name", "test_config"),
+    [
+        pytest.param("page", {"prompt": "document"}, id="page"),
+        pytest.param("ticket", {"prompt": "receipt", "threshold": 0.3}, id="ticket"),
+    ],
+)
+async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
+    """Test SAM test configuration execution with cache."""
+    pytest.importorskip("transformers")
+    init_test()
+    root_folder = Path("/tmp/sam-test-output")  # noqa: S108
+    if await root_folder.exists():
+        shutil.rmtree(str(root_folder))
+
+    context = process_utils.Context(
+        {"args": {"sam_test": {test_name: test_config}}},
+        {},
+        root_folder=root_folder,
+    )
+    context.image = cv2.imread(str(Path(__file__).parent / "sam-page.png"))
+    assert context.image is not None
+    context.image_name = "sam-page.png"
+
+    sam_test_configs = context.config["args"].get("sam_test", {})
+    for sam_test_name, sam_test_cfg in sam_test_configs.items():
+        if not sam_test_cfg.get("enabled", True):
+            continue
+        prompt = sam_test_cfg.get("prompt", "document")
+        threshold = sam_test_cfg.get("threshold", 0.5)
+        scale = sam_test_cfg.get("scale", 4)
+
+        # First run: run inference and save to cache
+        image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+        mask = await anyio.to_thread.run_sync(
+            process_utils.run_sam3_inference,
+            Image.fromarray(image_rgb, mode="RGB"),
+            prompt,
+            threshold,
+            scale,
+        )
+
+        await process_utils.save_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+            mask,
+        )
+
+        # Verify cache files exist
+        cache_dir = root_folder / "sam3"
+        mask_path = cache_dir / context.image_name
+        yaml_path = cache_dir / f"{Path(context.image_name).stem}.yaml"
+        assert await mask_path.exists()
+        assert await yaml_path.exists()
+
+        # Verify can load from cache
+        loaded_mask = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+        )
+        assert loaded_mask is not None
+        assert np.array_equal(mask, loaded_mask)
+
+        # Generate and save overlay (original behavior)
+        overlay = process.draw_mask_overlay(context.image, mask)
+
+        dest_folder = root_folder / sam_test_name
+        await dest_folder.mkdir(parents=True)
+        success, buffer = cv2.imencode(".png", overlay)
+        assert success
+        file_path = dest_folder / context.image_name
+        async with await anyio.open_file(str(file_path), "wb") as f:
+            await f.write(buffer.tobytes())
+
+        assert await file_path.exists()
+        # Check alpha channel is not present (BGR image)
+        assert overlay.shape[2] == 3
+
+        # Verify cache miss with different params
+        different_cache = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            "different_prompt",
+            scale,
+            threshold,
+        )
+        assert different_cache is None
+
+        # Verify cache miss with different scale
+        different_scale = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            2.0,
+            threshold,
+        )
+        assert different_scale is None
+
+        # Verify cache miss with different threshold
+        different_threshold = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            0.9,
+        )
+        assert different_threshold is None
+
+    shutil.rmtree(str(root_folder))

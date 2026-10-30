@@ -1,11 +1,13 @@
+# Copyright (c) 2018-2026, Stéphane Brunner
+
 """Functions used to generate a Jupyter notebook from the transform."""
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import nbformat
 import numpy as np
+from anyio import Path
 
 import scan_to_paperless
 import scan_to_paperless.process_utils
@@ -33,7 +35,7 @@ def _pretty_repr(value: Any, prefix: str = "") -> str:
     return repr(value)
 
 
-def create_transform_notebook(
+async def create_transform_notebook(
     root_folder: Path,
     context: scan_to_paperless.process_utils.Context,
     step: schema.Step,
@@ -41,10 +43,10 @@ def create_transform_notebook(
     """Create a Jupyter notebook for the transform step."""
     # Jupyter notebook
     dest_folder = root_folder / "jupyter"
-    if not dest_folder.exists():
-        dest_folder.mkdir(parents=True)
-    with (dest_folder / "README.txt").open("w", encoding="utf-8") as readme_file:
-        readme_file.write(
+    if not await dest_folder.exists():
+        await dest_folder.mkdir(parents=True)
+    async with await (dest_folder / "README.txt").open("w", encoding="utf-8") as readme_file:
+        await readme_file.write(
             """# Jupyter notebook
 
 Install dependencies:
@@ -79,6 +81,8 @@ then yon can all those changes in the `config.yaml` file, in the `args` section.
             """import os
 import cv2
 import numpy as np
+import anyio
+from PIL import Image
 
 from scan_to_paperless import process, process_utils""",
         ),
@@ -113,6 +117,7 @@ base_folder = os.path.dirname(os.path.dirname(jupyter_locals['__vsc_ipynb_file__
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""# Open Source image
 context = process_utils.Context({{"args": {{}}}}, {{}})
+context.image_name = "jupyter-preview.png"
 
 # Open one of the images
 context.image = cv2.imread(os.path.join(base_folder, "{step["sources"][0]}"))
@@ -163,7 +168,31 @@ context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("leve
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
-process.histogram(context)""",
+await process.histogram(context)""",
+        ),
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Display suggested values derived from histogram and HSV analysis.""",
+        ),
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            """status = context.config.get("images_config", {}).get(context.image_name, {}).get("status", {})
+
+print("Suggested cut_black/cut_white:")
+print(status.get("histogram", {}).get("suggested", {}))
+print()
+print("Current clipping (%):")
+print(status.get("histogram", {}).get("current", {}))
+print()
+print("Suggested HSV ranges for auto_mask:")
+print(status.get("auto_mask_hsv", {}).get("suggestions", {}))
+print()
+print("Text histogram:")
+for line in status.get("histogram", {}).get("text", []):
+    print(line)""",
         ),
     )
 
@@ -180,7 +209,7 @@ Some of the used values are displayed in the histogram chart.""",
 
 context.config["args"]["level"] = {_pretty_repr(context.config["args"].get("level", {}))}
 
-process.level(context)
+await process.level(context)
 context.display_image(context.image)
 
 images_context["level"] = context.image""",
@@ -201,7 +230,7 @@ Some of the used values are displayed in the histogram chart.""",
 context.config["args"]["cut_white"] = {context.config["args"].get("cut_white", schema.CUT_WHITE_DEFAULT)}
 context.config["args"]["cut_black"] = {context.config["args"].get("cut_black", schema.CUT_BLACK_DEFAULT)}
 
-process.color_cut(context)
+await process.color_cut(context)
 context.display_image(context.image)
 
 images_context["color_cut"] = context.image""",
@@ -297,7 +326,7 @@ upper_hsv_color: [255, 255, 255]
 
 context.config["args"]["mask"] = {_pretty_repr(context.config["args"].get("mask", {}))}
 
-context.init_mask()
+await context.init_mask()
 if context.mask is not None:
     context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
 context.display_image(context.get_masked())
@@ -305,6 +334,66 @@ if context.mask is None:
     context.mask = np.zeros(context.image.shape[:2], dtype=np.uint8)
 
 images_context["original-mask"] = context.mask""",
+        ),
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Generate SAM test overlays.
+
+If `args.sam_test` is configured in the config file, this will run SAM3 inference for each test entry
+and display the mask as a green semi-transparent overlay on the image (same style as crop rectangles).""",
+        ),
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.image = images_context["original"].copy()
+
+context.config["args"]["sam_test"] = {_pretty_repr(context.config["args"].get("sam_test", {}))}
+
+sam_test_configs = context.config["args"].get("sam_test", {{}})
+if sam_test_configs:
+    from scan_to_paperless.process_utils import load_sam3_cache, save_sam3_cache, run_sam3_inference
+
+    for test_name, test_config in sam_test_configs.items():
+        if not test_config.get("enabled", True):
+            continue
+        print(f"Running SAM test: {{test_name}}")
+        prompt = test_config.get("prompt", "document")
+        threshold = test_config.get("threshold", 0.5)
+        scale = test_config.get("scale", 4)
+
+        cached_mask = await load_sam3_cache(
+            context.root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+        )
+        if cached_mask is not None:
+            mask = cached_mask
+        else:
+            image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+            mask = await anyio.to_thread.run_sync(
+                run_sam3_inference,
+                Image.fromarray(image_rgb, mode="RGB"),
+                prompt,
+                threshold,
+                scale,
+            )
+            await save_sam3_cache(
+                context.root_folder,
+                context.image_name,
+                prompt,
+                scale,
+                threshold,
+                mask,
+            )
+        overlay = process.draw_mask_overlay(context.image, mask)
+        context.display_image(overlay)
+else:
+    print("No sam_test configured, add args.sam_test to your config.yaml to enable.")
+""",
         ),
     )
 
@@ -332,7 +421,7 @@ hsv = cv2.cvtColor(context.image, cv2.COLOR_BGR2HSV)
 print("Pixel 10:10: ", hsv[10, 10])
 print("Pixel 100:100: ", hsv[100, 100])
 
-process.cut(context)
+await process.cut(context)
 context.display_image(context.image)
 
 images_context["cut"] = context.image
@@ -351,7 +440,7 @@ context.mask = images_context["cut-mask"].copy()
 context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}))}
 
 # The angle can be forced in config.images_config.<image_name>.angle.
-process.deskew(context)
+await process.deskew(context)
 context.display_image(context.image)
 
 images_context["deskew"] = context.image
@@ -371,7 +460,7 @@ context.mask = images_context["deskew-mask"].copy()
 
 context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}))}
 
-process.docrop(context)
+await process.docrop(context)
 context.display_image(context.image)
 
 images_context["crop"] = context.image
@@ -389,7 +478,7 @@ context.mask = images_context["crop-mask"].copy()
 
 context.config["args"]["sharpen"] = {context.config["args"].get("sharpen", schema.SHARPEN_DEFAULT)}
 
-process.sharpen(context)
+await process.sharpen(context)
 context.display_image(context.image)
 
 images_context["sharpen"] = context.image
@@ -407,7 +496,7 @@ context.mask = images_context["sharpen-mask"].copy()
 
 context.config["args"]["dither"] = {context.config["args"].get("dither", schema.DITHER_DEFAULT)}
 
-process.dither(context)
+await process.dither(context)
 context.display_image(context.image)
 
 images_context["dither"] = context.image
@@ -428,7 +517,7 @@ This require Tesseract to be installed.""",
 context.mask = images_context["dither-mask"].copy()
 
 try:
-    process.autorotate(context)
+    await process.autorotate(context)
     context.display_image(context.image)
 except FileNotFoundError as e:
     print("Tesseract not found, skipping autorotate: ", e)""",
@@ -461,5 +550,6 @@ if save:
         ),
     )
 
-    with (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
-        nbformat.write(notebook, jupyter_file)  # type: ignore[no-untyped-call]
+    async with await (dest_folder / "jupyter.ipynb").open("w", encoding="utf-8") as jupyter_file:
+        notebook_json = nbformat.writes(notebook)  # type: ignore[no-untyped-call]
+        await jupyter_file.write(notebook_json)

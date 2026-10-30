@@ -1,14 +1,21 @@
+# Copyright (c) 2018-2026, Stéphane Brunner
+
 """Utility functions and context used in the process."""
 
+import io
 import logging
 import math
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
+import anyio
 import cv2
 import numpy as np
+import torch
+from anyio import Path
 from PIL import Image
+from ruamel.yaml.main import YAML
+from transformers import Sam3Model, Sam3Processor
 
 import scan_to_paperless
 import scan_to_paperless.jupyter_utils
@@ -23,6 +30,170 @@ else:
     NpNdarrayInt = np.ndarray
 
 _LOG = logging.getLogger(__name__)
+
+_MODEL: Sam3Model | None = None
+_PROCESSOR: Sam3Processor | None = None
+_DEVICE: str | None = None
+
+_SAM3_CACHE_DIR = "sam3"
+
+
+def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
+    """Load the SAM3 model and processor, handling optional dependencies."""
+
+    global _MODEL, _PROCESSOR, _DEVICE  # noqa: PLW0603
+
+    if _MODEL is not None and _PROCESSOR is not None and _DEVICE is not None:
+        return _MODEL, _PROCESSOR, _DEVICE
+
+    _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    if _DEVICE == "cpu":
+        _LOG.warning("CUDA not available, falling back to CPU (this will be slow)")
+
+    _LOG.info("Loading SAM3 model...")
+    _MODEL = Sam3Model.from_pretrained(
+        "facebook/sam3",
+        revision="main",
+    )  # nosec
+    _PROCESSOR = Sam3Processor.from_pretrained(
+        "facebook/sam3",
+        revision="main",
+    )  # nosec
+    return _MODEL, _PROCESSOR, _DEVICE
+
+
+async def save_sam3_cache(
+    root_folder: Path | None,
+    image_name: str | None,
+    prompt: str,
+    scale: float,
+    threshold: float,
+    mask: np.ndarray,
+) -> None:
+    """Save SAM3 inference result to cache."""
+    if root_folder is None or image_name is None:
+        return
+    cache_dir = root_folder / _SAM3_CACHE_DIR
+    if not await cache_dir.exists():
+        await cache_dir.mkdir(parents=True)
+
+    mask_path = cache_dir / image_name
+    success, buffer = cv2.imencode(".png", mask)
+    if success:
+        async with await anyio.open_file(str(mask_path), "wb") as file:
+            await file.write(buffer.tobytes())
+
+    yaml_path = cache_dir / f"{Path(image_name).stem}.yaml"
+    meta = {"prompt": prompt, "scale": scale, "threshold": threshold}
+    yaml = YAML()
+    yaml.default_flow_style = False
+    string_buffer = io.StringIO()
+    yaml.dump(meta, string_buffer)
+    async with await anyio.open_file(str(yaml_path), "w", encoding="utf-8") as file:
+        await file.write(string_buffer.getvalue())
+
+
+async def load_sam3_cache(
+    root_folder: Path | None,
+    image_name: str | None,
+    prompt: str,
+    scale: float,
+    threshold: float,
+) -> np.ndarray | None:
+    """Load SAM3 inference result from cache if parameters match."""
+    if root_folder is None or image_name is None:
+        return None
+    cache_dir = root_folder / _SAM3_CACHE_DIR
+    mask_path = cache_dir / image_name
+    yaml_path = cache_dir / f"{Path(image_name).stem}.yaml"
+
+    if not await mask_path.exists() or not await yaml_path.exists():
+        return None
+
+    async with await anyio.open_file(str(yaml_path), "r", encoding="utf-8") as file:
+        content = await file.read()
+    yaml = YAML(typ="safe")
+    meta = yaml.load(content)
+
+    if meta.get("prompt") != prompt or meta.get("scale") != scale or meta.get("threshold") != threshold:
+        return None
+
+    async with await anyio.open_file(str(mask_path), "rb") as file:
+        mask_bytes = await file.read()
+    mask_array = np.frombuffer(mask_bytes, dtype=np.uint8)
+    mask = cv2.imdecode(mask_array, cv2.IMREAD_GRAYSCALE)
+    if mask is None:
+        return None
+
+    print(f"Use SAM3 cache for {image_name}")
+    return mask
+
+
+def run_sam3_inference(
+    image: "Image.Image",
+    text_prompt: str,
+    threshold: float,
+    scale: float = 1.0,
+) -> np.ndarray:
+    """
+    Generate a binary mask from an RGB numpy array using SAM3.
+
+    Parameters
+    ----------
+    image
+        A Pil image.
+    text_prompt
+        Text prompt for SAM3 to identify the object to segment.
+    threshold
+        Confidence threshold for mask prediction.
+    scale
+        Divide image dimensions by this factor before inference for speed.
+        The mask is resized back to the original image size. Default 1.0 (no scaling).
+
+    Returns
+    -------
+    np.ndarray
+        Binary mask as uint8: 255 for page area, 0 for background.
+    """
+
+    original_size = (image.height, image.width)
+
+    if scale != 1.0:
+        new_width = int(image.width / scale)
+        new_height = int(image.height / scale)
+        image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+    model, processor, device = _load_model_and_processor()
+
+    inputs = processor(images=image, text=text_prompt, return_tensors="pt").to(device)
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    results = processor.post_process_instance_segmentation(  # type: ignore[no-untyped-call]
+        outputs,
+        threshold=threshold,
+        mask_threshold=0.5,
+        target_sizes=inputs.get("original_sizes").tolist(),
+    )[0]
+
+    masks = results["masks"]
+    if len(masks) == 0:
+        _LOG.warning("No masks found for prompt '%s', saving empty mask", text_prompt)
+        mask = np.zeros((image.height, image.width), dtype=np.uint8)
+    else:
+        mask = cast(
+            "np.ndarray",
+            (masks.sum(dim=0) == 0).numpy().astype(np.uint8) * 255,
+        )
+
+    if scale != 1.0:
+        mask = cast(
+            "np.ndarray",
+            cv2.resize(mask, (original_size[1], original_size[0]), interpolation=cv2.INTER_NEAREST),
+        )
+
+    return mask
 
 
 def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int, int, int]) -> NpNdarrayInt:
@@ -59,7 +230,7 @@ def crop_image(
     matrix: NpNdarrayInt = np.array([[1.0, 0.0, -x], [0.0, 1.0, -y]])
     return cast(
         "NpNdarrayInt",
-        cv2.warpAffine(image, matrix, (width, height), borderValue=background),
+        cv2.warpAffine(image, matrix, ((width), (height)), borderValue=background),
     )
 
 
@@ -93,20 +264,20 @@ class Context:
 
         self.process_count = self.step.get("process_count", 0)
 
-    def _get_default_mask_file(self, default_file_name: str) -> str | None:
+    async def _get_default_mask_file(self, default_file_name: str) -> str | None:
         if not self.root_folder:
             return None
         mask_file = self.root_folder / default_file_name
-        if not mask_file.exists():
+        if not await mask_file.exists():
             base_folder = self.root_folder.parent
             if base_folder is None:
                 return None
             mask_file = base_folder / default_file_name
-            if not mask_file.exists():
+            if not await mask_file.exists():
                 return None
         return str(mask_file)
 
-    def _get_mask(
+    async def _get_mask(
         self,
         auto_mask_config: schema.AutoMask | None,
         config_section: str,
@@ -115,65 +286,118 @@ class Context:
         """Init the mask."""
         if auto_mask_config is not None:
             assert self.image is not None
-            hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
 
-            lower_val = np.array(
-                auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT),
-            )
-            upper_val = np.array(
-                auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT),
-            )
-            mask = cv2.inRange(hsv, lower_val, upper_val)
+            sam3_config: schema.Sam3 = auto_mask_config.setdefault("sam3", {})
+            if sam3_config.setdefault("enabled", schema.SAM3_ENABLED_DEFAULT):
+                prompt = sam3_config.setdefault("prompt", schema.SAM3_PROMPT_DEFAULT)
+                threshold = sam3_config.setdefault("threshold", schema.SAM3_THRESHOLD_DEFAULT)
+                scale = sam3_config.setdefault("scale", schema.SAM3_SCALE_DEFAULT)
 
-            de_noise_size = auto_mask_config.setdefault("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)
-            mask = cv2.copyMakeBorder(
-                mask,
-                de_noise_size,
-                de_noise_size,
-                de_noise_size,
-                de_noise_size,
-                cv2.BORDER_REPLICATE,
-            )
-            if auto_mask_config.setdefault("de_noise_morphology", schema.DE_NOISE_MORPHOLOGY_DEFAULT):
-                mask = cv2.morphologyEx(
-                    mask,
-                    cv2.MORPH_CLOSE,
-                    cv2.getStructuringElement(cv2.MORPH_RECT, (de_noise_size, de_noise_size)),
+                cached_mask = await load_sam3_cache(
+                    self.root_folder,
+                    self.image_name,
+                    prompt,
+                    scale,
+                    threshold,
                 )
-            else:
-                blur = cv2.blur(
-                    mask,
-                    (de_noise_size, de_noise_size),
-                )
+                if cached_mask is not None:
+                    mask = cached_mask
+                else:
+                    image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+                    mask = await anyio.to_thread.run_sync(
+                        run_sam3_inference,
+                        Image.fromarray(image_rgb, mode="RGB"),
+                        prompt,
+                        threshold,
+                        scale,
+                    )
+                    await save_sam3_cache(
+                        self.root_folder,
+                        self.image_name,
+                        prompt,
+                        scale,
+                        threshold,
+                        mask,
+                    )
+
+                inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
+                if inverse_mask:
+                    mask = cv2.bitwise_not(mask)
+
+                buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
+                blur = cv2.blur(mask, (buffer_size, buffer_size))
                 _, mask = cv2.threshold(
                     blur,
-                    auto_mask_config.setdefault("de_noise_level", schema.DE_NOISE_LEVEL_DEFAULT),
+                    auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
+                    255,
+                    cv2.THRESH_BINARY,
+                )
+            else:
+                hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+
+                lower_val = np.array(
+                    auto_mask_config.setdefault("lower_hsv_color", schema.LOWER_HSV_COLOR_DEFAULT),
+                )
+                upper_val = np.array(
+                    auto_mask_config.setdefault("upper_hsv_color", schema.UPPER_HSV_COLOR_DEFAULT),
+                )
+                mask = cv2.inRange(hsv, lower_val, upper_val)
+
+                de_noise_size = auto_mask_config.setdefault("de_noise_size", schema.DE_NOISE_SIZE_DEFAULT)
+                mask = cv2.copyMakeBorder(
+                    mask,
+                    de_noise_size,
+                    de_noise_size,
+                    de_noise_size,
+                    de_noise_size,
+                    cv2.BORDER_REPLICATE,
+                )
+                if auto_mask_config.setdefault("de_noise_morphology", schema.DE_NOISE_MORPHOLOGY_DEFAULT):
+                    mask = cv2.morphologyEx(
+                        mask,
+                        cv2.MORPH_CLOSE,
+                        cv2.getStructuringElement(cv2.MORPH_RECT, (de_noise_size, de_noise_size)),
+                    )
+                else:
+                    blur = cv2.blur(
+                        mask,
+                        (de_noise_size, de_noise_size),
+                    )
+                    _, mask = cv2.threshold(
+                        blur,
+                        auto_mask_config.setdefault("de_noise_level", schema.DE_NOISE_LEVEL_DEFAULT),
+                        255,
+                        cv2.THRESH_BINARY,
+                    )
+
+                inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
+                if not inverse_mask:
+                    mask = cv2.bitwise_not(mask)
+
+                buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
+                blur = cv2.blur(mask, (buffer_size, buffer_size))
+                _, mask = cv2.threshold(
+                    blur,
+                    auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
                     255,
                     cv2.THRESH_BINARY,
                 )
 
-            inverse_mask = auto_mask_config.setdefault("inverse_mask", schema.INVERSE_MASK_DEFAULT)
-            if not inverse_mask:
-                mask = cv2.bitwise_not(mask)
+                mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
 
-            buffer_size = auto_mask_config.setdefault("buffer_size", schema.BUFFER_SIZE_DEFAULT)
-            blur = cv2.blur(mask, (buffer_size, buffer_size))
-            _, mask = cv2.threshold(
-                blur,
-                auto_mask_config.setdefault("buffer_level", schema.BUFFER_LEVEL_DEFAULT),
-                255,
-                cv2.THRESH_BINARY,
-            )
-
-            mask = mask[de_noise_size:-de_noise_size, de_noise_size:-de_noise_size]
-
-            if self.root_folder and mask_file is not None and mask_file.exists():
+            if self.root_folder and mask_file is not None and await mask_file.exists():
                 print(f"Use mask file {mask_file} and resize it to the image size {self.image.shape}.")
+                async with await mask_file.open("rb") as f:
+                    mask_file_bytes = await f.read()
+                mask_file_array = np.frombuffer(mask_file_bytes, dtype=np.uint8)
+                mask_file_image = cv2.imdecode(mask_file_array, cv2.IMREAD_GRAYSCALE)
+                assert mask_file_image is not None
                 mask = cv2.add(
                     mask,
                     cv2.bitwise_not(
                         cv2.resize(
-                            cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE),
+                            mask_file_image,
                             (mask.shape[1], mask.shape[0]),
                         ),
                     ),
@@ -182,9 +406,15 @@ class Context:
             final_mask = cast("NpNdarrayInt", cv2.bitwise_not(mask))
 
             if os.environ.get("PROGRESS", "FALSE") == "TRUE" and self.root_folder:
-                self.save_progress_images(config_section.replace("_", "-"), final_mask)
+                await self.save_progress_images(config_section.replace("_", "-"), final_mask)
         elif self.root_folder and mask_file:
-            final_mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)
+            async with await mask_file.open("rb") as f:
+                mask_file_bytes = await f.read()
+            mask_file_array = np.frombuffer(mask_file_bytes, dtype=np.uint8)
+            assert mask_file_array is not None
+            final_mask_none = cv2.imdecode(mask_file_array, cv2.IMREAD_GRAYSCALE)
+            assert final_mask_none is not None
+            final_mask = final_mask_none
             if self.image is not None and final_mask is not None:
                 return cast(
                     "NpNdarrayInt",
@@ -192,22 +422,24 @@ class Context:
                 )
         return final_mask
 
-    def init_mask(self) -> None:
+    async def init_mask(self) -> None:
         """Init the mask image used to mask the image on the crop and skew calculation."""
         mask_config = self.config["args"].setdefault(
             "mask",
-            cast("schema.MaskOperation", schema.MASK_OPERATION_DEFAULT),
+            cast("schema.MaskOperation", dict(schema.MASK_OPERATION_DEFAULT)),
         )
         additional_filename = mask_config.setdefault(
             "additional_filename",
-            self._get_default_mask_file("mask.png"),
+            await self._get_default_mask_file("mask.png"),
         )
         additional_path = Path(additional_filename) if additional_filename else None
-        if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+        if additional_path is not None and (
+            not await additional_path.exists() or await additional_path.is_dir()
+        ):
             message = f"Mask file {additional_path} does not exist."
             raise scan_to_paperless.ScanToPaperlessError(message)
         self.mask = (
-            self._get_mask(
+            await self._get_mask(
                 mask_config.setdefault("auto_mask", {}),
                 "mask",
                 additional_path,
@@ -223,7 +455,7 @@ class Context:
             self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
         )
 
-    def do_initial_cut(self) -> None:
+    async def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
         cut_config = self.config["args"].setdefault(
             "cut",
@@ -233,13 +465,15 @@ class Context:
             assert self.image is not None
             additional_filename = cut_config.setdefault(
                 "additional_filename",
-                self._get_default_mask_file("cut.png"),
+                await self._get_default_mask_file("cut.png"),
             )
             additional_path = Path(additional_filename) if additional_filename else None
-            if additional_path is not None and (not additional_path.exists() or additional_path.is_dir()):
+            if additional_path is not None and (
+                not await additional_path.exists() or await additional_path.is_dir()
+            ):
                 message = f"Mask file {additional_path} does not exist."
                 raise scan_to_paperless.ScanToPaperlessError(message)
-            mask = self._get_mask(
+            mask = await self._get_mask(
                 cut_config.setdefault("auto_mask", {}),
                 "auto_cut",
                 additional_path,
@@ -294,7 +528,63 @@ class Context:
             schema.PROGRESS_DEFAULT,
         )
 
-    def save_progress_images(
+    def _display_progress_image(self, image: NpNdarrayInt) -> None:
+        """Display image in IPython environment."""
+        from IPython.display import display  # noqa: PLC0415
+
+        display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
+
+    async def _save_to_file(
+        self,
+        dest_folder: Path,
+        image_prefix: str,
+        image: NpNdarrayInt | None = None,
+    ) -> Path | None:
+        """Save image(s) to file system."""
+        assert self.image_name is not None
+        dest_image = dest_folder / (image_prefix + self.image_name)
+
+        if image is not None:
+            try:
+                success, buffer = cv2.imencode(".png", image)
+                if not success:
+                    _LOG.warning("Failed to encode image for %s", dest_image)
+                    return None
+                async with await dest_image.open("wb") as file:
+                    await file.write(buffer.tobytes())
+            except Exception as exception:  # noqa: BLE001
+                print(exception)
+                return None
+            else:
+                return dest_image
+
+        # Save main image
+        try:
+            assert self.image is not None
+            success, buffer = cv2.imencode(".png", self.image)
+            if not success:
+                _LOG.warning("Failed to encode main image for %s", dest_image)
+                return None
+            async with await dest_image.open("wb") as file:
+                await file.write(buffer.tobytes())
+        except Exception as exception:  # noqa: BLE001
+            print(exception)
+
+        # Save masked image
+        dest_masked = dest_folder / ("masked-" + self.image_name)
+        try:
+            success, buffer = cv2.imencode(".png", self.get_masked())
+            if not success:
+                _LOG.warning("Failed to encode masked image for %s", dest_masked)
+            else:
+                async with await dest_masked.open("wb") as file:
+                    await file.write(buffer.tobytes())
+        except Exception as exception:  # noqa: BLE001
+            print(exception)
+
+        return dest_image
+
+    async def save_progress_images(
         self,
         name: str,
         image: NpNdarrayInt | None = None,
@@ -304,53 +594,26 @@ class Context:
     ) -> Path | None:
         """Save the intermediate images."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            if image is None:
-                return None
-
-            from IPython.display import (  # pylint: disable=import-outside-toplevel
-                display,
-            )
-
-            display(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
+            if image is not None:
+                self._display_progress_image(image)
             return None
 
         if process_count is None:
             process_count = self.get_process_count()
-        if (self.is_progress() or force) and self.image_name is not None and self.root_folder is not None:
-            name = f"{process_count}-{name}" if self.is_progress() else name
-            dest_folder = self.root_folder / name
-            if not dest_folder.exists():
-                dest_folder.mkdir(parents=True)
-            dest_image = dest_folder / (image_prefix + self.image_name)
-            if image is not None:
-                try:
-                    cv2.imwrite(str(dest_image), image)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                else:
-                    return dest_image
-            else:
-                try:
-                    assert self.image is not None
-                    cv2.imwrite(str(dest_image), self.image)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                dest_image = dest_folder / ("mask-" + self.image_name)
-                try:
-                    dest_image = dest_folder / ("masked-" + self.image_name)
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-                try:
-                    cv2.imwrite(str(dest_image), self.get_masked())
-                except Exception as exception:  # noqa: BLE001
-                    print(exception)
-        return None
+
+        if not (self.is_progress() or force) or self.image_name is None or self.root_folder is None:
+            return None
+
+        name = f"{process_count}-{name}" if self.is_progress() else name
+        dest_folder = self.root_folder / name
+        if not await dest_folder.exists():
+            await dest_folder.mkdir(parents=True)
+
+        return await self._save_to_file(dest_folder, image_prefix, image)
 
     def display_image(self, image: NpNdarrayInt) -> None:
         """Display the image."""
         if scan_to_paperless.jupyter_utils.is_ipython():
-            from IPython.display import (  # pylint: disable=import-outside-toplevel
-                display,
-            )
+            from IPython.display import display  # noqa: PLC0415
 
             display(Image.fromarray(cv2.cvtColor(image[self.get_index(image)], cv2.COLOR_BGR2RGB)))  # type: ignore[no-untyped-call]
