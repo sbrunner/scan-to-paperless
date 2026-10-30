@@ -1,14 +1,17 @@
-name: Auto review, merge and close pull requests
+name: Auto reviews, merge and close pull requests
 
 on:
   pull_request:
     types:
       - opened
       - reopened
+permissions:
+  contents: read
+
 jobs:
   auto-merge:
-    name: Auto review pull requests from bots
-    runs-on: ubuntu-22.04
+    name: Auto reviews pull requests from bots
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
 
     permissions:
@@ -19,12 +22,12 @@ jobs:
         env:
           GITHUB: ${{ toJson(github) }}
       - name: Print context
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |-
             console.log(context);
-      - name: Auto review GHCI updates
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      - name: Auto reviews GHCI updates
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         if: |-
           startsWith(github.head_ref, 'ghci/audit/')
           && (github.event.pull_request.user.login == 'geo-ghci-test[bot]'
@@ -38,8 +41,8 @@ jobs:
               pull_number: context.payload.pull_request.number,
               event: 'APPROVE',
             })
-      - name: Auto review Renovate updates
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      - name: Auto reviews Renovate updates
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         if: |-
           github.event.pull_request.user.login == 'renovate[bot]'
         with:

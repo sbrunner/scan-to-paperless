@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) 2018-2026, Stéphane Brunner
 
 """Process the scanned documents."""
 
@@ -13,14 +14,13 @@ import re
 import shutil
 import subprocess  # nosec
 import sys
-import tempfile
 import time
 import traceback
-from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict, cast
+from contextlib import AsyncExitStack
+from typing import TYPE_CHECKING, Any, Protocol, TypedDict, cast
 
-import aiofiles
 import aiohttp
+import anyio
 
 # read, write, rotate, crop, sharpen, draw_line, find_line, find_contour
 import cv2
@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pikepdf
 import sentry_sdk
+from anyio import Path
 from deskew import determine_skew_debug_images
 from PIL import Image, ImageDraw, ImageFont
 from ruamel.yaml.main import YAML
@@ -54,6 +55,26 @@ else:
 CONVERT = ["gm", "convert"]
 _DESKEW_LOCK = asyncio.Lock()
 _LOG = logging.getLogger(__name__)
+_ERROR_FILENAME = "error.yaml"
+
+
+async def ensure_scan_agents_file() -> None:
+    """Create or update AGENTS.md in the scan source folder."""
+    source_agents = Path(__file__).parent / "AGENTS.md"
+    if not await source_agents.exists():
+        _LOG.warning("Missing bundled AGENTS.md at %s", source_agents)
+        return
+
+    scan_source_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source"))
+    if not await scan_source_folder.exists() or not await scan_source_folder.is_dir():
+        return
+
+    destination_agents = scan_source_folder / "AGENTS.md"
+    async with await source_agents.open(encoding="utf-8") as source_file:
+        agents_content = await source_file.read()
+    async with await destination_agents.open("w", encoding="utf-8") as destination_file:
+        await destination_file.write(agents_content)
+    _LOG.info("Updated %s", destination_agents)
 
 
 async def add_intermediate_error(
@@ -76,7 +97,7 @@ async def add_intermediate_error(
     temp_path = Path(str(config_file_name) + "_")
     try:
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
+        async with await temp_path.open("w", encoding="utf-8") as config_file:
             out = io.StringIO()
             yaml.dump(config, out)
             await config_file.write(out.getvalue())
@@ -84,11 +105,11 @@ async def add_intermediate_error(
         print(exception)
         config["intermediate_error"] = old_intermediate_error
         config["intermediate_error"].append({"error": str(error), "traceback": traceback_})
-        async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
+        async with await temp_path.open("w", encoding="utf-8") as config_file:
             out = io.StringIO()
             yaml.dump(config, out)
             await config_file.write(out.getvalue())
-    temp_path.rename(config_file_name)
+    await temp_path.rename(config_file_name)
 
 
 async def call(cmd: str | list[str], check: bool = True, **kwargs: Any) -> None:
@@ -207,7 +228,7 @@ class Process:
                 print(f"Elapsed time in {self.name}: {round(elapsed_time)}s.")
 
             if self.progress:
-                context.save_progress_images(self.name)
+                await context.save_progress_images(self.name)
 
         return wrapper
 
@@ -216,12 +237,55 @@ def external(func: ExternalFunction) -> FunctionWithContextReturnsImage:
     """Run an external tool."""
 
     async def wrapper(context: process_utils.Context) -> NpNdarrayInt | None:
-        with tempfile.NamedTemporaryFile(suffix=".png") as source:
-            assert context.image is not None
-            cv2.imwrite(source.name, context.image)
-            with tempfile.NamedTemporaryFile(suffix=".png") as destination:
-                await func(context, source.name, destination.name)
-                return cast("NpNdarrayInt", cv2.imread(destination.name))
+        # Write source image to BytesIO buffer
+        assert context.image is not None
+        success, source_buffer = cv2.imencode(".png", context.image)
+        if not success:
+            message = "Failed to encode source image"
+            raise scan_to_paperless.ScanToPaperlessError(message)
+
+        async with anyio.NamedTemporaryFile(suffix=".png") as source_file:
+            assert isinstance(source_file.name, str)
+            await source_file.write(bytes(source_buffer))
+            # Flush to ensure data is written to disk before external tool reads it
+            try:
+                await source_file.flush()
+            except OSError as e:
+                message = f"Failed to flush source file buffer: {type(e).__name__}: {e!s}"
+                raise scan_to_paperless.ScanToPaperlessError(message) from e
+
+            async with anyio.NamedTemporaryFile(suffix=".png") as destination:
+                assert isinstance(destination.name, str)
+                await func(context, source_file.name, destination.name)
+
+                # Check destination file size and content
+                dest_path = Path(destination.name)
+                try:
+                    stat_result = await dest_path.stat()
+                except FileNotFoundError:
+                    _LOG.warning("External tool '%s' did not create output file: %s", func, destination.name)
+                    return None
+                if stat_result.st_size == 0:
+                    _LOG.warning(
+                        "External tool '%s' created an empty output file: %s", func, destination.name
+                    )
+                    return None
+
+                async with await anyio.open_file(destination.name, "rb") as dest_file:
+                    image_data = await dest_file.read()
+
+                    if not image_data:
+                        message = f"Failed to read output from external tool: {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(message)
+
+                    image_array = np.frombuffer(image_data, dtype=np.uint8)
+                    decoded_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+                    if decoded_image is None:
+                        message = f"Failed to decode image from external tool output: {destination.name}"
+                        raise scan_to_paperless.ScanToPaperlessError(message)
+
+                    return cast("NpNdarrayInt", decoded_image)
 
     return wrapper
 
@@ -252,7 +316,7 @@ def get_contour_to_crop(
     )
 
 
-def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical: int) -> None:
+async def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical: int) -> None:
     """
     Do a crop on an image.
 
@@ -260,7 +324,7 @@ def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical
     """
     image = context.get_masked()
     process_count = context.get_process_count()
-    contours = find_contours(
+    contours = await find_contours(
         image,
         context,
         "crop",
@@ -270,7 +334,7 @@ def crop(context: process_utils.Context, margin_horizontal: int, margin_vertical
     if contours:
         for contour in contours:
             draw_rectangle(image, contour)
-        context.save_progress_images(
+        await context.save_progress_images(
             "crop",
             image[context.get_index(image)] if jupyter_utils.is_ipython() else image,
             process_count=process_count,
@@ -299,6 +363,102 @@ def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
     min_ = min_p100 / 100.0 * 255.0
     max_ = max_p100 / 100.0 * 255.0
     return level_ is not False, min_, max_
+
+
+def _set_image_status(context: process_utils.Context, key: str, value: Any) -> None:
+    if context.image_name is None:
+        return
+    images_config = context.config.setdefault("images_config", {})
+    image_config = images_config.setdefault(context.image_name, {})
+    image_status = cast("dict[str, Any]", image_config.setdefault("status", {}))
+    image_status[key] = value
+
+
+def _textual_histogram(histogram_data: Any, bins: int = 32, bar_size: int = 42) -> list[str]:
+    hist_array = np.asarray(histogram_data, dtype=np.float64)
+    if hist_array.size == 0:
+        return []
+
+    groups = np.array_split(hist_array, bins)
+    grouped = np.array([group.sum() for group in groups], dtype=np.float64)
+    total = float(grouped.sum())
+    if total == 0:
+        return []
+
+    max_value = float(grouped.max())
+    lines: list[str] = []
+    step = 256 / bins
+    for index, value in enumerate(grouped):
+        start = round(index * step)
+        end = round((index + 1) * step) - 1
+        end = min(255, end)
+        ratio = 0.0 if max_value == 0 else value / max_value
+        bar_text = "#" * max(1, round(ratio * bar_size)) if value > 0 else ""
+        percent = value / total * 100
+        lines.append(f"{start:03d}-{end:03d} | {bar_text:<{bar_size}} | {percent:5.2f}%")
+    return lines
+
+
+def _gray_percentile(grayscale: NpNdarrayInt, percentile: float) -> int:
+    return round(float(np.percentile(grayscale, percentile)))
+
+
+def _build_hsv_auto_mask_analysis(image: NpNdarrayInt) -> dict[str, Any]:
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    white_candidates = (saturation <= 40) & (value >= 140)
+
+    white_pixels = int(np.count_nonzero(white_candidates))
+    total_pixels = int(white_candidates.size)
+
+    suggestions: dict[str, Any] = {
+        "page_white": {
+            "lower_hsv_color": [0, 0, schema.LOWER_HSV_COLOR_DEFAULT[2]],
+            "upper_hsv_color": list(schema.UPPER_HSV_COLOR_DEFAULT),
+            "inverse_mask": False,
+            "de_noise_morphology": True,
+        },
+    }
+
+    if white_pixels > 0:
+        white_s = saturation[white_candidates]
+        white_v = value[white_candidates]
+        lower_v = max(0, round(float(np.percentile(white_v, 5))) - 5)
+        upper_s = min(255, round(float(np.percentile(white_s, 95))) + 5)
+        suggestions["page_white"] = {
+            "lower_hsv_color": [0, 0, lower_v],
+            "upper_hsv_color": [255, upper_s, 255],
+            "inverse_mask": False,
+            "de_noise_morphology": True,
+        }
+
+    background_candidates = ~white_candidates
+    background_pixels = int(np.count_nonzero(background_candidates))
+    if background_pixels > 0:
+        background_h = hsv[:, :, 0][background_candidates]
+        background_s = hsv[:, :, 1][background_candidates]
+        background_v = hsv[:, :, 2][background_candidates]
+        suggestions["scanner_background"] = {
+            "lower_hsv_color": [
+                round(float(np.percentile(background_h, 5))),
+                round(float(np.percentile(background_s, 5))),
+                round(float(np.percentile(background_v, 5))),
+            ],
+            "upper_hsv_color": [
+                round(float(np.percentile(background_h, 95))),
+                round(float(np.percentile(background_s, 95))),
+                round(float(np.percentile(background_v, 95))),
+            ],
+            "inverse_mask": True,
+            "de_noise_morphology": False,
+        }
+
+    return {
+        "white_candidate_ratio": round(white_pixels / max(1, total_pixels), 6),
+        "suggestions": suggestions,
+        "note": "Use page_white to keep only paper; use scanner_background with inverse_mask=true for dark platen.",
+    }
 
 
 async def _histogram(
@@ -352,29 +512,68 @@ async def _histogram(
             )
 
     plt.tight_layout()
-    with tempfile.NamedTemporaryFile(suffix=".png") as file:
-        if not jupyter_utils.is_ipython():
-            plt.savefig(file.name)
-            proc = await asyncio.create_subprocess_exec("gm", "convert", "-flatten", file.name, file.name)  # nosec
-            await proc.communicate()
-            assert proc.returncode == 0
-            image = cv2.imread(file.name)
-            context.save_progress_images(
-                "histogram",
-                cast("NpNdarrayInt", image),
-                image_prefix="log-" if log else "",
-                process_count=process_count,
-                force=True,
-            )
+    if not jupyter_utils.is_ipython():
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_array = np.frombuffer(buffer.getvalue(), dtype=np.uint8)
+        image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        await context.save_progress_images(
+            "histogram",
+            cast("NpNdarrayInt", image),
+            image_prefix="log-" if log else "",
+            process_count=process_count,
+            force=True,
+        )
 
 
 @Process("histogram", progress=False)
 async def histogram(context: process_utils.Context) -> None:
     """Create an image with the histogram of the current image."""
+    assert context.image is not None
     noisy_image = img_as_ubyte(context.image)  # type: ignore[no-untyped-call]
     histogram_data, histogram_centers = skimage_histogram(noisy_image)
     histogram_max = max(histogram_data)
     process_count = context.get_process_count()
+
+    grayscale = cv2.cvtColor(context.image, cv2.COLOR_BGR2GRAY)
+    cut_black_current = round(context.config["args"].setdefault("cut_black", schema.CUT_BLACK_DEFAULT))
+    cut_white_current = round(context.config["args"].setdefault("cut_white", schema.CUT_WHITE_DEFAULT))
+    textual_histogram = _textual_histogram(skimage_histogram(grayscale)[0])
+    clip_black_current = float(np.mean(grayscale <= cut_black_current) * 100.0)
+    clip_white_current = float(np.mean(grayscale >= cut_white_current) * 100.0)
+
+    histogram_analysis = {
+        "text": textual_histogram,
+        "percentiles": {
+            "p01": _gray_percentile(grayscale, 1),
+            "p05": _gray_percentile(grayscale, 5),
+            "p50": _gray_percentile(grayscale, 50),
+            "p95": _gray_percentile(grayscale, 95),
+            "p99": _gray_percentile(grayscale, 99),
+        },
+        "current": {
+            "cut_black": cut_black_current,
+            "cut_white": cut_white_current,
+            "clip_black_percent": round(clip_black_current, 4),
+            "clip_white_percent": round(clip_white_current, 4),
+        },
+        "suggested": {
+            "cut_black": {
+                "conservative": _gray_percentile(grayscale, 0.5),
+                "balanced": _gray_percentile(grayscale, 1),
+                "aggressive": _gray_percentile(grayscale, 2),
+            },
+            "cut_white": {
+                "conservative": _gray_percentile(grayscale, 99.5),
+                "balanced": _gray_percentile(grayscale, 99),
+                "aggressive": _gray_percentile(grayscale, 98),
+            },
+        },
+        "note": "Increase cut_white until white background clipping is acceptable; increase cut_black only for dark scanner noise.",
+    }
+    _set_image_status(context, "histogram", histogram_analysis)
+    _set_image_status(context, "auto_mask_hsv", _build_hsv_auto_mask_analysis(context.image))
 
     await _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, log=False)
     await _histogram(context, histogram_data, histogram_centers, histogram_max, process_count, log=True)
@@ -430,7 +629,7 @@ async def color_cut(context: process_utils.Context) -> None:
 @Process("mask-cut")
 async def cut(context: process_utils.Context) -> None:
     """Mask the image with the cut mask."""
-    context.do_initial_cut()
+    await context.do_initial_cut()
 
 
 @Process("deskew")
@@ -440,6 +639,7 @@ async def deskew(context: process_utils.Context) -> None:
     image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
     image_status = image_config.setdefault("status", {})
     angle = image_config.setdefault("angle", None)
+    manual_angle = angle is not None
     if angle is None:
         image = context.get_masked()
         image_rgb = rgba2rgb(image) if len(image.shape) == 3 and image.shape[2] == 4 else image  # type: ignore[no-untyped-call]
@@ -460,14 +660,80 @@ async def deskew(context: process_utils.Context) -> None:
                 num_peaks=deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
                 angle_pm_90=deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
             )
-        if skew_angle is not None:
-            image_status["angle"] = float(skew_angle)
-            angle = float(skew_angle)
+            if skew_angle is not None:
+                image_status["angle"] = float(skew_angle)
+                angle = float(skew_angle)
+
+            derivation = float(
+                deskew_configuration.setdefault("angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT),
+            )
+            min_angle = float(deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT))
+            max_angle = float(deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT))
+            detected_angle = float(skew_angle) if skew_angle is not None else None
+            at_limit = detected_angle is not None and (
+                abs(detected_angle - min_angle) <= derivation or abs(detected_angle - max_angle) <= derivation
+            )
+            _set_image_status(
+                context,
+                "deskew",
+                {
+                    "angle_from": "detected" if detected_angle is not None else "none",
+                    "detected_angle": detected_angle,
+                    "applied_angle": float(angle) if angle is not None else None,
+                    "near_search_limit": at_limit,
+                    "search": {
+                        "min_angle": min_angle,
+                        "max_angle": max_angle,
+                        "angle_derivation": derivation,
+                        "num_peaks": int(
+                            deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
+                        ),
+                        "sigma": float(deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT)),
+                        "angle_pm_90": bool(
+                            deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
+                        ),
+                    },
+                },
+            )
 
         if not jupyter_utils.is_ipython():
             process_count = context.get_process_count()
             for name, debug_image in debug_images:
-                context.save_progress_images("skew", debug_image, name, process_count, force=True)
+                await context.save_progress_images("skew", debug_image, name, process_count, force=True)
+
+    else:
+        deskew_configuration = context.config["args"].setdefault("deskew", {})
+        _set_image_status(
+            context,
+            "deskew",
+            {
+                "angle_from": "manual" if manual_angle else "none",
+                "detected_angle": image_status.get("angle"),
+                "applied_angle": float(angle) if angle is not None else None,
+                "near_search_limit": False,
+                "search": {
+                    "min_angle": float(
+                        deskew_configuration.setdefault("min_angle", schema.DESKEW_MIN_ANGLE_DEFAULT),
+                    ),
+                    "max_angle": float(
+                        deskew_configuration.setdefault("max_angle", schema.DESKEW_MAX_ANGLE_DEFAULT),
+                    ),
+                    "angle_derivation": float(
+                        deskew_configuration.setdefault(
+                            "angle_derivation",
+                            schema.DESKEW_ANGLE_DERIVATION_DEFAULT,
+                        ),
+                    ),
+                    "num_peaks": int(
+                        deskew_configuration.setdefault("num_peaks", schema.DESKEW_NUM_PEAKS_DEFAULT),
+                    ),
+                    "sigma": float(deskew_configuration.setdefault("sigma", schema.DESKEW_SIGMA_DEFAULT)),
+                    "angle_pm_90": bool(
+                        deskew_configuration.setdefault("angle_pm_90", schema.DESKEW_ANGLE_PM_90_DEFAULT),
+                    ),
+                },
+            },
+        )
 
     if angle:
         context.rotate(angle)
@@ -478,20 +744,28 @@ async def deskew(context: process_utils.Context) -> None:
             ]
             if len(sources) == 1:
                 assert context.root_folder
+                async with await anyio.open_file(str(context.root_folder / sources[0]), "rb") as f:
+                    img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
+                    source_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                 image = process_utils.rotate_image(
-                    cast("NpNdarrayInt", cv2.imread(str(context.root_folder / sources[0]))),
+                    cast("NpNdarrayInt", source_image),
                     angle,
                     context.get_background_color(),
                 )
                 source_path = Path(sources[0])
-                cv2.imwrite(
-                    str(
-                        context.root_folder
-                        / "source"
-                        / (source_path.stem + "-skew-corrected" + source_path.suffix),
-                    ),
-                    image,
+                output_path = (
+                    context.root_folder
+                    / "source"
+                    / (source_path.stem + "-skew-corrected" + source_path.suffix)
                 )
+                if not await output_path.parent.exists():
+                    await output_path.parent.mkdir(parents=True)
+                success, encoded_image = cv2.imencode(source_path.suffix, image)
+                if not success:
+                    msg = f"Failed to encode skew-corrected image to {source_path.suffix} for {output_path}"
+                    raise scan_to_paperless.ScanToPaperlessError(msg)
+                async with await anyio.open_file(str(output_path), "wb") as f:
+                    await f.write(encoded_image.tobytes())
 
 
 @Process("docrop")
@@ -507,7 +781,7 @@ async def docrop(context: process_utils.Context) -> None:
     margin_vertical = context.get_px_value(
         crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
     )
-    crop(context, round(margin_horizontal), round(margin_vertical))
+    await crop(context, round(margin_horizontal), round(margin_vertical))
 
 
 @Process("sharpen")
@@ -551,7 +825,9 @@ async def autorotate(context: process_utils.Context) -> None:
     auto_rotate_configuration = context.config["args"].setdefault("auto_rotate", {})
     if not auto_rotate_configuration.setdefault("enabled", schema.AUTO_ROTATE_ENABLED_DEFAULT):
         return
-    with tempfile.NamedTemporaryFile(suffix=".png") as source:
+    assert context.image is not None
+    async with anyio.NamedTemporaryFile(suffix=".png") as source:
+        assert isinstance(source.name, str)
         cv2.imwrite(source.name, context.get_masked())
         try:
             orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
@@ -635,6 +911,18 @@ def draw_rectangle(image: NpNdarrayInt, contour: tuple[int, int, int, int], bord
         cv2.rectangle(image, (x + width - 1, y), (x + width, y + height), color, -1)
 
 
+def draw_mask_overlay(image: NpNdarrayInt, mask: NpNdarrayInt) -> NpNdarrayInt:
+    """Draw a green semi-transparent overlay on the masked area (same style as draw_rectangle)."""
+    color = (0, 255, 0)
+    opacity = 0.1
+    mask_overlay = np.zeros_like(image, dtype=np.uint8)
+    mask_overlay[mask == 255] = color
+    blended = cv2.addWeighted(image, 1 - opacity, mask_overlay, opacity, 1.0)
+    result = image.copy()
+    result[mask == 255] = blended[mask == 255]
+    return result
+
+
 def find_lines(
     image: NpNdarrayInt,
     vertical: bool,
@@ -661,7 +949,9 @@ def find_lines(
     if lines is None:
         return []
 
-    new_lines = [line for (line,) in lines if (line[0] == line[2] if vertical else line[1] == line[3])]  # type: ignore[misc]
+    if lines.ndim == 3:
+        lines = lines[:, 0, :]
+    new_lines = [line for line in lines if (line[0] == line[2] if vertical else line[1] == line[3])]
 
     def _key(line: tuple[int, int, int, int]) -> int:
         return line[1] - line[3] if vertical else line[2] - line[0]
@@ -762,7 +1052,7 @@ def fill_limits(
     return limits
 
 
-def find_contours(
+async def find_contours(
     image: NpNdarrayInt,
     context: process_utils.Context,
     name: str,
@@ -790,7 +1080,7 @@ def find_contours(
         if jupyter_utils.is_ipython():
             print("Threshold")
         thresh_rgb = cast("NpNdarrayInt", cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB))
-        context.save_progress_images(
+        await context.save_progress_images(
             "threshold",
             thresh_rgb[context.get_index(thresh_rgb)] if jupyter_utils.is_ipython() else thresh,
         )
@@ -837,7 +1127,7 @@ def _find_contours_thresh(
                 else contour_image
             )
             contour_image = rgb2gray(imagergb) if len(imagergb.shape) == 3 else imagergb
-            if (1 - np.mean(contour_image)) * 100 > min_black:  # type: ignore[arg-type]
+            if (1 - np.mean(contour_image)) * 100 > min_black:
                 result.append(
                     (
                         x + kernel_size * 2,
@@ -1230,15 +1520,30 @@ async def transform(
     for index, image in enumerate(step["sources"]):
         image_path = Path(image)
         if status is not None:
-            status.set_status(config_file_name, -1, f"Transform ({image_path.name})", write=True)
+            await status.set_status(config_file_name, -1, f"Transform ({image_path.name})", write=True)
         image_name = f"{image_path.name.rsplit('.')[0]}.png"
         context = process_utils.Context(config, step, config_file_name, root_folder, image_name)
         if context.image_name is None:
             msg = "Image name is required"
             raise scan_to_paperless.ScanToPaperlessError(msg)
-        async with aiofiles.open(root_folder / image, "rb") as f:
-            img_array = np.asarray(bytearray(await f.read()), dtype=np.uint8)
-            context.image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        source_path = root_folder / image
+        if not await source_path.exists():
+            msg = f"Source image does not exist: {source_path}"
+            raise scan_to_paperless.ScanToPaperlessError(msg)
+        async with await anyio.open_file(source_path, "rb") as f:
+            file_content = await f.read()
+            if not file_content:
+                msg = f"Empty file content from {source_path}"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
+            if img_array.size == 0:
+                msg = f"Empty image array from {source_path}"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+            if decoded_image is None:
+                msg = f"Failed to decode image from {source_path}"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
+            context.image = decoded_image
         assert context.image is not None
         images_config = context.config.setdefault("images_config", {})
         image_config = images_config.setdefault(context.image_name, {})
@@ -1248,7 +1553,53 @@ async def transform(
         await histogram(context)
         await level(context)
         await color_cut(context)
-        context.init_mask()
+        await context.init_mask()
+        sam_test_configs = config["args"].setdefault("sam_test", schema.SAM_TEST_CONFIGURATIONS_DEFAULT)
+        if sam_test_configs and context.image is not None and context.mask is not None:
+            for test_name, test_config in sam_test_configs.items():
+                if not test_config.setdefault("enabled", True):
+                    continue
+                prompt = test_config.setdefault("prompt", schema.SAM3_PROMPT_DEFAULT)
+                threshold = test_config.setdefault("threshold", schema.SAM3_THRESHOLD_DEFAULT)
+                scale = test_config.setdefault("scale", schema.SAM3_SCALE_DEFAULT)
+
+                cached_mask = await process_utils.load_sam3_cache(
+                    context.root_folder,
+                    context.image_name,
+                    prompt,
+                    scale,
+                    threshold,
+                )
+                if cached_mask is not None:
+                    mask = cached_mask
+                else:
+                    image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
+                    mask = await anyio.to_thread.run_sync(
+                        process_utils.run_sam3_inference,
+                        Image.fromarray(image_rgb, mode="RGB"),
+                        prompt,
+                        threshold,
+                        scale,
+                    )
+                    await process_utils.save_sam3_cache(
+                        context.root_folder,
+                        context.image_name,
+                        prompt,
+                        scale,
+                        threshold,
+                        mask,
+                    )
+                overlay = draw_mask_overlay(context.image, mask)
+                dest_folder = root_folder / test_name
+                if not await dest_folder.exists():
+                    await dest_folder.mkdir(parents=True)
+                success, buffer = cv2.imencode(".png", overlay)
+                if success:
+                    async with await anyio.open_file(
+                        str(dest_folder / context.image_name),
+                        "wb",
+                    ) as file:
+                        await file.write(buffer.tobytes())
         await cut(context)
         await deskew(context)
         await docrop(context)
@@ -1259,7 +1610,7 @@ async def transform(
         # Is empty ?
         empty_config = config["args"].setdefault("empty", {})
         if empty_config.setdefault("enabled", schema.EMPTY_ENABLED_DEFAULT):
-            contours = find_contours(
+            contours = await find_contours(
                 context.get_masked(),
                 context,
                 "empty",
@@ -1272,7 +1623,7 @@ async def transform(
         if config["args"].setdefault("assisted_split", schema.ASSISTED_SPLIT_DEFAULT):
             assisted_split: schema.AssistedSplit = {}
             name = root_folder / context.image_name
-            source = context.save_progress_images("assisted-split", context.image, force=True)
+            source = await context.save_progress_images("assisted-split", context.image, force=True)
             assert source
             assisted_split["source"] = str(source)
 
@@ -1285,7 +1636,7 @@ async def transform(
             limits = []
             assert context.image is not None
 
-            contours = find_contours(
+            contours = await find_contours(
                 context.image,
                 context,
                 "limit",
@@ -1427,6 +1778,7 @@ async def transform(
                 draw = ImageDraw.Draw(pil_image)
 
                 x = major_graduation_space
+                print(graduation_text_font_color)
                 while x < context.image.shape[1]:
                     draw.text(
                         (x + graduation_text_margin, major_graduation_size),
@@ -1453,18 +1805,32 @@ async def transform(
 
                 context.image = np.array(pil_image)
 
-            cv2.imwrite(str(name), context.image)
+            success, buf = cv2.imencode(".png", context.image)
+            if not success:
+                message = (
+                    f"Failed to encode image for {name}. This may be due to an empty or corrupted image."
+                )
+                raise scan_to_paperless.ScanToPaperlessError(message)
+            async with await name.open("wb") as img_file:
+                await img_file.write(buf.tobytes())
             assisted_split["image"] = context.image_name
             images_path.append(name)
         else:
             img2 = root_folder / context.image_name
-            cv2.imwrite(str(img2), context.image)
+            success, buf = cv2.imencode(".png", context.image)
+            if not success:
+                message = (
+                    f"Failed to encode image for {img2}. This may be due to an empty or corrupted image."
+                )
+                raise scan_to_paperless.ScanToPaperlessError(message)
+            async with await img2.open("wb") as img_file:
+                await img_file.write(buf.tobytes())
             images_path.append(img2)
         process_count = context.process_count
 
-    from scan_to_paperless import jupyter  # pylint: disable=import-outside-toplevel
+    from scan_to_paperless import jupyter  # noqa: PLC0415, RUF100
 
-    jupyter.create_transform_notebook(root_folder, context, step)
+    await jupyter.create_transform_notebook(root_folder, context, step)
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
 
@@ -1487,7 +1853,8 @@ async def transform(
     ) and pngquant_config.setdefault("enabled", schema.PNGQUANT_ENABLED_DEFAULT):
         count = context.get_process_count()
         for image_path in images_path:
-            with tempfile.NamedTemporaryFile(suffix=".png") as temp_file:
+            async with anyio.NamedTemporaryFile(suffix=".png") as temp_file:
+                assert isinstance(temp_file.name, str)
                 await call(
                     [
                         "pngquant",
@@ -1500,7 +1867,8 @@ async def transform(
                     ],
                     check=False,
                 )
-                if Path(temp_file.name).stat().st_size > 0:
+                temp_path = Path(temp_file.name)
+                if (await temp_path.stat()).st_size > 0:
                     await call(["cp", temp_file.name, str(image_path)])
             if progress:
                 await _save_progress(context.root_folder, count, "pngquant", image_path.name, image_path)
@@ -1529,8 +1897,9 @@ async def transform(
                 str(image_path),
                 "-quality",
                 str(config["args"].setdefault("jpeg", {}).setdefault("quality", schema.JPEG_QUALITY_DEFAULT)),
-                jpeg_img,
+                str(jpeg_img),
             )
+            await proc.communicate()
             assert proc.returncode == 0
             new_images.append(jpeg_img)
             if progress:
@@ -1550,7 +1919,7 @@ async def transform(
         "assisted_split",
         schema.ASSISTED_SPLIT_DEFAULT,
     ):
-        with (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
+        async with await (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
             pass
 
     return {
@@ -1574,8 +1943,8 @@ async def _save_progress(
     assert root_folder
     name = f"{count}-{name}"
     dest_folder = root_folder / name
-    if not dest_folder.exists():
-        dest_folder.mkdir(parents=True)
+    if not await dest_folder.exists():
+        await dest_folder.mkdir(parents=True)
     dest_image = dest_folder / image_name
     try:
         await call(["cp", str(image), str(dest_image)])
@@ -1583,7 +1952,7 @@ async def _save_progress(
         print(exception)
 
 
-def save(
+async def save(
     context: process_utils.Context,
     root_folder: Path,
     image: Path,
@@ -1594,9 +1963,9 @@ def save(
     if force or context.is_progress():
         dest_folder = root_folder / folder
         if not dest_folder.exists():
-            dest_folder.mkdir(parents=True)
+            await dest_folder.mkdir(parents=True)
         dest_file = dest_folder / image.name
-        shutil.copyfile(image, dest_file)
+        await anyio.to_thread.run_sync(shutil.copyfile, image, dest_file)
         return dest_file
     return Path(image)
 
@@ -1609,7 +1978,8 @@ class Item(TypedDict, total=False):
     """
 
     pos: int
-    file: IO[bytes]
+    file: anyio.AsyncFile[bytes]
+    file_name: str
 
 
 async def split(
@@ -1640,49 +2010,54 @@ async def split(
     for assisted_split in config["assisted_split"]:
         if "image" in assisted_split:
             image_path = root_folder / assisted_split["image"]
-            if image_path.exists():
-                image_path.unlink()
+            if await image_path.exists():
+                await image_path.unlink()
 
-    append: dict[str | int, list[Item]] = {}
-    transformed_images = []
-    for assisted_split in config["assisted_split"]:
-        image = assisted_split["source"]
-        context = process_utils.Context(config, step)
-        width, height = (
-            int(e) for e in output([*CONVERT, image, "-format", "%w %h", "info:-"]).strip().split(" ")
-        )
+    async with AsyncExitStack() as stack:
+        append: dict[str | int, list[Item]] = {}
+        transformed_images = []
+        for assisted_split in config["assisted_split"]:
+            image = assisted_split["source"]
+            context = process_utils.Context(config, step)
+            width, height = (
+                int(e) for e in output([*CONVERT, image, "-format", "%w %h", "info:-"]).strip().split(" ")
+            )
 
-        horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
-        vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
+            horizontal_limits = [limit for limit in assisted_split["limits"] if not limit["vertical"]]
+            vertical_limits = [limit for limit in assisted_split["limits"] if limit["vertical"]]
 
-        last_y = 0
-        number = 0
-        for horizontal_number in range(len(horizontal_limits) + 1):
-            if horizontal_number < len(horizontal_limits):
-                horizontal_limit = horizontal_limits[horizontal_number]
-                horizontal_value = horizontal_limit["value"]
-                horizontal_margin = horizontal_limit["margin"]
-            else:
-                horizontal_value = height
-                horizontal_margin = 0
-            last_x = 0
-            for vertical_number in range(len(vertical_limits) + 1):
-                destination = assisted_split["destinations"][number]
-                if destination == "-" or destination is None:
-                    if vertical_number < len(vertical_limits):
-                        last_x = (
-                            vertical_limits[vertical_number]["value"]
-                            + vertical_limits[vertical_number]["margin"]
-                        )
+            last_y = 0
+            number = 0
+            for horizontal_number in range(len(horizontal_limits) + 1):
+                if horizontal_number < len(horizontal_limits):
+                    horizontal_limit = horizontal_limits[horizontal_number]
+                    horizontal_value = horizontal_limit["value"]
+                    horizontal_margin = horizontal_limit["margin"]
                 else:
-                    if vertical_number < len(vertical_limits):
-                        vertical_limit = vertical_limits[vertical_number]
-                        vertical_value = vertical_limit["value"]
-                        vertical_margin = vertical_limit["margin"]
+                    horizontal_value = height
+                    horizontal_margin = 0
+                last_x = 0
+                for vertical_number in range(len(vertical_limits) + 1):
+                    destination = assisted_split["destinations"][number]
+                    if destination == "-" or destination is None:
+                        if vertical_number < len(vertical_limits):
+                            last_x = (
+                                vertical_limits[vertical_number]["value"]
+                                + vertical_limits[vertical_number]["margin"]
+                            )
                     else:
-                        vertical_value = width
-                        vertical_margin = 0
-                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as split_file:
+                        if vertical_number < len(vertical_limits):
+                            vertical_limit = vertical_limits[vertical_number]
+                            vertical_value = vertical_limit["value"]
+                            vertical_margin = vertical_limit["margin"]
+                        else:
+                            vertical_value = width
+                            vertical_margin = 0
+                        process_temp_file = anyio.NamedTemporaryFile(
+                            suffix=".png",
+                        )
+                        process_file = await stack.enter_async_context(process_temp_file)
+                        assert isinstance(process_file.name, str)
                         await call(
                             [
                                 *CONVERT,
@@ -1693,7 +2068,7 @@ async def split(
                                 ),
                                 "+repage",
                                 image,
-                                split_file.name,
+                                process_file.name,
                             ],
                         )
                         last_x = vertical_value + vertical_margin
@@ -1704,10 +2079,10 @@ async def split(
                             page = int(destination)
                             page_pos = 0
 
-                        save(
+                        await save(
                             context,
                             root_folder,
-                            Path(split_file.name),
+                            Path(process_file.name),
                             f"{context.get_process_count()}-split",
                         )
                         crop_config = context.config["args"].setdefault("crop", {})
@@ -1717,51 +2092,80 @@ async def split(
                         margin_vertical = context.get_px_value(
                             crop_config.setdefault("margin_vertical", schema.MARGIN_VERTICAL_DEFAULT),
                         )
-                        context.image = cv2.imread(split_file.name)
+                        async with await anyio.open_file(process_file.name, "rb") as f:
+                            file_content = await f.read()
+                            if not file_content:
+                                msg = f"Empty file content from {process_file.name}"
+                                raise scan_to_paperless.ScanToPaperlessError(msg)
+                            img_array = np.asarray(bytearray(file_content), dtype=np.uint8)
+                            if img_array.size == 0:
+                                msg = f"Empty image array from {process_file.name}"
+                                raise scan_to_paperless.ScanToPaperlessError(msg)
+                            decoded_image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                            if decoded_image is None:
+                                msg = f"Failed to decode image from {process_file.name}"
+                                raise scan_to_paperless.ScanToPaperlessError(msg)
+                            context.image = decoded_image
+                        final_file = process_file
                         if crop_config.setdefault("enabled", schema.CROP_ENABLED_DEFAULT):
-                            crop(context, round(margin_horizontal), round(margin_vertical))
-                            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as crop_file:
-                                cv2.imwrite(crop_file.name, context.image)
-                                save(
-                                    context,
-                                    root_folder,
-                                    Path(crop_file.name),
-                                    f"{context.get_process_count()}-crop",
-                                )
-                                processed_file = crop_file
-                        else:
-                            processed_file = split_file
+                            await crop(context, round(margin_horizontal), round(margin_vertical))
+                            crop_temp_file = anyio.NamedTemporaryFile(
+                                suffix=".png",
+                            )
+                            crop_file = await stack.enter_async_context(crop_temp_file)
+                            assert isinstance(crop_file.name, str)
+                            assert context.image is not None
+                            success, buf = cv2.imencode(".png", context.image)
+                            if not success:
+                                message = f"Failed to encode cropped image for {crop_file.name}. This may be due to an empty or corrupted crop."
+                                raise scan_to_paperless.ScanToPaperlessError(message)
+                            async with await anyio.open_file(crop_file.name, "wb") as img_file:
+                                await img_file.write(buf.tobytes())
+                            await save(
+                                context,
+                                root_folder,
+                                Path(crop_file.name),
+                                f"{context.get_process_count()}-crop",
+                            )
+                            final_file = crop_file
                         if page not in append:
                             append[page] = []
-                        append[page].append({"file": processed_file, "pos": page_pos})
-                number += 1
-            last_y = horizontal_value + horizontal_margin
-        process_count = context.process_count
+                        append[page].append(
+                            {
+                                "file": final_file,
+                                "file_name": cast("str", final_file.name),
+                                "pos": page_pos,
+                            }
+                        )
+                    number += 1
+                last_y = horizontal_value + horizontal_margin
+            process_count = context.process_count
 
-    for page_number in sorted(append.keys()):
-        items: list[Item] = append[page_number]
-        vertical = len(horizontal_limits) == 0
-        if not vertical and len(vertical_limits) != 0 and len(items) > 1:
-            msg = f"Mix of limit type for page '{page_number}'"
-            raise scan_to_paperless.ScanToPaperlessError(msg)
+        for page_number in sorted(append.keys()):
+            items: list[Item] = append[page_number]
+            vertical = len(horizontal_limits) == 0
+            if not vertical and len(vertical_limits) != 0 and len(items) > 1:
+                msg = f"Mix of limit type for page '{page_number}'"
+                raise scan_to_paperless.ScanToPaperlessError(msg)
 
-        with tempfile.NamedTemporaryFile(suffix=".png") as process_file:
-            await call(
-                CONVERT
-                + [e["file"].name for e in sorted(items, key=lambda e: e["pos"])]
-                + [
-                    "-background",
-                    "#ffffff",
-                    "-gravity",
-                    "center",
-                    "+append" if vertical else "-append",
-                    process_file.name,
-                ],
-            )
-            save(context, root_folder, Path(process_file.name), f"{process_count}-split")
-            img2 = root_folder / f"image-{page_number}.png"
-            await call([*CONVERT, process_file.name, str(img2)])
-            transformed_images.append(img2)
+            async with anyio.NamedTemporaryFile(suffix=".png") as process_file:
+                assert isinstance(process_file.name, str)
+                await call(
+                    CONVERT
+                    + [e["file_name"] for e in sorted(items, key=lambda e: e["pos"])]
+                    + [
+                        "-background",
+                        "#ffffff",
+                        "-gravity",
+                        "center",
+                        "+append" if vertical else "-append",
+                        process_file.name,
+                    ],
+                )
+                await save(context, root_folder, Path(process_file.name), f"{process_count}-split")
+                img2 = root_folder / f"image-{page_number}.png"
+                await call([*CONVERT, process_file.name, str(img2)])
+                transformed_images.append(img2)
     process_count += 1
 
     return {
@@ -1785,15 +2189,15 @@ async def finalize(
     name = root_folder.name
     destination = Path(os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")) / f"{name}.pdf"
 
-    if destination.exists():
+    if await destination.exists():
         return
 
     images_filenames = step["sources"]
 
     if config["args"].setdefault("append_credit_card", schema.APPEND_CREDIT_CARD_DEFAULT):
         if status is not None:
-            status.set_status(name, -1, "Finalize (credit card append)", write=True)
-        images2 = [image for image in images_filenames if Path(image).exists()]
+            await status.set_status(name, -1, "Finalize (credit card append)", write=True)
+        images2 = [image for image in images_filenames if await Path(image).exists()]
 
         file_path = root_folder / "append.png"
         await call(
@@ -1805,17 +2209,17 @@ async def finalize(
         # vis = np.concatenate((img1, img2), axis=1)
         images_filenames = [str(file_path)]
 
-    pdf = []
+    pdf: list[Path] = []
     for image_filename in images_filenames:
         image_path = Path(image_filename)
         if status is not None:
-            status.set_status(name, -1, f"Finalize ({image_path.name})", write=True)
-        if image_path.exists():
+            await status.set_status(name, -1, f"Finalize ({image_path.name})", write=True)
+        if await image_path.exists():
             image_name = image_path.stem
             file_path = root_folder / f"{image_name}.pdf"
             tesseract_configuration = config["args"].setdefault("tesseract", {})
             if tesseract_configuration.setdefault("enabled", schema.TESSERACT_ENABLED_DEFAULT):
-                with file_path.open("w", encoding="utf8") as output_file:
+                async with await file_path.open("w", encoding="utf8") as output_file:
                     _, stderr, _ = await run(
                         [
                             "tesseract",
@@ -1836,39 +2240,42 @@ async def finalize(
             pdf.append(file_path)
 
     if status is not None:
-        status.set_status(name, -1, "Finalize (optimize)", write=True)
+        await status.set_status(name, -1, "Finalize (optimize)", write=True)
 
     tesseract_producer = None
     if pdf:
-        with pikepdf.open(pdf[0]) as pdf_:
-            pdf_producer = pdf_.docinfo.get("/Producer")
-            if tesseract_producer is None and pdf_producer is not None:
-                tesseract_producer = json.loads(pdf_producer.to_json())
-                if "tesseract" not in tesseract_producer.lower():
-                    tesseract_producer = None
-                elif tesseract_producer.startswith("u:"):
-                    tesseract_producer = tesseract_producer[2:]
-            if tesseract_producer is None:
-                with pdf_.open_metadata() as meta:
-                    if "{http://purl.org/dc/elements/1.1/}producer" in meta:
-                        tesseract_producer = meta["{http://purl.org/dc/elements/1.1/}producer"]
-                        if "tesseract" not in tesseract_producer.lower():
-                            tesseract_producer = None
+        async with await pdf[0].open("rb") as pdf_file:
+            pdf_content = await pdf_file.read()
+            with pikepdf.open(io.BytesIO(pdf_content)) as pdf_:
+                pdf_producer = pdf_.docinfo.get("/Producer")
+                if tesseract_producer is None and pdf_producer is not None:
+                    tesseract_producer = json.loads(pdf_producer.to_json())
+                    if "tesseract" not in tesseract_producer.lower():
+                        tesseract_producer = None
+                    elif tesseract_producer.startswith("u:"):
+                        tesseract_producer = tesseract_producer[2:]
+                if tesseract_producer is None:
+                    with pdf_.open_metadata() as meta:
+                        if "{http://purl.org/dc/elements/1.1/}producer" in meta:
+                            tesseract_producer = meta["{http://purl.org/dc/elements/1.1/}producer"]
+                            if "tesseract" not in tesseract_producer.lower():
+                                tesseract_producer = None
 
     progress = os.environ.get("PROGRESS", "FALSE") == "TRUE"
     if progress:
-        for pdf_file in pdf:
-            basename = pdf_file.name.split(".")
+        for pdf_path in pdf:
+            basename = pdf_path.name.split(".")
             await call(
                 [
                     "cp",
-                    str(pdf_file),
+                    str(pdf_path),
                     str(root_folder / f"1-{'.'.join(basename[:-1])}-tesseract.{basename[-1]}"),
                 ],
             )
 
     count = 1
-    with tempfile.NamedTemporaryFile(suffix=".png") as temporary_pdf:
+    async with anyio.NamedTemporaryFile(suffix=".pdf") as temporary_pdf:
+        assert isinstance(temporary_pdf.name, str)
         await call(["pdftk", *[str(e) for e in pdf], "output", temporary_pdf.name, "compress"])
         if progress:
             await call(["cp", temporary_pdf.name, str(root_folder / f"{count}-pdftk.pdf")])
@@ -1889,14 +2296,19 @@ async def finalize(
             .setdefault("ps2pdf", cast("schema.Ps2Pdf", schema.PS2PDF_DEFAULT))
             .setdefault("enabled", schema.PS2PDF_ENABLED_DEFAULT)
         ):
-            with tempfile.NamedTemporaryFile(suffix=".png") as temporary_ps2pdf:
+            async with anyio.NamedTemporaryFile(suffix=".pdf") as temporary_ps2pdf:
+                assert isinstance(temporary_ps2pdf.name, str)
                 await call(["ps2pdf", temporary_pdf.name, temporary_ps2pdf.name])
                 if progress:
                     await call(["cp", temporary_ps2pdf.name, f"{count}-ps2pdf.pdf"])
                     count += 1
                 await call(["cp", temporary_ps2pdf.name, temporary_pdf.name])
 
-        with pikepdf.open(temporary_pdf.name, allow_overwriting_input=True) as pdf_:
+        async with await anyio.open_file(temporary_pdf.name, "rb") as temp_file:
+            pdf_content = await temp_file.read()
+
+        pdf_buffer = io.BytesIO(pdf_content)
+        with pikepdf.open(pdf_buffer) as pdf_:
             scan_to_paperless_meta = f"Scan to Paperless {os.environ.get('VERSION', 'undefined')}"
             with pdf_.open_metadata() as meta:
                 meta["{http://purl.org/dc/elements/1.1/}creator"] = (
@@ -1904,7 +2316,12 @@ async def finalize(
                     if tesseract_producer
                     else [scan_to_paperless_meta]
                 )
-            pdf_.save(temporary_pdf.name)
+            pdf_buffer = io.BytesIO()
+            pdf_.save(pdf_buffer)
+
+        async with await anyio.open_file(temporary_pdf.name, "wb") as temp_file:
+            await temp_file.write(pdf_buffer.getvalue())
+
         if progress:
             await call(["cp", temporary_pdf.name, str(root_folder / f"{count}-pikepdf.pdf")])
             count += 1
@@ -1925,13 +2342,13 @@ async def finalize(
             url = f"{url}/documents/post_document/"
             headers = {"authorization": f"Token {token}"}
 
-            async with aiofiles.open(temporary_pdf.name, "rb") as document_file:
+            async with await anyio.open_file(temporary_pdf.name, "rb") as document_file:
                 title = root_folder.name
                 async with aiohttp.ClientSession() as session:
                     form = aiohttp.FormData()
-                    form.add_field("document", document_file)
+                    form.add_field("document", await document_file.read())
                     form.add_field("title", title)
-                    async with session.post(url, headers=headers, data=form, timeout=120) as response:
+                    async with session.post(url, headers=headers, data=form, timeout=120) as response:  # type: ignore[arg-type]
                         if response.status != 200:
                             text = await response.text()
                             msg = f"Failed ({response.status}) upload to '{url}' with token '{token}'\n{text}"
@@ -1945,18 +2362,18 @@ async def _process_code(name: str) -> bool:
 
     destination_filename = Path(os.environ.get("SCAN_FINAL_FOLDER", "/destination")) / pdf_filename.name
 
-    if destination_filename.exists():
+    if await destination_filename.exists():
         await asyncio.sleep(1)
         return False
 
     try:
-        if pdf_filename.exists():
+        if await pdf_filename.exists():
             _LOG.info("Processing codes for %s", pdf_filename)
-            from scan_to_paperless import add_code  # pylint: disable=import-outside-toplevel
+            from scan_to_paperless import add_code  # noqa: PLC0415, RUF100
 
             await add_code.add_codes(
                 pdf_filename,
-                destination_filename,
+                str(destination_filename),
                 dpi=float(os.environ.get("SCAN_CODES_DPI", "200")),
                 pdf_dpi=float(os.environ.get("SCAN_CODES_PDF_DPI", "72")),
                 font_name=os.environ.get("SCAN_CODES_FONT_NAME", "Helvetica-Bold"),
@@ -1964,9 +2381,9 @@ async def _process_code(name: str) -> bool:
                 margin_top=float(os.environ.get("SCAN_CODES_MARGIN_TOP", "0")),
                 margin_left=float(os.environ.get("SCAN_CODES_MARGIN_LEFT", "2")),
             )
-            if destination_filename.exists():
+            if await destination_filename.exists():
                 # Remove the source file on success
-                pdf_filename.unlink()
+                await pdf_filename.unlink()
             _LOG.info("Down processing codes for %s", pdf_filename)
             return True
 
@@ -1991,11 +2408,11 @@ async def save_config(config: schema.Configuration, config_file_name: Path) -> N
     yaml = YAML()
     yaml.default_flow_style = False
     temp_path = Path(str(config_file_name) + "_")
-    async with aiofiles.open(temp_path, "w", encoding="utf-8") as config_file:
+    async with await temp_path.open("w", encoding="utf-8") as config_file:
         out = io.StringIO()
         yaml.dump(config, out)
         await config_file.write(out.getvalue())
-    temp_path.rename(config_file_name)
+    await temp_path.rename(config_file_name)
 
 
 async def _process(
@@ -2004,18 +2421,19 @@ async def _process(
     dirty: bool = False,
 ) -> bool:
     """Process one document."""
-    if not config_file_name.exists():
+    config_file_name_anyio = Path(config_file_name)
+    if not await config_file_name_anyio.exists():
         return dirty
 
     root_folder = config_file_name.parent
 
-    if (root_folder / "error.yaml").exists():
+    if await (root_folder / _ERROR_FILENAME).exists():
         return dirty
 
     yaml = YAML()
     yaml.default_flow_style = False
-    with config_file_name.open(encoding="utf-8") as config_file:
-        config: schema.Configuration = yaml.load(config_file)
+    async with await config_file_name_anyio.open(encoding="utf-8") as config_file:
+        config: schema.Configuration = yaml.load(await config_file.read())
     if config is None:
         return dirty
 
@@ -2033,8 +2451,8 @@ async def _process(
         while config.get("steps") and not is_sources_present(config["steps"][-1]["sources"], root_folder):
             config["steps"] = config["steps"][:-1]
             await save_config(config, config_file_name)
-            if (root_folder / "REMOVE_TO_CONTINUE").exists():
-                (root_folder / "REMOVE_TO_CONTINUE").unlink()
+            if await (root_folder / "REMOVE_TO_CONTINUE").exists():
+                await (root_folder / "REMOVE_TO_CONTINUE").unlink()
             rerun = True
 
         if "steps" not in config or not config["steps"]:
@@ -2046,14 +2464,18 @@ async def _process(
         step = config["steps"][-1]
 
         if is_sources_present(step["sources"], root_folder):
-            if not disable_remove_to_continue and (root_folder / "REMOVE_TO_CONTINUE").exists() and not rerun:
+            if (
+                not disable_remove_to_continue
+                and await (root_folder / "REMOVE_TO_CONTINUE").exists()
+                and not rerun
+            ):
                 return dirty
-            if (root_folder / "DONE").exists() and not rerun:
+            if await (root_folder / "DONE").exists() and not rerun:
                 return dirty
 
-            status.set_global_status(f"Processing '{config_file_name.parent.name}'...")
-            status.set_current_folder(config_file_name)
-            status.set_status(config_file_name, -1, "Processing")
+            await status.set_global_status(f"Processing '{config_file_name.parent.name}'...")
+            await status.set_current_folder(config_file_name)
+            await status.set_status(config_file_name, -1, "Processing")
             dirty = True
 
             done = False
@@ -2062,7 +2484,7 @@ async def _process(
                 _update_config(config)
                 next_step = await transform(config, step, config_file_name, root_folder, status=status)
             elif step["name"] == scan_to_paperless.status.STATUS_ASSISTED_SPLIT:
-                status.set_status(config_file_name, -1, "Split")
+                await status.set_status(config_file_name, -1, "Split")
                 next_step = await split(config, step, root_folder)
             elif step["name"] == scan_to_paperless.status.STATUS_FINALIZE:
                 await finalize(config, step, root_folder, status=status)
@@ -2075,14 +2497,14 @@ async def _process(
                     config["steps"].append(next_step)
                 await save_config(config, config_file_name)
                 if done:
-                    with (root_folder / "DONE").open("w", encoding="utf-8"):
+                    async with await (root_folder / "DONE").open("w", encoding="utf-8"):
                         pass
                 elif not disable_remove_to_continue:
-                    with (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
+                    async with await (root_folder / "REMOVE_TO_CONTINUE").open("w", encoding="utf-8"):
                         pass
             # Be sure that the status is up to date especially about the modifief files in the current folder
             await asyncio.sleep(0.1)
-            status.set_current_folder(None)
+            await status.set_current_folder(None)
 
     except Exception as exception:  # noqa: BLE001
         trace = traceback.format_exc()
@@ -2098,7 +2520,9 @@ async def _process(
         yaml = YAML(typ="safe")
         yaml.default_flow_style = False
         try:
-            async with aiofiles.open(root_folder / "error.yaml", "w", encoding="utf-8") as error_file:
+            async with await anyio.open_file(
+                root_folder / _ERROR_FILENAME, "w", encoding="utf-8"
+            ) as error_file:
                 yaml_out = io.StringIO()
                 yaml.dump(out, yaml_out)
                 await error_file.write(yaml_out.getvalue())
@@ -2107,7 +2531,9 @@ async def _process(
             print(traceback.format_exc())
             yaml = YAML()
             yaml.default_flow_style = False
-            async with aiofiles.open(root_folder / "error.yaml", "w", encoding="utf-8") as error_file:
+            async with await anyio.open_file(
+                root_folder / _ERROR_FILENAME, "w", encoding="utf-8"
+            ) as error_file:
                 yaml_out = io.StringIO()
                 yaml.dump(out, yaml_out)
                 await error_file.write(yaml_out.getvalue())
@@ -2116,13 +2542,13 @@ async def _process(
 
 async def _task(status: scan_to_paperless.status.Status) -> None:
     while True:
-        status.set_current_folder(None)
+        await status.set_current_folder(None)
         # Be sure that the status is up to date
         await asyncio.sleep(0.1)
         name, job_type, step = status.get_next_job()
         if job_type == scan_to_paperless.status.JobType.NONE:
-            status.set_global_status("Waiting...")
-            status.set_current_folder(None)
+            await status.set_global_status("Waiting...")
+            await status.set_current_folder(None)
             await asyncio.sleep(1)
             continue
 
@@ -2136,14 +2562,14 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             assert isinstance(name, str)
             assert step is not None
 
-            status.set_global_status(f"Processing '{name}'...")
-            status.set_current_folder(name)
+            await status.set_global_status(f"Processing '{name}'...")
+            await status.set_current_folder(name)
             try:
                 root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
                 config_file_name = root_folder / "config.yaml"
                 yaml = YAML()
                 yaml.default_flow_style = False
-                async with aiofiles.open(config_file_name, encoding="utf-8") as config_file:
+                async with await config_file_name.open(encoding="utf-8") as config_file:
                     config: schema.Configuration = yaml.load(await config_file.read())
                     config.yaml_set_start_comment(  # type: ignore[attr-defined]
                         "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/"
@@ -2164,39 +2590,45 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
 
                 assert step is not None
 
+                for image in step["sources"]:
+                    image_path = root_folder / image
+                    if not await image_path.exists():
+                        _LOG.warning("Missing image %s", image_path)
+                        continue
+
                 next_step = None
                 if job_type == scan_to_paperless.status.JobType.TRANSFORM:
                     _update_config(config)
                     next_step = await transform(config, step, config_file_name, root_folder, status=status)
                 if job_type == scan_to_paperless.status.JobType.ASSISTED_SPLIT:
-                    status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
+                    await status.set_status(name, -1, "Splitting in assisted-split mode", write=True)
                     next_step = await split(config, step, root_folder)
                 if job_type == scan_to_paperless.status.JobType.FINALIZE:
                     await finalize(config, step, root_folder, status=status)
-                    with (root_folder / "DONE").open("w", encoding="utf-8"):
+                    async with await (root_folder / "DONE").open("w", encoding="utf-8"):
                         pass
                 if next_step is not None:
                     config["steps"].append(next_step)
 
                 await save_config(config, config_file_name)
             finally:
-                status.set_current_folder(None)
+                await status.set_current_folder(None)
 
         elif job_type == scan_to_paperless.status.JobType.DOWN:
             assert name is not None
-            status.set_global_status(f"Removing '{name}'...")
-            status.set_current_folder(name)
+            await status.set_global_status(f"Removing '{name}'...")
+            await status.set_current_folder(name)
             root_folder = Path(os.environ.get("SCAN_SOURCE_FOLDER", "/source")) / name
-            if root_folder.exists():
+            if await root_folder.exists():
                 shutil.rmtree(root_folder)
         elif job_type == scan_to_paperless.status.JobType.CODE:
             assert isinstance(name, str)
             print(f"Process code '{name}'")
-            status.set_global_status(f"Process code '{name}'...")
-            status.set_current_folder(name)
+            await status.set_global_status(f"Process code '{name}'...")
+            await status.set_current_folder(name)
             try:
                 if not await _process_code(name):
-                    status.update_scan_codes()
+                    await status.update_scan_codes()
             except Exception as exception:  # noqa: BLE001
                 print(exception)
                 trace = traceback.format_exc()
@@ -2205,7 +2637,7 @@ async def _task(status: scan_to_paperless.status.Status) -> None:
             msg = f"Unknown job type: {job_type}"
             raise ValueError(msg)
 
-        status.set_current_folder(None)
+        await status.set_current_folder(None)
 
         print(f"End processing '{name}' as {job_type}...")
 
@@ -2250,14 +2682,19 @@ async def async_main() -> None:
     parser.add_argument("config", nargs="?", help="The config file to process.")
     args = parser.parse_args()
 
+    await ensure_scan_agents_file()
+
     if args.config:
-        await _process(args.config, scan_to_paperless.status.Status(no_write=True))
+        status = scan_to_paperless.status.Status(no_write=True)
+        await status.init()
+        await _process(args.config, status)
         sys.exit()
 
     print("Welcome to scanned images document to paperless.")
-    print(f"Started at: {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M')}")
+    print(f"Started at: {datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M')}")
 
     status = scan_to_paperless.status.Status()
+    await status.init()
 
     watch_dog_task = (
         asyncio.create_task(_watch_dog(), name="Watch dog")

@@ -110,6 +110,40 @@
           "description": "The threshold level used in buffer on the blurry image",
           "default": 20,
           "title": "Buffer level"
+        },
+        "sam3": {
+          "$ref": "#/definitions/sam3"
+        }
+      }
+    },
+    "sam3": {
+      "type": "object",
+      "title": "SAM3",
+      "description": "SAM3 auto-mask configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SAM3 mask generation",
+          "title": "SAM3 enabled"
+        },
+        "prompt": {
+          "type": "string",
+          "default": "document",
+          "description": "Text prompt for SAM3 segmentation",
+          "title": "SAM3 prompt"
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Confidence threshold for mask prediction",
+          "default": 0.5,
+          "title": "SAM3 threshold"
+        },
+        "scale": {
+          "type": "number",
+          "default": 8,
+          "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size.",
+          "title": "SAM3 scale"
         }
       }
     },
@@ -664,6 +698,42 @@
               "title": "Consume folder enabled"
             }
           }
+        },
+        "sam_test": {
+          "type": "object",
+          "title": "SAM test configurations",
+          "description": "Dictionary of SAM test configurations. Each key becomes a directory with green semi-transparent overlay images.",
+          "default": {},
+          "additionalProperties": {
+            "type": "object",
+            "title": "SAM test configuration",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable this SAM test",
+                "title": "SAM test enabled"
+              },
+              "prompt": {
+                "type": "string",
+                "default": "document",
+                "description": "Text prompt for SAM3 segmentation",
+                "title": "SAM test prompt"
+              },
+              "threshold": {
+                "type": "number",
+                "default": 0.5,
+                "description": "Confidence threshold for mask prediction",
+                "title": "SAM test threshold"
+              },
+              "scale": {
+                "type": "number",
+                "default": 8,
+                "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.",
+                "title": "SAM test scale"
+              }
+            }
+          }
         }
       }
     }
@@ -819,6 +889,209 @@
                 "description": "The image dimensions",
                 "items": {
                   "type": "number"
+                }
+              },
+              "histogram": {
+                "type": "object",
+                "description": "Information based on the image histogram to help tune cut_black/cut_white",
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "type": "array",
+                    "description": "Textual histogram lines",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "percentiles": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "p01": {
+                        "type": "number"
+                      },
+                      "p05": {
+                        "type": "number"
+                      },
+                      "p50": {
+                        "type": "number"
+                      },
+                      "p95": {
+                        "type": "number"
+                      },
+                      "p99": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "current": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "cut_black": {
+                        "type": "number"
+                      },
+                      "cut_white": {
+                        "type": "number"
+                      },
+                      "clip_black_percent": {
+                        "type": "number"
+                      },
+                      "clip_white_percent": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "suggested": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "cut_black": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "conservative": {
+                            "type": "number"
+                          },
+                          "balanced": {
+                            "type": "number"
+                          },
+                          "aggressive": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "cut_white": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "conservative": {
+                            "type": "number"
+                          },
+                          "balanced": {
+                            "type": "number"
+                          },
+                          "aggressive": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "auto_mask_hsv": {
+                "type": "object",
+                "description": "HSV analysis and suggested ranges for auto_mask lower_hsv_color and upper_hsv_color",
+                "additionalProperties": false,
+                "properties": {
+                  "white_candidate_ratio": {
+                    "type": "number"
+                  },
+                  "suggestions": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "page_white": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "lower_hsv_color": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            }
+                          },
+                          "upper_hsv_color": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            }
+                          },
+                          "inverse_mask": {
+                            "type": "boolean"
+                          },
+                          "de_noise_morphology": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      "scanner_background": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "lower_hsv_color": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            }
+                          },
+                          "upper_hsv_color": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            }
+                          },
+                          "inverse_mask": {
+                            "type": "boolean"
+                          },
+                          "de_noise_morphology": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "deskew": {
+                "type": "object",
+                "description": "Deskew analysis with detected/applied angle and search configuration",
+                "additionalProperties": false,
+                "properties": {
+                  "angle_from": {
+                    "type": "string",
+                    "enum": ["detected", "manual", "none"]
+                  },
+                  "detected_angle": {
+                    "type": ["number", "null"]
+                  },
+                  "applied_angle": {
+                    "type": ["number", "null"]
+                  },
+                  "near_search_limit": {
+                    "type": "boolean"
+                  },
+                  "search": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "min_angle": {
+                        "type": "number"
+                      },
+                      "max_angle": {
+                        "type": "number"
+                      },
+                      "angle_derivation": {
+                        "type": "number"
+                      },
+                      "num_peaks": {
+                        "type": "integer"
+                      },
+                      "sigma": {
+                        "type": "number"
+                      },
+                      "angle_pm_90": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
                 }
               }
             }

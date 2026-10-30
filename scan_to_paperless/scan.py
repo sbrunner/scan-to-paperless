@@ -1,20 +1,25 @@
 #!/usr/bin/env python
+# Copyright (c) 2018-2026, Stéphane Brunner
 
 """Scan a new document."""
 
-import argparse
+import asyncio
 import datetime
+import io
 import math
+import os
 import re
+import shlex
 import subprocess  # nosec
 import sys
 import time
-from pathlib import Path
-from typing import Any, cast
+from typing import Annotated, Any, cast
 
-import argcomplete
+import anyio
 import PIL.Image
 import pyperclip
+import typer
+from anyio import Path
 from ruamel.yaml.main import YAML
 
 from scan_to_paperless import CONFIG_FILENAME, CONFIG_FOLDER, CONFIG_PATH, get_config
@@ -23,29 +28,47 @@ from scan_to_paperless import config as schema
 from .config import VIEWER_DEFAULT
 
 
-def call(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> None:
+async def call(cmd: list[str], **kwargs: Any) -> None:
     """Verbose implementation of check_call."""
-    del cmd2
-    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    print(shlex.join(cmd))
     try:
-        subprocess.check_call(cmd, **kwargs)  # noqa: S603
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            **kwargs,
+        )
+        returncode = await process.wait()
+        if returncode != 0:
+            print(f"Command returned with code {returncode}")
+            sys.exit(returncode)
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
 
 
-def output(cmd: list[str], cmd2: list[str] | None = None, **kwargs: Any) -> bytes:
+async def output(cmd: list[str], **kwargs: Any) -> bytes:
     """Verbose implementation of check_output."""
-    del cmd2
-    print(" ".join(cmd) if isinstance(cmd, list) else cmd)
+    print(shlex.join(cmd))
     try:
-        return cast("bytes", subprocess.check_output(cmd, **kwargs))  # noqa: S603
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            **{
+                "stdout": asyncio.subprocess.PIPE,
+                "stderr": asyncio.subprocess.PIPE,
+                **kwargs,
+            },
+        )
+        stdout, _ = await process.communicate()
+        if process.returncode != 0:
+            print(f"Command returned with code {process.returncode}")
+            sys.exit(process.returncode)
     except subprocess.CalledProcessError as exception:
         print(exception)
         sys.exit(1)
+    else:
+        return stdout
 
 
-def convert_clipboard() -> None:
+def do_convert_clipboard() -> None:
     """Convert clipboard code from the PDF."""
     original = pyperclip.paste()
     new = "\n".join(["" if e == "|" else e for e in original.split("\n")])
@@ -54,107 +77,256 @@ def convert_clipboard() -> None:
         print(new)
 
 
-def main() -> None:
-    """Scan a new document."""
-    parser = argparse.ArgumentParser()
+app = typer.Typer(rich_markup_mode=None)
 
-    presets = [
-        e.stem[len(str(CONFIG_FILENAME)) - 4 :] for e in CONFIG_FOLDER.glob(f"{CONFIG_PATH.stem}-*.yaml")
-    ]
 
-    parser.add_argument(
-        "--mode",
-        choices=("adf", "one", "multi", "double"),
-        default="adf",
-        help="The scan mode: 'adf': use Auto Document Feeder (Default), "
-        "one: Scan one page, multi: scan multiple pages, double: scan double sided document using the ADF, "
-        "the default used configuration is, "
-        "adf: {scanimage_arguments: [--source=ADF]}, "
-        "multi: {scanimage_arguments: [--batch-prompt]}, "
-        "one: {scanimage_arguments: [--batch-count=1]}, "
-        "double: {scanimage_arguments: [--source=ADF], auto_bash: true, rotate_even: true}",
-    )
-    parser.add_argument(
-        "--preset",
-        choices=presets,
-        help="Use an alternate configuration",
-    )
-    parser.add_argument(
-        "--append-credit-card",
-        action="store_true",
-        help="Append vertically the credit card",
-    )
-    parser.add_argument("--assisted-split", action="store_true", help="Split operation, see help")
-    parser.add_argument(
-        "--config",
-        action="store_true",
-        help="Print the configuration and exit",
-    )
-    parser.add_argument(
-        "--set-config",
-        nargs=2,
-        metavar=("KEY", "VALUE"),
-        action="append",
-        default=[],
-        help="Set a configuration option",
-    )
-    parser.add_argument(
-        "--convert-clipboard",
-        action="store_true",
-        help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
-        "see requirement: https://pypi.org/project/pyperclip/",
-    )
-    parser.add_argument(
-        "--no-remove-to-continue",
-        action="store_true",
-        default=False,
-        help="Don't wait for REMOVE_TO_CONTINUE's deletion before uploading to Paperless.",
+def available_presets() -> list[str]:
+    """Return the list of available presets."""
+    # Use synchronous os.listdir for Typer autocompletion callback
+    config_folder_str = str(CONFIG_FOLDER)
+    # Extract stem from filename (remove .yaml extension)
+    config_stem = (
+        str(CONFIG_FILENAME).rsplit(".", 1)[0] if "." in str(CONFIG_FILENAME) else str(CONFIG_FILENAME)
     )
 
-    argcomplete.autocomplete(parser)
-    args = parser.parse_args()
+    try:
+        files = os.listdir(config_folder_str)  # noqa: PTH208
+        return [
+            f.rsplit(".", 1)[0][len(config_stem) + 1 :]  # Remove prefix and .yaml extension
+            for f in files
+            if f.startswith(f"{config_stem}-") and f.endswith(".yaml")
+        ]
+    except (FileNotFoundError, PermissionError):
+        return []
 
-    config_filename = (
-        CONFIG_PATH if args.preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{args.preset}.yaml")
-    )
-    config: schema.Configuration = get_config(config_filename)
 
-    if args.config:
-        yaml = YAML()
-        yaml.default_flow_style = False
-        print(f"Config from file: {config_filename}")
-        yaml.dump(config, sys.stdout)
-        sys.exit()
+def _config_path_for_preset(preset: str | None) -> Path:
+    """Return the configuration path for the given preset."""
+    if preset is None:
+        return CONFIG_PATH
+    return Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
 
-    if args.convert_clipboard:
+
+async def _load_mode_config(preset: str | None) -> schema.Configuration:
+    """Load the configuration for mode autocompletion."""
+    return await get_config(_config_path_for_preset(preset), verbose=False)
+
+
+def available_modes(ctx: typer.Context) -> list[str]:
+    """Return the list of available scan modes."""
+    preset = cast("str | None", ctx.params.get("preset"))
+    try:
+        config = anyio.run(_load_mode_config, preset)
+    except RuntimeError:
+        config = cast("schema.Configuration", {})
+    return _available_modes(config)
+
+
+@app.command(name="config", help="Print the configuration.")
+async def main_config(
+    preset: Annotated[
+        str,
+        typer.Option(help="Use an alternate configuration", autocompletion=available_presets),
+    ],
+) -> None:
+    """Print the configuration."""
+    config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
+    config: schema.Configuration = await get_config(config_filename)
+
+    yaml = YAML()
+    yaml.default_flow_style = False
+    print(f"Config from file: {config_filename}")
+    yaml.dump(config, sys.stdout)
+    sys.exit()
+
+
+@app.command(help="Set a configuration option.")
+async def set_config(
+    key: Annotated[str, typer.Option(help="Configuration key to set")],
+    value: Annotated[str, typer.Option(help="Configuration value to set")],
+    preset: Annotated[
+        str,
+        typer.Option(help="Use an alternate configuration", autocompletion=available_presets),
+    ],
+) -> None:
+    """Set a configuration option."""
+    config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
+    config: schema.Configuration = await get_config(config_filename)
+
+    config[key] = value  # type: ignore[literal-required]
+
+    yaml = YAML()
+    yaml.default_flow_style = False
+    async with await config_filename.open("w", encoding="utf-8") as config_file:
+        await config_file.write(
+            "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
+            "/master/scan_to_paperless/config_schema.json\n\n",
+        )
+        yaml.dump(config, config_file)
+
+
+@app.command(
+    help="Wait and convert clipboard content, used to fix the newlines in the copied codes, "
+    "see requirement: https://pypi.org/project/pyperclip/",
+)
+def convert_clipboard(one: bool = False) -> None:
+    """
+    Convert clipboard content.
+    """
+    if not one:
         print("Wait for clipboard content to be converted, press Ctrl+C to stop")
-        convert_clipboard()
+    do_convert_clipboard()
+    if not one:
         try:
             previous = pyperclip.paste()
             while True:
                 current = pyperclip.paste()
                 if current != previous:
                     previous = current
-                    convert_clipboard()
+                    do_convert_clipboard()
                 time.sleep(0.1)
         except KeyboardInterrupt:
             print()
             sys.exit()
 
-    dirty = False
-    for conf in args.set_config:
-        config[conf[0]] = conf[1]  # type: ignore[literal-required]
-        dirty = True
-    if dirty:
-        yaml = YAML()
-        yaml.default_flow_style = False
-        with config_filename.open("w", encoding="utf-8") as config_file:
-            config_file.write(
-                "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/config_schema.json\n\n",
-            )
-            yaml.dump(config, config_file)
 
+app_scan = typer.Typer(rich_markup_mode=None)
+
+
+@app.command(help="Scan a new document.")
+@app_scan.command(help="Scan a new document.")
+def scan(
+    preset: Annotated[
+        str | None,
+        typer.Option(
+            help="Use an alternate configuration",
+            autocompletion=available_presets,
+        ),
+    ] = None,
+    mode: Annotated[
+        str,
+        typer.Option(
+            help="\n\n".join(  # noqa: FLY002
+                [
+                    "The scan mode name from the configuration file (config.modes).",
+                    "Default used values:",
+                    "'adf': use Auto Document Feeder (Default) (default used arguments: --source=ADF)",
+                    "'one': scan one page (default used arguments: --batch-count=1)",
+                    "'multi': scan multiple pages (default used arguments: --batch-prompt)",
+                    "'double': scan double sided document using the ADF (default used arguments: --source=ADF, auto_bash: true, rotate_even: true)",
+                    "Example: --mode=double.",
+                ],
+            ),
+            autocompletion=available_modes,
+        ),
+    ] = "adf",
+    append_credit_card: Annotated[
+        bool,
+        typer.Option(
+            help="Append vertically the credit card",
+        ),
+    ] = False,
+    assisted_split: Annotated[
+        bool,
+        typer.Option(
+            help="Split operation, see help",
+        ),
+    ] = False,
+) -> None:
+    """Scan a new document."""
+    asyncio.run(_scan_async(mode, preset, append_credit_card, assisted_split))
+
+
+async def _scan_async(
+    mode: str,
+    preset: str | None,
+    append_credit_card: bool,
+    assisted_split: bool,
+) -> None:
+    """Scan a new document."""
+    config_filename = CONFIG_PATH if preset is None else Path(f"{str(CONFIG_PATH)[:-5]}-{preset}.yaml")
+    config: schema.Configuration = await get_config(config_filename)
+    config_sources, default_args_sources = await _get_config_sources_and_default_args_sources(config_filename)
+
+    scan_folder = await _validate_scan_folder(config)
+    base_folder = await _get_base_folder(scan_folder)
+    root_folder = base_folder / "source"
+    await root_folder.mkdir(parents=True)
+
+    try:
+        scanimage_cmd = _build_scanimage_command(config, root_folder, mode)
+        await _perform_scan(scanimage_cmd, root_folder, config, mode)
+
+        args_: schema.Arguments = {
+            "append_credit_card": append_credit_card,
+            "assisted_split": assisted_split,
+        }
+        args_sources: dict[str, str] = {
+            "append_credit_card": "CLI --append-credit-card",
+            "assisted_split": "CLI --assisted-split",
+        }
+        args_.update(config.get("default_args", {}))
+        args_sources.update(dict(default_args_sources.items()))
+
+        await _detect_image_dpi(args_, root_folder)
+
+    except subprocess.CalledProcessError as exception:
+        print(exception)
+        sys.exit(1)
+
+    viewer_cmd = [config.get("viewer", VIEWER_DEFAULT), str(root_folder)]
+    process = await asyncio.create_subprocess_exec(*viewer_cmd)
+    await process.wait()
+
+    extension = config.get("extension", schema.EXTENSION_DEFAULT)
+    images = await _get_sorted_images(root_folder, extension)
+    await _save_process_config(root_folder, images, args_, config_sources, args_sources)
+
+
+async def _get_config_sources_and_default_args_sources(
+    config_filename: Path,
+) -> tuple[list[Path], dict[str, str]]:
+    """Get configuration files used and the source file for each default_args key."""
+    yaml = YAML()
+    yaml.default_flow_style = False
+
+    chain: list[Path] = []
+    current = config_filename
+    seen: set[str] = set()
+    while True:
+        resolved = await (await current.expanduser()).resolve()
+        resolved_str = str(resolved)
+        if resolved_str in seen:
+            break
+        seen.add(resolved_str)
+        chain.append(resolved)
+
+        if not await resolved.exists():
+            break
+        async with await resolved.open(encoding="utf-8") as config_file:
+            loaded = cast("dict[str, Any] | None", yaml.load(await config_file.read()))
+        if not loaded or "extends" not in loaded:
+            break
+        current = resolved.parent / cast("str", loaded["extends"])
+
+    ordered_chain = list(reversed(chain))
+    default_args_sources: dict[str, str] = {}
+    for source_file in ordered_chain:
+        if not await source_file.exists():
+            continue
+        async with await source_file.open(encoding="utf-8") as config_file:
+            loaded = cast("dict[str, Any] | None", yaml.load(await config_file.read()))
+        if not loaded:
+            continue
+        default_args = cast("dict[str, Any]", loaded.get("default_args", {}))
+        for key in default_args:
+            default_args_sources[key] = str(source_file)
+
+    return ordered_chain, default_args_sources
+
+
+async def _validate_scan_folder(config: schema.Configuration) -> Path:
+    """Validate and return the scan folder path."""
     if "scan_folder" not in config:
         print(
             """The scan folder isn't set, use:
@@ -162,97 +334,183 @@ def main() -> None:
     This should be shared with the process container in 'source'.""",
         )
         sys.exit(1)
-    now = datetime.datetime.now(datetime.timezone.utc)
-    base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
-    while base_folder.exists():
+    return await Path(config["scan_folder"]).expanduser()
+
+
+async def _get_base_folder(scan_folder: Path) -> Path:
+    """Get a unique base folder for the scan."""
+    now = datetime.datetime.now(datetime.UTC)
+    base_folder = scan_folder / now.strftime("%Y%m%d-%H%M%S")
+    while await base_folder.exists():
         now += datetime.timedelta(seconds=1)
-        base_folder = Path(config["scan_folder"]).expanduser() / now.strftime("%Y%m%d-%H%M%S")
+        base_folder = scan_folder / now.strftime("%Y%m%d-%H%M%S")
+    return base_folder
 
-    root_folder = base_folder / "source"
-    root_folder.mkdir(parents=True)
 
-    try:
-        scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
-        scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
-        scanimage += [f"--batch={root_folder}/image-%d.{config.get('extension', schema.EXTENSION_DEFAULT)}"]
-        mode_config = config.get("modes", {}).get(args.mode, {})
-        mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(args.mode, {}))
-        scanimage += mode_config.get("scanimage_arguments", mode_default.get("scanimage_arguments", []))
+async def _scan_adf_mode(
+    scanimage_cmd: list[str],
+    root_folder: Path,
+) -> None:
+    """Scan using ADF mode."""
+    del root_folder
+    await call([*scanimage_cmd])
 
-        if mode_config.get("auto_bash", mode_default.get("auto_bash", schema.AUTO_BASH_DEFAULT)):
-            call([*scanimage, "--batch-start=1", "--batch-increment=2"])
-            odd = root_folder.iterdir()
-            input("Put your document in the automatic document feeder for the other side, and press enter.")
-            call(
-                [
-                    *scanimage,
-                    f"--batch-start={len(list(odd)) * 2}",
-                    "--batch-increment=-2",
-                    f"--batch-count={len(list(odd))}",
-                ],
-            )
-            if mode_config.get("rotate_even", mode_default.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)):
-                for img in root_folder.iterdir():
-                    if img not in odd:
-                        path = root_folder / img
-                        with PIL.Image.open(path) as image:
-                            image.rotate(180).save(path, dpi=image.info["dpi"])
-        else:
-            call(scanimage)
 
-        args_: schema.Arguments = {
-            "append_credit_card": args.append_credit_card,
-            "assisted_split": args.assisted_split,
-        }
-        args_.update(config.get("default_args", {}))
+async def _scan_double_mode(
+    scanimage_cmd: list[str],
+    root_folder: Path,
+    rotate_even: bool,
+) -> None:
+    """Scan double-sided document using ADF."""
+    await call([*scanimage_cmd, "--batch-start=1", "--batch-increment=2"])
+    odd = [p async for p in root_folder.iterdir()]
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None, input, "Put your document in the automatic document feeder for the other side, and press enter."
+    )
+    await call(
+        [
+            *scanimage_cmd,
+            f"--batch-start={len(odd) * 2}",
+            "--batch-increment=-2",
+            f"--batch-count={len(odd)}",
+        ],
+    )
+    if rotate_even:
+        async for img in root_folder.iterdir():
+            if img not in odd:
+                path = root_folder / img
+                with PIL.Image.open(path) as image:
+                    image.rotate(180).save(path, dpi=image.info["dpi"])
 
-    except subprocess.CalledProcessError as exception:
-        print(exception)
+
+def _available_modes(config: schema.Configuration) -> list[str]:
+    """Return the list of available mode names."""
+    config_modes = list(config.get("modes", {}).keys())
+    default_modes = list(schema.MODES_DEFAULT.keys())
+    return sorted(set(config_modes + default_modes))
+
+
+def _get_mode_config(
+    config: schema.Configuration,
+    mode: str,
+) -> schema.Mode:
+    """Return the merged configuration for the scan mode."""
+    modes_config = config.get("modes", {})
+    if mode not in modes_config and mode not in schema.MODES_DEFAULT:
+        available_modes = _available_modes(config)
+        print(
+            f"Unknown scan mode '{mode}'. Available modes: {', '.join(available_modes)}",
+        )
         sys.exit(1)
 
-    for img in root_folder.iterdir():
+    mode_config = modes_config.get(mode, {})
+    mode_default = cast("schema.Mode", schema.MODES_DEFAULT.get(mode, {}))
+    return cast("schema.Mode", {**mode_default, **mode_config})
+
+
+def _build_scanimage_command(
+    config: schema.Configuration,
+    root_folder: Path,
+    mode: str,
+) -> list[str]:
+    """Build the scanimage command based on configuration and mode."""
+    scanimage: list[str] = [config.get("scanimage", schema.SCANIMAGE_DEFAULT)]
+    scanimage += config.get("scanimage_arguments", schema.SCANIMAGE_ARGUMENTS_DEFAULT)
+    extension = config.get("extension", schema.EXTENSION_DEFAULT)
+    scanimage += [f"--batch={root_folder}/image-%d.{extension}"]
+
+    mode_config = _get_mode_config(config, mode)
+    scanimage += mode_config.get("scanimage_arguments", [])
+
+    return scanimage
+
+
+async def _perform_scan(
+    scanimage_cmd: list[str],
+    root_folder: Path,
+    config: schema.Configuration,
+    mode: str,
+) -> None:
+    """Perform the actual scan based on mode."""
+    mode_config = _get_mode_config(config, mode)
+
+    if mode_config.get("auto_bash", schema.AUTO_BASH_DEFAULT):
+        rotate_even = mode_config.get("rotate_even", schema.ROTATE_EVEN_DEFAULT)
+        await _scan_double_mode(scanimage_cmd, root_folder, rotate_even)
+    else:
+        await _scan_adf_mode(scanimage_cmd, root_folder)
+
+
+async def _detect_image_dpi(args_: schema.Arguments, root_folder: Path) -> None:
+    """Detect DPI from images if not already set."""
+    if "dpi" in args_:
+        return
+
+    async for img in root_folder.iterdir():
         if not img.name.startswith("image-"):
             continue
-        if "dpi" not in args_:
-            with PIL.Image.open(root_folder / img) as image:
-                if "dpi" in image.info:
-                    args_["dpi"] = math.sqrt(
-                        sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
-                    )
+        with PIL.Image.open(root_folder / img) as image:
+            if "dpi" in image.info:
+                args_["dpi"] = math.sqrt(
+                    sum(float(e) * e for e in image.info["dpi"]) / len(image.info["dpi"]),
+                )
+                return
 
-    subprocess.call([config.get("viewer", VIEWER_DEFAULT), root_folder])  # noqa: S603
 
+async def _get_sorted_images(root_folder: Path, extension: str) -> list[Path]:
+    """Get sorted list of images from root folder."""
     images = []
-    for img in root_folder.iterdir():
+    async for img in root_folder.iterdir():
         if not img.name.startswith("image-"):
             continue
-        images.append(Path("source") / img)
+        images.append(Path(img).relative_to(root_folder.parent))
 
-    regex = re.compile(rf".*/source/image\-([0-9]+)\.{config.get('extension', schema.EXTENSION_DEFAULT)}$")
+    regex = re.compile(rf"source/image\-([0-9]+)\.{extension}$")
 
     def image_match(image_path: Path) -> int:
         match = regex.match(str(image_path))
         assert match
         return int(match.group(1))
 
-    images = sorted(images, key=image_match)
-    if images:
-        process_config = {
-            "images": [str(image) for image in images],
-            "args": args_,
-        }
-        yaml = YAML()
-        yaml.default_flow_style = False
-        with (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
-            process_file.write(
-                "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
-                "/master/scan_to_paperless/process_schema.json\n\n",
-            )
-            yaml.dump(process_config, process_file)
-    else:
-        root_folder.rmdir()
-        base_folder.rmdir()
+    return sorted(images, key=image_match)
+
+
+async def _save_process_config(
+    root_folder: Path,
+    images: list[Path],
+    args_: schema.Arguments,
+    config_sources: list[Path],
+    args_sources: dict[str, str],
+) -> None:
+    """Save the process configuration file."""
+    if not images:
+        await root_folder.rmdir()
+        await root_folder.parent.rmdir()
+        return
+
+    process_config = {
+        "images": [str(image) for image in images],
+        "args": args_,
+    }
+    yaml = YAML()
+    yaml.default_flow_style = False
+    async with await (root_folder.parent / "config.yaml").open("w", encoding="utf-8") as process_file:
+        await process_file.write(
+            "# yaml-language-server: $schema=https://raw.githubusercontent.com/sbrunner/scan-to-paperless"
+            "/master/scan_to_paperless/process_schema.json\n\n",
+        )
+        await process_file.write("# Base configuration files used to create this config:\n")
+        for source in config_sources:
+            await process_file.write(f"# - {source}\n")
+        await process_file.write("# Property source (which file/option sets each args.<property>):\n")
+        for key in sorted(args_sources):
+            await process_file.write(f"# - args.{key}: {args_sources[key]}\n")
+        await process_file.write("\n")
+        out = io.StringIO()
+        yaml.dump(process_config, out)
+        await process_file.write(out.getvalue())
 
 
 if __name__ == "__main__":
-    main()
+    app_scan()
