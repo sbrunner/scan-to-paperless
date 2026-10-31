@@ -6,8 +6,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/bash: 5.3-2ubuntu1
   ubuntu_26_04/binutils: 2.46-3ubuntu2
   ubuntu_26_04/binutils-common: 2.46-3ubuntu2
-  ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2
-  ubuntu_26_04/ca-certificates: 20260601~26.04.1
+  ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2.2
+  ubuntu_26_04/ca-certificates: 20260816ubuntu0.26.04.1
   ubuntu_26_04/ca-certificates-java: '20260311'
   ubuntu_26_04/coreutils: 9.5-1ubuntu2+0.0.0~ubuntu25
   ubuntu_26_04/coreutils-from-uutils: 0.0.0~ubuntu25
@@ -21,9 +21,9 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/debconf: 1.5.92
   ubuntu_26_04/debianutils: 5.23.2build1
   ubuntu_26_04/default-jre-headless: 2:1.25-77
-  ubuntu_26_04/diffutils: 1:3.12-1
-  ubuntu_26_04/dirmngr: 2.4.8-4ubuntu3
-  ubuntu_26_04/distro-info-data: 0.68ubuntu0.1
+  ubuntu_26_04/diffutils: 1:3.12-1ubuntu0.1
+  ubuntu_26_04/dirmngr: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/distro-info-data: 2026.10.12-0ubuntu0.26.04.1
   ubuntu_26_04/dpkg: 1.23.7ubuntu1
   ubuntu_26_04/dpkg-dev: 1.23.7ubuntu1
   ubuntu_26_04/e2fsprogs: 1.47.2-3ubuntu4
@@ -34,17 +34,17 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/fonts-dejavu-mono: 2.37-8build1
   ubuntu_26_04/fonts-urw-base35: 20200910-8build1
   ubuntu_26_04/gcc-16-base: 16-20260322-1ubuntu1
-  ubuntu_26_04/ghostscript: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/gir1.2-girepository-3.0: 2.88.0-1
-  ubuntu_26_04/gir1.2-glib-2.0: 2.88.0-1
+  ubuntu_26_04/ghostscript: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/gir1.2-girepository-3.0: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/gir1.2-glib-2.0: 2.88.0-1ubuntu0.1
   ubuntu_26_04/gir1.2-packagekitglib-1.0: 1.3.4-3ubuntu1.1
-  ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2
-  ubuntu_26_04/gnupg: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpg: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpg-agent: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpgconf: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpgsm: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpgv: 2.4.8-4ubuntu3
+  ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2.1
+  ubuntu_26_04/gnupg: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpg: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpg-agent: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpgconf: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpgsm: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpgv: 2.4.8-4ubuntu3.1
   ubuntu_26_04/graphicsmagick: 1.4+really1.3.46-2
   ubuntu_26_04/grep: 3.12-1
   ubuntu_26_04/gzip: 1.14-1~exp2ubuntu1.1
@@ -53,28 +53,28 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/iso-codes: 4.20.1-1
   ubuntu_26_04/java-common: '0.77'
   ubuntu_26_04/libacl1: 2.3.2-2
-  ubuntu_26_04/libaom3: 3.13.1-2
+  ubuntu_26_04/libaom3: 3.13.1-2ubuntu0.1
   ubuntu_26_04/libapache-pom-java: 33-2build1
   ubuntu_26_04/libapparmor1: 5.0.0~beta1-0ubuntu7
   ubuntu_26_04/libappstream5: 1.1.2-1
   ubuntu_26_04/libapt-pkg7.0: 3.2.0
-  ubuntu_26_04/libarchive13t64: 3.8.5-1ubuntu2.1
+  ubuntu_26_04/libarchive13t64: 3.8.5-1ubuntu2.3
   ubuntu_26_04/libassuan9: 3.0.2-2build1
   ubuntu_26_04/libatomic1: 16-20260322-1ubuntu1
-  ubuntu_26_04/libattr1: 1:2.5.2-4
+  ubuntu_26_04/libattr1: 1:2.5.2-4ubuntu0.1
   ubuntu_26_04/libaudit-common: 1:4.1.2-1build1
   ubuntu_26_04/libaudit1: 1:4.1.2-1build1
   ubuntu_26_04/libavahi-client3: 0.8-18ubuntu1.1
   ubuntu_26_04/libavahi-common-data: 0.8-18ubuntu1.1
   ubuntu_26_04/libavahi-common3: 0.8-18ubuntu1.1
   ubuntu_26_04/libbcprov-java: 1.80-3
-  ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2
-  ubuntu_26_04/libbrotli1: 1.2.0-3build1
+  ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2.2
+  ubuntu_26_04/libbrotli1: 1.2.0-3ubuntu0.1
   ubuntu_26_04/libbsd0: 0.12.2-2build2
-  ubuntu_26_04/libbz2-1.0: 1.0.8-6build2
-  ubuntu_26_04/libc-bin: 2.43-2ubuntu2
-  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2
-  ubuntu_26_04/libc6: 2.43-2ubuntu2
+  ubuntu_26_04/libbz2-1.0: 1.0.8-6ubuntu0.1
+  ubuntu_26_04/libc-bin: 2.43-2ubuntu2.4
+  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.4
+  ubuntu_26_04/libc6: 2.43-2ubuntu2.4
   ubuntu_26_04/libcairo2: 1.18.4-3
   ubuntu_26_04/libcap-ng0: 0.8.5-4build5
   ubuntu_26_04/libcap2: 1:2.75-10ubuntu2
@@ -85,8 +85,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libcrypt-dev: 1:4.5.1-1
   ubuntu_26_04/libcrypt1: 1:4.5.1-1
   ubuntu_26_04/libcups2t64: 2.4.16-1ubuntu1.3
-  ubuntu_26_04/libcurl3t64-gnutls: 8.18.0-1ubuntu2.3
-  ubuntu_26_04/libcurl4t64: 8.18.0-1ubuntu2.3
+  ubuntu_26_04/libcurl3t64-gnutls: 8.18.0-1ubuntu2.8
+  ubuntu_26_04/libcurl4t64: 8.18.0-1ubuntu2.8
   ubuntu_26_04/libdatrie1: 0.2.14-1
   ubuntu_26_04/libdb5.3t64: 5.3.28+dfsg2-10ubuntu1
   ubuntu_26_04/libdbus-1-3: 1.16.2-2ubuntu4
@@ -94,37 +94,37 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libdeflate0: 1.23-2ubuntu1
   ubuntu_26_04/libduktape207: 2.7.0+tests-0ubuntu4
   ubuntu_26_04/libelf1t64: 0.194-4
-  ubuntu_26_04/libexpat1: 2.7.4-1
+  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.2
   ubuntu_26_04/libext2fs2t64: 1.47.2-3ubuntu4
   ubuntu_26_04/libffi8: 3.5.2-4
   ubuntu_26_04/libfontconfig1: 2.17.1-3ubuntu1
   ubuntu_26_04/libfontenc1: 1:1.1.8-1build2
-  ubuntu_26_04/libfreetype6: 2.14.2+dfsg-1
+  ubuntu_26_04/libfreetype6: 2.14.2+dfsg-1ubuntu0.2
   ubuntu_26_04/libfribidi0: 1.0.16-5
   ubuntu_26_04/libfyaml0: 0.9.4-1
   ubuntu_26_04/libgcc-s1: 16-20260322-1ubuntu1
-  ubuntu_26_04/libgcrypt20: 1.12.0-2ubuntu1
+  ubuntu_26_04/libgcrypt20: 1.12.0-2ubuntu1.1
   ubuntu_26_04/libgdbm-compat4t64: 1.26-1build1
   ubuntu_26_04/libgdbm6t64: 1.26-1build1
-  ubuntu_26_04/libgif7: 5.2.2-1ubuntu3
-  ubuntu_26_04/libgirepository-2.0-0: 2.88.0-1
-  ubuntu_26_04/libglib2.0-0t64: 2.88.0-1
-  ubuntu_26_04/libglib2.0-bin: 2.88.0-1
-  ubuntu_26_04/libglib2.0-data: 2.88.0-1
+  ubuntu_26_04/libgif7: 5.2.2-1ubuntu3.2
+  ubuntu_26_04/libgirepository-2.0-0: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/libglib2.0-0t64: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/libglib2.0-bin: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/libglib2.0-data: 2.88.0-1ubuntu0.1
   ubuntu_26_04/libgmp10: 2:6.3.0+dfsg-5ubuntu2
   ubuntu_26_04/libgnutls30t64: 3.8.12-2ubuntu1.1
   ubuntu_26_04/libgomp1: 16-20260322-1ubuntu1
   ubuntu_26_04/libgpg-error0: 1.58-2
   ubuntu_26_04/libgraphicsmagick-q16-3t64: 1.4+really1.3.46-2
   ubuntu_26_04/libgraphite2-3: 1.3.14-11ubuntu1.1
-  ubuntu_26_04/libgs-common: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/libgs10: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/libgs10-common: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4
+  ubuntu_26_04/libgs-common: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/libgs10: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/libgs10-common: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libgstreamer1.0-0: 1.28.2-1
   ubuntu_26_04/libharfbuzz0b: 12.3.2-2
-  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.3
-  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.3
+  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.6
+  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.6
   ubuntu_26_04/libhogweed6t64: 3.10.2-1
   ubuntu_26_04/libhwy1t64: 1.3.0-2
   ubuntu_26_04/libice6: 2:1.1.1-1build1
@@ -136,17 +136,17 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libimagequant0: 4.4.1-1
   ubuntu_26_04/libjansson4: 2.14-2build4
   ubuntu_26_04/libjbig0: 2.1-6.1ubuntu3
-  ubuntu_26_04/libjbig2dec0: 0.20-1build4
+  ubuntu_26_04/libjbig2dec0: 0.20-1ubuntu0.26.04.1
   ubuntu_26_04/libjpeg-turbo8: 2.1.5-4ubuntu4
   ubuntu_26_04/libjpeg8: 8c-2ubuntu12
   ubuntu_26_04/libjs-sphinxdoc: 8.2.3-12
   ubuntu_26_04/libjson-c5: 0.18+ds-3
   ubuntu_26_04/libjxl0.11: 0.11.1-6ubuntu4.2
-  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4
+  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libkeyutils1: 1.6.3-6ubuntu3
   ubuntu_26_04/libkmod2: 34.2-2ubuntu2
-  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4
-  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4
+  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libksba8: 1.6.7-2build1
   ubuntu_26_04/liblcms2-2: 2.17-1ubuntu0.2
   ubuntu_26_04/libldap-common: 2.6.10+dfsg-1ubuntu5
@@ -154,39 +154,39 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libleptonica6: 1.86.0-1
   ubuntu_26_04/liblerc4: 4.0.0+ds-5ubuntu2
   ubuntu_26_04/liblz4-1: 1.10.0-8
-  ubuntu_26_04/liblzma5: 5.8.3-1
+  ubuntu_26_04/liblzma5: 5.8.3-1ubuntu0.1
   ubuntu_26_04/libmd0: 1.1.0-2build4
-  ubuntu_26_04/libmount1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libmount1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libncursesw6: 6.6+20251231-1
   ubuntu_26_04/libnettle8t64: 3.10.2-1
   ubuntu_26_04/libnghttp2-14: 1.68.0-2ubuntu0.2
   ubuntu_26_04/libnpth0t64: 1.8-3build1
   ubuntu_26_04/libnspr4: 2:4.38.2-1ubuntu1
-  ubuntu_26_04/libnss3: 2:3.120-1ubuntu2.1
+  ubuntu_26_04/libnss3: 2:3.120-1ubuntu2.2
   ubuntu_26_04/libopenjp2-7: 2.5.4-1ubuntu0.1
   ubuntu_26_04/libp11-kit0: 0.26.2-2
   ubuntu_26_04/libpackagekit-glib2-18: 1.3.4-3ubuntu1.1
-  ubuntu_26_04/libpam-modules: 1.7.0-5ubuntu3
-  ubuntu_26_04/libpam-modules-bin: 1.7.0-5ubuntu3
-  ubuntu_26_04/libpam-runtime: 1.7.0-5ubuntu3
-  ubuntu_26_04/libpam-systemd: 259.5-0ubuntu3
-  ubuntu_26_04/libpam0g: 1.7.0-5ubuntu3
+  ubuntu_26_04/libpam-modules: 1.7.0-5ubuntu3.2
+  ubuntu_26_04/libpam-modules-bin: 1.7.0-5ubuntu3.2
+  ubuntu_26_04/libpam-runtime: 1.7.0-5ubuntu3.2
+  ubuntu_26_04/libpam-systemd: 259.5-0ubuntu3.4
+  ubuntu_26_04/libpam0g: 1.7.0-5ubuntu3.2
   ubuntu_26_04/libpango-1.0-0: 1.57.0-1
   ubuntu_26_04/libpangocairo-1.0-0: 1.57.0-1
   ubuntu_26_04/libpangoft2-1.0-0: 1.57.0-1
   ubuntu_26_04/libpaper2: 2.2.5-0.3maysync1
   ubuntu_26_04/libpcre2-8-0: 10.46-1build1
   ubuntu_26_04/libpcsclite1: 2.4.1-1
-  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.1
+  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.3
   ubuntu_26_04/libpixman-1-0: 0.46.4-1
-  ubuntu_26_04/libpng16-16t64: 1.6.57-1
-  ubuntu_26_04/libpolkit-agent-1-0: 127-2ubuntu1
-  ubuntu_26_04/libpolkit-gobject-1-0: 127-2ubuntu1
+  ubuntu_26_04/libpng16-16t64: 1.6.57-1ubuntu0.1
+  ubuntu_26_04/libpolkit-agent-1-0: 127-2ubuntu1.1
+  ubuntu_26_04/libpolkit-gobject-1-0: 127-2ubuntu1.1
   ubuntu_26_04/libproc2-0: 2:4.0.4-9ubuntu1
   ubuntu_26_04/libpsl5t64: 0.21.2-1.1build2
   ubuntu_26_04/libpython3-stdlib: 3.14.3-0ubuntu2
-  ubuntu_26_04/libpython3.14-minimal: 3.14.4-1ubuntu0.1
-  ubuntu_26_04/libpython3.14-stdlib: 3.14.4-1ubuntu0.1
+  ubuntu_26_04/libpython3.14-minimal: 3.14.4-1ubuntu0.2
+  ubuntu_26_04/libpython3.14-stdlib: 3.14.4-1ubuntu0.2
   ubuntu_26_04/libreadline8t64: 8.3-4
   ubuntu_26_04/librtmp1: 2.4+20151223.gitfa8646d.1-3
   ubuntu_26_04/libsane-common: 1.4.0-1ubuntu1
@@ -200,69 +200,69 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libsepol2: 3.9-2
   ubuntu_26_04/libsharpyuv0: 1.5.0-0.1build1
   ubuntu_26_04/libsm6: 2:1.2.6-1build1
-  ubuntu_26_04/libsmartcols1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libsmartcols1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libsnmp-base: 5.9.4+dfsg-2ubuntu3
-  ubuntu_26_04/libsqlite3-0: 3.46.1-9ubuntu0.1
+  ubuntu_26_04/libsqlite3-0: 3.46.1-9ubuntu0.3
   ubuntu_26_04/libss2: 1.47.2-3ubuntu4
-  ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.3
-  ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.2
+  ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.4
+  ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.7
   ubuntu_26_04/libstdc++6: 16-20260322-1ubuntu1
   ubuntu_26_04/libstemmer0d: 3.0.1-1
-  ubuntu_26_04/libsystemd-shared: 259.5-0ubuntu3
-  ubuntu_26_04/libsystemd0: 259.5-0ubuntu3
+  ubuntu_26_04/libsystemd-shared: 259.5-0ubuntu3.4
+  ubuntu_26_04/libsystemd0: 259.5-0ubuntu3.4
   ubuntu_26_04/libtasn1-6: 4.21.0-2
   ubuntu_26_04/libtesseract5: 5.5.0-1build1
   ubuntu_26_04/libthai-data: 0.1.30-1
   ubuntu_26_04/libthai0: 0.1.30-1
-  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu4
+  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu5
   ubuntu_26_04/libtinfo6: 6.6+20251231-1
-  ubuntu_26_04/libudev1: 259.5-0ubuntu3
+  ubuntu_26_04/libudev1: 259.5-0ubuntu3.4
   ubuntu_26_04/libunistring5: 1.3-2build1
-  ubuntu_26_04/libuuid1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libuuid1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libv4l-0t64: 1.32.0-2ubuntu1
   ubuntu_26_04/libv4lconvert0t64: 1.32.0-2ubuntu1
   ubuntu_26_04/libwebp7: 1.5.0-0.1build1
   ubuntu_26_04/libwebpmux3: 1.5.0-0.1build1
   ubuntu_26_04/libwmflite-0.2-7: 0.2.14-1
   ubuntu_26_04/libwrap0: 7.6.q-36build2
-  ubuntu_26_04/libx11-6: 2:1.8.13-1
-  ubuntu_26_04/libx11-data: 2:1.8.13-1
+  ubuntu_26_04/libx11-6: 2:1.8.13-1ubuntu0.1
+  ubuntu_26_04/libx11-data: 2:1.8.13-1ubuntu0.1
   ubuntu_26_04/libxau6: 1:1.0.11-1build2
   ubuntu_26_04/libxcb-render0: 1.17.0-2ubuntu1
   ubuntu_26_04/libxcb-shm0: 1.17.0-2ubuntu1
   ubuntu_26_04/libxcb1: 1.17.0-2ubuntu1
   ubuntu_26_04/libxdmcp6: 1:1.1.5-2
   ubuntu_26_04/libxext6: 2:1.3.4-1build3
-  ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.1
+  ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.3
   ubuntu_26_04/libxmlb2: 0.3.24-2
   ubuntu_26_04/libxrender1: 1:0.9.12-1build1
   ubuntu_26_04/libxt6t64: 1:1.2.1-1.3build1
   ubuntu_26_04/libxxhash0: 0.8.3-2build1
   ubuntu_26_04/libzbar0t64: 0.23.93-9ubuntu1
   ubuntu_26_04/libzstd1: 1.5.7+dfsg-3
-  ubuntu_26_04/login: 1:4.16.0-2+really2.41.3-3ubuntu2
+  ubuntu_26_04/login: 1:4.16.0-2+really2.41.3-3ubuntu2.2
   ubuntu_26_04/login.defs: 1:4.17.4-2ubuntu3
   ubuntu_26_04/logsave: 1.47.2-3ubuntu4
   ubuntu_26_04/lsb-release: 12.1-2build1
   ubuntu_26_04/mawk: 1.3.4.20260129-1
   ubuntu_26_04/media-types: 14.0.0build1
-  ubuntu_26_04/mount: 2.41.3-3ubuntu2
+  ubuntu_26_04/mount: 2.41.3-3ubuntu2.2
   ubuntu_26_04/ncurses-base: 6.6+20251231-1
   ubuntu_26_04/ncurses-bin: 6.6+20251231-1
   ubuntu_26_04/netbase: 6.5build1
-  ubuntu_26_04/openjdk-25-jre-headless: 25.0.3+9-2~26.04.2
-  ubuntu_26_04/openssl: 3.5.5-1ubuntu3.2
-  ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.2
+  ubuntu_26_04/openjdk-25-jre-headless: 25.0.4.1+1-1~26.04.4
+  ubuntu_26_04/openssl: 3.5.5-1ubuntu3.7
+  ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.7
   ubuntu_26_04/optipng: 7.9.1+ds-2build1
   ubuntu_26_04/packagekit: 1.3.4-3ubuntu1.1
   ubuntu_26_04/passwd: 1:4.17.4-2ubuntu3
   ubuntu_26_04/pdftk-java: 3.3.3-2build1
-  ubuntu_26_04/perl: 5.40.1-7ubuntu0.1
-  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.1
-  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.1
+  ubuntu_26_04/perl: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.3
   ubuntu_26_04/pinentry-curses: 1.3.2-3ubuntu1
   ubuntu_26_04/pngquant: 2.18.0-1build3
-  ubuntu_26_04/polkitd: 127-2ubuntu1
+  ubuntu_26_04/polkitd: 127-2ubuntu1.1
   ubuntu_26_04/poppler-data: 0.4.12-1build1
   ubuntu_26_04/procps: 2:4.0.4-9ubuntu1
   ubuntu_26_04/python-apt-common: 3.1.0ubuntu1
@@ -273,7 +273,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/python3-bcrypt: 5.0.0-3build1
   ubuntu_26_04/python3-blinker: 1.9.0-2build1
   ubuntu_26_04/python3-cffi-backend: 2.0.0-3build1
-  ubuntu_26_04/python3-cryptography: 46.0.5-1ubuntu2
+  ubuntu_26_04/python3-cryptography: 46.0.5-1ubuntu2.2
   ubuntu_26_04/python3-dbus: 1.4.0-1build2
   ubuntu_26_04/python3-distro: 1.9.0-1build1
   ubuntu_26_04/python3-gi: 3.56.2-1
@@ -282,7 +282,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/python3-jaraco.context: 6.0.1-2
   ubuntu_26_04/python3-jaraco.functools: 4.1.0-1build1
   ubuntu_26_04/python3-jaraco.text: 4.0.0-1build1
-  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1
+  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.3
   ubuntu_26_04/python3-launchpadlib: 2.1.0-1build1
   ubuntu_26_04/python3-lazr.restfulclient: 0.14.6-3build1
   ubuntu_26_04/python3-lazr.uri: 1.0.6-7build1
@@ -303,28 +303,28 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/python3-wadllib: 2.0.0-3
   ubuntu_26_04/python3-wheel: 0.46.3-2
   ubuntu_26_04/python3-zipp: 3.23.0-1build1
-  ubuntu_26_04/python3.14: 3.14.4-1ubuntu0.1
-  ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.1
-  ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.1
+  ubuntu_26_04/python3.14: 3.14.4-1ubuntu0.2
+  ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.2
+  ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.2
   ubuntu_26_04/readline-common: 8.3-4
   ubuntu_26_04/rust-coreutils: 0.8.0-0ubuntu3
   ubuntu_26_04/sed: 4.9-2ubuntu1
   ubuntu_26_04/sensible-utils: 0.0.26build1
   ubuntu_26_04/sgml-base: 1.31+nmu1build1
   ubuntu_26_04/software-properties-common: 0.120.1
-  ubuntu_26_04/systemd: 259.5-0ubuntu3
-  ubuntu_26_04/systemd-sysv: 259.5-0ubuntu3
+  ubuntu_26_04/systemd: 259.5-0ubuntu3.4
+  ubuntu_26_04/systemd-sysv: 259.5-0ubuntu3.4
   ubuntu_26_04/sysvinit-utils: 3.15-5ubuntu1
-  ubuntu_26_04/tar: 1.35+dfsg-4ubuntu0.2
+  ubuntu_26_04/tar: 1.35+dfsg-4ubuntu0.4
   ubuntu_26_04/tesseract-ocr: 5.5.0-1build1
   ubuntu_26_04/tesseract-ocr-deu: 1:4.1.0-2build1
   ubuntu_26_04/tesseract-ocr-eng: 1:4.1.0-2build1
   ubuntu_26_04/tesseract-ocr-fra: 1:4.1.0-2build1
   ubuntu_26_04/tesseract-ocr-osd: 1:4.1.0-2build1
-  ubuntu_26_04/tzdata: 2026b-0ubuntu0.26.04.1
+  ubuntu_26_04/tzdata: 2026e-0ubuntu0.26.04.1
   ubuntu_26_04/ubuntu-keyring: 2023.11.28.1build1
-  ubuntu_26_04/udev: 259.5-0ubuntu3
-  ubuntu_26_04/util-linux: 2.41.3-3ubuntu2
+  ubuntu_26_04/udev: 259.5-0ubuntu3.4
+  ubuntu_26_04/util-linux: 2.41.3-3ubuntu2.2
   ubuntu_26_04/x11-common: 1:7.7+26ubuntu1
   ubuntu_26_04/xfonts-encodings: 1:1.0.5-0ubuntu3
   ubuntu_26_04/xfonts-utils: 1:7.7+7build1
@@ -337,8 +337,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/bash: 5.3-2ubuntu1
   ubuntu_26_04/binutils: 2.46-3ubuntu2
   ubuntu_26_04/binutils-common: 2.46-3ubuntu2
-  ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2
-  ubuntu_26_04/ca-certificates: 20260601~26.04.1
+  ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2.2
+  ubuntu_26_04/ca-certificates: 20260816ubuntu0.26.04.1
   ubuntu_26_04/ca-certificates-java: '20260311'
   ubuntu_26_04/coreutils: 9.5-1ubuntu2+0.0.0~ubuntu25
   ubuntu_26_04/coreutils-from-uutils: 0.0.0~ubuntu25
@@ -352,9 +352,9 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/debconf: 1.5.92
   ubuntu_26_04/debianutils: 5.23.2build1
   ubuntu_26_04/default-jre-headless: 2:1.25-77
-  ubuntu_26_04/diffutils: 1:3.12-1
-  ubuntu_26_04/dirmngr: 2.4.8-4ubuntu3
-  ubuntu_26_04/distro-info-data: 0.68ubuntu0.1
+  ubuntu_26_04/diffutils: 1:3.12-1ubuntu0.1
+  ubuntu_26_04/dirmngr: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/distro-info-data: 2026.10.12-0ubuntu0.26.04.1
   ubuntu_26_04/dpkg: 1.23.7ubuntu1
   ubuntu_26_04/dpkg-dev: 1.23.7ubuntu1
   ubuntu_26_04/e2fsprogs: 1.47.2-3ubuntu4
@@ -365,17 +365,17 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/fonts-dejavu-mono: 2.37-8build1
   ubuntu_26_04/fonts-urw-base35: 20200910-8build1
   ubuntu_26_04/gcc-16-base: 16-20260322-1ubuntu1
-  ubuntu_26_04/ghostscript: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/gir1.2-girepository-3.0: 2.88.0-1
-  ubuntu_26_04/gir1.2-glib-2.0: 2.88.0-1
+  ubuntu_26_04/ghostscript: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/gir1.2-girepository-3.0: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/gir1.2-glib-2.0: 2.88.0-1ubuntu0.1
   ubuntu_26_04/gir1.2-packagekitglib-1.0: 1.3.4-3ubuntu1.1
-  ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2
-  ubuntu_26_04/gnupg: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpg: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpg-agent: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpgconf: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpgsm: 2.4.8-4ubuntu3
-  ubuntu_26_04/gpgv: 2.4.8-4ubuntu3
+  ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2.1
+  ubuntu_26_04/gnupg: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpg: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpg-agent: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpgconf: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpgsm: 2.4.8-4ubuntu3.1
+  ubuntu_26_04/gpgv: 2.4.8-4ubuntu3.1
   ubuntu_26_04/graphicsmagick: 1.4+really1.3.46-2
   ubuntu_26_04/grep: 3.12-1
   ubuntu_26_04/gzip: 1.14-1~exp2ubuntu1.1
@@ -384,28 +384,28 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/iso-codes: 4.20.1-1
   ubuntu_26_04/java-common: '0.77'
   ubuntu_26_04/libacl1: 2.3.2-2
-  ubuntu_26_04/libaom3: 3.13.1-2
+  ubuntu_26_04/libaom3: 3.13.1-2ubuntu0.1
   ubuntu_26_04/libapache-pom-java: 33-2build1
   ubuntu_26_04/libapparmor1: 5.0.0~beta1-0ubuntu7
   ubuntu_26_04/libappstream5: 1.1.2-1
   ubuntu_26_04/libapt-pkg7.0: 3.2.0
-  ubuntu_26_04/libarchive13t64: 3.8.5-1ubuntu2.1
+  ubuntu_26_04/libarchive13t64: 3.8.5-1ubuntu2.3
   ubuntu_26_04/libassuan9: 3.0.2-2build1
   ubuntu_26_04/libatomic1: 16-20260322-1ubuntu1
-  ubuntu_26_04/libattr1: 1:2.5.2-4
+  ubuntu_26_04/libattr1: 1:2.5.2-4ubuntu0.1
   ubuntu_26_04/libaudit-common: 1:4.1.2-1build1
   ubuntu_26_04/libaudit1: 1:4.1.2-1build1
   ubuntu_26_04/libavahi-client3: 0.8-18ubuntu1.1
   ubuntu_26_04/libavahi-common-data: 0.8-18ubuntu1.1
   ubuntu_26_04/libavahi-common3: 0.8-18ubuntu1.1
   ubuntu_26_04/libbcprov-java: 1.80-3
-  ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2
-  ubuntu_26_04/libbrotli1: 1.2.0-3build1
+  ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2.2
+  ubuntu_26_04/libbrotli1: 1.2.0-3ubuntu0.1
   ubuntu_26_04/libbsd0: 0.12.2-2build2
-  ubuntu_26_04/libbz2-1.0: 1.0.8-6build2
-  ubuntu_26_04/libc-bin: 2.43-2ubuntu2
-  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2
-  ubuntu_26_04/libc6: 2.43-2ubuntu2
+  ubuntu_26_04/libbz2-1.0: 1.0.8-6ubuntu0.1
+  ubuntu_26_04/libc-bin: 2.43-2ubuntu2.4
+  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.4
+  ubuntu_26_04/libc6: 2.43-2ubuntu2.4
   ubuntu_26_04/libcairo2: 1.18.4-3
   ubuntu_26_04/libcap-ng0: 0.8.5-4build5
   ubuntu_26_04/libcap2: 1:2.75-10ubuntu2
@@ -416,8 +416,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libcrypt-dev: 1:4.5.1-1
   ubuntu_26_04/libcrypt1: 1:4.5.1-1
   ubuntu_26_04/libcups2t64: 2.4.16-1ubuntu1.3
-  ubuntu_26_04/libcurl3t64-gnutls: 8.18.0-1ubuntu2.3
-  ubuntu_26_04/libcurl4t64: 8.18.0-1ubuntu2.3
+  ubuntu_26_04/libcurl3t64-gnutls: 8.18.0-1ubuntu2.8
+  ubuntu_26_04/libcurl4t64: 8.18.0-1ubuntu2.8
   ubuntu_26_04/libdatrie1: 0.2.14-1
   ubuntu_26_04/libdb5.3t64: 5.3.28+dfsg2-10ubuntu1
   ubuntu_26_04/libdbus-1-3: 1.16.2-2ubuntu4
@@ -425,37 +425,37 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libdeflate0: 1.23-2ubuntu1
   ubuntu_26_04/libduktape207: 2.7.0+tests-0ubuntu4
   ubuntu_26_04/libelf1t64: 0.194-4
-  ubuntu_26_04/libexpat1: 2.7.4-1
+  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.2
   ubuntu_26_04/libext2fs2t64: 1.47.2-3ubuntu4
   ubuntu_26_04/libffi8: 3.5.2-4
   ubuntu_26_04/libfontconfig1: 2.17.1-3ubuntu1
   ubuntu_26_04/libfontenc1: 1:1.1.8-1build2
-  ubuntu_26_04/libfreetype6: 2.14.2+dfsg-1
+  ubuntu_26_04/libfreetype6: 2.14.2+dfsg-1ubuntu0.2
   ubuntu_26_04/libfribidi0: 1.0.16-5
   ubuntu_26_04/libfyaml0: 0.9.4-1
   ubuntu_26_04/libgcc-s1: 16-20260322-1ubuntu1
-  ubuntu_26_04/libgcrypt20: 1.12.0-2ubuntu1
+  ubuntu_26_04/libgcrypt20: 1.12.0-2ubuntu1.1
   ubuntu_26_04/libgdbm-compat4t64: 1.26-1build1
   ubuntu_26_04/libgdbm6t64: 1.26-1build1
-  ubuntu_26_04/libgif7: 5.2.2-1ubuntu3
-  ubuntu_26_04/libgirepository-2.0-0: 2.88.0-1
-  ubuntu_26_04/libglib2.0-0t64: 2.88.0-1
-  ubuntu_26_04/libglib2.0-bin: 2.88.0-1
-  ubuntu_26_04/libglib2.0-data: 2.88.0-1
+  ubuntu_26_04/libgif7: 5.2.2-1ubuntu3.2
+  ubuntu_26_04/libgirepository-2.0-0: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/libglib2.0-0t64: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/libglib2.0-bin: 2.88.0-1ubuntu0.1
+  ubuntu_26_04/libglib2.0-data: 2.88.0-1ubuntu0.1
   ubuntu_26_04/libgmp10: 2:6.3.0+dfsg-5ubuntu2
   ubuntu_26_04/libgnutls30t64: 3.8.12-2ubuntu1.1
   ubuntu_26_04/libgomp1: 16-20260322-1ubuntu1
   ubuntu_26_04/libgpg-error0: 1.58-2
   ubuntu_26_04/libgraphicsmagick-q16-3t64: 1.4+really1.3.46-2
   ubuntu_26_04/libgraphite2-3: 1.3.14-11ubuntu1.1
-  ubuntu_26_04/libgs-common: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/libgs10: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/libgs10-common: 10.06.0~dfsg-3ubuntu1
-  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4
+  ubuntu_26_04/libgs-common: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/libgs10: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/libgs10-common: 10.06.0~dfsg-3ubuntu1.2
+  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libgstreamer1.0-0: 1.28.2-1
   ubuntu_26_04/libharfbuzz0b: 12.3.2-2
-  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.3
-  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.3
+  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.6
+  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.6
   ubuntu_26_04/libhogweed6t64: 3.10.2-1
   ubuntu_26_04/libhwy1t64: 1.3.0-2
   ubuntu_26_04/libice6: 2:1.1.1-1build1
@@ -467,17 +467,17 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libimagequant0: 4.4.1-1
   ubuntu_26_04/libjansson4: 2.14-2build4
   ubuntu_26_04/libjbig0: 2.1-6.1ubuntu3
-  ubuntu_26_04/libjbig2dec0: 0.20-1build4
+  ubuntu_26_04/libjbig2dec0: 0.20-1ubuntu0.26.04.1
   ubuntu_26_04/libjpeg-turbo8: 2.1.5-4ubuntu4
   ubuntu_26_04/libjpeg8: 8c-2ubuntu12
   ubuntu_26_04/libjs-sphinxdoc: 8.2.3-12
   ubuntu_26_04/libjson-c5: 0.18+ds-3
   ubuntu_26_04/libjxl0.11: 0.11.1-6ubuntu4.2
-  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4
+  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libkeyutils1: 1.6.3-6ubuntu3
   ubuntu_26_04/libkmod2: 34.2-2ubuntu2
-  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4
-  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4
+  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libksba8: 1.6.7-2build1
   ubuntu_26_04/liblcms2-2: 2.17-1ubuntu0.2
   ubuntu_26_04/libldap-common: 2.6.10+dfsg-1ubuntu5
@@ -485,39 +485,39 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libleptonica6: 1.86.0-1
   ubuntu_26_04/liblerc4: 4.0.0+ds-5ubuntu2
   ubuntu_26_04/liblz4-1: 1.10.0-8
-  ubuntu_26_04/liblzma5: 5.8.3-1
+  ubuntu_26_04/liblzma5: 5.8.3-1ubuntu0.1
   ubuntu_26_04/libmd0: 1.1.0-2build4
-  ubuntu_26_04/libmount1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libmount1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libncursesw6: 6.6+20251231-1
   ubuntu_26_04/libnettle8t64: 3.10.2-1
   ubuntu_26_04/libnghttp2-14: 1.68.0-2ubuntu0.2
   ubuntu_26_04/libnpth0t64: 1.8-3build1
   ubuntu_26_04/libnspr4: 2:4.38.2-1ubuntu1
-  ubuntu_26_04/libnss3: 2:3.120-1ubuntu2.1
+  ubuntu_26_04/libnss3: 2:3.120-1ubuntu2.2
   ubuntu_26_04/libopenjp2-7: 2.5.4-1ubuntu0.1
   ubuntu_26_04/libp11-kit0: 0.26.2-2
   ubuntu_26_04/libpackagekit-glib2-18: 1.3.4-3ubuntu1.1
-  ubuntu_26_04/libpam-modules: 1.7.0-5ubuntu3
-  ubuntu_26_04/libpam-modules-bin: 1.7.0-5ubuntu3
-  ubuntu_26_04/libpam-runtime: 1.7.0-5ubuntu3
-  ubuntu_26_04/libpam-systemd: 259.5-0ubuntu3
-  ubuntu_26_04/libpam0g: 1.7.0-5ubuntu3
+  ubuntu_26_04/libpam-modules: 1.7.0-5ubuntu3.2
+  ubuntu_26_04/libpam-modules-bin: 1.7.0-5ubuntu3.2
+  ubuntu_26_04/libpam-runtime: 1.7.0-5ubuntu3.2
+  ubuntu_26_04/libpam-systemd: 259.5-0ubuntu3.4
+  ubuntu_26_04/libpam0g: 1.7.0-5ubuntu3.2
   ubuntu_26_04/libpango-1.0-0: 1.57.0-1
   ubuntu_26_04/libpangocairo-1.0-0: 1.57.0-1
   ubuntu_26_04/libpangoft2-1.0-0: 1.57.0-1
   ubuntu_26_04/libpaper2: 2.2.5-0.3maysync1
   ubuntu_26_04/libpcre2-8-0: 10.46-1build1
   ubuntu_26_04/libpcsclite1: 2.4.1-1
-  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.1
+  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.3
   ubuntu_26_04/libpixman-1-0: 0.46.4-1
-  ubuntu_26_04/libpng16-16t64: 1.6.57-1
-  ubuntu_26_04/libpolkit-agent-1-0: 127-2ubuntu1
-  ubuntu_26_04/libpolkit-gobject-1-0: 127-2ubuntu1
+  ubuntu_26_04/libpng16-16t64: 1.6.57-1ubuntu0.1
+  ubuntu_26_04/libpolkit-agent-1-0: 127-2ubuntu1.1
+  ubuntu_26_04/libpolkit-gobject-1-0: 127-2ubuntu1.1
   ubuntu_26_04/libproc2-0: 2:4.0.4-9ubuntu1
   ubuntu_26_04/libpsl5t64: 0.21.2-1.1build2
   ubuntu_26_04/libpython3-stdlib: 3.14.3-0ubuntu2
-  ubuntu_26_04/libpython3.14-minimal: 3.14.4-1ubuntu0.1
-  ubuntu_26_04/libpython3.14-stdlib: 3.14.4-1ubuntu0.1
+  ubuntu_26_04/libpython3.14-minimal: 3.14.4-1ubuntu0.2
+  ubuntu_26_04/libpython3.14-stdlib: 3.14.4-1ubuntu0.2
   ubuntu_26_04/libreadline8t64: 8.3-4
   ubuntu_26_04/librtmp1: 2.4+20151223.gitfa8646d.1-3
   ubuntu_26_04/libsane-common: 1.4.0-1ubuntu1
@@ -531,69 +531,69 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libsepol2: 3.9-2
   ubuntu_26_04/libsharpyuv0: 1.5.0-0.1build1
   ubuntu_26_04/libsm6: 2:1.2.6-1build1
-  ubuntu_26_04/libsmartcols1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libsmartcols1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libsnmp-base: 5.9.4+dfsg-2ubuntu3
-  ubuntu_26_04/libsqlite3-0: 3.46.1-9ubuntu0.1
+  ubuntu_26_04/libsqlite3-0: 3.46.1-9ubuntu0.3
   ubuntu_26_04/libss2: 1.47.2-3ubuntu4
-  ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.3
-  ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.2
+  ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.4
+  ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.7
   ubuntu_26_04/libstdc++6: 16-20260322-1ubuntu1
   ubuntu_26_04/libstemmer0d: 3.0.1-1
-  ubuntu_26_04/libsystemd-shared: 259.5-0ubuntu3
-  ubuntu_26_04/libsystemd0: 259.5-0ubuntu3
+  ubuntu_26_04/libsystemd-shared: 259.5-0ubuntu3.4
+  ubuntu_26_04/libsystemd0: 259.5-0ubuntu3.4
   ubuntu_26_04/libtasn1-6: 4.21.0-2
   ubuntu_26_04/libtesseract5: 5.5.0-1build1
   ubuntu_26_04/libthai-data: 0.1.30-1
   ubuntu_26_04/libthai0: 0.1.30-1
-  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu4
+  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu5
   ubuntu_26_04/libtinfo6: 6.6+20251231-1
-  ubuntu_26_04/libudev1: 259.5-0ubuntu3
+  ubuntu_26_04/libudev1: 259.5-0ubuntu3.4
   ubuntu_26_04/libunistring5: 1.3-2build1
-  ubuntu_26_04/libuuid1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libuuid1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libv4l-0t64: 1.32.0-2ubuntu1
   ubuntu_26_04/libv4lconvert0t64: 1.32.0-2ubuntu1
   ubuntu_26_04/libwebp7: 1.5.0-0.1build1
   ubuntu_26_04/libwebpmux3: 1.5.0-0.1build1
   ubuntu_26_04/libwmflite-0.2-7: 0.2.14-1
   ubuntu_26_04/libwrap0: 7.6.q-36build2
-  ubuntu_26_04/libx11-6: 2:1.8.13-1
-  ubuntu_26_04/libx11-data: 2:1.8.13-1
+  ubuntu_26_04/libx11-6: 2:1.8.13-1ubuntu0.1
+  ubuntu_26_04/libx11-data: 2:1.8.13-1ubuntu0.1
   ubuntu_26_04/libxau6: 1:1.0.11-1build2
   ubuntu_26_04/libxcb-render0: 1.17.0-2ubuntu1
   ubuntu_26_04/libxcb-shm0: 1.17.0-2ubuntu1
   ubuntu_26_04/libxcb1: 1.17.0-2ubuntu1
   ubuntu_26_04/libxdmcp6: 1:1.1.5-2
   ubuntu_26_04/libxext6: 2:1.3.4-1build3
-  ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.1
+  ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.3
   ubuntu_26_04/libxmlb2: 0.3.24-2
   ubuntu_26_04/libxrender1: 1:0.9.12-1build1
   ubuntu_26_04/libxt6t64: 1:1.2.1-1.3build1
   ubuntu_26_04/libxxhash0: 0.8.3-2build1
   ubuntu_26_04/libzbar0t64: 0.23.93-9ubuntu1
   ubuntu_26_04/libzstd1: 1.5.7+dfsg-3
-  ubuntu_26_04/login: 1:4.16.0-2+really2.41.3-3ubuntu2
+  ubuntu_26_04/login: 1:4.16.0-2+really2.41.3-3ubuntu2.2
   ubuntu_26_04/login.defs: 1:4.17.4-2ubuntu3
   ubuntu_26_04/logsave: 1.47.2-3ubuntu4
   ubuntu_26_04/lsb-release: 12.1-2build1
   ubuntu_26_04/mawk: 1.3.4.20260129-1
   ubuntu_26_04/media-types: 14.0.0build1
-  ubuntu_26_04/mount: 2.41.3-3ubuntu2
+  ubuntu_26_04/mount: 2.41.3-3ubuntu2.2
   ubuntu_26_04/ncurses-base: 6.6+20251231-1
   ubuntu_26_04/ncurses-bin: 6.6+20251231-1
   ubuntu_26_04/netbase: 6.5build1
-  ubuntu_26_04/openjdk-25-jre-headless: 25.0.3+9-2~26.04.2
-  ubuntu_26_04/openssl: 3.5.5-1ubuntu3.2
-  ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.2
+  ubuntu_26_04/openjdk-25-jre-headless: 25.0.4.1+1-1~26.04.4
+  ubuntu_26_04/openssl: 3.5.5-1ubuntu3.7
+  ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.7
   ubuntu_26_04/optipng: 7.9.1+ds-2build1
   ubuntu_26_04/packagekit: 1.3.4-3ubuntu1.1
   ubuntu_26_04/passwd: 1:4.17.4-2ubuntu3
   ubuntu_26_04/pdftk-java: 3.3.3-2build1
-  ubuntu_26_04/perl: 5.40.1-7ubuntu0.1
-  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.1
-  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.1
+  ubuntu_26_04/perl: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.3
   ubuntu_26_04/pinentry-curses: 1.3.2-3ubuntu1
   ubuntu_26_04/pngquant: 2.18.0-1build3
-  ubuntu_26_04/polkitd: 127-2ubuntu1
+  ubuntu_26_04/polkitd: 127-2ubuntu1.1
   ubuntu_26_04/poppler-data: 0.4.12-1build1
   ubuntu_26_04/procps: 2:4.0.4-9ubuntu1
   ubuntu_26_04/python-apt-common: 3.1.0ubuntu1
@@ -604,7 +604,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/python3-bcrypt: 5.0.0-3build1
   ubuntu_26_04/python3-blinker: 1.9.0-2build1
   ubuntu_26_04/python3-cffi-backend: 2.0.0-3build1
-  ubuntu_26_04/python3-cryptography: 46.0.5-1ubuntu2
+  ubuntu_26_04/python3-cryptography: 46.0.5-1ubuntu2.2
   ubuntu_26_04/python3-dbus: 1.4.0-1build2
   ubuntu_26_04/python3-distro: 1.9.0-1build1
   ubuntu_26_04/python3-gi: 3.56.2-1
@@ -613,7 +613,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/python3-jaraco.context: 6.0.1-2
   ubuntu_26_04/python3-jaraco.functools: 4.1.0-1build1
   ubuntu_26_04/python3-jaraco.text: 4.0.0-1build1
-  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1
+  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.3
   ubuntu_26_04/python3-launchpadlib: 2.1.0-1build1
   ubuntu_26_04/python3-lazr.restfulclient: 0.14.6-3build1
   ubuntu_26_04/python3-lazr.uri: 1.0.6-7build1
@@ -634,19 +634,19 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/python3-wadllib: 2.0.0-3
   ubuntu_26_04/python3-wheel: 0.46.3-2
   ubuntu_26_04/python3-zipp: 3.23.0-1build1
-  ubuntu_26_04/python3.14: 3.14.4-1ubuntu0.1
-  ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.1
-  ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.1
+  ubuntu_26_04/python3.14: 3.14.4-1ubuntu0.2
+  ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.2
+  ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.2
   ubuntu_26_04/readline-common: 8.3-4
   ubuntu_26_04/rust-coreutils: 0.8.0-0ubuntu3
   ubuntu_26_04/sed: 4.9-2ubuntu1
   ubuntu_26_04/sensible-utils: 0.0.26build1
   ubuntu_26_04/sgml-base: 1.31+nmu1build1
   ubuntu_26_04/software-properties-common: 0.120.1
-  ubuntu_26_04/systemd: 259.5-0ubuntu3
-  ubuntu_26_04/systemd-sysv: 259.5-0ubuntu3
+  ubuntu_26_04/systemd: 259.5-0ubuntu3.4
+  ubuntu_26_04/systemd-sysv: 259.5-0ubuntu3.4
   ubuntu_26_04/sysvinit-utils: 3.15-5ubuntu1
-  ubuntu_26_04/tar: 1.35+dfsg-4ubuntu0.2
+  ubuntu_26_04/tar: 1.35+dfsg-4ubuntu0.4
   ubuntu_26_04/tesseract-ocr: 5.5.0-1build1
   ubuntu_26_04/tesseract-ocr-afr: 1:4.1.0-2build1
   ubuntu_26_04/tesseract-ocr-all: 5.5.0-1build1
@@ -810,10 +810,10 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/tesseract-ocr-vie: 1:4.1.0-2build1
   ubuntu_26_04/tesseract-ocr-yid: 1:4.1.0-2build1
   ubuntu_26_04/tesseract-ocr-yor: 1:4.1.0-2build1
-  ubuntu_26_04/tzdata: 2026b-0ubuntu0.26.04.1
+  ubuntu_26_04/tzdata: 2026e-0ubuntu0.26.04.1
   ubuntu_26_04/ubuntu-keyring: 2023.11.28.1build1
-  ubuntu_26_04/udev: 259.5-0ubuntu3
-  ubuntu_26_04/util-linux: 2.41.3-3ubuntu2
+  ubuntu_26_04/udev: 259.5-0ubuntu3.4
+  ubuntu_26_04/util-linux: 2.41.3-3ubuntu2.2
   ubuntu_26_04/x11-common: 1:7.7+26ubuntu1
   ubuntu_26_04/xfonts-encodings: 1:1.0.5-0ubuntu3
   ubuntu_26_04/xfonts-utils: 1:7.7+7build1
