@@ -25,13 +25,14 @@ Finally, in the root folder there is a `status.html` file that contains the glob
 
 ## Primary data source
 
-For each image, read `images_config.<image>.status` in `config.yaml`:
+For each image, read `images_status.<image>` in `config.yaml`:
 
 - `histogram.text`: textual grayscale histogram (`000-007 | #### | 3.10%` format).
 - `histogram.current`: current cut settings and clipping percentages.
 - `histogram.suggested`: conservative/balanced/aggressive proposals for `cut_black` and `cut_white`.
 - `auto_mask_hsv`: HSV suggestions for `auto_mask` values.
 - `deskew`: detected/applied angle and deskew search configuration.
+- `images_config.<image>.background_color`: detected background color, can be overridden manually.
 
 ## Note on generated metadata
 
@@ -57,13 +58,15 @@ Treat them as guidance, not absolute truth:
 
 - Global defaults: `args.cut_black`, `args.cut_white`, `args.mask.auto_mask`, `args.cut.auto_mask`.
 - Per image angle override (manual deskew): `images_config.<image>.angle`.
+- Per image background color override: `images_config.<image>.background_color`, it takes precedence
+  over `args.background_color`.
 
 ## Validation loop
 
 1. Edit `config.yaml`.
 2. Delete generated transformed images for the page(s) being tuned.
 3. Re-run processing.
-4. Re-check `images_config.<image>.status` and final images.
+4. Re-check `images_status.<image>` and final images.
 5. Repeat until acceptable.
 
 ## Safety rules

@@ -143,11 +143,16 @@ the processing and some can be modified.
 E.g. you can modify an image angle to fix the skew, then remove a generated image for force to regenerate
 the images.
 
+The background color is automatically detected for each image and stored in
+`images_config.<image>.background_color`. It is reused on the next runs. You can override it globally
+with `args.background_color` or per image with `images_config.<image>.background_color`; the per-image
+value takes precedence.
+
 [Full job config documentation](./process.md)
 
 ### AI tuning helpers in `config.yaml`
 
-During processing, each image now gets additional analysis in `images_config.<image>.status`:
+During processing, each image now gets additional analysis in `images_status.<image>`:
 
 - `histogram.text`: textual grayscale histogram (easy to parse by an AI).
 - `histogram.current`: current `cut_black` / `cut_white` and clipping percentages.

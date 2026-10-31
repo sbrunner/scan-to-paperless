@@ -32,6 +32,68 @@ def test_should_not_commit() -> None:
     assert REGENERATE is False
 
 
+def test_detect_background_color() -> None:
+    image = np.zeros((4, 10, 3), dtype=np.uint8)
+    image[:, :3] = (10, 20, 30)
+    image[:, 3:] = (250, 251, 252)
+    mask = np.zeros((4, 10), dtype=np.uint8)
+    mask[:, 3:] = 255
+
+    assert process_utils.detect_background_color(image, mask) == (10, 20, 30)
+    assert process_utils.detect_background_color(image) == (250, 251, 252)
+
+
+@pytest.mark.asyncio
+async def test_background_color_per_image() -> None:
+    image = np.zeros((2, 2, 3), dtype=np.uint8)
+    image[:, :] = (10, 20, 30)
+    config = {
+        "args": {"background_color": [1, 2, 3]},
+        "images_config": {"image.png": {"background_color": [4, 5, 6]}},
+    }
+
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+    assert context.get_background_color() == (4, 5, 6)
+
+    del config["images_config"]["image.png"]["background_color"]
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+    assert context.get_background_color() == (1, 2, 3)
+
+    del config["args"]["background_color"]
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+    assert context.get_background_color() == (10, 20, 30)
+    assert config["images_config"]["image.png"]["background_color"] == [10, 20, 30]
+
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((2, 2, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+    assert context.get_background_color() == (10, 20, 30)
+
+
+def test_update_config_moves_images_status() -> None:
+    config = {
+        "args": {},
+        "images_config": {
+            "image.png": {
+                "angle": 1.2,
+                "status": {"size": [10, 20]},
+            },
+        },
+    }
+
+    process._update_config(config)
+
+    assert config["images_status"]["image.png"]["size"] == [10, 20]
+    assert config["images_config"]["image.png"]["angle"] == 1.2
+    assert "status" not in config["images_config"]["image.png"]
+
+
 # @pytest.mark.skip(reason="for test")
 def test_find_lines() -> None:
     lines = process.find_lines(load_image("limit-lines-1.png"), vertical=True, config={})
@@ -440,14 +502,16 @@ async def test_full(progress) -> None:
     step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
 
     image_config = config["images_config"]["all-1.png"]
-    assert len(image_config["status"]["size"]) == 2
-    assert image_config["status"]["size"][0] > 0
-    assert image_config["status"]["size"][1] > 0
-    assert len(image_config["status"]["histogram"]["text"]) == 32
-    assert image_config["status"]["histogram"]["current"]["cut_white"] == 200
-    assert "cut_black" in image_config["status"]["histogram"]["suggested"]
-    assert "page_white" in image_config["status"]["auto_mask_hsv"]["suggestions"]
-    assert "deskew" in image_config["status"]
+    image_status = config["images_status"]["all-1.png"]
+    assert image_config["background_color"] == [255, 255, 255]
+    assert len(image_status["size"]) == 2
+    assert image_status["size"][0] > 0
+    assert image_status["size"][1] > 0
+    assert len(image_status["histogram"]["text"]) == 32
+    assert image_status["histogram"]["current"]["cut_white"] == 200
+    assert "cut_black" in image_status["histogram"]["suggested"]
+    assert "page_white" in image_status["auto_mask_hsv"]["suggestions"]
+    assert "deskew" in image_status
 
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
@@ -859,6 +923,32 @@ async def test_auto_cut() -> None:
         str(Path(__file__).parent / "auto_cut.expected.png"),
         generate_expected_image=REGENERATE,
     )
+
+
+@pytest.mark.asyncio
+async def test_auto_cut_background_color() -> None:
+    image = np.full((100, 100, 3), (128, 128, 128), dtype=np.uint8)
+    image[25:75, 25:75] = (255, 255, 255)
+    config = {
+        "args": {
+            "cut": {
+                "auto_mask": {
+                    "sam3": {"enabled": False},
+                    "de_noise_size": 5,
+                    "buffer_size": 5,
+                },
+            },
+        },
+    }
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+
+    await context.do_initial_cut()
+
+    assert config["images_config"]["image.png"]["background_color"] == [128, 128, 128]
+    assert context.image[0, 0].tolist() == [128, 128, 128]
+    assert context.image[50, 50].tolist() == [255, 255, 255]
 
 
 # @pytest.mark.skip(reason="for test")

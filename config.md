@@ -97,7 +97,7 @@
   - <a id="definitions/args/properties/jpeg"></a>**`jpeg`** *(object)*: Convert images to JPEG configuration. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/jpeg/properties/enabled"></a>**`enabled`** *(boolean)*: Convert images to JPEG. Default: `true`.
     - <a id="definitions/args/properties/jpeg/properties/quality"></a>**`quality`** *(integer)*: The JPEG quality. Default: `90`.
-  - <a id="definitions/args/properties/background_color"></a>**`background_color`** *(array)*: The background color. Default: `[255, 255, 255]`.
+  - <a id="definitions/args/properties/background_color"></a>**`background_color`** *(array or null)*: The background color, null to automatically detect it. Default: `null`.
     - <a id="definitions/args/properties/background_color/items"></a>**Items** *(integer)*
   - <a id="definitions/args/properties/mask"></a>**`mask`** *(object)*: The mask configuration, the a is used to mask the image on crop and skew calculation. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/mask/properties/enabled"></a>**`enabled`** *(boolean)*: Enable the mask. Default: `true`.

@@ -179,7 +179,7 @@ await process.histogram(context)""",
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            """status = context.config.get("images_config", {}).get(context.image_name, {}).get("status", {})
+            """status = context.config.get("images_status", {}).get(context.image_name, {})
 
 print("Suggested cut_black/cut_white:")
 print(status.get("histogram", {}).get("suggested", {}))
@@ -238,11 +238,25 @@ images_context["color_cut"] = context.image""",
     )
 
     notebook["cells"].append(
-        nbformat.v4.new_markdown_cell("""Defined the background color."""),  # type: ignore[no-untyped-call]
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Defined the background color.
+
+By default the background color is automatically detected from the mask (or the whole image if
+there is no mask). It can be forced globally with `args.background_color` or per image with
+`images_config.<image>.background_color`.""",
+        ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
-            f"""context.config["args"]["background_color"] = {context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT)}
+            f"""context.config["args"]["background_color"] = {_pretty_repr(context.config["args"].get("background_color", schema.BACKGROUND_COLOR_DEFAULT))}
+
+images_config = context.config.setdefault("images_config", {{}})
+image_config = images_config.setdefault(context.image_name, {{}})
+print("Global background color:", context.config["args"]["background_color"])
+print("Image background color:", image_config.get("background_color"))
+
+# To force the background color for this image:
+# image_config["background_color"] = [255, 255, 255]
 
 min_x = 100
 max_x = 200
@@ -251,9 +265,14 @@ max_y = 200
 
 temp_image = images_context["color_cut"].copy()
 sub_image = temp_image[min_x:max_x, min_y:max_y, :]
-print(f"Background color: {{repr(list(sub_image.mean(axis=(0, 1))))}}")
+print(f"Sampled background color: {{repr(list(sub_image.mean(axis=(0, 1))))}}")
 
-cv2.rectangle(temp_image, [min_x, min_y, max_x, max_y], context.config["args"]["background_color"])
+background_color = (
+    image_config.get("background_color")
+    or context.config["args"]["background_color"]
+    or [255, 255, 255]
+)
+cv2.rectangle(temp_image, [min_x, min_y, max_x, max_y], background_color)
 marker_color = [255, 0, 0]
 cv2.line(temp_image, [min_x, min_y], [min_x ,max_x], marker_color)
 cv2.line(temp_image, [min_x, min_y], [max_x ,min_x], marker_color)
@@ -329,6 +348,7 @@ context.config["args"]["mask"] = {_pretty_repr(context.config["args"].get("mask"
 await context.init_mask()
 if context.mask is not None:
     context.display_image(cv2.cvtColor(context.mask, cv2.COLOR_GRAY2RGB))
+print(f"Used background color: {{context.get_background_color()}}")
 context.display_image(context.get_masked())
 if context.mask is None:
     context.mask = np.zeros(context.image.shape[:2], dtype=np.uint8)

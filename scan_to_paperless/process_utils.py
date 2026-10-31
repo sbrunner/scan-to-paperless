@@ -15,6 +15,7 @@ import torch
 from anyio import Path
 from PIL import Image
 from ruamel.yaml.main import YAML
+from skimage.exposure import histogram as skimage_histogram
 from transformers import Sam3Model, Sam3Processor
 
 import scan_to_paperless
@@ -234,6 +235,25 @@ def crop_image(
     )
 
 
+def detect_background_color(
+    image: NpNdarrayInt,
+    mask: NpNdarrayInt | None = None,
+) -> tuple[int, int, int]:
+    """Get the most frequent color of the background."""
+    pixels = image[mask == 0] if mask is not None and np.any(mask == 0) else image
+    if image.ndim == 2:
+        histogram, _ = skimage_histogram(pixels, nbins=256, source_range="dtype")
+        value = int(np.argmax(histogram))
+        return (value, value, value)
+    return cast(
+        "tuple[int, int, int]",
+        tuple(
+            int(np.argmax(skimage_histogram(pixels[..., channel], nbins=256, source_range="dtype")[0]))
+            for channel in range(3)
+        ),
+    )
+
+
 class Context:
     """All the context of the current image with his mask."""
 
@@ -253,6 +273,7 @@ class Context:
         self.image_name = image_name
         self.image: NpNdarrayInt | None = None
         self.mask: NpNdarrayInt | None = None
+        self._background_color: tuple[int, int, int] | None = None
         self.get_index: Callable[
             [NpNdarrayInt],
             tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None,
@@ -448,12 +469,35 @@ class Context:
             else None
         )
 
-    def get_background_color(self) -> tuple[int, int, int]:
-        """Get the background color."""
-        return cast(
-            "tuple[int, int, int]",
-            self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
-        )
+    def get_background_color(self, *, mask: NpNdarrayInt | None = None) -> tuple[int, int, int]:
+        """Get the background color, detect it if needed."""
+        if self._background_color is not None:
+            return self._background_color
+
+        image_config: dict[str, Any] = {}
+        if self.image_name is not None:
+            images_config = cast("dict[str, dict[str, Any]]", self.config.setdefault("images_config", {}))
+            image_config = images_config.setdefault(self.image_name, {})
+            configured = image_config.get("background_color")
+            if configured is not None:
+                self._background_color = cast("tuple[int, int, int]", tuple(configured))
+                return self._background_color
+
+        configured = self.config["args"].get("background_color")
+        if configured is not None:
+            self._background_color = cast("tuple[int, int, int]", tuple(configured))
+            return self._background_color
+
+        if self.image is None:
+            self._background_color = (255, 255, 255)
+        else:
+            self._background_color = detect_background_color(
+                self.image,
+                mask if mask is not None else self.mask,
+            )
+            if self.image_name is not None:
+                image_config["background_color"] = list(self._background_color)
+        return self._background_color
 
     async def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
@@ -478,7 +522,7 @@ class Context:
                 "auto_cut",
                 additional_path,
             )
-            self.image[mask == 0] = self.get_background_color()
+            self.image[mask == 0] = self.get_background_color(mask=mask)
 
     def get_process_count(self) -> int:
         """Get the step number."""

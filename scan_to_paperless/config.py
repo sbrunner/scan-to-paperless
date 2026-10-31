@@ -206,16 +206,15 @@ class Arguments(TypedDict, total=False):
       enabled: false
     """
 
-    background_color: list[int]
+    background_color: "BackgroundColor"
     r"""
     Background color.
 
-    The background color
+    The background color, null to automatically detect it
 
-    default:
-      - 255
-      - 255
-      - 255
+    default: None
+    items:
+      type: integer
     """
 
     mask: "MaskOperation"
@@ -400,7 +399,7 @@ class AutoRotate(TypedDict, total=False):
 
 
 
-BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
+BACKGROUND_COLOR_DEFAULT = None
 r""" Default value of the field path 'Arguments background_color' """
 
 
@@ -412,6 +411,19 @@ r""" Default value of the field path 'Auto mask buffer_level' """
 
 BUFFER_SIZE_DEFAULT = 20
 r""" Default value of the field path 'Auto mask buffer_size' """
+
+
+
+BackgroundColor = list[int] | None
+r"""
+Background color.
+
+The background color, null to automatically detect it
+
+default: None
+items:
+  type: integer
+"""
 
 
 

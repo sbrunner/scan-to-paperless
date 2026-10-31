@@ -365,13 +365,17 @@ def _get_level(context: process_utils.Context) -> tuple[bool, float, float]:
     return level_ is not False, min_, max_
 
 
+def _get_image_status(context: process_utils.Context) -> dict[str, Any]:
+    if context.image_name is None:
+        return {}
+    images_status = cast("dict[str, dict[str, Any]]", context.config.setdefault("images_status", {}))
+    return images_status.setdefault(context.image_name, {})
+
+
 def _set_image_status(context: process_utils.Context, key: str, value: Any) -> None:
     if context.image_name is None:
         return
-    images_config = context.config.setdefault("images_config", {})
-    image_config = images_config.setdefault(context.image_name, {})
-    image_status = cast("dict[str, Any]", image_config.setdefault("status", {}))
-    image_status[key] = value
+    _get_image_status(context)[key] = value
 
 
 def _textual_histogram(histogram_data: Any, bins: int = 32, bar_size: int = 42) -> list[str]:
@@ -637,7 +641,7 @@ async def deskew(context: process_utils.Context) -> None:
     """Deskew an image."""
     images_config = context.config.setdefault("images_config", {})
     image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
-    image_status = image_config.setdefault("status", {})
+    image_status = _get_image_status(context)
     angle = image_config.setdefault("angle", None)
     manual_angle = angle is not None
     if angle is None:
@@ -1143,6 +1147,16 @@ def _find_contours_thresh(
 def _update_config(config: schema.Configuration) -> None:
     """Convert the old configuration to the new one."""
     old_config = cast("dict[str, Any]", config)
+    # images_config.<image>.status => images_status.<image>
+    images_status = cast("dict[str, dict[str, Any]]", config.setdefault("images_status", {}))
+    for image_name, image_config in cast(
+        "dict[str, dict[str, Any]]",
+        old_config.get("images_config", {}),
+    ).items():
+        if "status" in image_config:
+            images_status.setdefault(image_name, {}).update(
+                cast("dict[str, Any]", image_config.pop("status")),
+            )
     # no_crop => crop.enabled (inverted)
     if "no_crop" in old_config["args"]:
         config["args"].setdefault("crop", {}).setdefault("enabled", not old_config["args"]["no_crop"])
@@ -1545,9 +1559,7 @@ async def transform(
                 raise scan_to_paperless.ScanToPaperlessError(msg)
             context.image = decoded_image
         assert context.image is not None
-        images_config = context.config.setdefault("images_config", {})
-        image_config = images_config.setdefault(context.image_name, {})
-        image_status = image_config.setdefault("status", {})
+        image_status = _get_image_status(context)
         assert context.image is not None
         image_status["size"] = list(context.image.shape[:2][::-1])
         await histogram(context)
