@@ -235,6 +235,14 @@ def crop_image(
     )
 
 
+def _to_background_color(values: list[int]) -> tuple[int, int, int]:
+    """Convert a configured background color to a tuple."""
+    if len(values) != 3:
+        msg = "The background color must contain exactly three values"
+        raise scan_to_paperless.ScanToPaperlessError(msg)
+    return values[0], values[1], values[2]
+
+
 def detect_background_color(
     image: NpNdarrayInt,
     mask: NpNdarrayInt | None = None,
@@ -245,13 +253,11 @@ def detect_background_color(
         histogram, _ = skimage_histogram(pixels, nbins=256, source_range="dtype")
         value = int(np.argmax(histogram))
         return (value, value, value)
-    return cast(
-        "tuple[int, int, int]",
-        tuple(
-            int(np.argmax(skimage_histogram(pixels[..., channel], nbins=256, source_range="dtype")[0]))
-            for channel in range(3)
-        ),
-    )
+    channels = [
+        int(np.argmax(skimage_histogram(pixels[..., channel], nbins=256, source_range="dtype")[0]))
+        for channel in range(3)
+    ]
+    return channels[0], channels[1], channels[2]
 
 
 class Context:
@@ -474,18 +480,18 @@ class Context:
         if self._background_color is not None:
             return self._background_color
 
-        image_config: dict[str, Any] = {}
+        image_config = None
         if self.image_name is not None:
-            images_config = cast("dict[str, dict[str, Any]]", self.config.setdefault("images_config", {}))
+            images_config = self.config.setdefault("images_config", {})
             image_config = images_config.setdefault(self.image_name, {})
             configured = image_config.get("background_color")
             if configured is not None:
-                self._background_color = cast("tuple[int, int, int]", tuple(configured))
+                self._background_color = _to_background_color(configured)
                 return self._background_color
 
         configured = self.config["args"].get("background_color")
         if configured is not None:
-            self._background_color = cast("tuple[int, int, int]", tuple(configured))
+            self._background_color = _to_background_color(configured)
             return self._background_color
 
         if self.image is None:
@@ -495,7 +501,7 @@ class Context:
                 self.image,
                 mask if mask is not None else self.mask,
             )
-            if self.image_name is not None:
+            if image_config is not None:
                 image_config["background_color"] = list(self._background_color)
         return self._background_color
 
