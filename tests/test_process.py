@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Stéphane Brunner
 
+import io
 import os
 import re
 import shutil
@@ -18,6 +19,7 @@ from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
 from PIL import Image
+from ruamel.yaml.main import YAML
 
 from scan_to_paperless import add_code, process, process_utils
 
@@ -30,6 +32,68 @@ def load_image(image_name) -> None:
 
 def test_should_not_commit() -> None:
     assert REGENERATE is False
+
+
+def test_detect_background_color() -> None:
+    image = np.zeros((4, 10, 3), dtype=np.uint8)
+    image[:, :3] = (10, 20, 30)
+    image[:, 3:] = (250, 251, 252)
+    mask = np.zeros((4, 10), dtype=np.uint8)
+    mask[:, 3:] = 255
+
+    assert process_utils.detect_background_color(image, mask) == (10, 20, 30)
+    assert process_utils.detect_background_color(image) == (250, 251, 252)
+
+
+@pytest.mark.asyncio
+async def test_background_color_per_image() -> None:
+    image = np.zeros((2, 2, 3), dtype=np.uint8)
+    image[:, :] = (10, 20, 30)
+    config = {
+        "args": {"background_color": [1, 2, 3]},
+        "images_config": {"image.png": {"background_color": [4, 5, 6]}},
+    }
+
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+    assert context.get_background_color() == (4, 5, 6)
+
+    del config["images_config"]["image.png"]["background_color"]
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+    assert context.get_background_color() == (1, 2, 3)
+
+    del config["args"]["background_color"]
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+    assert context.get_background_color() == (10, 20, 30)
+    assert config["images_config"]["image.png"]["background_color"] == [10, 20, 30]
+
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((2, 2, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+    assert context.get_background_color() == (10, 20, 30)
+
+
+def test_update_config_moves_images_status() -> None:
+    config = {
+        "args": {},
+        "images_config": {
+            "image.png": {
+                "angle": 1.2,
+                "status": {"size": [10, 20]},
+            },
+        },
+    }
+
+    process._update_config(config)
+
+    assert config["images_status"]["image.png"]["size"] == [10, 20]
+    assert config["images_config"]["image.png"]["angle"] == 1.2
+    assert "status" not in config["images_config"]["image.png"]
 
 
 # @pytest.mark.skip(reason="for test")
@@ -440,14 +504,16 @@ async def test_full(progress) -> None:
     step = await process.transform(config, step, "/tmp/test-config.yaml", root_folder)  # noqa: S108
 
     image_config = config["images_config"]["all-1.png"]
-    assert len(image_config["status"]["size"]) == 2
-    assert image_config["status"]["size"][0] > 0
-    assert image_config["status"]["size"][1] > 0
-    assert len(image_config["status"]["histogram"]["text"]) == 32
-    assert image_config["status"]["histogram"]["current"]["cut_white"] == 200
-    assert "cut_black" in image_config["status"]["histogram"]["suggested"]
-    assert "page_white" in image_config["status"]["auto_mask_hsv"]["suggestions"]
-    assert "deskew" in image_config["status"]
+    image_status = config["images_status"]["all-1.png"]
+    assert image_config["background_color"] == [255, 255, 255]
+    assert len(image_status["size"]) == 2
+    assert image_status["size"][0] > 0
+    assert image_status["size"][1] > 0
+    assert len(image_status["histogram"]["text"]) == 32
+    assert image_status["histogram"]["current"]["cut_white"] == 200
+    assert "cut_black" in image_status["histogram"]["suggested"]
+    assert "page_white" in image_status["auto_mask_hsv"]["suggestions"]
+    assert "deskew" in image_status
 
     assert len(step["sources"]) == 1
     print(f"Compare '{step['sources'][0]}' with expected image 'all-1.expected.png'.")
@@ -861,6 +927,32 @@ async def test_auto_cut() -> None:
     )
 
 
+@pytest.mark.asyncio
+async def test_auto_cut_background_color() -> None:
+    image = np.full((100, 100, 3), (128, 128, 128), dtype=np.uint8)
+    image[25:75, 25:75] = (255, 255, 255)
+    config = {
+        "args": {
+            "cut": {
+                "auto_mask": {
+                    "sam3": {"enabled": False},
+                    "de_noise_size": 5,
+                    "buffer_size": 5,
+                },
+            },
+        },
+    }
+    context = process_utils.Context(config, {})
+    context.image = image
+    context.image_name = "image.png"
+
+    await context.do_initial_cut()
+
+    assert config["images_config"]["image.png"]["background_color"] == [128, 128, 128]
+    assert context.image[0, 0].tolist() == [128, 128, 128]
+    assert context.image[50, 50].tolist() == [255, 255, 255]
+
+
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.asyncio
 async def test_sam3_page_mask() -> None:
@@ -1234,9 +1326,21 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             prompt,
             scale,
             threshold,
+            image_size=(int(context.image.shape[0]), int(context.image.shape[1])),
         )
         assert loaded_mask is not None
         assert np.array_equal(mask, loaded_mask)
+
+        # Verify cache miss when the image size changed
+        resized_cache = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+            image_size=(1, 1),
+        )
+        assert resized_cache is None
 
         # Generate and save overlay (original behavior)
         overlay = process.draw_mask_overlay(context.image, mask)
@@ -1284,3 +1388,59 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         assert different_threshold is None
 
     shutil.rmtree(str(root_folder))
+
+
+@pytest.mark.asyncio
+async def test_sam3_cache_size(tmp_path) -> None:
+    root_folder = Path(str(tmp_path))
+    mask = np.zeros((10, 20), dtype=np.uint8)
+    await process_utils.save_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5, mask)
+
+    loaded_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(10, 20),
+    )
+    assert loaded_mask is not None
+
+    resized_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(11, 20),
+    )
+    assert resized_mask is None
+
+    yaml_path = root_folder / "sam3" / "image.yaml"
+    yaml = YAML(typ="safe")
+    meta = yaml.load(await yaml_path.read_text(encoding="utf-8"))
+    del meta["size"]
+    yaml_dump = YAML()
+    buffer = io.StringIO()
+    yaml_dump.dump(meta, buffer)
+    await yaml_path.write_text(buffer.getvalue(), encoding="utf-8")
+
+    legacy_resized_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(11, 20),
+    )
+    assert legacy_resized_mask is None
+
+    legacy_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(10, 20),
+    )
+    assert legacy_mask is not None

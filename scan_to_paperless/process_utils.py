@@ -15,6 +15,7 @@ import torch
 from anyio import Path
 from PIL import Image
 from ruamel.yaml.main import YAML
+from skimage.exposure import histogram as skimage_histogram
 from transformers import Sam3Model, Sam3Processor
 
 import scan_to_paperless
@@ -84,7 +85,12 @@ async def save_sam3_cache(
             await file.write(buffer.tobytes())
 
     yaml_path = cache_dir / f"{Path(image_name).stem}.yaml"
-    meta = {"prompt": prompt, "scale": scale, "threshold": threshold}
+    meta = {
+        "prompt": prompt,
+        "scale": scale,
+        "threshold": threshold,
+        "size": [int(mask.shape[0]), int(mask.shape[1])],
+    }
     yaml = YAML()
     yaml.default_flow_style = False
     string_buffer = io.StringIO()
@@ -99,6 +105,7 @@ async def load_sam3_cache(
     prompt: str,
     scale: float,
     threshold: float,
+    image_size: tuple[int, int] | None = None,
 ) -> np.ndarray | None:
     """Load SAM3 inference result from cache if parameters match."""
     if root_folder is None or image_name is None:
@@ -118,11 +125,20 @@ async def load_sam3_cache(
     if meta.get("prompt") != prompt or meta.get("scale") != scale or meta.get("threshold") != threshold:
         return None
 
+    cached_size = meta.get("size")
+    if image_size is not None and cached_size is not None and tuple(cached_size) != image_size:
+        _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
+        return None
+
     async with await anyio.open_file(str(mask_path), "rb") as file:
         mask_bytes = await file.read()
     mask_array = np.frombuffer(mask_bytes, dtype=np.uint8)
     mask = cv2.imdecode(mask_array, cv2.IMREAD_GRAYSCALE)
     if mask is None:
+        return None
+
+    if image_size is not None and mask.shape[:2] != image_size:
+        _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
         return None
 
     print(f"Use SAM3 cache for {image_name}")
@@ -234,6 +250,31 @@ def crop_image(
     )
 
 
+def _to_background_color(values: list[int]) -> tuple[int, int, int]:
+    """Convert a configured background color to a tuple."""
+    if len(values) != 3:
+        msg = "The background color must contain exactly three values"
+        raise scan_to_paperless.ScanToPaperlessError(msg)
+    return values[0], values[1], values[2]
+
+
+def detect_background_color(
+    image: NpNdarrayInt,
+    mask: NpNdarrayInt | None = None,
+) -> tuple[int, int, int]:
+    """Get the most frequent color of the background."""
+    pixels = image[mask == 0] if mask is not None and np.any(mask == 0) else image
+    if image.ndim == 2:
+        histogram, _ = skimage_histogram(pixels, nbins=256, source_range="dtype")
+        value = int(np.argmax(histogram))
+        return (value, value, value)
+    channels = [
+        int(np.argmax(skimage_histogram(pixels[..., channel], nbins=256, source_range="dtype")[0]))
+        for channel in range(3)
+    ]
+    return channels[0], channels[1], channels[2]
+
+
 class Context:
     """All the context of the current image with his mask."""
 
@@ -253,6 +294,7 @@ class Context:
         self.image_name = image_name
         self.image: NpNdarrayInt | None = None
         self.mask: NpNdarrayInt | None = None
+        self._background_color: tuple[int, int, int] | None = None
         self.get_index: Callable[
             [NpNdarrayInt],
             tuple[np.ndarray[Any, np.dtype[np.signedinteger[Any]]], ...] | None,
@@ -299,6 +341,7 @@ class Context:
                     prompt,
                     scale,
                     threshold,
+                    image_size=(int(self.image.shape[0]), int(self.image.shape[1])),
                 )
                 if cached_mask is not None:
                     mask = cached_mask
@@ -448,12 +491,35 @@ class Context:
             else None
         )
 
-    def get_background_color(self) -> tuple[int, int, int]:
-        """Get the background color."""
-        return cast(
-            "tuple[int, int, int]",
-            self.config["args"].setdefault("background_color", schema.BACKGROUND_COLOR_DEFAULT),
-        )
+    def get_background_color(self, *, mask: NpNdarrayInt | None = None) -> tuple[int, int, int]:
+        """Get the background color, detect it if needed."""
+        if self._background_color is not None:
+            return self._background_color
+
+        image_config = None
+        if self.image_name is not None:
+            images_config = self.config.setdefault("images_config", {})
+            image_config = images_config.setdefault(self.image_name, {})
+            configured = image_config.get("background_color")
+            if configured is not None:
+                self._background_color = _to_background_color(configured)
+                return self._background_color
+
+        configured = self.config["args"].get("background_color")
+        if configured is not None:
+            self._background_color = _to_background_color(configured)
+            return self._background_color
+
+        if self.image is None:
+            self._background_color = (255, 255, 255)
+        else:
+            self._background_color = detect_background_color(
+                self.image,
+                mask if mask is not None else self.mask,
+            )
+            if image_config is not None:
+                image_config["background_color"] = list(self._background_color)
+        return self._background_color
 
     async def do_initial_cut(self) -> None:
         """Definitively mask the original image."""
@@ -478,7 +544,16 @@ class Context:
                 "auto_cut",
                 additional_path,
             )
-            self.image[mask == 0] = self.get_background_color()
+            if mask is None:
+                return
+            if mask.shape[:2] != self.image.shape[:2]:
+                _LOG.warning("Resize the cut mask to the image size")
+                mask = cv2.resize(
+                    mask,
+                    (self.image.shape[1], self.image.shape[0]),
+                    interpolation=cv2.INTER_NEAREST,
+                )
+            self.image[mask == 0] = self.get_background_color(mask=mask)
 
     def get_process_count(self) -> int:
         """Get the step number."""

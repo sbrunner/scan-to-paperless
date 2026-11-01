@@ -205,16 +205,15 @@ class Arguments(TypedDict, total=False):
       enabled: false
     """
 
-    background_color: list[int]
+    background_color: "BackgroundColor"
     r"""
     Background color.
 
-    The background color
+    The background color, null to automatically detect it
 
-    default:
-      - 255
-      - 255
-      - 255
+    default: None
+    items:
+      type: integer
     """
 
     mask: "MaskOperation"
@@ -428,7 +427,7 @@ class AutoRotate(TypedDict, total=False):
 
 
 
-BACKGROUND_COLOR_DEFAULT = [255, 255, 255]
+BACKGROUND_COLOR_DEFAULT = None
 r""" Default value of the field path 'Arguments background_color' """
 
 
@@ -440,6 +439,19 @@ r""" Default value of the field path 'Auto mask buffer_level' """
 
 BUFFER_SIZE_DEFAULT = 20
 r""" Default value of the field path 'Auto mask buffer_size' """
+
+
+
+BackgroundColor = list[int] | None
+r"""
+Background color.
+
+The background color, null to automatically detect it
+
+default: None
+items:
+  type: integer
+"""
 
 
 
@@ -517,6 +529,9 @@ class Configuration(TypedDict, total=False):
     r""" The ignored errors """
 
     images_config: dict[str, "_ConfigurationImagesConfigAdditionalproperties"]
+    images_status: dict[str, "_ConfigurationImagesStatusAdditionalproperties"]
+    r""" The image status """
+
 
 
 class ConsumeFolder(TypedDict, total=False):
@@ -1773,75 +1788,77 @@ class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
     angle: int | float | None
     r""" The used angle to deskew, can be change, restart by deleting one of the generated images """
 
-    status: "_ConfigurationImagesConfigAdditionalpropertiesStatus"
+    background_color: list[int]
+    r""" The used background color, can be changed, restart by deleting one of the generated images """
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatus(TypedDict, total=False):
+
+class _ConfigurationImagesStatusAdditionalproperties(TypedDict, total=False):
     angle: int | float
     r""" The measured deskew angle """
 
     size: list[int | float]
     r""" The image dimensions """
 
-    histogram: "_ConfigurationImagesConfigAdditionalpropertiesStatusHistogram"
+    histogram: "_ConfigurationImagesStatusAdditionalpropertiesHistogram"
     r""" Information based on the image histogram to help tune cut_black/cut_white """
 
-    auto_mask_hsv: "_ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsv"
+    auto_mask_hsv: "_ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsv"
     r""" HSV analysis and suggested ranges for auto_mask lower_hsv_color and upper_hsv_color """
 
-    deskew: "_ConfigurationImagesConfigAdditionalpropertiesStatusDeskew"
+    deskew: "_ConfigurationImagesStatusAdditionalpropertiesDeskew"
     r""" Deskew analysis with detected/applied angle and search configuration """
 
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsv(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsv(TypedDict, total=False):
     r""" HSV analysis and suggested ranges for auto_mask lower_hsv_color and upper_hsv_color """
 
     white_candidate_ratio: int | float
-    suggestions: "_ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestions"
+    suggestions: "_ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestions"
     note: str
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestions(TypedDict, total=False):
-    page_white: "_ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestionsPageWhite"
-    scanner_background: "_ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestionsScannerBackground"
+class _ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestions(TypedDict, total=False):
+    page_white: "_ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestionsPageWhite"
+    scanner_background: "_ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestionsScannerBackground"
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestionsPageWhite(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestionsPageWhite(TypedDict, total=False):
     lower_hsv_color: list[int]
     upper_hsv_color: list[int]
     inverse_mask: bool
     de_noise_morphology: bool
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusAutoMaskHsvSuggestionsScannerBackground(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestionsScannerBackground(TypedDict, total=False):
     lower_hsv_color: list[int]
     upper_hsv_color: list[int]
     inverse_mask: bool
     de_noise_morphology: bool
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusDeskew(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesDeskew(TypedDict, total=False):
     r""" Deskew analysis with detected/applied angle and search configuration """
 
-    angle_from: "_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom"
+    angle_from: "_ConfigurationImagesStatusAdditionalpropertiesDeskewAngleFrom"
     detected_angle: int | float | None
     applied_angle: int | float | None
     near_search_limit: bool
-    search: "_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewSearch"
+    search: "_ConfigurationImagesStatusAdditionalpropertiesDeskewSearch"
 
 
-_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom = Literal['detected'] | Literal['manual'] | Literal['none']
-_CONFIGURATIONIMAGESCONFIGADDITIONALPROPERTIESSTATUSDESKEWANGLEFROM_DETECTED: Literal['detected'] = "detected"
-r"""The values for the '_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom' enum"""
-_CONFIGURATIONIMAGESCONFIGADDITIONALPROPERTIESSTATUSDESKEWANGLEFROM_MANUAL: Literal['manual'] = "manual"
-r"""The values for the '_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom' enum"""
-_CONFIGURATIONIMAGESCONFIGADDITIONALPROPERTIESSTATUSDESKEWANGLEFROM_NONE: Literal['none'] = "none"
-r"""The values for the '_ConfigurationImagesConfigAdditionalpropertiesStatusDeskewAngleFrom' enum"""
+_ConfigurationImagesStatusAdditionalpropertiesDeskewAngleFrom = Literal['detected'] | Literal['manual'] | Literal['none']
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESDESKEWANGLEFROM_DETECTED: Literal['detected'] = "detected"
+r"""The values for the '_ConfigurationImagesStatusAdditionalpropertiesDeskewAngleFrom' enum"""
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESDESKEWANGLEFROM_MANUAL: Literal['manual'] = "manual"
+r"""The values for the '_ConfigurationImagesStatusAdditionalpropertiesDeskewAngleFrom' enum"""
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESDESKEWANGLEFROM_NONE: Literal['none'] = "none"
+r"""The values for the '_ConfigurationImagesStatusAdditionalpropertiesDeskewAngleFrom' enum"""
 
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusDeskewSearch(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesDeskewSearch(TypedDict, total=False):
     min_angle: int | float
     max_angle: int | float
     angle_derivation: int | float
@@ -1850,26 +1867,26 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatusDeskewSearch(TypedDict
     angle_pm_90: bool
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogram(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesHistogram(TypedDict, total=False):
     r""" Information based on the image histogram to help tune cut_black/cut_white """
 
     text: list[str]
     r""" Textual histogram lines """
 
-    percentiles: "_ConfigurationImagesConfigAdditionalpropertiesStatusHistogramPercentiles"
-    current: "_ConfigurationImagesConfigAdditionalpropertiesStatusHistogramCurrent"
-    suggested: "_ConfigurationImagesConfigAdditionalpropertiesStatusHistogramSuggested"
+    percentiles: "_ConfigurationImagesStatusAdditionalpropertiesHistogramPercentiles"
+    current: "_ConfigurationImagesStatusAdditionalpropertiesHistogramCurrent"
+    suggested: "_ConfigurationImagesStatusAdditionalpropertiesHistogramSuggested"
     note: str
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogramCurrent(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesHistogramCurrent(TypedDict, total=False):
     cut_black: int | float
     cut_white: int | float
     clip_black_percent: int | float
     clip_white_percent: int | float
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogramPercentiles(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesHistogramPercentiles(TypedDict, total=False):
     p01: int | float
     p05: int | float
     p50: int | float
@@ -1877,18 +1894,18 @@ class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogramPercentiles(T
     p99: int | float
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogramSuggested(TypedDict, total=False):
-    cut_black: "_ConfigurationImagesConfigAdditionalpropertiesStatusHistogramSuggestedCutBlack"
-    cut_white: "_ConfigurationImagesConfigAdditionalpropertiesStatusHistogramSuggestedCutWhite"
+class _ConfigurationImagesStatusAdditionalpropertiesHistogramSuggested(TypedDict, total=False):
+    cut_black: "_ConfigurationImagesStatusAdditionalpropertiesHistogramSuggestedCutBlack"
+    cut_white: "_ConfigurationImagesStatusAdditionalpropertiesHistogramSuggestedCutWhite"
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogramSuggestedCutBlack(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesHistogramSuggestedCutBlack(TypedDict, total=False):
     conservative: int | float
     balanced: int | float
     aggressive: int | float
 
 
-class _ConfigurationImagesConfigAdditionalpropertiesStatusHistogramSuggestedCutWhite(TypedDict, total=False):
+class _ConfigurationImagesStatusAdditionalpropertiesHistogramSuggestedCutWhite(TypedDict, total=False):
     conservative: int | float
     balanced: int | float
     aggressive: int | float

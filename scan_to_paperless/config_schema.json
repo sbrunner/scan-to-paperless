@@ -437,9 +437,9 @@
           }
         },
         "background_color": {
-          "type": "array",
-          "default": [255, 255, 255],
-          "description": "The background color",
+          "type": ["array", "null"],
+          "default": null,
+          "description": "The background color, null to automatically detect it",
           "items": {
             "type": "integer"
           },
