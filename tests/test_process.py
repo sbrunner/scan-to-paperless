@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Stéphane Brunner
 
+import io
 import os
 import re
 import shutil
@@ -18,6 +19,7 @@ from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image, check_image_file
 from nbconvert.preprocessors import ExecutePreprocessor
 from PIL import Image
+from ruamel.yaml.main import YAML
 
 from scan_to_paperless import add_code, process, process_utils
 
@@ -1324,9 +1326,21 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             prompt,
             scale,
             threshold,
+            image_size=(int(context.image.shape[0]), int(context.image.shape[1])),
         )
         assert loaded_mask is not None
         assert np.array_equal(mask, loaded_mask)
+
+        # Verify cache miss when the image size changed
+        resized_cache = await process_utils.load_sam3_cache(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+            image_size=(1, 1),
+        )
+        assert resized_cache is None
 
         # Generate and save overlay (original behavior)
         overlay = process.draw_mask_overlay(context.image, mask)
@@ -1374,3 +1388,59 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         assert different_threshold is None
 
     shutil.rmtree(str(root_folder))
+
+
+@pytest.mark.asyncio
+async def test_sam3_cache_size(tmp_path) -> None:
+    root_folder = Path(str(tmp_path))
+    mask = np.zeros((10, 20), dtype=np.uint8)
+    await process_utils.save_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5, mask)
+
+    loaded_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(10, 20),
+    )
+    assert loaded_mask is not None
+
+    resized_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(11, 20),
+    )
+    assert resized_mask is None
+
+    yaml_path = root_folder / "sam3" / "image.yaml"
+    yaml = YAML(typ="safe")
+    meta = yaml.load(await yaml_path.read_text(encoding="utf-8"))
+    del meta["size"]
+    yaml_dump = YAML()
+    buffer = io.StringIO()
+    yaml_dump.dump(meta, buffer)
+    await yaml_path.write_text(buffer.getvalue(), encoding="utf-8")
+
+    legacy_resized_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(11, 20),
+    )
+    assert legacy_resized_mask is None
+
+    legacy_mask = await process_utils.load_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        image_size=(10, 20),
+    )
+    assert legacy_mask is not None

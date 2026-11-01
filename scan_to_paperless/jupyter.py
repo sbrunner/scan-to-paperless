@@ -389,6 +389,7 @@ if sam_test_configs:
             prompt,
             scale,
             threshold,
+            image_size=(int(context.image.shape[0]), int(context.image.shape[1])),
         )
         if cached_mask is not None:
             mask = cached_mask

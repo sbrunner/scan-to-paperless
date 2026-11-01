@@ -85,7 +85,12 @@ async def save_sam3_cache(
             await file.write(buffer.tobytes())
 
     yaml_path = cache_dir / f"{Path(image_name).stem}.yaml"
-    meta = {"prompt": prompt, "scale": scale, "threshold": threshold}
+    meta = {
+        "prompt": prompt,
+        "scale": scale,
+        "threshold": threshold,
+        "size": [int(mask.shape[0]), int(mask.shape[1])],
+    }
     yaml = YAML()
     yaml.default_flow_style = False
     string_buffer = io.StringIO()
@@ -100,6 +105,7 @@ async def load_sam3_cache(
     prompt: str,
     scale: float,
     threshold: float,
+    image_size: tuple[int, int] | None = None,
 ) -> np.ndarray | None:
     """Load SAM3 inference result from cache if parameters match."""
     if root_folder is None or image_name is None:
@@ -119,11 +125,20 @@ async def load_sam3_cache(
     if meta.get("prompt") != prompt or meta.get("scale") != scale or meta.get("threshold") != threshold:
         return None
 
+    cached_size = meta.get("size")
+    if image_size is not None and cached_size is not None and tuple(cached_size) != image_size:
+        _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
+        return None
+
     async with await anyio.open_file(str(mask_path), "rb") as file:
         mask_bytes = await file.read()
     mask_array = np.frombuffer(mask_bytes, dtype=np.uint8)
     mask = cv2.imdecode(mask_array, cv2.IMREAD_GRAYSCALE)
     if mask is None:
+        return None
+
+    if image_size is not None and mask.shape[:2] != image_size:
+        _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
         return None
 
     print(f"Use SAM3 cache for {image_name}")
@@ -326,6 +341,7 @@ class Context:
                     prompt,
                     scale,
                     threshold,
+                    image_size=(int(self.image.shape[0]), int(self.image.shape[1])),
                 )
                 if cached_mask is not None:
                     mask = cached_mask
@@ -528,6 +544,15 @@ class Context:
                 "auto_cut",
                 additional_path,
             )
+            if mask is None:
+                return
+            if mask.shape[:2] != self.image.shape[:2]:
+                _LOG.warning("Resize the cut mask to the image size")
+                mask = cv2.resize(
+                    mask,
+                    (self.image.shape[1], self.image.shape[0]),
+                    interpolation=cv2.INTER_NEAREST,
+                )
             self.image[mask == 0] = self.get_background_color(mask=mask)
 
     def get_process_count(self) -> int:
