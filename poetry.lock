@@ -3443,27 +3443,11 @@ description = "CUBLAS native runtime libraries"
 optional = true
 python-versions = ">=3"
 groups = ["main"]
-markers = "(sys_platform == \"linux\" or sys_platform == \"win32\") and (sys_platform == \"linux\" or platform_machine == \"x86_64\") and extra == \"process\" and platform_system == \"Linux\" and (platform_machine == \"aarch64\" or platform_machine == \"x86_64\")"
+markers = "extra == \"process\" and platform_system == \"Linux\""
 files = [
     {file = "nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:b7a210458267ac818974c53038fbec2e969d5c99f305ab15c72522fa9f001dd5"},
     {file = "nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:37936a16db8fe4ac1f065c2139360608a543a09275cb1a1af612e08cfa065436"},
     {file = "nvidia_cublas-13.1.1.3-py3-none-win_amd64.whl", hash = "sha256:b6cdce694e47ff6aadf0a69df1cab6628d696f5ff56e8d16af50309d855fa20f"},
-]
-
-[package.dependencies]
-nvidia-cuda-nvrtc = "*"
-
-[[package]]
-name = "nvidia-cublas"
-version = "13.8.1.7"
-description = "CUBLAS native runtime libraries"
-optional = true
-python-versions = ">=3"
-groups = ["main"]
-markers = "extra == \"process\" and platform_system == \"Linux\""
-files = [
-    {file = "nvidia_cublas-13.8.1.7-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:803b9974cd7164a481d0b11c25826498d383d0ef0c372573bc6577a344ddf74e"},
-    {file = "nvidia_cublas-13.8.1.7-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:c11a27fd4379510e5b1f84b367a2514d1e52fe5cc13442117a0e0a1addee3cf2"},
 ]
 
 [package.dependencies]
@@ -3490,26 +3474,11 @@ description = "NVRTC native runtime libraries"
 optional = true
 python-versions = ">=3"
 groups = ["main"]
-markers = "(sys_platform == \"linux\" or sys_platform == \"win32\") and (sys_platform == \"linux\" or platform_machine == \"x86_64\") and extra == \"process\" and platform_system == \"Linux\" and (platform_machine == \"aarch64\" or platform_machine == \"x86_64\")"
+markers = "extra == \"process\" and platform_system == \"Linux\""
 files = [
     {file = "nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:ad9b6d2ead2435f11cbb6868809d2adeeee302e9bb94bcf0539c7a40d80e8575"},
     {file = "nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d27f20a0ca67a4bb34268a5e951033496c5b74870b868bacd046b1b8e0c3267b"},
     {file = "nvidia_cuda_nvrtc-13.0.88-py3-none-win_amd64.whl", hash = "sha256:6bcd4e7f8e205cbe644f5a98f2f799bef9556fefc89dd786e79a16312ce49872"},
-]
-
-[[package]]
-name = "nvidia-cuda-nvrtc"
-version = "13.4.92"
-description = "NVRTC native runtime libraries"
-optional = true
-python-versions = ">=3"
-groups = ["main"]
-markers = "extra == \"process\" and platform_system == \"Linux\""
-files = [
-    {file = "nvidia_cuda_nvrtc-13.4.92-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:5ce8c97b00b232c4f50c8c4b5a3b68cafee08bdb82ea86f2052ff01d03194f4a"},
-    {file = "nvidia_cuda_nvrtc-13.4.92-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:24b9f5eccc6a5a19779038cf468aecb7cecfa8716269beaef5640bd989d21c28"},
-    {file = "nvidia_cuda_nvrtc-13.4.92-py3-none-win_amd64.whl", hash = "sha256:6af7ac5372920f6a7a560d0699348560fe44cb52c1d722d6afd3119f8af948c4"},
-    {file = "nvidia_cuda_nvrtc-13.4.92-py3-none-win_arm64.whl", hash = "sha256:1620066e967e93119d67338628935cbb1196b53a1474b07f14b7b77aba477284"},
 ]
 
 [[package]]
@@ -6570,10 +6539,10 @@ files = [
 
 [extras]
 jupyter = ["deskew", "matplotlib", "opencv-contrib-python-headless"]
-process = ["Jinja2", "asyncinotify", "cffi", "deskew", "matplotlib", "natsort", "nbformat", "opencv-contrib-python-headless", "pikepdf", "pypdf", "pyzbar", "reportlab", "requests", "scikit-image", "torch", "torchvision", "transformers", "weasyprint", "zxing-cpp"]
+process = ["Jinja2", "asyncinotify", "cffi", "deskew", "matplotlib", "natsort", "nbformat", "nvidia-cublas", "nvidia-cuda-nvrtc", "opencv-contrib-python-headless", "pikepdf", "pypdf", "pyzbar", "reportlab", "requests", "scikit-image", "torch", "torchvision", "transformers", "weasyprint", "zxing-cpp"]
 sane = ["python-sane"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,!=3.14.1,<3.15"
-content-hash = "dda2ec05290462b7efa0bcd2df116e309cdc7ee1b5c80eeca03fdfd09ca09bfb"
+content-hash = "7e96160ebf99b3cee764fa29d695d13c168259d0e4876d17c7e03cf94ce03792"

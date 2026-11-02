@@ -56,6 +56,11 @@ anyio = "4.15.1"
 transformers = { version = "5.20.2", optional = true }
 torch = { version = "2.14.1", optional = true }
 torchvision = { version = "0.29.1", optional = true }
+# Pinned to the versions required by the `cuda-toolkit` dependency of `torch`, without these pins
+# Poetry resolves two different versions for the same package and `poetry export` then generates a
+# requirements file that `pip` cannot install (duplicate conflicting `==` constraints on Linux).
+nvidia-cublas = { version = "13.1.1.3", optional = true, markers = "platform_system == \"Linux\"" }
+nvidia-cuda-nvrtc = { version = "13.0.88", optional = true, markers = "platform_system == \"Linux\"" }
 
 [tool.poetry.group.dev.dependencies]
 prospector = { version = "1.19.1", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
@@ -131,7 +136,7 @@ scan-process = "scan_to_paperless.process:main"
 add-codes-page = "scan_to_paperless.add_code:main"
 
 [project.optional-dependencies]
-process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify", "transformers", "torch", "torchvision"]
+process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify", "transformers", "torch", "torchvision", "nvidia-cublas", "nvidia-cuda-nvrtc"]
 jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
 sane = ["python-sane"]
 
