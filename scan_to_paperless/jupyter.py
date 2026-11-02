@@ -410,7 +410,11 @@ if sam_test_configs:
                 threshold,
                 mask,
             )
-        overlay = process.draw_mask_overlay(context.image, mask)
+        inverse_mask = test_config.get("inverse_mask", False)
+        overlay = process.draw_mask_overlay(
+            context.image,
+            process.get_sam_test_overlay_mask(mask, inverse=inverse_mask),
+        )
         context.display_image(overlay)
 else:
     print("No sam_test configured, add args.sam_test to your config.yaml to enable.")

@@ -144,6 +144,7 @@
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
       - <a id="definitions/args/properties/sam_test/additionalProperties/properties/scale"></a>**`scale`** *(number)*: Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size. Default: `8`.
+      - <a id="definitions/args/properties/sam_test/additionalProperties/properties/inverse_mask"></a>**`inverse_mask`** *(boolean)*: Draw the overlay on the detected mask instead of its complement. Useful to check the detection of thin structures like folds. Default: `false`.
 - <a id="definitions/contour"></a>**`contour`** *(object)*: The configuration used to find the contour.
   - <a id="definitions/contour/properties/min_box_size"></a>**`min_box_size`** *(number)*: The minimum box size to find the content [mm]. Default: `{"crop": 3, "empty": 10, "limit": 10}`.
   - <a id="definitions/contour/properties/min_box_black"></a>**`min_box_black`** *(number)*: The minimum black in a box on content find [%]. Default: `2`.

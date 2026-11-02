@@ -168,8 +168,15 @@ Those values are intended to help a human or an AI iterate on `args.cut_black`, 
 
 The `args.sam_test` configuration allows generating visual overlays to evaluate SAM3 mask quality
 for different prompts and thresholds. Each key in the dictionary becomes a subfolder in the job
-directory containing the image with a green semi-transparent overlay (same style as crop rectangles)
-showing the detected mask.
+directory containing the image with a green semi-transparent overlay (same style as crop rectangles).
+
+By default the overlay shows `mask == 255`, which is the complement of the objects detected by SAM3
+(the area that would be removed by an auto mask). Set `inverse_mask: true` to display the detected
+objects directly. This is required to evaluate the detection of thin structures such as folds.
+
+SAM3 expects short noun phrases, not sentences. For folds, use prompts like `crease`, `fold line`,
+`paper crease` or `document crease`. Keep `scale` low (`1` or `2`) for thin structures: with
+`scale: 8`, a 10 px crease is reduced to about 1 px before the internal 1008 px resize.
 
 Example configuration in `config.yaml`:
 
@@ -182,10 +189,21 @@ args:
     ticket:
       prompt: 'receipt, ticket'
       threshold: 0.3
+    fold:
+      prompt: 'crease'
+      threshold: 0.3
+      scale: 1
+      inverse_mask: true
+    fold_line:
+      prompt: 'fold line'
+      threshold: 0.3
+      scale: 1
+      inverse_mask: true
 ```
 
-This generates two subfolders `page/` and `ticket/` in the job directory, each containing the
-processed image with the SAM mask overlay.
+This generates the `page/`, `ticket/`, `fold/` and `fold_line/` subfolders in the job directory,
+each containing the processed image with the SAM mask overlay. Each prompt, scale and threshold
+combination has its own cache entry in the `sam3/` folder.
 
 See also: [The documentation](./process.md#sam_test)
 

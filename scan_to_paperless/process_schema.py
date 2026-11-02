@@ -1527,6 +1527,11 @@ r""" Default value of the field path 'SAM test configuration enabled' """
 
 
 
+SAM_TEST_INVERSE_MASK_DEFAULT = False
+r""" Default value of the field path 'SAM test configuration inverse_mask' """
+
+
+
 SAM_TEST_PROMPT_DEFAULT = 'document'
 r""" Default value of the field path 'SAM test configuration prompt' """
 
@@ -1634,6 +1639,15 @@ class SamTestConfiguration(TypedDict, total=False):
     Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.
 
     default: 8
+    """
+
+    inverse_mask: bool
+    r"""
+    SAM test inverse mask.
+
+    Draw the overlay on the detected mask instead of its complement. Useful to check the detection of thin structures like folds.
+
+    default: False
     """
 
 

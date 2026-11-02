@@ -1260,6 +1260,17 @@ async def test_draw_mask_overlay() -> None:
     assert np.array_equal(overlay[0, 0], image[0, 0])
 
 
+def test_get_sam_test_overlay_mask() -> None:
+    mask = np.zeros((10, 10), dtype=np.uint8)
+    mask[2:5, 2:5] = 255
+
+    assert np.array_equal(process.get_sam_test_overlay_mask(mask, inverse=False), mask)
+
+    inverse = process.get_sam_test_overlay_mask(mask, inverse=True)
+    assert inverse[3, 3] == 0
+    assert inverse[0, 0] == 255
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("test_name", "test_config"),
@@ -1313,9 +1324,13 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         )
 
         # Verify cache files exist
-        cache_dir = root_folder / "sam3"
-        mask_path = cache_dir / context.image_name
-        yaml_path = cache_dir / f"{Path(context.image_name).stem}.yaml"
+        mask_path, yaml_path = process_utils.get_sam3_cache_paths(
+            root_folder,
+            context.image_name,
+            prompt,
+            scale,
+            threshold,
+        )
         assert await mask_path.exists()
         assert await yaml_path.exists()
 
@@ -1416,7 +1431,7 @@ async def test_sam3_cache_size(tmp_path) -> None:
     )
     assert resized_mask is None
 
-    yaml_path = root_folder / "sam3" / "image.yaml"
+    _, yaml_path = process_utils.get_sam3_cache_paths(root_folder, "image.png", "document", 1.0, 0.5)
     yaml = YAML(typ="safe")
     meta = yaml.load(await yaml_path.read_text(encoding="utf-8"))
     del meta["size"]
@@ -1444,3 +1459,42 @@ async def test_sam3_cache_size(tmp_path) -> None:
         image_size=(10, 20),
     )
     assert legacy_mask is not None
+
+
+@pytest.mark.asyncio
+async def test_sam3_cache_per_prompt(tmp_path) -> None:
+    """Test that each set of SAM3 parameters has its own cache entry."""
+    root_folder = Path(str(tmp_path))
+    document_mask = np.full((10, 20), 255, dtype=np.uint8)
+    crease_mask = np.zeros((10, 20), dtype=np.uint8)
+    crease_mask[5, :] = 255
+
+    await process_utils.save_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5, document_mask)
+    await process_utils.save_sam3_cache(root_folder, "image.png", "crease", 1.0, 0.5, crease_mask)
+
+    document_paths = process_utils.get_sam3_cache_paths(root_folder, "image.png", "document", 1.0, 0.5)
+    crease_paths = process_utils.get_sam3_cache_paths(root_folder, "image.png", "crease", 1.0, 0.5)
+    assert document_paths[0] != crease_paths[0]
+    assert await document_paths[0].exists()
+    assert await document_paths[1].exists()
+    assert await crease_paths[0].exists()
+    assert await crease_paths[1].exists()
+
+    assert np.array_equal(
+        await process_utils.load_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5),
+        document_mask,
+    )
+    assert np.array_equal(
+        await process_utils.load_sam3_cache(root_folder, "image.png", "crease", 1.0, 0.5),
+        crease_mask,
+    )
+
+    legacy_mask_path = root_folder / "sam3" / "image.png"
+    legacy_yaml_path = root_folder / "sam3" / "image.yaml"
+    await document_paths[0].rename(legacy_mask_path)
+    await document_paths[1].rename(legacy_yaml_path)
+
+    assert np.array_equal(
+        await process_utils.load_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5),
+        document_mask,
+    )

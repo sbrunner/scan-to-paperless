@@ -927,6 +927,13 @@ def draw_mask_overlay(image: NpNdarrayInt, mask: NpNdarrayInt) -> NpNdarrayInt:
     return result
 
 
+def get_sam_test_overlay_mask(mask: NpNdarrayInt, *, inverse: bool) -> NpNdarrayInt:
+    """Get the mask to display in a SAM test overlay."""
+    if inverse:
+        return cast("NpNdarrayInt", cv2.bitwise_not(mask))
+    return mask
+
+
 def find_lines(
     image: NpNdarrayInt,
     vertical: bool,
@@ -1602,7 +1609,14 @@ async def transform(
                         threshold,
                         mask,
                     )
-                overlay = draw_mask_overlay(context.image, mask)
+                inverse_mask = test_config.setdefault(
+                    "inverse_mask",
+                    schema.SAM_TEST_INVERSE_MASK_DEFAULT,
+                )
+                overlay = draw_mask_overlay(
+                    context.image,
+                    get_sam_test_overlay_mask(mask, inverse=inverse_mask),
+                )
                 dest_folder = root_folder / test_name
                 if not await dest_folder.exists():
                     await dest_folder.mkdir(parents=True)
