@@ -1305,9 +1305,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         scale = sam_test_cfg.get("scale", 4)
         subfolder = process_utils.get_sam3_test_cache_subfolder(
             sam_test_name,
-            prompt,
-            scale,
-            threshold,
+            (prompt, scale, threshold),
         )
 
         await process_utils.save_sam3_test_metadata(
@@ -1492,9 +1490,9 @@ async def test_sam3_cache_per_sam_test(tmp_path) -> None:
     crease_mask = np.zeros((10, 20), dtype=np.uint8)
     crease_mask[5, :] = 255
 
-    page_subfolder = process_utils.get_sam3_test_cache_subfolder("page", "document", 1.0, 0.5)
-    crease_subfolder = process_utils.get_sam3_test_cache_subfolder("fold", "crease", 1.0, 0.3)
-    other_crease_subfolder = process_utils.get_sam3_test_cache_subfolder("fold", "crease", 1.0, 0.5)
+    page_subfolder = process_utils.get_sam3_test_cache_subfolder("page", ("document", 1.0, 0.5))
+    crease_subfolder = process_utils.get_sam3_test_cache_subfolder("fold", ("crease", 1.0, 0.3))
+    other_crease_subfolder = process_utils.get_sam3_test_cache_subfolder("fold", ("crease", 1.0, 0.5))
     assert crease_subfolder != other_crease_subfolder
 
     await process_utils.save_sam3_cache(

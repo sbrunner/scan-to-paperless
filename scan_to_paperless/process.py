@@ -1587,9 +1587,7 @@ async def transform(
                 )
                 subfolder = process_utils.get_sam3_test_cache_subfolder(
                     test_name,
-                    prompt,
-                    scale,
-                    threshold,
+                    (prompt, scale, threshold),
                 )
                 dest_folder = root_folder / test_name
                 await process_utils.save_sam3_test_metadata(

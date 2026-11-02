@@ -393,7 +393,7 @@ if sam_test_configs:
         test_config["threshold"] = threshold
         test_config["scale"] = scale
         test_config["inverse_mask"] = inverse_mask
-        subfolder = get_sam3_test_cache_subfolder(test_name, prompt, scale, threshold)
+        subfolder = get_sam3_test_cache_subfolder(test_name, (prompt, scale, threshold))
         await save_sam3_test_metadata(
             context.root_folder,
             subfolder,

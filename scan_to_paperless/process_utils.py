@@ -67,12 +67,10 @@ def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
 
 def get_sam3_test_cache_subfolder(
     test_name: str,
-    prompt: str,
-    scale: float,
-    threshold: float,
+    config: tuple[str | float, ...],
 ) -> str:
     """Get the SAM3 cache subfolder for a SAM test."""
-    key = hashlib.sha256(f"{prompt}|{float(scale)}|{float(threshold)}".encode()).hexdigest()[:8]
+    key = hashlib.sha256("|".join(str(value) for value in config).encode()).hexdigest()[:8]
     return f"{test_name}-{key}"
 
 
