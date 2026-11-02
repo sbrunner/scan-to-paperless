@@ -1303,6 +1303,20 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         prompt = sam_test_cfg.get("prompt", "document")
         threshold = sam_test_cfg.get("threshold", 0.5)
         scale = sam_test_cfg.get("scale", 4)
+        subfolder = process_utils.get_sam3_test_cache_subfolder(
+            sam_test_name,
+            prompt,
+            scale,
+            threshold,
+        )
+
+        await process_utils.save_sam3_test_metadata(
+            root_folder,
+            subfolder,
+            sam_test_name,
+            sam_test_cfg,
+            output_folder=root_folder / sam_test_name,
+        )
 
         # First run: run inference and save to cache
         image_rgb = cv2.cvtColor(context.image, cv2.COLOR_BGR2RGB)
@@ -1321,18 +1335,21 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             scale,
             threshold,
             mask,
+            subfolder=subfolder,
         )
 
         # Verify cache files exist
         mask_path, yaml_path = process_utils.get_sam3_cache_paths(
             root_folder,
             context.image_name,
-            prompt,
-            scale,
-            threshold,
+            subfolder,
         )
         assert await mask_path.exists()
         assert await yaml_path.exists()
+        metadata_path = root_folder / "sam3" / subfolder / "test.yaml"
+        assert await metadata_path.exists()
+        output_metadata_path = root_folder / sam_test_name / "test.yaml"
+        assert await output_metadata_path.exists()
 
         # Verify can load from cache
         loaded_mask = await process_utils.load_sam3_cache(
@@ -1342,6 +1359,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             scale,
             threshold,
             image_size=(int(context.image.shape[0]), int(context.image.shape[1])),
+            subfolder=subfolder,
         )
         assert loaded_mask is not None
         assert np.array_equal(mask, loaded_mask)
@@ -1354,6 +1372,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             scale,
             threshold,
             image_size=(1, 1),
+            subfolder=subfolder,
         )
         assert resized_cache is None
 
@@ -1361,7 +1380,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
         overlay = process.draw_mask_overlay(context.image, mask)
 
         dest_folder = root_folder / sam_test_name
-        await dest_folder.mkdir(parents=True)
+        await dest_folder.mkdir(parents=True, exist_ok=True)
         success, buffer = cv2.imencode(".png", overlay)
         assert success
         file_path = dest_folder / context.image_name
@@ -1379,6 +1398,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             "different_prompt",
             scale,
             threshold,
+            subfolder=subfolder,
         )
         assert different_cache is None
 
@@ -1389,6 +1409,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             prompt,
             2.0,
             threshold,
+            subfolder=subfolder,
         )
         assert different_scale is None
 
@@ -1399,6 +1420,7 @@ async def test_sam_test(test_name: str, test_config: dict[str, Any]) -> None:
             prompt,
             scale,
             0.9,
+            subfolder=subfolder,
         )
         assert different_threshold is None
 
@@ -1431,7 +1453,8 @@ async def test_sam3_cache_size(tmp_path) -> None:
     )
     assert resized_mask is None
 
-    _, yaml_path = process_utils.get_sam3_cache_paths(root_folder, "image.png", "document", 1.0, 0.5)
+    mask_path, yaml_path = process_utils.get_sam3_cache_paths(root_folder, "image.png")
+    assert mask_path == root_folder / "sam3" / "image.png"
     yaml = YAML(typ="safe")
     meta = yaml.load(await yaml_path.read_text(encoding="utf-8"))
     del meta["size"]
@@ -1462,39 +1485,104 @@ async def test_sam3_cache_size(tmp_path) -> None:
 
 
 @pytest.mark.asyncio
-async def test_sam3_cache_per_prompt(tmp_path) -> None:
-    """Test that each set of SAM3 parameters has its own cache entry."""
+async def test_sam3_cache_per_sam_test(tmp_path) -> None:
+    """Test that each SAM test has its own cache subfolder."""
     root_folder = Path(str(tmp_path))
-    document_mask = np.full((10, 20), 255, dtype=np.uint8)
+    page_mask = np.full((10, 20), 255, dtype=np.uint8)
     crease_mask = np.zeros((10, 20), dtype=np.uint8)
     crease_mask[5, :] = 255
 
-    await process_utils.save_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5, document_mask)
-    await process_utils.save_sam3_cache(root_folder, "image.png", "crease", 1.0, 0.5, crease_mask)
+    page_subfolder = process_utils.get_sam3_test_cache_subfolder("page", "document", 1.0, 0.5)
+    crease_subfolder = process_utils.get_sam3_test_cache_subfolder("fold", "crease", 1.0, 0.3)
+    other_crease_subfolder = process_utils.get_sam3_test_cache_subfolder("fold", "crease", 1.0, 0.5)
+    assert crease_subfolder != other_crease_subfolder
 
-    document_paths = process_utils.get_sam3_cache_paths(root_folder, "image.png", "document", 1.0, 0.5)
-    crease_paths = process_utils.get_sam3_cache_paths(root_folder, "image.png", "crease", 1.0, 0.5)
-    assert document_paths[0] != crease_paths[0]
-    assert await document_paths[0].exists()
-    assert await document_paths[1].exists()
+    await process_utils.save_sam3_cache(
+        root_folder,
+        "image.png",
+        "document",
+        1.0,
+        0.5,
+        page_mask,
+        subfolder=page_subfolder,
+    )
+    await process_utils.save_sam3_cache(
+        root_folder,
+        "image.png",
+        "crease",
+        1.0,
+        0.3,
+        crease_mask,
+        subfolder=crease_subfolder,
+    )
+    await process_utils.save_sam3_test_metadata(
+        root_folder,
+        page_subfolder,
+        "page",
+        {"prompt": "document", "scale": 1, "threshold": 0.5},
+    )
+    await process_utils.save_sam3_test_metadata(
+        root_folder,
+        crease_subfolder,
+        "fold",
+        {"prompt": "crease", "scale": 1, "threshold": 0.3, "inverse_mask": True},
+    )
+
+    page_paths = process_utils.get_sam3_cache_paths(root_folder, "image.png", page_subfolder)
+    crease_paths = process_utils.get_sam3_cache_paths(root_folder, "image.png", crease_subfolder)
+    assert page_paths[0] != crease_paths[0]
+    assert page_paths[0] == root_folder / "sam3" / page_subfolder / "image.png"
+    assert await page_paths[0].exists()
+    assert await page_paths[1].exists()
     assert await crease_paths[0].exists()
     assert await crease_paths[1].exists()
 
+    auto_mask_path, auto_yaml_path = process_utils.get_sam3_cache_paths(root_folder, "image.png")
+    assert auto_mask_path == root_folder / "sam3" / "image.png"
+    assert auto_yaml_path == root_folder / "sam3" / "image.yaml"
+
     assert np.array_equal(
-        await process_utils.load_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5),
-        document_mask,
+        await process_utils.load_sam3_cache(
+            root_folder,
+            "image.png",
+            "document",
+            1.0,
+            0.5,
+            subfolder=page_subfolder,
+        ),
+        page_mask,
     )
     assert np.array_equal(
-        await process_utils.load_sam3_cache(root_folder, "image.png", "crease", 1.0, 0.5),
+        await process_utils.load_sam3_cache(
+            root_folder,
+            "image.png",
+            "crease",
+            1.0,
+            0.3,
+            subfolder=crease_subfolder,
+        ),
         crease_mask,
     )
-
-    legacy_mask_path = root_folder / "sam3" / "image.png"
-    legacy_yaml_path = root_folder / "sam3" / "image.yaml"
-    await document_paths[0].rename(legacy_mask_path)
-    await document_paths[1].rename(legacy_yaml_path)
-
-    assert np.array_equal(
-        await process_utils.load_sam3_cache(root_folder, "image.png", "document", 1.0, 0.5),
-        document_mask,
+    assert (
+        await process_utils.load_sam3_cache(
+            root_folder,
+            "image.png",
+            "document",
+            1.0,
+            0.5,
+            subfolder=crease_subfolder,
+        )
+        is None
     )
+
+    page_metadata = YAML(typ="safe").load(
+        await (root_folder / "sam3" / page_subfolder / "test.yaml").read_text(encoding="utf-8"),
+    )
+    assert page_metadata["name"] == "page"
+    assert page_metadata["prompt"] == "document"
+
+    fold_metadata = YAML(typ="safe").load(
+        await (root_folder / "sam3" / crease_subfolder / "test.yaml").read_text(encoding="utf-8"),
+    )
+    assert fold_metadata["name"] == "fold"
+    assert fold_metadata["inverse_mask"] is True

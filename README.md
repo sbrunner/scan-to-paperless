@@ -202,8 +202,11 @@ args:
 ```
 
 This generates the `page/`, `ticket/`, `fold/` and `fold_line/` subfolders in the job directory,
-each containing the processed image with the SAM mask overlay. Each prompt, scale and threshold
-combination has its own cache entry in the `sam3/` folder.
+each containing the processed image with the SAM mask overlay and a `test.yaml` describing the test.
+Each SAM test also gets its own `sam3/<test_name>-<hash>/` cache subfolder, where the hash covers
+the prompt, scale and threshold. That subfolder contains the cached mask, its metadata and the same
+`test.yaml` (name, prompt, threshold, scale and `inverse_mask`). The `auto_mask` cache is unchanged
+and stays in the `sam3/` root folder.
 
 See also: [The documentation](./process.md#sam_test)
 

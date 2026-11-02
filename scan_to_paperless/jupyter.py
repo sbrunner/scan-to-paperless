@@ -373,7 +373,13 @@ context.config["args"]["sam_test"] = {_pretty_repr(context.config["args"].get("s
 
 sam_test_configs = context.config["args"].get("sam_test", {{}})
 if sam_test_configs:
-    from scan_to_paperless.process_utils import load_sam3_cache, save_sam3_cache, run_sam3_inference
+    from scan_to_paperless.process_utils import (
+        get_sam3_test_cache_subfolder,
+        load_sam3_cache,
+        run_sam3_inference,
+        save_sam3_cache,
+        save_sam3_test_metadata,
+    )
 
     for test_name, test_config in sam_test_configs.items():
         if not test_config.get("enabled", True):
@@ -382,6 +388,18 @@ if sam_test_configs:
         prompt = test_config.get("prompt", "document")
         threshold = test_config.get("threshold", 0.5)
         scale = test_config.get("scale", 4)
+        inverse_mask = test_config.get("inverse_mask", False)
+        test_config["prompt"] = prompt
+        test_config["threshold"] = threshold
+        test_config["scale"] = scale
+        test_config["inverse_mask"] = inverse_mask
+        subfolder = get_sam3_test_cache_subfolder(test_name, prompt, scale, threshold)
+        await save_sam3_test_metadata(
+            context.root_folder,
+            subfolder,
+            test_name,
+            test_config,
+        )
 
         cached_mask = await load_sam3_cache(
             context.root_folder,
@@ -390,6 +408,7 @@ if sam_test_configs:
             scale,
             threshold,
             image_size=(int(context.image.shape[0]), int(context.image.shape[1])),
+            subfolder=subfolder,
         )
         if cached_mask is not None:
             mask = cached_mask
@@ -409,8 +428,8 @@ if sam_test_configs:
                 scale,
                 threshold,
                 mask,
+                subfolder=subfolder,
             )
-        inverse_mask = test_config.get("inverse_mask", False)
         overlay = process.draw_mask_overlay(
             context.image,
             process.get_sam_test_overlay_mask(mask, inverse=inverse_mask),

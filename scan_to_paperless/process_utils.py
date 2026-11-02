@@ -38,6 +38,7 @@ _PROCESSOR: Sam3Processor | None = None
 _DEVICE: str | None = None
 
 _SAM3_CACHE_DIR = "sam3"
+_SAM3_TEST_METADATA_FILENAME = "test.yaml"
 
 
 def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
@@ -64,21 +65,60 @@ def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
     return _MODEL, _PROCESSOR, _DEVICE
 
 
-def get_sam3_cache_paths(
-    root_folder: Path,
-    image_name: str,
+def get_sam3_test_cache_subfolder(
+    test_name: str,
     prompt: str,
     scale: float,
     threshold: float,
-) -> tuple[Path, Path]:
-    """Get the SAM3 cache paths, one per set of inference parameters."""
+) -> str:
+    """Get the SAM3 cache subfolder for a SAM test."""
     key = hashlib.sha256(f"{prompt}|{float(scale)}|{float(threshold)}".encode()).hexdigest()[:8]
+    return f"{test_name}-{key}"
+
+
+def get_sam3_cache_paths(
+    root_folder: Path,
+    image_name: str,
+    subfolder: str | None = None,
+) -> tuple[Path, Path]:
+    """Get the SAM3 cache paths."""
     cache_dir = root_folder / _SAM3_CACHE_DIR
-    stem = Path(image_name).stem
-    return (
-        cache_dir / f"{stem}-{key}{Path(image_name).suffix}",
-        cache_dir / f"{stem}-{key}.yaml",
-    )
+    if subfolder:
+        cache_dir = cache_dir / subfolder
+    return cache_dir / image_name, cache_dir / f"{Path(image_name).stem}.yaml"
+
+
+async def save_sam3_test_metadata(
+    root_folder: Path | None,
+    subfolder: str,
+    test_name: str,
+    test_config: schema.SamTestConfiguration,
+    *,
+    output_folder: Path | None = None,
+) -> None:
+    """Save the SAM test description in its cache and output directories."""
+    if root_folder is None:
+        return
+    folders = [root_folder / _SAM3_CACHE_DIR / subfolder]
+    if output_folder is not None:
+        folders.append(output_folder)
+
+    meta = {"name": test_name, **test_config}
+    yaml = YAML()
+    yaml.default_flow_style = False
+    string_buffer = io.StringIO()
+    yaml.dump(meta, string_buffer)
+    content = string_buffer.getvalue()
+
+    for folder in folders:
+        if not await folder.exists():
+            await folder.mkdir(parents=True)
+        async with await anyio.open_file(
+            str(folder / _SAM3_TEST_METADATA_FILENAME),
+            "w",
+            encoding="utf-8",
+        ) as file:
+            await file.write(content)
 
 
 async def save_sam3_cache(
@@ -88,15 +128,19 @@ async def save_sam3_cache(
     scale: float,
     threshold: float,
     mask: np.ndarray,
+    *,
+    subfolder: str | None = None,
 ) -> None:
     """Save SAM3 inference result to cache."""
     if root_folder is None or image_name is None:
         return
     cache_dir = root_folder / _SAM3_CACHE_DIR
+    if subfolder:
+        cache_dir = cache_dir / subfolder
     if not await cache_dir.exists():
         await cache_dir.mkdir(parents=True)
 
-    mask_path, yaml_path = get_sam3_cache_paths(root_folder, image_name, prompt, scale, threshold)
+    mask_path, yaml_path = get_sam3_cache_paths(root_folder, image_name, subfolder)
     success, buffer = cv2.imencode(".png", mask)
     if success:
         async with await anyio.open_file(str(mask_path), "wb") as file:
@@ -123,51 +167,43 @@ async def load_sam3_cache(
     scale: float,
     threshold: float,
     image_size: tuple[int, int] | None = None,
+    *,
+    subfolder: str | None = None,
 ) -> np.ndarray | None:
     """Load SAM3 inference result from cache if parameters match."""
     if root_folder is None or image_name is None:
         return None
-    cache_dir = root_folder / _SAM3_CACHE_DIR
-    paths = [get_sam3_cache_paths(root_folder, image_name, prompt, scale, threshold)]
-    legacy_paths = (
-        cache_dir / image_name,
-        cache_dir / f"{Path(image_name).stem}.yaml",
-    )
-    if legacy_paths not in paths:
-        paths.append(legacy_paths)
+    mask_path, yaml_path = get_sam3_cache_paths(root_folder, image_name, subfolder)
 
-    for mask_path, yaml_path in paths:
-        if not await mask_path.exists() or not await yaml_path.exists():
-            continue
+    if not await mask_path.exists() or not await yaml_path.exists():
+        return None
 
-        async with await anyio.open_file(str(yaml_path), "r", encoding="utf-8") as file:
-            content = await file.read()
-        yaml = YAML(typ="safe")
-        meta = yaml.load(content)
+    async with await anyio.open_file(str(yaml_path), "r", encoding="utf-8") as file:
+        content = await file.read()
+    yaml = YAML(typ="safe")
+    meta = yaml.load(content)
 
-        if meta.get("prompt") != prompt or meta.get("scale") != scale or meta.get("threshold") != threshold:
-            continue
+    if meta.get("prompt") != prompt or meta.get("scale") != scale or meta.get("threshold") != threshold:
+        return None
 
-        cached_size = meta.get("size")
-        if image_size is not None and cached_size is not None and tuple(cached_size) != image_size:
-            _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
-            continue
+    cached_size = meta.get("size")
+    if image_size is not None and cached_size is not None and tuple(cached_size) != image_size:
+        _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
+        return None
 
-        async with await anyio.open_file(str(mask_path), "rb") as file:
-            mask_bytes = await file.read()
-        mask_array = np.frombuffer(mask_bytes, dtype=np.uint8)
-        mask = cv2.imdecode(mask_array, cv2.IMREAD_GRAYSCALE)
-        if mask is None:
-            continue
+    async with await anyio.open_file(str(mask_path), "rb") as file:
+        mask_bytes = await file.read()
+    mask_array = np.frombuffer(mask_bytes, dtype=np.uint8)
+    mask = cv2.imdecode(mask_array, cv2.IMREAD_GRAYSCALE)
+    if mask is None:
+        return None
 
-        if image_size is not None and mask.shape[:2] != image_size:
-            _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
-            continue
+    if image_size is not None and mask.shape[:2] != image_size:
+        _LOG.warning("Ignore SAM3 cache for %s: the image size changed", image_name)
+        return None
 
-        print(f"Use SAM3 cache for {image_name}")
-        return mask
-
-    return None
+    print(f"Use SAM3 cache for {image_name}")
+    return mask
 
 
 def run_sam3_inference(
