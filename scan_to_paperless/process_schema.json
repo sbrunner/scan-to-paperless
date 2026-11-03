@@ -731,6 +731,12 @@
                 "default": 8,
                 "description": "Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller). The mask is resized back to original size.",
                 "title": "SAM test scale"
+              },
+              "inverse_mask": {
+                "type": "boolean",
+                "default": false,
+                "description": "Draw the overlay on the detected mask instead of its complement. Useful to check the detection of thin structures like folds.",
+                "title": "SAM test inverse mask"
               }
             }
           }

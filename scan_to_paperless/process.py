@@ -927,6 +927,13 @@ def draw_mask_overlay(image: NpNdarrayInt, mask: NpNdarrayInt) -> NpNdarrayInt:
     return result
 
 
+def get_sam_test_overlay_mask(mask: NpNdarrayInt, *, inverse: bool) -> NpNdarrayInt:
+    """Get the mask to display in a SAM test overlay."""
+    if inverse:
+        return cast("NpNdarrayInt", cv2.bitwise_not(mask))
+    return mask
+
+
 def find_lines(
     image: NpNdarrayInt,
     vertical: bool,
@@ -1574,6 +1581,22 @@ async def transform(
                 prompt = test_config.setdefault("prompt", schema.SAM3_PROMPT_DEFAULT)
                 threshold = test_config.setdefault("threshold", schema.SAM3_THRESHOLD_DEFAULT)
                 scale = test_config.setdefault("scale", schema.SAM3_SCALE_DEFAULT)
+                inverse_mask = test_config.setdefault(
+                    "inverse_mask",
+                    schema.SAM_TEST_INVERSE_MASK_DEFAULT,
+                )
+                subfolder = process_utils.get_sam3_test_cache_subfolder(
+                    test_name,
+                    (prompt, scale, threshold),
+                )
+                dest_folder = root_folder / test_name
+                await process_utils.save_sam3_test_metadata(
+                    context.root_folder,
+                    subfolder,
+                    test_name,
+                    test_config,
+                    output_folder=dest_folder,
+                )
 
                 cached_mask = await process_utils.load_sam3_cache(
                     context.root_folder,
@@ -1582,6 +1605,7 @@ async def transform(
                     scale,
                     threshold,
                     image_size=(int(context.image.shape[0]), int(context.image.shape[1])),
+                    subfolder=subfolder,
                 )
                 if cached_mask is not None:
                     mask = cached_mask
@@ -1601,11 +1625,12 @@ async def transform(
                         scale,
                         threshold,
                         mask,
+                        subfolder=subfolder,
                     )
-                overlay = draw_mask_overlay(context.image, mask)
-                dest_folder = root_folder / test_name
-                if not await dest_folder.exists():
-                    await dest_folder.mkdir(parents=True)
+                overlay = draw_mask_overlay(
+                    context.image,
+                    get_sam_test_overlay_mask(mask, inverse=inverse_mask),
+                )
                 success, buffer = cv2.imencode(".png", overlay)
                 if success:
                     async with await anyio.open_file(
