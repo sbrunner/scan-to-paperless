@@ -241,9 +241,9 @@ images_context["color_cut"] = context.image""",
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
             """Defined the background color.
 
-By default the background color is automatically detected from the mask (or the whole image if
-there is no mask). It can be forced globally with `args.background_color` or per image with
-`images_config.<image>.background_color`.""",
+By default the background color (the paper color) is automatically detected from the area kept by
+the mask (or from the whole image if there is no mask). It can be forced globally with
+`args.background_color` or per image with `images_config.<image>.background_color`.""",
         ),
     )
     notebook["cells"].append(

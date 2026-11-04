@@ -169,7 +169,8 @@ def run_sam3_inference(
     Returns
     -------
     np.ndarray
-        Binary mask as uint8: 255 for page area, 0 for background.
+        Binary mask as uint8: 255 for the background (area where nothing is detected),
+        0 for the page area. The caller inverts this mask before using it.
     """
 
     original_size = (image.height, image.width)
@@ -262,8 +263,8 @@ def detect_background_color(
     image: NpNdarrayInt,
     mask: NpNdarrayInt | None = None,
 ) -> tuple[int, int, int]:
-    """Get the most frequent color of the background."""
-    pixels = image[mask == 0] if mask is not None and np.any(mask == 0) else image
+    """Get the most frequent color of the paper (the area kept by the mask)."""
+    pixels = image[mask == 255] if mask is not None and np.any(mask == 255) else image
     if image.ndim == 2:
         histogram, _ = skimage_histogram(pixels, nbins=256, source_range="dtype")
         value = int(np.argmax(histogram))

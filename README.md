@@ -143,7 +143,8 @@ the processing and some can be modified.
 E.g. you can modify an image angle to fix the skew, then remove a generated image for force to regenerate
 the images.
 
-The background color is automatically detected for each image and stored in
+The background color (the paper color) is automatically detected for each image from the area kept by
+the mask (or from the whole image if there is no mask) and stored in
 `images_config.<image>.background_color`. It is reused on the next runs. You can override it globally
 with `args.background_color` or per image with `images_config.<image>.background_color`; the per-image
 value takes precedence.
