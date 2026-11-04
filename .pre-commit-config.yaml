@@ -1,5 +1,5 @@
 default_language_version:
-  python: '3.14'
+  python: '3.12'
 
 repos:
   - repo: local
@@ -143,11 +143,16 @@ repos:
         exclude: |-
           (?x)(
             ^tests?/?
-            |/tests?(/|$)
-            |.*/tests(/|$)
-            |(^|/)test_[_a-zA-Z0-9]+.py$
-            |(^|/)[_a-zA-Z0-9]+_tests?.py$
-            |(^|/)tests?.py$
+            |/tests?(/
+            |$)
+            |.*/tests(/
+            |$)
+            |(^
+            |/)test_[_a-zA-Z0-9]+.py$
+            |(^
+            |/)[_a-zA-Z0-9]+_tests?.py$
+            |(^
+            |/)tests?.py$
             |scan_to_paperless/config\.py
             |scan_to_paperless/process_schema\.py
           )

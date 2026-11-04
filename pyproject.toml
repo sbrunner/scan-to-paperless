@@ -116,11 +116,12 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
     'Typing :: Typed',
 ]
 authors = [{name = "Stéphane Brunner",email = "stephane.brunner@gmail.com"}]
 requires-python = ">=3.12"
-dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "lxml", "pyperclip", "deepmerge", "typing-extensions", "polygon-math", "aiohttp", "sentry-sdk", "typer-slim", "shellingham", "scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "python-sane", "asyncinotify", "numpy", "anyio"]
+dependencies = ["ruamel.yaml", "argcomplete", "Pillow", "pyperclip", "deepmerge", "typing-extensions", "polygon-math", "aiohttp", "sentry-sdk", "typer-slim", "shellingham", "anyio"]
 
 [project.urls]
 homepage = "https://hub.docker.com/r/sbrunner/scan-to-paperless/"
@@ -136,9 +137,6 @@ scan-process = "scan_to_paperless.process:main"
 add-codes-page = "scan_to_paperless.add_code:main"
 
 [project.optional-dependencies]
-process = ["scikit-image", "opencv-contrib-python-headless", "deskew", "pypdf", "pyzbar", "reportlab", "weasyprint", "cffi", "pikepdf", "zxing-cpp", "matplotlib", "Jinja2", "natsort", "nbformat", "requests", "asyncinotify", "transformers", "torch", "torchvision", "nvidia-cublas", "nvidia-cuda-nvrtc"]
-jupyter = ["opencv-contrib-python-headless", "deskew", "matplotlib"]
-sane = ["python-sane"]
 
 [build-system]
 requires = ["poetry-dynamic-versioning[plugin]==1.10.1"]
