@@ -147,6 +147,67 @@
         }
       }
     },
+    "fold": {
+      "type": "object",
+      "title": "Fold",
+      "description": "Remove the fold line from the scanned page",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable fold removal",
+          "title": "Fold enabled"
+        },
+        "min_shadow_width": {
+          "type": "number",
+          "default": 2.0,
+          "description": "Minimum width of the fold shadow [mm]",
+          "title": "Fold minimum shadow width"
+        },
+        "min_shadow": {
+          "type": "number",
+          "default": 2.5,
+          "description": "Minimum darkness of the fold shadow relative to the local background [gray levels]",
+          "title": "Fold minimum shadow"
+        },
+        "max_shadow": {
+          "type": "number",
+          "default": 25.0,
+          "description": "Maximum darkness of the fold shadow, used to reject printed lines [gray levels]",
+          "title": "Fold maximum shadow"
+        },
+        "min_shadow_gray": {
+          "type": "number",
+          "default": 235.0,
+          "description": "Minimum mean gray level in the shadow band, used to reject printed black lines and dark graphics",
+          "title": "Fold minimum shadow gray"
+        },
+        "line_margin": {
+          "type": "number",
+          "default": 5.0,
+          "description": "Margin above the shadow band to include the fold line [mm]",
+          "title": "Fold line margin"
+        },
+        "shadow_margin": {
+          "type": "number",
+          "default": 4.0,
+          "description": "Margin below the shadow band [mm]",
+          "title": "Fold shadow margin"
+        },
+        "line_threshold": {
+          "type": "number",
+          "default": 6.0,
+          "description": "Gray level difference used to detect the fold line for inpainting",
+          "title": "Fold line threshold"
+        },
+        "text_block_size": {
+          "type": "number",
+          "default": 3.0,
+          "description": "Block size used to build the text protection mask [mm]",
+          "title": "Fold text block size"
+        }
+      }
+    },
     "args": {
       "Editor note": "The properties of this object should be modified in the config_schema.json file",
       "type": "object",
@@ -509,6 +570,9 @@
               "description": "An image file used to add on the mask"
             }
           }
+        },
+        "fold": {
+          "$ref": "#/definitions/fold"
         },
         "cut": {
           "type": "object",

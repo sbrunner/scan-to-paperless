@@ -210,6 +210,33 @@ and stays in the `sam3/` root folder.
 
 See also: [The documentation](./process.md#sam_test)
 
+### Fold removal
+
+The `args.fold` configuration removes the fold line from the scanned page. It is
+enabled by default and does nothing when no fold is detected. The detection uses the text-free left and
+right page margins: a fold produces a broad, soft shadow, while printed lines are thin and dark and are
+ignored. The correction is applied only in the detected band, protects the text with an ink mask, and
+inpaints only the thin fold line.
+
+Example configuration:
+
+```yaml
+args:
+  fold:
+    enabled: true
+    min_shadow_width: 2.0
+    min_shadow: 2.5
+    max_shadow: 25.0
+    min_shadow_gray: 235.0
+    line_margin: 5.0
+    shadow_margin: 4.0
+    line_threshold: 6.0
+    text_block_size: 3.0
+```
+
+The detection overlay is written to the `unfold-detection/` folder; the corrected image is also saved
+in the `unfold/` folder when progress images are enabled.
+
 ## Advance feature
 
 ### Add a mask

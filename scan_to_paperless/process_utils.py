@@ -7,7 +7,7 @@ import io
 import logging
 import math
 import os
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, TypedDict, cast
 
 import anyio
 import cv2
@@ -39,6 +39,18 @@ _DEVICE: str | None = None
 
 _SAM3_CACHE_DIR = "sam3"
 _SAM3_TEST_METADATA_FILENAME = "test.yaml"
+
+
+class FoldDetection(TypedDict):
+    """The detected fold band."""
+
+    top: int
+    bottom: int
+    start: int
+    end: int
+    width: int
+    amplitude: float
+    mean: float
 
 
 def _load_model_and_processor() -> tuple[Sam3Model, Sam3Processor, str]:
@@ -269,6 +281,191 @@ def run_sam3_inference(
         )
 
     return mask
+
+
+def _smooth_profile(values: np.ndarray, sigma: float) -> NpNdarrayInt:
+    """Smooth a one-dimensional profile."""
+    return cast(
+        "NpNdarrayInt",
+        cv2.GaussianBlur(
+            values.reshape(1, -1).astype(np.float32),
+            (0, 0),
+            sigmaX=sigma,
+            sigmaY=0,
+        ).ravel(),
+    )
+
+
+def _get_fold_page_bounds(
+    image: NpNdarrayInt,
+    mask: NpNdarrayInt | None,
+) -> tuple[int, int, int, int]:
+    """Get the page bounds used to search the fold."""
+    height, width = image.shape[:2]
+    if mask is not None and mask.shape[:2] == (height, width):
+        ys, xs = np.where(mask > 0)
+        if len(xs) > 0:
+            return int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
+    gray = cast("NpNdarrayInt", cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)) if image.ndim == 3 else image
+    white = gray > 200
+    cols = np.where(white.mean(axis=0) > 0.5)[0]
+    rows = np.where(white.mean(axis=1) > 0.5)[0]
+    if len(cols) > 0 and len(rows) > 0:
+        return int(cols.min()), int(rows.min()), int(cols.max()), int(rows.max())
+    return 0, 0, width - 1, height - 1
+
+
+def detect_fold(
+    image: NpNdarrayInt,
+    mask: NpNdarrayInt | None,
+    config: schema.Fold,
+    *,
+    px_per_mm: float,
+) -> FoldDetection | None:
+    """Detect the fold line and its shadow from the page margins."""
+    gray = cast("NpNdarrayInt", cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)) if image.ndim == 3 else image
+    left, top, right, bottom = _get_fold_page_bounds(image, mask)
+    page_width = right - left + 1
+    page_height = bottom - top + 1
+    if page_width < 10 or page_height < 10:
+        return None
+
+    margin_left_start = left + int(0.02 * page_width)
+    margin_left_end = left + int(0.06 * page_width)
+    margin_right_start = right - int(0.06 * page_width)
+    margin_right_end = right - int(0.02 * page_width)
+    margin_columns = np.concatenate(
+        [np.arange(margin_left_start, margin_left_end), np.arange(margin_right_start, margin_right_end)],
+    )
+    profile = np.median(gray[:, margin_columns], axis=1).astype(np.float32)
+    sigma = max(30.0, min(60.0, page_height / 50.0))
+    baseline = _smooth_profile(profile, sigma)
+    dip = baseline - profile
+
+    search_top = top + int(0.03 * page_height)
+    search_bottom = bottom - int(0.05 * page_height)
+    rows = dip > config.setdefault("min_shadow", schema.FOLD_MINIMUM_SHADOW_DEFAULT)
+    rows[:search_top] = False
+    rows[search_bottom:] = False
+
+    changes = np.diff(np.concatenate([[0], rows.view(np.int8), [0]]))
+    starts = np.where(changes == 1)[0]
+    ends = np.where(changes == -1)[0]
+    min_width = config.setdefault("min_shadow_width", schema.FOLD_MINIMUM_SHADOW_WIDTH_DEFAULT) * px_per_mm
+    max_shadow = config.setdefault("max_shadow", schema.FOLD_MAXIMUM_SHADOW_DEFAULT)
+    min_shadow_gray = config.setdefault("min_shadow_gray", schema.FOLD_MINIMUM_SHADOW_GRAY_DEFAULT)
+
+    candidates: list[FoldDetection] = []
+    for start, end in zip(starts, ends, strict=True):
+        width_px = int(end - start)
+        if width_px < min_width:
+            continue
+        mean = float(profile[start:end].mean())
+        amplitude = float(dip[start:end].max())
+        if mean < min_shadow_gray or amplitude > max_shadow:
+            continue
+        candidates.append(
+            {
+                "top": 0,
+                "bottom": 0,
+                "start": int(start),
+                "end": int(end),
+                "width": width_px,
+                "amplitude": amplitude,
+                "mean": mean,
+            },
+        )
+
+    if not candidates:
+        return None
+
+    detection = max(candidates, key=lambda candidate: (candidate["width"], candidate["mean"]))
+    line_margin = config.setdefault("line_margin", schema.FOLD_LINE_MARGIN_DEFAULT) * px_per_mm
+    shadow_margin = config.setdefault("shadow_margin", schema.FOLD_SHADOW_MARGIN_DEFAULT) * px_per_mm
+    detection["top"] = max(top, detection["start"] - int(line_margin))
+    detection["bottom"] = min(bottom, detection["end"] + int(shadow_margin))
+    return detection
+
+
+def remove_fold(
+    image: NpNdarrayInt,
+    detection: FoldDetection,
+    mask: NpNdarrayInt | None,
+    config: schema.Fold,
+    *,
+    px_per_mm: float,
+) -> NpNdarrayInt:
+    """Remove the fold line."""
+    height, width = image.shape[:2]
+    gray = cast("NpNdarrayInt", cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)) if image.ndim == 3 else image
+    left, top, right, bottom = _get_fold_page_bounds(image, mask)
+    page_width = right - left + 1
+    if page_width < 10:
+        return image
+
+    margin_left_start = left + int(0.02 * page_width)
+    margin_left_end = left + int(0.06 * page_width)
+    margin_right_start = right - int(0.06 * page_width)
+    margin_right_end = right - int(0.02 * page_width)
+    if margin_left_end <= margin_left_start or margin_right_end <= margin_right_start:
+        return image
+    left_profile = _smooth_profile(
+        np.median(gray[:, margin_left_start:margin_left_end], axis=1).astype(np.float32),
+        1.0,
+    )
+    right_profile = _smooth_profile(
+        np.median(gray[:, margin_right_start:margin_right_end], axis=1).astype(np.float32),
+        1.0,
+    )
+    band = slice(detection["top"], detection["bottom"])
+    left_line_row = int(np.argmin(left_profile[band])) + detection["top"]
+    right_line_row = int(np.argmin(right_profile[band])) + detection["top"]
+
+    line_threshold = int(config.setdefault("line_threshold", schema.FOLD_LINE_THRESHOLD_DEFAULT))
+    left_contrast = float(np.median(left_profile[band]) - left_profile[left_line_row])
+    right_contrast = float(np.median(right_profile[band]) - right_profile[right_line_row])
+    if left_contrast < line_threshold and right_contrast < line_threshold:
+        return image
+
+    x_left = (margin_left_start + margin_left_end - 1) / 2
+    x_right = (margin_right_start + margin_right_end - 1) / 2
+    slope = (right_line_row - left_line_row) / (x_right - x_left)
+    thickness = max(2, round(0.3 * px_per_mm))
+    line_mask = np.zeros((height, width), dtype=np.uint8)
+    for x in range(width):
+        y = round(left_line_row + slope * (x - x_left))
+        line_mask[max(0, y - thickness) : min(height, y + thickness + 1), x] = 255
+
+    band_mask = np.zeros((height, width), dtype=np.uint8)
+    band_mask[detection["top"] : detection["bottom"], :] = 255
+    page_mask = np.zeros((height, width), dtype=np.uint8)
+    page_mask[top : bottom + 1, left : right + 1] = 255
+    line_mask = np.bitwise_and(line_mask, band_mask)
+    line_mask = np.bitwise_and(line_mask, page_mask)
+
+    block_size = max(
+        3,
+        round(config.setdefault("text_block_size", schema.FOLD_TEXT_BLOCK_SIZE_DEFAULT) * px_per_mm),
+    )
+    if block_size % 2 == 0:
+        block_size += 1
+    ink = cv2.adaptiveThreshold(
+        gray,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV,
+        block_size,
+        10,
+    )
+    text = cv2.morphologyEx(
+        ink,
+        cv2.MORPH_OPEN,
+        cv2.getStructuringElement(cv2.MORPH_RECT, (1, 5)),
+    )
+    text = cv2.dilate(text, np.ones((3, 3), np.uint8), iterations=1)
+    line_mask = np.bitwise_and(line_mask, np.bitwise_not(text))
+
+    return cast("NpNdarrayInt", cv2.inpaint(image, line_mask, 5, cv2.INPAINT_TELEA))
 
 
 def rotate_image(image: NpNdarrayInt, angle: float, background: int | tuple[int, int, int]) -> NpNdarrayInt:

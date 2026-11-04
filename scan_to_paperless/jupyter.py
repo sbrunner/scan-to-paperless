@@ -494,13 +494,45 @@ images_context["deskew-mask"] = context.mask""",
 
     notebook["cells"].append(
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
-            """Do the image auto crop base on the image content.""",
+            """Remove the fold line.""",
         ),
     )
     notebook["cells"].append(
         nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
             f"""context.image = images_context["deskew"].copy()
 context.mask = images_context["deskew-mask"].copy()
+
+context.config["args"]["fold"] = {_pretty_repr(context.config["args"].get("fold", {}))}
+
+detection = process_utils.detect_fold(
+    context.image,
+    context.mask,
+    context.config["args"]["fold"],
+    px_per_mm=context.get_px_value(1.0),
+)
+if detection is not None:
+    marked = context.image.copy()
+    cv2.line(marked, (0, detection["top"]), (marked.shape[1], detection["top"]), (0, 0, 255), 2)
+    cv2.line(marked, (0, detection["bottom"]), (marked.shape[1], detection["bottom"]), (0, 0, 255), 2)
+    context.display_image(marked)
+
+await process.unfold(context)
+context.display_image(context.image)
+
+images_context["unfold"] = context.image
+images_context["unfold-mask"] = context.mask""",
+        ),
+    )
+
+    notebook["cells"].append(
+        nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
+            """Do the image auto crop base on the image content.""",
+        ),
+    )
+    notebook["cells"].append(
+        nbformat.v4.new_code_cell(  # type: ignore[no-untyped-call]
+            f"""context.image = images_context["unfold"].copy()
+context.mask = images_context["unfold-mask"].copy()
 
 context.config["args"]["crop"] = {_pretty_repr(context.config["args"].get("crop", {}))}
 

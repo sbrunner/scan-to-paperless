@@ -45,6 +45,16 @@
   - <a id="definitions/sam3/properties/prompt"></a>**`prompt`** *(string)*: Text prompt for SAM3 segmentation. Default: `"document"`.
   - <a id="definitions/sam3/properties/threshold"></a>**`threshold`** *(number)*: Confidence threshold for mask prediction. Default: `0.5`.
   - <a id="definitions/sam3/properties/scale"></a>**`scale`** *(number)*: Divide image dimensions by this factor before SAM3 inference (e.g. 4 = 4x smaller, 16x fewer pixels). The mask is resized back to original size. Default: `8`.
+- <a id="definitions/fold"></a>**`fold`** *(object)*: Remove the fold line from the scanned page.
+  - <a id="definitions/fold/properties/enabled"></a>**`enabled`** *(boolean)*: Enable fold removal. Default: `true`.
+  - <a id="definitions/fold/properties/min_shadow_width"></a>**`min_shadow_width`** *(number)*: Minimum width of the fold shadow [mm]. Default: `2.0`.
+  - <a id="definitions/fold/properties/min_shadow"></a>**`min_shadow`** *(number)*: Minimum darkness of the fold shadow relative to the local background [gray levels]. Default: `2.5`.
+  - <a id="definitions/fold/properties/max_shadow"></a>**`max_shadow`** *(number)*: Maximum darkness of the fold shadow, used to reject printed lines [gray levels]. Default: `25.0`.
+  - <a id="definitions/fold/properties/min_shadow_gray"></a>**`min_shadow_gray`** *(number)*: Minimum mean gray level in the shadow band, used to reject printed black lines and dark graphics. Default: `235.0`.
+  - <a id="definitions/fold/properties/line_margin"></a>**`line_margin`** *(number)*: Margin above the shadow band to include the fold line [mm]. Default: `5.0`.
+  - <a id="definitions/fold/properties/shadow_margin"></a>**`shadow_margin`** *(number)*: Margin below the shadow band [mm]. Default: `4.0`.
+  - <a id="definitions/fold/properties/line_threshold"></a>**`line_threshold`** *(number)*: Gray level difference used to detect the fold line for inpainting. Default: `6.0`.
+  - <a id="definitions/fold/properties/text_block_size"></a>**`text_block_size`** *(number)*: Block size used to build the text protection mask [mm]. Default: `3.0`.
 - <a id="definitions/args"></a>**`args`** *(object)*: Cannot contain additional properties.
   - <a id="definitions/args/properties/level"></a>**`level`** *(object)*: The level configuration.
     - <a id="definitions/args/properties/level/properties/value"></a>**`value`** *(boolean or integer)*: true: => do level on 15% - 85% (under 15 % will be black above 85% will be white), false: => 0% - 100%, <number>: => (0 + <number>)% - (100 - number)%. Default: `false`.
@@ -103,6 +113,7 @@
     - <a id="definitions/args/properties/mask/properties/enabled"></a>**`enabled`** *(boolean)*: Enable the mask. Default: `true`.
     - <a id="definitions/args/properties/mask/properties/auto_mask"></a>**`auto_mask`**: Refer to *[#/definitions/auto_mask](#definitions/auto_mask)*.
     - <a id="definitions/args/properties/mask/properties/additional_filename"></a>**`additional_filename`** *(string or null)*: An image file used to add on the mask.
+  - <a id="definitions/args/properties/fold"></a>**`fold`**: Refer to *[#/definitions/fold](#definitions/fold)*.
   - <a id="definitions/args/properties/cut"></a>**`cut`** *(object)*: The cut configuration, a mask is used to definitively mask the source image. Default: `{"enabled": false}`.
     - <a id="definitions/args/properties/cut/properties/enabled"></a>**`enabled`** *(boolean)*: Enable the cut. Default: `true`.
     - <a id="definitions/args/properties/cut/properties/auto_mask"></a>**`auto_mask`**: Refer to *[#/definitions/auto_mask](#definitions/auto_mask)*.

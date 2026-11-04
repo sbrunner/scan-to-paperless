@@ -1066,6 +1066,22 @@ async def test_color_cut() -> None:
     )
 
 
+@pytest.mark.asyncio
+async def test_fold() -> None:
+    init_test()
+    image = cv2.imread(str(Path(__file__).parent / "fold-anonymized.png"))
+    assert image is not None
+    detection = process_utils.detect_fold(image, None, {}, px_per_mm=9.45)
+    assert detection is not None
+    corrected = process_utils.remove_fold(image, detection, None, {}, px_per_mm=9.45)
+    check_image(
+        "/results/",
+        cv2.cvtColor(corrected, cv2.COLOR_BGR2RGB),
+        str(Path(__file__).parent / "fold-anonymized.expected.png"),
+        generate_expected_image=REGENERATE,
+    )
+
+
 # @pytest.mark.skip(reason="for test")
 @pytest.mark.asyncio
 async def test_histogram() -> None:

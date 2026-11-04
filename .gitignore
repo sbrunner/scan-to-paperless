@@ -10,6 +10,7 @@ __pycache__
 /tests/*.png
 !/tests/*.expected.png
 !/tests/*.mask.png
+!/tests/fold-anonymized.png
 /tests/status/*.png
 !/tests/status/*.expected.png
 !/tests/status/*.mask.png

@@ -772,6 +772,37 @@ async def deskew(context: process_utils.Context) -> None:
                     await f.write(encoded_image.tobytes())
 
 
+@Process("unfold")
+async def unfold(context: process_utils.Context) -> None:
+    """Remove the fold line."""
+    fold_config = context.config["args"].setdefault("fold", {})
+    if not fold_config.setdefault("enabled", schema.FOLD_ENABLED_DEFAULT):
+        return
+    assert context.image is not None
+    px_per_mm = context.get_px_value(1.0)
+    detection = process_utils.detect_fold(
+        context.image,
+        context.mask,
+        fold_config,
+        px_per_mm=px_per_mm,
+    )
+    if detection is None:
+        _LOG.info("No fold detected")
+        return
+    if context.is_progress() or jupyter_utils.is_ipython():
+        marked = context.image.copy()
+        cv2.line(marked, (0, detection["top"]), (marked.shape[1], detection["top"]), (0, 0, 255), 2)
+        cv2.line(marked, (0, detection["bottom"]), (marked.shape[1], detection["bottom"]), (0, 0, 255), 2)
+        await context.save_progress_images("unfold-detection", marked, force=True)
+    context.image = process_utils.remove_fold(
+        context.image,
+        detection,
+        context.mask,
+        fold_config,
+        px_per_mm=px_per_mm,
+    )
+
+
 @Process("docrop")
 async def docrop(context: process_utils.Context) -> None:
     """Crop an image."""
@@ -1640,6 +1671,7 @@ async def transform(
                         await file.write(buffer.tobytes())
         await cut(context)
         await deskew(context)
+        await unfold(context)
         await docrop(context)
         await sharpen(context)
         await dither(context)  # pylint: disable=no-value-for-parameter,unknown-option-value, added by decorator
