@@ -143,16 +143,11 @@ repos:
         exclude: |-
           (?x)(
             ^tests?/?
-            |/tests?(/
-            |$)
-            |.*/tests(/
-            |$)
-            |(^
-            |/)test_[_a-zA-Z0-9]+.py$
-            |(^
-            |/)[_a-zA-Z0-9]+_tests?.py$
-            |(^
-            |/)tests?.py$
+            |/tests?(/|$)
+            |.*/tests(/|$)
+            |(^|/)test_[_a-zA-Z0-9]+.py$
+            |(^|/)[_a-zA-Z0-9]+_tests?.py$
+            |(^|/)tests?.py$
             |scan_to_paperless/config\.py
             |scan_to_paperless/process_schema\.py
           )
