@@ -32,7 +32,7 @@ For each image, read `images_status.<image>` in `config.yaml`:
 - `histogram.suggested`: conservative/balanced/aggressive proposals for `cut_black` and `cut_white`.
 - `auto_mask_hsv`: HSV suggestions for `auto_mask` values.
 - `deskew`: detected/applied angle and deskew search configuration.
-- `images_config.<image>.background_color`: detected background color, can be overridden manually.
+- `images_config.<image>.background_color`: detected paper color (from the area kept by the mask), can be overridden manually.
 
 ## Note on generated metadata
 

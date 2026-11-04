@@ -41,7 +41,8 @@ def test_detect_background_color() -> None:
     mask = np.zeros((4, 10), dtype=np.uint8)
     mask[:, 3:] = 255
 
-    assert process_utils.detect_background_color(image, mask) == (10, 20, 30)
+    assert process_utils.detect_background_color(image, mask) == (250, 251, 252)
+    assert process_utils.detect_background_color(image, np.zeros_like(mask)) == (250, 251, 252)
     assert process_utils.detect_background_color(image) == (250, 251, 252)
 
 
@@ -948,8 +949,9 @@ async def test_auto_cut_background_color() -> None:
 
     await context.do_initial_cut()
 
-    assert config["images_config"]["image.png"]["background_color"] == [128, 128, 128]
-    assert context.image[0, 0].tolist() == [128, 128, 128]
+    # The background color is detected from the paper (the kept area), not from the cut area
+    assert config["images_config"]["image.png"]["background_color"] == [255, 255, 255]
+    assert context.image[0, 0].tolist() == [255, 255, 255]
     assert context.image[50, 50].tolist() == [255, 255, 255]
 
 
