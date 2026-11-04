@@ -227,6 +227,13 @@ class Arguments(TypedDict, total=False):
       enabled: false
     """
 
+    fold: "Fold"
+    r"""
+    Fold.
+
+    Remove the fold line from the scanned page
+    """
+
     cut: "CutOperation"
     r"""
     Cut operation.
@@ -844,6 +851,141 @@ class Exiftool(TypedDict, total=False):
 
 FALLBACK_DEFAULT = ['override']
 r""" Default value of the field path 'Merge strategies fallback' """
+
+
+
+FOLD_ENABLED_DEFAULT = True
+r""" Default value of the field path 'Fold enabled' """
+
+
+
+FOLD_LINE_MARGIN_DEFAULT = 5.0
+r""" Default value of the field path 'Fold line_margin' """
+
+
+
+FOLD_LINE_THRESHOLD_DEFAULT = 6.0
+r""" Default value of the field path 'Fold line_threshold' """
+
+
+
+FOLD_MAXIMUM_SHADOW_DEFAULT = 25.0
+r""" Default value of the field path 'Fold max_shadow' """
+
+
+
+FOLD_MINIMUM_SHADOW_DEFAULT = 2.5
+r""" Default value of the field path 'Fold min_shadow' """
+
+
+
+FOLD_MINIMUM_SHADOW_GRAY_DEFAULT = 235.0
+r""" Default value of the field path 'Fold min_shadow_gray' """
+
+
+
+FOLD_MINIMUM_SHADOW_WIDTH_DEFAULT = 2.0
+r""" Default value of the field path 'Fold min_shadow_width' """
+
+
+
+FOLD_SHADOW_MARGIN_DEFAULT = 4.0
+r""" Default value of the field path 'Fold shadow_margin' """
+
+
+
+FOLD_TEXT_BLOCK_SIZE_DEFAULT = 3.0
+r""" Default value of the field path 'Fold text_block_size' """
+
+
+
+class Fold(TypedDict, total=False):
+    r"""
+    Fold.
+
+    Remove the fold line from the scanned page
+    """
+
+    enabled: bool
+    r"""
+    Fold enabled.
+
+    Enable fold removal
+
+    default: True
+    """
+
+    min_shadow_width: int | float
+    r"""
+    Fold minimum shadow width.
+
+    Minimum width of the fold shadow [mm]
+
+    default: 2.0
+    """
+
+    min_shadow: int | float
+    r"""
+    Fold minimum shadow.
+
+    Minimum darkness of the fold shadow relative to the local background [gray levels]
+
+    default: 2.5
+    """
+
+    max_shadow: int | float
+    r"""
+    Fold maximum shadow.
+
+    Maximum darkness of the fold shadow, used to reject printed lines [gray levels]
+
+    default: 25.0
+    """
+
+    min_shadow_gray: int | float
+    r"""
+    Fold minimum shadow gray.
+
+    Minimum mean gray level in the shadow band, used to reject printed black lines and dark graphics
+
+    default: 235.0
+    """
+
+    line_margin: int | float
+    r"""
+    Fold line margin.
+
+    Margin above the shadow band to include the fold line [mm]
+
+    default: 5.0
+    """
+
+    shadow_margin: int | float
+    r"""
+    Fold shadow margin.
+
+    Margin below the shadow band [mm]
+
+    default: 4.0
+    """
+
+    line_threshold: int | float
+    r"""
+    Fold line threshold.
+
+    Gray level difference used to detect the fold line for inpainting
+
+    default: 6.0
+    """
+
+    text_block_size: int | float
+    r"""
+    Fold text block size.
+
+    Block size used to build the text protection mask [mm]
+
+    default: 3.0
+    """
 
 
 
