@@ -63,7 +63,7 @@ nvidia-cublas = { version = "13.1.1.3", optional = true, markers = "platform_sys
 nvidia-cuda-nvrtc = { version = "13.0.88", optional = true, markers = "platform_system == \"Linux\"" }
 
 [tool.poetry.group.dev.dependencies]
-prospector = { version = "1.19.1", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
+prospector = { version = "1.20.0", extras = ["with_bandit", "with_mypy", "with_pyroma", "with_ruff"] }
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
 pytest = "9.1.1"
@@ -76,8 +76,8 @@ c2cwsgiutils = { version = "6.1.10", extras = ["test_images"] }
 types-requests = "2.33.0.20261006"
 nbconvert = "7.17.2"
 ipykernel = "7.4.0"
-ruff = "0.16.9"
-pylint = "4.0.9"
+ruff = "0.17.3"
+pylint = "4.1.3"
 
 [tool.poetry-dynamic-versioning]
 enable = true
