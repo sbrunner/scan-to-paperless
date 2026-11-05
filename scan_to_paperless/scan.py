@@ -4,7 +4,7 @@
 """Scan a new document."""
 
 import asyncio
-import datetime
+import datetime as dt
 import io
 import math
 import os
@@ -339,10 +339,10 @@ async def _validate_scan_folder(config: schema.Configuration) -> Path:
 
 async def _get_base_folder(scan_folder: Path) -> Path:
     """Get a unique base folder for the scan."""
-    now = datetime.datetime.now(datetime.UTC)
+    now = dt.datetime.now(dt.UTC)
     base_folder = scan_folder / now.strftime("%Y%m%d-%H%M%S")
     while await base_folder.exists():
-        now += datetime.timedelta(seconds=1)
+        now += dt.timedelta(seconds=1)
         base_folder = scan_folder / now.strftime("%Y%m%d-%H%M%S")
     return base_folder
 

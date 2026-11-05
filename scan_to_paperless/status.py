@@ -3,7 +3,7 @@
 """Manage the status file of the progress."""
 
 import asyncio
-import datetime
+import datetime as dt
 import html
 import logging
 import os
@@ -132,8 +132,8 @@ class Status:
         self._codes: list[str] = []
         self._consume: list[str] = []
         self._global_status = "Starting..."
-        self._global_status_update = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
-        self._start_time = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
+        self._global_status_update = dt.datetime.now(dt.UTC).replace(microsecond=0)
+        self._start_time = dt.datetime.now(dt.UTC).replace(microsecond=0)
         self._current_folder: str | None = None
 
         codes_folder = os.environ.get("SCAN_CODES_FOLDER", "/scan-codes")
@@ -154,7 +154,7 @@ class Status:
         if self._global_status != status:
             print(status)
             self._global_status = status
-            self._global_status_update = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
+            self._global_status_update = dt.datetime.now(dt.UTC).replace(microsecond=0)
 
             await self.write()
 
@@ -386,7 +386,7 @@ class Status:
                     global_status_update=self._global_status_update,
                     current_folder=self._current_folder,
                     start_time=self._start_time,
-                    datetime=datetime,
+                    datetime=dt,
                     status=self._status,
                     sorted_status_key=natsort.natsorted(self._status.keys()),
                     codes=self._codes,
