@@ -946,6 +946,10 @@
             "type": ["number", "null"],
             "description": "The used angle to deskew, can be change, restart by deleting one of the generated images"
           },
+          "auto_rotate_angle": {
+            "type": ["number", "null"],
+            "description": "The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, can be change, restart by deleting one of the generated images"
+          },
           "background_color": {
             "type": "array",
             "description": "The used background color, can be changed, restart by deleting one of the generated images",
@@ -1174,6 +1178,46 @@
                     "type": "boolean"
                   }
                 }
+              }
+            }
+          },
+          "autorotate": {
+            "type": "object",
+            "description": "Auto rotate analysis, based on the text orientation detected by Tesseract, with detected/applied angle and Tesseract OSD information",
+            "additionalProperties": false,
+            "properties": {
+              "angle_from": {
+                "type": "string",
+                "enum": ["detected", "manual", "none"]
+              },
+              "applied_angle": {
+                "type": ["number", "null"],
+                "description": "The angle applied to rotate the image"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["ok", "no_text", "disabled"],
+                "description": "ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled"
+              },
+              "orientation_in_degrees": {
+                "type": ["number", "null"],
+                "description": "The Tesseract OSD 'Orientation in degrees' value"
+              },
+              "rotate": {
+                "type": ["number", "null"],
+                "description": "The Tesseract OSD 'Rotate' value"
+              },
+              "orientation_confidence": {
+                "type": ["number", "null"],
+                "description": "The Tesseract OSD 'Orientation confidence' value"
+              },
+              "script": {
+                "type": ["string", "null"],
+                "description": "The Tesseract OSD 'Script' value"
+              },
+              "script_confidence": {
+                "type": ["number", "null"],
+                "description": "The Tesseract OSD 'Script confidence' value"
               }
             }
           }

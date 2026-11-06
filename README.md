@@ -140,8 +140,9 @@ You should also link to consume folder to `paperless-ngx` probably just by using
 In the `config.yaml` file present in the document folder, you can find some information generated during
 the processing and some can be modified.
 
-E.g. you can modify an image angle to fix the skew, then remove a generated image for force to regenerate
-the images.
+E.g. you can modify an image angle to fix the skew (`images_config.<image>.angle`), or force the text
+orientation rotation usually detected by Tesseract (`images_config.<image>.auto_rotate_angle`), then remove
+a generated image for force to regenerate the images.
 
 The background color (the paper color) is automatically detected for each image from the area kept by
 the mask (or from the whole image if there is no mask) and stored in
@@ -161,6 +162,8 @@ During processing, each image now gets additional analysis in `images_status.<im
 - `auto_mask_hsv`: HSV-based suggestions for `auto_mask.lower_hsv_color` and `auto_mask.upper_hsv_color`
   (`page_white` and `scanner_background` presets).
 - `deskew`: detected/applied angle and deskew search settings.
+- `autorotate`: text orientation detected by Tesseract (applied angle, OSD orientation/rotate values,
+  script and confidences, status `ok` / `no_text` / `disabled`).
 
 Those values are intended to help a human or an AI iterate on `args.cut_black`, `args.cut_white`,
 `args.mask.auto_mask` and `args.cut.auto_mask`.

@@ -1944,6 +1944,9 @@ class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
     angle: int | float | None
     r""" The used angle to deskew, can be change, restart by deleting one of the generated images """
 
+    auto_rotate_angle: int | float | None
+    r""" The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, can be change, restart by deleting one of the generated images """
+
     background_color: list[int]
     r""" The used background color, can be changed, restart by deleting one of the generated images """
 
@@ -1964,6 +1967,9 @@ class _ConfigurationImagesStatusAdditionalproperties(TypedDict, total=False):
 
     deskew: "_ConfigurationImagesStatusAdditionalpropertiesDeskew"
     r""" Deskew analysis with detected/applied angle and search configuration """
+
+    autorotate: "_ConfigurationImagesStatusAdditionalpropertiesAutorotate"
+    r""" Auto rotate analysis, based on the text orientation detected by Tesseract, with detected/applied angle and Tesseract OSD information """
 
 
 
@@ -1992,6 +1998,54 @@ class _ConfigurationImagesStatusAdditionalpropertiesAutoMaskHsvSuggestionsScanne
     upper_hsv_color: list[int]
     inverse_mask: bool
     de_noise_morphology: bool
+
+
+class _ConfigurationImagesStatusAdditionalpropertiesAutorotate(TypedDict, total=False):
+    r""" Auto rotate analysis, based on the text orientation detected by Tesseract, with detected/applied angle and Tesseract OSD information """
+
+    angle_from: "_ConfigurationImagesStatusAdditionalpropertiesAutorotateAngleFrom"
+    applied_angle: int | float | None
+    r""" The angle applied to rotate the image """
+
+    status: "_ConfigurationImagesStatusAdditionalpropertiesAutorotateStatus"
+    r""" ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled """
+
+    orientation_in_degrees: int | float | None
+    r""" The Tesseract OSD 'Orientation in degrees' value """
+
+    rotate: int | float | None
+    r""" The Tesseract OSD 'Rotate' value """
+
+    orientation_confidence: int | float | None
+    r""" The Tesseract OSD 'Orientation confidence' value """
+
+    script: str | None
+    r""" The Tesseract OSD 'Script' value """
+
+    script_confidence: int | float | None
+    r""" The Tesseract OSD 'Script confidence' value """
+
+
+
+_ConfigurationImagesStatusAdditionalpropertiesAutorotateAngleFrom = Literal['detected'] | Literal['manual'] | Literal['none']
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESAUTOROTATEANGLEFROM_DETECTED: Literal['detected'] = "detected"
+r"""The values for the '_ConfigurationImagesStatusAdditionalpropertiesAutorotateAngleFrom' enum"""
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESAUTOROTATEANGLEFROM_MANUAL: Literal['manual'] = "manual"
+r"""The values for the '_ConfigurationImagesStatusAdditionalpropertiesAutorotateAngleFrom' enum"""
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESAUTOROTATEANGLEFROM_NONE: Literal['none'] = "none"
+r"""The values for the '_ConfigurationImagesStatusAdditionalpropertiesAutorotateAngleFrom' enum"""
+
+
+
+_ConfigurationImagesStatusAdditionalpropertiesAutorotateStatus = Literal['ok'] | Literal['no_text'] | Literal['disabled']
+r""" ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled """
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESAUTOROTATESTATUS_OK: Literal['ok'] = "ok"
+r"""The values for the 'ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled' enum"""
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESAUTOROTATESTATUS_NO_TEXT: Literal['no_text'] = "no_text"
+r"""The values for the 'ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled' enum"""
+_CONFIGURATIONIMAGESSTATUSADDITIONALPROPERTIESAUTOROTATESTATUS_DISABLED: Literal['disabled'] = "disabled"
+r"""The values for the 'ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled' enum"""
+
 
 
 class _ConfigurationImagesStatusAdditionalpropertiesDeskew(TypedDict, total=False):

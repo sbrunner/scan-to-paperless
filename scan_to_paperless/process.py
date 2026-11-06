@@ -850,6 +850,27 @@ async def dither(context: process_utils.Context, source: str, destination: str) 
     await call([*CONVERT, "+dither", source, destination])
 
 
+def _parse_tesseract_osd(osd_output: str) -> dict[str, str]:
+    """Parse the Tesseract OSD output into a dictionary."""
+    osd: dict[str, str] = {}
+    for line in osd_output.splitlines():
+        key, separator, value = line.partition(":")
+        if separator:
+            osd[key.strip()] = value.strip()
+    return osd
+
+
+def _osd_float(osd: dict[str, str], key: str) -> float | None:
+    """Get a float value from the parsed Tesseract OSD output."""
+    value = osd.get(key)
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
 @Process("autorotate", ignore_error=True)
 async def autorotate(context: process_utils.Context) -> None:
     """
@@ -857,19 +878,96 @@ async def autorotate(context: process_utils.Context) -> None:
 
     Put the text in the right position.
     """
+    images_config = context.config.setdefault("images_config", {})
+    image_config = images_config.setdefault(context.image_name, {}) if context.image_name else {}
+    manual_angle = image_config.setdefault("auto_rotate_angle", None)
+
     auto_rotate_configuration = context.config["args"].setdefault("auto_rotate", {})
     if not auto_rotate_configuration.setdefault("enabled", schema.AUTO_ROTATE_ENABLED_DEFAULT):
+        _set_image_status(
+            context,
+            "autorotate",
+            {
+                "angle_from": "none",
+                "applied_angle": None,
+                "status": "disabled",
+                "orientation_in_degrees": None,
+                "rotate": None,
+                "orientation_confidence": None,
+                "script": None,
+                "script_confidence": None,
+            },
+        )
         return
+
+    if manual_angle is not None:
+        context.rotate(float(manual_angle))
+        _set_image_status(
+            context,
+            "autorotate",
+            {
+                "angle_from": "manual",
+                "applied_angle": float(manual_angle),
+                "status": "ok",
+                "orientation_in_degrees": None,
+                "rotate": None,
+                "orientation_confidence": None,
+                "script": None,
+                "script_confidence": None,
+            },
+        )
+        return
+
     assert context.image is not None
     async with anyio.NamedTemporaryFile(suffix=".png") as source:
         assert isinstance(source.name, str)
         cv2.imwrite(source.name, context.get_masked())
-        try:
-            orientation_lst = output(["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]).splitlines()
-            orientation_lst = [e for e in orientation_lst if "Orientation in degrees" in e]
-            context.rotate(int(orientation_lst[0].split()[3]))
-        except subprocess.CalledProcessError:
-            print("Not text found")
+        cmd = ["tesseract", source.name, "-", "--psm", "0", "-l", "osd"]
+        print(" ".join(cmd))
+        sys.stdout.flush()
+        proc = await asyncio.create_subprocess_exec(  # nosec # pylint: disable=subprocess-run-check
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await proc.communicate()
+
+    osd = _parse_tesseract_osd(stdout.decode())
+    orientation = _osd_float(osd, "Orientation in degrees")
+    if proc.returncode != 0 or orientation is None:
+        print("Not text found")
+        _set_image_status(
+            context,
+            "autorotate",
+            {
+                "angle_from": "none",
+                "applied_angle": None,
+                "status": "no_text",
+                "orientation_in_degrees": orientation,
+                "rotate": _osd_float(osd, "Rotate"),
+                "orientation_confidence": _osd_float(osd, "Orientation confidence"),
+                "script": osd.get("Script"),
+                "script_confidence": _osd_float(osd, "Script confidence"),
+            },
+        )
+        return
+
+    angle = float(int(orientation))
+    context.rotate(angle)
+    _set_image_status(
+        context,
+        "autorotate",
+        {
+            "angle_from": "detected",
+            "applied_angle": angle,
+            "status": "ok",
+            "orientation_in_degrees": orientation,
+            "rotate": _osd_float(osd, "Rotate"),
+            "orientation_confidence": _osd_float(osd, "Orientation confidence"),
+            "script": osd.get("Script"),
+            "script_confidence": _osd_float(osd, "Script confidence"),
+        },
+    )
 
 
 def draw_line(
