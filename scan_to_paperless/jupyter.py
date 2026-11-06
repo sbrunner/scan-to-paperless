@@ -584,6 +584,9 @@ images_context["dither-mask"] = context.mask""",
         nbformat.v4.new_markdown_cell(  # type: ignore[no-untyped-call]
             """Do the image auto rotate correction, based on the text orientation.
 
+The detected orientation is written in `images_status.<image_name>.autorotate`.
+The angle can be forced in `images_config.<image_name>.auto_rotate_angle`.
+
 This require Tesseract to be installed.""",
         ),
     )
@@ -594,6 +597,10 @@ context.mask = images_context["dither-mask"].copy()
 
 try:
     await process.autorotate(context)
+    print(
+        "Autorotate:",
+        context.config.get("images_status", {}).get(context.image_name, {}).get("autorotate"),
+    )
     context.display_image(context.image)
 except FileNotFoundError as e:
     print("Tesseract not found, skipping autorotate: ", e)""",

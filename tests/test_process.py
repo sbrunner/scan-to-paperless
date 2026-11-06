@@ -79,6 +79,148 @@ async def test_background_color_per_image() -> None:
     assert context.get_background_color() == (10, 20, 30)
 
 
+@pytest.mark.asyncio
+async def test_autorotate_disabled() -> None:
+    config = {"args": {"auto_rotate": {"enabled": False}}}
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((2, 3, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.autorotate(context)
+
+    assert config["images_config"]["image.png"]["auto_rotate_angle"] is None
+    assert config["images_status"]["image.png"]["autorotate"] == {
+        "angle_from": "none",
+        "applied_angle": None,
+        "status": "disabled",
+        "orientation_in_degrees": None,
+        "rotate": None,
+        "orientation_confidence": None,
+        "script": None,
+        "script_confidence": None,
+    }
+    assert context.image.shape[:2] == (2, 3)
+
+
+@pytest.mark.asyncio
+async def test_autorotate_manual() -> None:
+    config = {
+        "args": {},
+        "images_config": {"image.png": {"auto_rotate_angle": 90}},
+    }
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((2, 3, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.autorotate(context)
+
+    assert config["images_status"]["image.png"]["autorotate"] == {
+        "angle_from": "manual",
+        "applied_angle": 90.0,
+        "status": "ok",
+        "orientation_in_degrees": None,
+        "rotate": None,
+        "orientation_confidence": None,
+        "script": None,
+        "script_confidence": None,
+    }
+    assert context.image.shape[:2] == (3, 2)
+
+
+class _FakeTesseractProcess:
+    def __init__(self, returncode: int, stdout: bytes) -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+
+    async def communicate(self) -> tuple[bytes, bytes]:
+        return self.stdout, b""
+
+
+@pytest.mark.asyncio
+async def test_autorotate_detected(monkeypatch: pytest.MonkeyPatch) -> None:
+    osd_output = (
+        b"Page number: 0\n"
+        b"Orientation in degrees: 270\n"
+        b"Rotate: 90\n"
+        b"Orientation confidence: 3.85\n"
+        b"Script: Latin\n"
+        b"Script confidence: 4.21\n"
+    )
+
+    async def fake_exec(*args: Any, **kwargs: Any) -> _FakeTesseractProcess:
+        assert args[0] == "tesseract"
+        assert args[2:] == ("-", "--psm", "0", "-l", "osd")
+        return _FakeTesseractProcess(0, osd_output)
+
+    monkeypatch.setattr(process.asyncio, "create_subprocess_exec", fake_exec)
+
+    config = {"args": {}}
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((2, 3, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.autorotate(context)
+
+    assert config["images_status"]["image.png"]["autorotate"] == {
+        "angle_from": "detected",
+        "applied_angle": 270.0,
+        "status": "ok",
+        "orientation_in_degrees": 270.0,
+        "rotate": 90.0,
+        "orientation_confidence": 3.85,
+        "script": "Latin",
+        "script_confidence": 4.21,
+    }
+    assert config["images_config"]["image.png"]["auto_rotate_angle"] is None
+    assert context.image.shape[:2] == (3, 2)
+
+
+@pytest.mark.asyncio
+async def test_autorotate_no_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_exec(*args: Any, **kwargs: Any) -> _FakeTesseractProcess:
+        return _FakeTesseractProcess(1, b"")
+
+    monkeypatch.setattr(process.asyncio, "create_subprocess_exec", fake_exec)
+
+    config = {"args": {}}
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((2, 3, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.autorotate(context)
+
+    assert config["images_status"]["image.png"]["autorotate"] == {
+        "angle_from": "none",
+        "applied_angle": None,
+        "status": "no_text",
+        "orientation_in_degrees": None,
+        "rotate": None,
+        "orientation_confidence": None,
+        "script": None,
+        "script_confidence": None,
+    }
+    assert context.image.shape[:2] == (2, 3)
+
+
+def test_parse_tesseract_osd() -> None:
+    osd = process._parse_tesseract_osd(
+        "Page number: 0\n"
+        "Orientation in degrees: 90\n"
+        "Rotate: 270\n"
+        "Orientation confidence: 1.5\n"
+        "Script: Latin\n"
+        "Script confidence: 2.5\n",
+    )
+    assert osd["Orientation in degrees"] == "90"
+    assert process._osd_float(osd, "Orientation in degrees") == 90.0
+    assert process._osd_float(osd, "Rotate") == 270.0
+    assert process._osd_float(osd, "Orientation confidence") == 1.5
+    assert osd["Script"] == "Latin"
+    assert process._osd_float(osd, "Script confidence") == 2.5
+    assert process._osd_float(osd, "Script") is None
+    assert process._osd_float(osd, "Missing") is None
+
+
 def test_update_config_moves_images_status() -> None:
     config = {
         "args": {},

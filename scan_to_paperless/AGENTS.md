@@ -32,11 +32,12 @@ For each image, read `images_status.<image>` in `config.yaml`:
 - `histogram.suggested`: conservative/balanced/aggressive proposals for `cut_black` and `cut_white`.
 - `auto_mask_hsv`: HSV suggestions for `auto_mask` values.
 - `deskew`: detected/applied angle and deskew search configuration.
+- `autorotate`: text orientation detected by Tesseract (applied angle, OSD values and confidences, status).
 - `images_config.<image>.background_color`: detected paper color (from the area kept by the mask), can be overridden manually.
 
 ## Note on generated metadata
 
-The metadata blocks (`histogram`, `auto_mask_hsv`, `deskew`) are generated hints.
+The metadata blocks (`histogram`, `auto_mask_hsv`, `deskew`, `autorotate`) are generated hints.
 Treat them as guidance, not absolute truth:
 
 - always verify on the rendered image,
@@ -53,11 +54,15 @@ Treat them as guidance, not absolute truth:
 6. If scanner background should be removed instead, use `scanner_background` and keep
    `inverse_mask: true` with `de_noise_morphology: false`.
 7. If `deskew.near_search_limit` is true, broaden `args.deskew.min_angle`/`max_angle`.
+8. If `autorotate.status` is `no_text` or the detected orientation is wrong, set a manual angle with
+   `images_config.<image>.auto_rotate_angle` (multiple of 90).
 
 ## Where to write changes
 
 - Global defaults: `args.cut_black`, `args.cut_white`, `args.mask.auto_mask`, `args.cut.auto_mask`.
 - Per image angle override (manual deskew): `images_config.<image>.angle`.
+- Per image auto rotate override (manual text orientation rotation): `images_config.<image>.auto_rotate_angle`,
+  it takes precedence over the Tesseract detected orientation.
 - Per image background color override: `images_config.<image>.background_color`, it takes precedence
   over `args.background_color`.
 

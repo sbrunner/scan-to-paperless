@@ -35,6 +35,7 @@
 - <a id="properties/images_config"></a>**`images_config`** *(object)*: Can contain additional properties.
   - <a id="properties/images_config/additionalProperties"></a>**Additional properties** *(object)*: Cannot contain additional properties.
     - <a id="properties/images_config/additionalProperties/properties/angle"></a>**`angle`** *(number or null)*: The used angle to deskew, can be change, restart by deleting one of the generated images.
+    - <a id="properties/images_config/additionalProperties/properties/auto_rotate_angle"></a>**`auto_rotate_angle`** *(number or null)*: The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, can be change, restart by deleting one of the generated images.
     - <a id="properties/images_config/additionalProperties/properties/background_color"></a>**`background_color`** *(array)*: The used background color, can be changed, restart by deleting one of the generated images.
       - <a id="properties/images_config/additionalProperties/properties/background_color/items"></a>**Items** *(integer)*
 - <a id="properties/images_status"></a>**`images_status`** *(object)*: The image status. Can contain additional properties.
@@ -96,6 +97,15 @@
         - <a id="properties/images_status/additionalProperties/properties/deskew/properties/search/properties/num_peaks"></a>**`num_peaks`** *(integer)*
         - <a id="properties/images_status/additionalProperties/properties/deskew/properties/search/properties/sigma"></a>**`sigma`** *(number)*
         - <a id="properties/images_status/additionalProperties/properties/deskew/properties/search/properties/angle_pm_90"></a>**`angle_pm_90`** *(boolean)*
+    - <a id="properties/images_status/additionalProperties/properties/autorotate"></a>**`autorotate`** *(object)*: Auto rotate analysis, based on the text orientation detected by Tesseract, with detected/applied angle and Tesseract OSD information. Cannot contain additional properties.
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/angle_from"></a>**`angle_from`** *(string)*: Must be one of: "detected", "manual", or "none".
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/applied_angle"></a>**`applied_angle`** *(number or null)*: The angle applied to rotate the image.
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/status"></a>**`status`** *(string)*: ok: the orientation has been detected, no_text: Tesseract did not find any text, disabled: the auto rotate is disabled. Must be one of: "ok", "no_text", or "disabled".
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/orientation_in_degrees"></a>**`orientation_in_degrees`** *(number or null)*: The Tesseract OSD 'Orientation in degrees' value.
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/rotate"></a>**`rotate`** *(number or null)*: The Tesseract OSD 'Rotate' value.
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/orientation_confidence"></a>**`orientation_confidence`** *(number or null)*: The Tesseract OSD 'Orientation confidence' value.
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/script"></a>**`script`** *(string or null)*: The Tesseract OSD 'Script' value.
+      - <a id="properties/images_status/additionalProperties/properties/autorotate/properties/script_confidence"></a>**`script_confidence`** *(number or null)*: The Tesseract OSD 'Script confidence' value.
 ## Definitions
 
 - <a id="definitions/contour"></a>**`contour`** *(object)*
