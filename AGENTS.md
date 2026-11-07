@@ -43,3 +43,15 @@ Test files in `tests/` may not follow the rules concerning `async` requirements,
 ## Commits
 
 Don't use conventional commit for the message, Start the massage with a Capital.
+
+## Temporary CI errors
+
+The test `tests/test_process.py::test_custom_process[600]` compares the produced image with the
+reference images, but the produced image depends on the version of the system packages installed in
+the Docker base image (`apt-get upgrade` during the image build).
+
+A failure of this test (`AssertionError: Images have different shapes ...` or an image difference)
+that appears without any change in the application code (typically on an automated dependencies or
+dpkg audit pull request) must be considered as a temporary CI error: rerun the CI (bounded to 5
+attempts), do not try to fix it with a commit on the PR branch, never modify this test and never
+regenerate the reference images for such a failure.
