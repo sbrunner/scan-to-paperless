@@ -1942,10 +1942,10 @@ class _ArgumentsDeskew(TypedDict, total=False):
 
 class _ConfigurationImagesConfigAdditionalproperties(TypedDict, total=False):
     angle: int | float | None
-    r""" The used angle to deskew, can be change, restart by deleting one of the generated images """
+    r""" The used angle to deskew, the detected angle is saved here and used as is on the next runs, set it to null to detect it again, can be change, restart by deleting one of the generated images """
 
     auto_rotate_angle: int | float | None
-    r""" The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, can be change, restart by deleting one of the generated images """
+    r""" The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, the calculated angle is saved here and used as is on the next runs, set it to null to calculate it again, can be change, restart by deleting one of the generated images """
 
     background_color: list[int]
     r""" The used background color, can be changed, restart by deleting one of the generated images """

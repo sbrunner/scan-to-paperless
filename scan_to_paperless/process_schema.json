@@ -944,11 +944,11 @@
         "properties": {
           "angle": {
             "type": ["number", "null"],
-            "description": "The used angle to deskew, can be change, restart by deleting one of the generated images"
+            "description": "The used angle to deskew, the detected angle is saved here and used as is on the next runs, set it to null to detect it again, can be change, restart by deleting one of the generated images"
           },
           "auto_rotate_angle": {
             "type": ["number", "null"],
-            "description": "The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, can be change, restart by deleting one of the generated images"
+            "description": "The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, the calculated angle is saved here and used as is on the next runs, set it to null to calculate it again, can be change, restart by deleting one of the generated images"
           },
           "background_color": {
             "type": "array",

@@ -124,6 +124,7 @@ async def test_autorotate_manual() -> None:
         "script": None,
         "script_confidence": None,
     }
+    assert config["images_config"]["image.png"]["auto_rotate_angle"] == 90
     assert context.image.shape[:2] == (3, 2)
 
 
@@ -171,7 +172,7 @@ async def test_autorotate_detected(monkeypatch: pytest.MonkeyPatch) -> None:
         "script": "Latin",
         "script_confidence": 4.21,
     }
-    assert config["images_config"]["image.png"]["auto_rotate_angle"] is None
+    assert config["images_config"]["image.png"]["auto_rotate_angle"] == 270.0
     assert context.image.shape[:2] == (3, 2)
 
 
@@ -199,6 +200,7 @@ async def test_autorotate_no_text(monkeypatch: pytest.MonkeyPatch) -> None:
         "script": None,
         "script_confidence": None,
     }
+    assert config["images_config"]["image.png"]["auto_rotate_angle"] is None
     assert context.image.shape[:2] == (2, 3)
 
 
@@ -219,6 +221,75 @@ def test_parse_tesseract_osd() -> None:
     assert process._osd_float(osd, "Script confidence") == 2.5
     assert process._osd_float(osd, "Script") is None
     assert process._osd_float(osd, "Missing") is None
+
+
+@pytest.mark.asyncio
+async def test_deskew_detected(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_determine_skew(
+        image: np.ndarray[Any, np.dtype[np.uint8]], **kwargs: Any
+    ) -> tuple[float | None, list[tuple[str, np.ndarray[Any, np.dtype[np.uint8]]]]]:
+        return -1.5, []
+
+    monkeypatch.setattr(process, "determine_skew_debug_images", fake_determine_skew)
+
+    config = {"args": {}}
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((10, 10, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.deskew(context)
+
+    assert config["images_config"]["image.png"]["angle"] == -1.5
+    deskew_status = config["images_status"]["image.png"]["deskew"]
+    assert deskew_status["angle_from"] == "detected"
+    assert deskew_status["detected_angle"] == -1.5
+    assert deskew_status["applied_angle"] == -1.5
+
+
+@pytest.mark.asyncio
+async def test_deskew_not_detected(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_determine_skew(
+        image: np.ndarray[Any, np.dtype[np.uint8]], **kwargs: Any
+    ) -> tuple[float | None, list[tuple[str, np.ndarray[Any, np.dtype[np.uint8]]]]]:
+        return None, []
+
+    monkeypatch.setattr(process, "determine_skew_debug_images", fake_determine_skew)
+
+    config = {"args": {}}
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((10, 10, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.deskew(context)
+
+    assert config["images_config"]["image.png"]["angle"] is None
+    deskew_status = config["images_status"]["image.png"]["deskew"]
+    assert deskew_status["angle_from"] == "none"
+    assert deskew_status["detected_angle"] is None
+    assert deskew_status["applied_angle"] is None
+
+
+@pytest.mark.asyncio
+async def test_deskew_manual(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_determine_skew(
+        image: np.ndarray[Any, np.dtype[np.uint8]], **kwargs: Any
+    ) -> tuple[float | None, list[tuple[str, np.ndarray[Any, np.dtype[np.uint8]]]]]:
+        msg = "The skew should not be detected"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(process, "determine_skew_debug_images", fake_determine_skew)
+
+    config = {"args": {}, "images_config": {"image.png": {"angle": 2.5}}}
+    context = process_utils.Context(config, {})
+    context.image = np.zeros((10, 10, 3), dtype=np.uint8)
+    context.image_name = "image.png"
+
+    await process.deskew(context)
+
+    assert config["images_config"]["image.png"]["angle"] == 2.5
+    deskew_status = config["images_status"]["image.png"]["deskew"]
+    assert deskew_status["angle_from"] == "manual"
+    assert deskew_status["applied_angle"] == 2.5
 
 
 def test_update_config_moves_images_status() -> None:
@@ -649,6 +720,8 @@ async def test_full(progress) -> None:
     image_config = config["images_config"]["all-1.png"]
     image_status = config["images_status"]["all-1.png"]
     assert image_config["background_color"] == [255, 255, 255]
+    assert "angle" in image_config
+    assert "auto_rotate_angle" in image_config
     assert len(image_status["size"]) == 2
     assert image_status["size"][0] > 0
     assert image_status["size"][1] > 0

@@ -483,7 +483,8 @@ context.mask = images_context["cut-mask"].copy()
 
 context.config["args"]["deskew"] = {_pretty_repr(context.config["args"].get("deskew", {}))}
 
-# The angle can be forced in config.images_config.<image_name>.angle.
+# The detected angle is written in config.images_config.<image_name>.angle, it can be changed,
+# set it to null to detect it again.
 await process.deskew(context)
 context.display_image(context.image)
 
@@ -585,7 +586,8 @@ images_context["dither-mask"] = context.mask""",
             """Do the image auto rotate correction, based on the text orientation.
 
 The detected orientation is written in `images_status.<image_name>.autorotate`.
-The angle can be forced in `images_config.<image_name>.auto_rotate_angle`.
+The used angle is written in `images_config.<image_name>.auto_rotate_angle`, it can be changed,
+set it to null to calculate it again.
 
 This require Tesseract to be installed.""",
         ),
@@ -625,6 +627,9 @@ if save:
     with open(config_file_name, encoding="utf-8") as config_file:
         config = yaml.load(config_file.read())
     config["args"].update(context.config["args"])
+    config_images_config = config.setdefault("images_config", {})
+    for image_name, image_config in context.config.get("images_config", {}).items():
+        config_images_config.setdefault(image_name, {}).update(image_config)
     with open(config_file_name, "w", encoding="utf-8") as config_file:
         yaml.dump(config, config_file)
 
