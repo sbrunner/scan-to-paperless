@@ -34,8 +34,8 @@
       - <a id="properties/intermediate_error/items/properties/traceback/items"></a>**Items** *(string)*
 - <a id="properties/images_config"></a>**`images_config`** *(object)*: Can contain additional properties.
   - <a id="properties/images_config/additionalProperties"></a>**Additional properties** *(object)*: Cannot contain additional properties.
-    - <a id="properties/images_config/additionalProperties/properties/angle"></a>**`angle`** *(number or null)*: The used angle to deskew, can be change, restart by deleting one of the generated images.
-    - <a id="properties/images_config/additionalProperties/properties/auto_rotate_angle"></a>**`auto_rotate_angle`** *(number or null)*: The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, can be change, restart by deleting one of the generated images.
+    - <a id="properties/images_config/additionalProperties/properties/angle"></a>**`angle`** *(number or null)*: The used angle to deskew, the detected angle is saved here and used as is on the next runs, set it to null to detect it again, can be change, restart by deleting one of the generated images.
+    - <a id="properties/images_config/additionalProperties/properties/auto_rotate_angle"></a>**`auto_rotate_angle`** *(number or null)*: The used angle to auto rotate the image based on the text orientation, if null it is calculated by Tesseract, the calculated angle is saved here and used as is on the next runs, set it to null to calculate it again, can be change, restart by deleting one of the generated images.
     - <a id="properties/images_config/additionalProperties/properties/background_color"></a>**`background_color`** *(array)*: The used background color, can be changed, restart by deleting one of the generated images.
       - <a id="properties/images_config/additionalProperties/properties/background_color/items"></a>**Items** *(integer)*
 - <a id="properties/images_status"></a>**`images_status`** *(object)*: The image status. Can contain additional properties.

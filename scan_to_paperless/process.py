@@ -667,6 +667,7 @@ async def deskew(context: process_utils.Context) -> None:
             if skew_angle is not None:
                 image_status["angle"] = float(skew_angle)
                 angle = float(skew_angle)
+                image_config["angle"] = angle
 
             derivation = float(
                 deskew_configuration.setdefault("angle_derivation", schema.DESKEW_ANGLE_DERIVATION_DEFAULT),
@@ -953,6 +954,7 @@ async def autorotate(context: process_utils.Context) -> None:
         return
 
     angle = float(int(orientation))
+    image_config["auto_rotate_angle"] = angle
     context.rotate(angle)
     _set_image_status(
         context,

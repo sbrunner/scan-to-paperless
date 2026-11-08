@@ -142,7 +142,8 @@ the processing and some can be modified.
 
 E.g. you can modify an image angle to fix the skew (`images_config.<image>.angle`), or force the text
 orientation rotation usually detected by Tesseract (`images_config.<image>.auto_rotate_angle`), then remove
-a generated image for force to regenerate the images.
+a generated image for force to regenerate the images. The detected angles are automatically saved in
+these fields and reused as is on the next runs; set the value back to `null` to detect it again.
 
 The background color (the paper color) is automatically detected for each image from the area kept by
 the mask (or from the whole image if there is no mask) and stored in

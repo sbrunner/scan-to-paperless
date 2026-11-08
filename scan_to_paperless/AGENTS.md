@@ -53,16 +53,20 @@ Treat them as guidance, not absolute truth:
 5. For masking, start with `auto_mask_hsv.suggestions.page_white`.
 6. If scanner background should be removed instead, use `scanner_background` and keep
    `inverse_mask: true` with `de_noise_morphology: false`.
-7. If `deskew.near_search_limit` is true, broaden `args.deskew.min_angle`/`max_angle`.
+7. If `deskew.near_search_limit` is true, broaden `args.deskew.min_angle`/`max_angle` and reset
+   `images_config.<image>.angle` to null so the angle is detected again.
 8. If `autorotate.status` is `no_text` or the detected orientation is wrong, set a manual angle with
-   `images_config.<image>.auto_rotate_angle` (multiple of 90).
+   `images_config.<image>.auto_rotate_angle` (multiple of 90), or reset it to null to let Tesseract
+   calculate it again.
 
 ## Where to write changes
 
 - Global defaults: `args.cut_black`, `args.cut_white`, `args.mask.auto_mask`, `args.cut.auto_mask`.
-- Per image angle override (manual deskew): `images_config.<image>.angle`.
-- Per image auto rotate override (manual text orientation rotation): `images_config.<image>.auto_rotate_angle`,
-  it takes precedence over the Tesseract detected orientation.
+- Per image deskew angle: `images_config.<image>.angle`, it is automatically filled with the detected
+  angle and used as is on the next runs, set it to null to detect it again.
+- Per image auto rotate angle (text orientation rotation): `images_config.<image>.auto_rotate_angle`,
+  it is automatically filled with the Tesseract detected angle and used as is on the next runs,
+  set it to null to calculate it again.
 - Per image background color override: `images_config.<image>.background_color`, it takes precedence
   over `args.background_color`.
 
