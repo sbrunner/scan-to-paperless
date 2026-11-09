@@ -340,14 +340,14 @@ files = [
 
 [[package]]
 name = "astroid"
-version = "4.0.4"
+version = "4.3.4"
 description = "An abstract syntax tree for Python with inference support."
 optional = false
 python-versions = ">=3.10.0"
 groups = ["dev"]
 files = [
-    {file = "astroid-4.0.4-py3-none-any.whl", hash = "sha256:52f39653876c7dec3e3afd4c2696920e05c83832b9737afc21928f2d2eb7a753"},
-    {file = "astroid-4.0.4.tar.gz", hash = "sha256:986fed8bcf79fb82c78b18a53352a0b287a73817d6dbcfba3162da36667c49a0"},
+    {file = "astroid-4.3.4-py3-none-any.whl", hash = "sha256:2bcd0d02648a443a4b818c952c3550091989daefac3c12d3b83b2289482e0818"},
+    {file = "astroid-4.3.4.tar.gz", hash = "sha256:d515a105722b72098bbe82d430d65e635f742b6cbac3bdfaf8b7c188b87c5e39"},
 ]
 
 [[package]]
@@ -370,9 +370,10 @@ test = ["astroid (>=2,<5)", "pytest (<9.0)", "pytest-cov", "pytest-xdist"]
 name = "asyncinotify"
 version = "4.4.4"
 description = "'A simple optionally-async python inotify library, focused on simplicity of use and operation, and leveraging modern Python features"
-optional = false
+optional = true
 python-versions = "<4,>=3.6"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "asyncinotify-4.4.4-py3-none-any.whl", hash = "sha256:9f4236249d78af4451eb689d0c1ed1f52ab5d44a22c7dd699f3dd34f2c3e01f4"},
     {file = "asyncinotify-4.4.4.tar.gz", hash = "sha256:a8afc92bec6666807ca50524156fca22655325cba6e2b51d842b8ec0d399c708"},
@@ -461,10 +462,10 @@ css = ["tinycss2 (>=1.1.0)"]
 name = "brotli"
 version = "1.2.0"
 description = "Python bindings for the Brotli compression library"
-optional = false
+optional = true
 python-versions = "*"
 groups = ["main"]
-markers = "platform_python_implementation == \"CPython\""
+markers = "extra == \"process\" and platform_python_implementation == \"CPython\""
 files = [
     {file = "brotli-1.2.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:99cfa69813d79492f0e5d52a20fd18395bc82e671d5d40bd5a91d13e75e468e8"},
     {file = "brotli-1.2.0-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:3ebe801e0f4e56d17cd386ca6600573e3706ce1845376307f5d2cbd32149b69a"},
@@ -572,10 +573,10 @@ files = [
 name = "brotlicffi"
 version = "1.2.0.2"
 description = "Python CFFI bindings to the Brotli library"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "platform_python_implementation != \"CPython\""
+markers = "extra == \"process\" and platform_python_implementation != \"CPython\""
 files = [
     {file = "brotlicffi-1.2.0.2-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:ad05ca993234cf947f0ad71b1c8bc0af3d74e0410b1e2c32bb99de0cef6a994b"},
     {file = "brotlicffi-1.2.0.2-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0636cb5a85f31c36e08953d09a226cb788be900b976f81302895e3cf35d5e707"},
@@ -789,7 +790,7 @@ files = [
     {file = "cffi-2.1.1-cp315-cp315t-win_arm64.whl", hash = "sha256:d18e5ac0f2f03f4f518d3e23db0f0cad7faa1da8620e9c09461d443bbf6e6692"},
     {file = "cffi-2.1.1.tar.gz", hash = "sha256:dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be"},
 ]
-markers = {dev = "implementation_name == \"pypy\""}
+markers = {main = "extra == \"process\"", dev = "implementation_name == \"pypy\""}
 
 [package.dependencies]
 pycparser = {version = "*", markers = "implementation_name != \"PyPy\""}
@@ -975,6 +976,7 @@ files = [
     {file = "charset_normalizer-3.5.2-py3-none-any.whl", hash = "sha256:b6b751274acb69d77b3323d6b7dbaa3c7fdfc1eb829b7eb61d262f32e1af9685"},
     {file = "charset_normalizer-3.5.2.tar.gz", hash = "sha256:39de2a259fc954455c57274dc94c79d5842774e1247a016aff30bc0efed0f4ef"},
 ]
+markers = {main = "extra == \"process\""}
 
 [[package]]
 name = "click"
@@ -1111,9 +1113,10 @@ test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures (<16)", "pytest-
 name = "cssselect2"
 version = "0.10.1"
 description = "CSS selectors for Python ElementTree"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "cssselect2-0.10.1-py3-none-any.whl", hash = "sha256:25cc4494d55985d6a6da359be48da6ce98c28dcbafa2314c383ace3fc32ec868"},
     {file = "cssselect2-0.10.1.tar.gz", hash = "sha256:83b0d820ef589dabaf693289b647c2f5b410f76d285f56deba911ffa75a7b9d1"},
@@ -1319,9 +1322,10 @@ files = [
 name = "deskew"
 version = "1.6.1"
 description = "Skew detection and correction in images containing text"
-optional = false
+optional = true
 python-versions = ">=3.11"
 groups = ["main"]
+markers = "extra == \"process\" or extra == \"jupyter\""
 files = [
     {file = "deskew-1.6.1-py3-none-any.whl", hash = "sha256:6fd0d04f3667d566b52f8ff862c44916a3ab48511c188efc7ded63d1feca1483"},
     {file = "deskew-1.6.1.tar.gz", hash = "sha256:9b10c8c460c6fb9523394768ee6873a6de8da7a12bfc2f94a8a92f0db205b83a"},
@@ -1400,6 +1404,7 @@ files = [
     {file = "fastjsonschema-2.22.2-py3-none-any.whl", hash = "sha256:0fb3915616adac85ccfdd737d26be1089845d2019819505b42d39888458f74d4"},
     {file = "fastjsonschema-2.22.2.tar.gz", hash = "sha256:72064e12356a7d6ef02165be2946b9abadbdf238536e07eb587e3dbaa33099cf"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.extras]
 devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benchmark", "pytest-cache", "validictory"]
@@ -1884,6 +1889,7 @@ files = [
     {file = "imageio-2.38.0-py3-none-any.whl", hash = "sha256:474ea3a39e36e0e8e02d81d7f10412aaecec7a2825e5fbc4f44cbcd7bb7cebfc"},
     {file = "imageio-2.38.0.tar.gz", hash = "sha256:fe1d406862f6bc2930e8ec662d7bc40d4370cb76e3390dcd33819560d2708531"},
 ]
+markers = {main = "extra == \"process\" or extra == \"jupyter\""}
 
 [package.dependencies]
 numpy = "*"
@@ -2076,6 +2082,7 @@ files = [
     {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
     {file = "jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 MarkupSafe = ">=2.0"
@@ -2094,6 +2101,7 @@ files = [
     {file = "jsonschema-4.26.0-py3-none-any.whl", hash = "sha256:d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce"},
     {file = "jsonschema-4.26.0.tar.gz", hash = "sha256:0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 attrs = ">=22.2.0"
@@ -2116,6 +2124,7 @@ files = [
     {file = "jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe"},
     {file = "jsonschema_specifications-2025.9.1.tar.gz", hash = "sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 referencing = ">=0.31.0"
@@ -2156,6 +2165,7 @@ files = [
     {file = "jupyter_core-5.9.1-py3-none-any.whl", hash = "sha256:ebf87fdc6073d142e114c72c9e29a9d7ca03fad818c5d300ce2adc1fb0743407"},
     {file = "jupyter_core-5.9.1.tar.gz", hash = "sha256:4d09aaff303b9566c3ce657f580bd089ff5c91f5f89cf7d8846c3cdf465b5508"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 platformdirs = ">=2.5"
@@ -2339,6 +2349,7 @@ files = [
     {file = "lazy_loader-0.6-py3-none-any.whl", hash = "sha256:77253be3391b06124a0e16105bd663b6c54470af1a9ca8e1cf026f38d58ed056"},
     {file = "lazy_loader-0.6.tar.gz", hash = "sha256:2f4b7824d6401958639008a0cae20c776b61dff619accd6890693e2de8260167"},
 ]
+markers = {main = "extra == \"process\" or extra == \"jupyter\""}
 
 [package.dependencies]
 packaging = "*"
@@ -2500,9 +2511,10 @@ files = [
 name = "lxml"
 version = "6.1.3"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "lxml-6.1.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:40bcbd9f94166ffe925811e730607385cec959f42fb1bb7dad83748680465221"},
     {file = "lxml-6.1.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:05f5bce9af14fd1506997594bd81cee6d9c6b58ea80a39c058327aa6371ed9e9"},
@@ -2810,6 +2822,7 @@ files = [
     {file = "markupsafe-3.0.3-cp39-cp39-win_arm64.whl", hash = "sha256:38664109c14ffc9e7437e86b4dceb442b0096dfe3541d7864d9cbe1da4cf36c8"},
     {file = "markupsafe-3.0.3.tar.gz", hash = "sha256:722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698"},
 ]
+markers = {main = "extra == \"process\""}
 
 [[package]]
 name = "matplotlib"
@@ -3231,9 +3244,10 @@ files = [
 name = "natsort"
 version = "8.4.0"
 description = "Simple yet flexible natural sorting in Python."
-optional = false
+optional = true
 python-versions = ">=3.7"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "natsort-8.4.0-py3-none-any.whl", hash = "sha256:4732914fb471f56b5cce04d7bae6f164a592c7712e1c85f9ef585e197299521c"},
     {file = "natsort-8.4.0.tar.gz", hash = "sha256:45312c4a0e5507593da193dedd04abb1469253b601ecaf63445ad80f0a1ea581"},
@@ -3314,6 +3328,7 @@ files = [
     {file = "nbformat-5.11.1-py3-none-any.whl", hash = "sha256:cc6698fa75f4fab8755ead786317815f13a6fee3b53311c0abb1a8b51d52f7ec"},
     {file = "nbformat-5.11.1.tar.gz", hash = "sha256:32d4521c68c6e7d5b29c76defaeed9f42ea733142b9b19f88277ce10390b9c4d"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 fastjsonschema = ">=2.15"
@@ -3348,6 +3363,7 @@ files = [
     {file = "networkx-3.7-py3-none-any.whl", hash = "sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0"},
     {file = "networkx-3.7.tar.gz", hash = "sha256:fd77a511bd90f39f3d016351345b52cf5319b813bdca01de3f755d3cca62e96a"},
 ]
+markers = {main = "extra == \"process\" or extra == \"jupyter\""}
 
 [package.extras]
 benchmarking = ["asv (>=0.6.5)", "py-rattler (>=0.21,<0.22)", "virtualenv"]
@@ -3665,9 +3681,10 @@ files = [
 name = "opencv-contrib-python-headless"
 version = "5.0.0.93"
 description = "Wrapper package for OpenCV python bindings."
-optional = false
+optional = true
 python-versions = ">=3.6"
 groups = ["main"]
+markers = "extra == \"process\" or extra == \"jupyter\""
 files = [
     {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-macosx_13_0_arm64.whl", hash = "sha256:bf1e2b3c502b4fbe7b06e307bd15c4e7bea7da8895de19c189db01d53062f997"},
     {file = "opencv_contrib_python_headless-5.0.0.93-cp37-abi3-macosx_14_0_x86_64.whl", hash = "sha256:68eb7b803f68998552a83b5f3c69bfb1c7d6c114dc30f828657bddc7ca68573a"},
@@ -3775,9 +3792,10 @@ ptyprocess = ">=0.5"
 name = "pikepdf"
 version = "10.17.0"
 description = "Read, write, repair, and transform PDFs in Python, powered by qpdf"
-optional = false
+optional = true
 python-versions = ">=3.11"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "pikepdf-10.17.0-cp311-cp311-macosx_15_0_arm64.whl", hash = "sha256:75706cebbc76722fbe47ff418cb9da2af6addc65e47f2a120fbfcd363d50eab9"},
     {file = "pikepdf-10.17.0-cp311-cp311-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:52cb078d6bac8389a9e294b615c2023eec8c5ae68c9ed10295d37c5961cc7850"},
@@ -3944,6 +3962,7 @@ files = [
     {file = "platformdirs-4.12.2-py3-none-any.whl", hash = "sha256:29dbf06d96c500bc6bdbce75fb0a14d63279c93b1842f97e72a135b33e856983"},
     {file = "platformdirs-4.12.2.tar.gz", hash = "sha256:eab5f70271a490ef74618bb314fbb86e3c7e82fa3b9c922c2ea0e0a1a155d329"},
 ]
+markers = {main = "extra == \"process\""}
 
 [[package]]
 name = "pluggy"
@@ -4142,14 +4161,14 @@ files = [
 
 [[package]]
 name = "prospector"
-version = "1.19.1"
+version = "1.20.0"
 description = "Prospector is a tool to analyse Python code by aggregating the result of other tools."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "prospector-1.19.1-py3-none-any.whl", hash = "sha256:2673a27d6876c40fa3c3401d3293b79a8b7da58d5203202d2e23408461d81546"},
-    {file = "prospector-1.19.1.tar.gz", hash = "sha256:b3c9855e82b6f450808c967a34d45653ba9920fb49a159ce005642d15d6968a2"},
+    {file = "prospector-1.20.0-py3-none-any.whl", hash = "sha256:a0b4fac07f2c5c29b265f3194ccea40508f293437f035b11e9979504ba9db158"},
+    {file = "prospector-1.20.0.tar.gz", hash = "sha256:c5afea89d859a0a1d6fcecb31128775eb563bfd73c18e9c76477d520a849c747"},
 ]
 
 [package.dependencies]
@@ -4298,7 +4317,7 @@ files = [
     {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
     {file = "pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"},
 ]
-markers = {main = "implementation_name != \"PyPy\"", dev = "implementation_name == \"pypy\""}
+markers = {main = "extra == \"process\" and implementation_name != \"PyPy\"", dev = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "pydocstyle"
@@ -4322,9 +4341,10 @@ toml = ["tomli (>=1.2.3) ; python_version < \"3.11\""]
 name = "pydyf"
 version = "0.12.1"
 description = "A low-level PDF generator."
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "pydyf-0.12.1-py3-none-any.whl", hash = "sha256:ea25b4e1fe7911195cb57067560daaa266639184e8335365cc3ee5214e7eaadc"},
     {file = "pydyf-0.12.1.tar.gz", hash = "sha256:fbd7e759541ac725c29c506612003de393249b94310ea78ae44cb1d04b220095"},
@@ -4363,18 +4383,18 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pylint"
-version = "4.0.9"
+version = "4.1.3"
 description = "python code static checker"
 optional = false
 python-versions = ">=3.10.0"
 groups = ["dev"]
 files = [
-    {file = "pylint-4.0.9-py3-none-any.whl", hash = "sha256:c4ba5bbaf1e70ecf05f08cd7d6091ea04824b79a2b2d9f5b10dc25fc34cb1124"},
-    {file = "pylint-4.0.9.tar.gz", hash = "sha256:6f1305780229ae720e89b8aff2b3ff857cbb268fbab98c8b586960267667ad34"},
+    {file = "pylint-4.1.3-py3-none-any.whl", hash = "sha256:a85357cae24f33ad8d86c8f3daaa92c600ae4012b54a57299cee76000e9364cf"},
+    {file = "pylint-4.1.3.tar.gz", hash = "sha256:9928603068edfa0d1a3c167f174b099d4b97c3db75d32d0fcdd029770b4713a9"},
 ]
 
 [package.dependencies]
-astroid = ">=4.0.2,<=4.1.dev0"
+astroid = ">=4.3.4,<=4.4"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = {version = ">=0.3.7", markers = "python_version >= \"3.12\""}
 isort = ">=5,!=5.13,<10"
@@ -4455,9 +4475,10 @@ diagrams = ["jinja2", "railroad-diagrams"]
 name = "pypdf"
 version = "6.21.4"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "pypdf-6.21.4-py3-none-any.whl", hash = "sha256:33e4fb41ca352810eb4e9838aa0d82d6888a5f8bf682f43e99cce5faa666255c"},
     {file = "pypdf-6.21.4.tar.gz", hash = "sha256:c8817e3f888d47a087872ded69812c1ef30cacb871d6e053e0c00bbaf0bc2163"},
@@ -4490,9 +4511,10 @@ files = [
 name = "pyphen"
 version = "0.18.1"
 description = "Pure Python module to hyphenate text"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "pyphen-0.18.1-py3-none-any.whl", hash = "sha256:0aa9051e15928cecadd4c632cea0258ba57215b2a197a39baa46abcdb0f47e84"},
     {file = "pyphen-0.18.1.tar.gz", hash = "sha256:dbae6fbbe4f01cb206108b43573d857c67107be9d0e38eb1b08d6fa2210634a7"},
@@ -4632,9 +4654,10 @@ six = ">=1.5"
 name = "python-sane"
 version = "2.9.2"
 description = "This is the python-sane package"
-optional = false
+optional = true
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "extra == \"sane\""
 files = [
     {file = "python_sane-2.9.2.tar.gz", hash = "sha256:50ab8e0b033cececad26c7231a7254f80ad8fe9ec6b5c25add2493d7e2a07bbe"},
 ]
@@ -4727,9 +4750,10 @@ markers = {main = "extra == \"process\""}
 name = "pyzbar"
 version = "0.1.9"
 description = "Read one-dimensional barcodes and QR codes from Python 2 and 3."
-optional = false
+optional = true
 python-versions = "*"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "pyzbar-0.1.9-py2.py3-none-any.whl", hash = "sha256:4559628b8192feb25766d954b36a3753baaf5c97c03135aec7e4a026036b475d"},
     {file = "pyzbar-0.1.9-py2.py3-none-win32.whl", hash = "sha256:8f4c5264c9c7c6b9f20d01efc52a4eba1ded47d9ba857a94130afe33703eb518"},
@@ -4849,6 +4873,7 @@ files = [
     {file = "referencing-0.37.0-py3-none-any.whl", hash = "sha256:381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231"},
     {file = "referencing-0.37.0.tar.gz", hash = "sha256:44aefc3142c5b842538163acb373e24cce6632bd54bdb01b21ad5863489f50d8"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 attrs = ">=22.2.0"
@@ -5000,9 +5025,10 @@ files = [
 name = "reportlab"
 version = "5.1.0"
 description = "The Reportlab Toolkit"
-optional = false
+optional = true
 python-versions = "<4,>=3.9"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "reportlab-5.1.0-py3-none-any.whl", hash = "sha256:59fdbaec5efe437095ad1d7292ec9a271c8ca2d3ec75e889c6e61400929b90df"},
     {file = "reportlab-5.1.0.tar.gz", hash = "sha256:6878200464527e87672d19e9f7cfc6bb890e3a6931e74ac6a1a8d1754aa55671"},
@@ -5029,6 +5055,7 @@ files = [
     {file = "requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"},
     {file = "requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 certifi = ">=2023.5.7"
@@ -5201,6 +5228,7 @@ files = [
     {file = "rpds_py-2026.6.3-pp311-pypy311_pp73-musllinux_1_2_x86_64.whl", hash = "sha256:8e65860d238379ed982fd9ba690579b5e95af2f4840f99c772816dbe573cb826"},
     {file = "rpds_py-2026.6.3.tar.gz", hash = "sha256:1cebd1337c242e4ec2293e541f712b2da849b29f48f0c293684b71c0632625d4"},
 ]
+markers = {main = "extra == \"process\""}
 
 [[package]]
 name = "ruamel-yaml"
@@ -5222,30 +5250,30 @@ oldlibyaml = ["ruamel.yaml.clib ; platform_python_implementation == \"CPython\""
 
 [[package]]
 name = "ruff"
-version = "0.16.9"
+version = "0.17.3"
 description = "An extremely fast Python linter and code formatter, written in Rust."
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
 files = [
-    {file = "ruff-0.16.9-py3-none-linux_armv6l.whl", hash = "sha256:95e6f022090368ab3b824c36276839c53b2adf1a3f4c09fefc33dfc400f6da96"},
-    {file = "ruff-0.16.9-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:a5f27be168556594a86d2f415db0cf43f5291917849318f873c7e2791f7a8c67"},
-    {file = "ruff-0.16.9-py3-none-macosx_11_0_arm64.whl", hash = "sha256:1632eb1d6197f33bd00b1acbc5b71009e89a8895c158e2d2b03a834fac964ab6"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b3f951b14d865d5952c89d40a5ca07e87abe24fa5453299878411e127748fb1c"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:447fc07e1573afff7cb02803462b12b6c8ece7cf10e2cd78565fa6d7a1c0bf8d"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8a3e039a6a40ed976c491722b60e0ae4a4aa1a86057f540ee7a37a5d19ae9120"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4684dded7db60aa57cb118fa158630f5feade4af5782903b6053484bdf9bd129"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:d29c934357e45642fda2f34c0b1f4025b4a6c01e15e4bf0016879d60078a142c"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a21713e629d3e5bdb2f5c2def1cc7f04f47fa8e1a7eb0571b4a28e1da64bc728"},
-    {file = "ruff-0.16.9-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:7baa24ef5fc8e77aa93879e1d3f43754a01ae488e869f1ae30cf431afd4d2452"},
-    {file = "ruff-0.16.9-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:a41aac6230aadfaa133bdfa1614488531ffa3e0837567ae04c0da2058a9c0f9e"},
-    {file = "ruff-0.16.9-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:c2529fb5896d49115b0e9aa8f887490b34bbe76baf879ec2264ac59406869ce7"},
-    {file = "ruff-0.16.9-py3-none-musllinux_1_2_i686.whl", hash = "sha256:41e3870277694177429b56406d65dfbdb2c2802c52b715edaf6a0b829c69d4ee"},
-    {file = "ruff-0.16.9-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:8adbe4e58af167f767d7b2ba5e83c42e878350796cf78c2f5e14ab9903a92588"},
-    {file = "ruff-0.16.9-py3-none-win32.whl", hash = "sha256:0e1dbc2073624dee6618d41d0098690a7244654af746704b64759e12b6b6b385"},
-    {file = "ruff-0.16.9-py3-none-win_amd64.whl", hash = "sha256:6bd40fec8cd4c8a3d4dd589bd8ad4e6320c13c29234159bfd959a40d529d597b"},
-    {file = "ruff-0.16.9-py3-none-win_arm64.whl", hash = "sha256:ed1a252039200f57a59eebc063b54beabea67bfbaaca0eeaa7f54b5fbcda2284"},
-    {file = "ruff-0.16.9.tar.gz", hash = "sha256:12b625c6cfba78d285d9f48eda5f053374f1e53cb10ef17342a383750db99161"},
+    {file = "ruff-0.17.3-py3-none-linux_armv6l.whl", hash = "sha256:ab86b84cd9d05e56d329742c0cabdcbe2d1d56c98f4a04aab9b5b66196febfb4"},
+    {file = "ruff-0.17.3-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:e407b4a6852853a9a2cdce96963e94ad9775578bb44e7561a0f2829f3cc04b11"},
+    {file = "ruff-0.17.3-py3-none-macosx_11_0_arm64.whl", hash = "sha256:b75cc113b3aca388933d8296b667b1ac401a80317ea3074c9b0a66541199da29"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ab5fa7ed5ce18554ea69d850ad162cbaa0c85fc47c08d83a569f806681c9a6ad"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:c673c170e27834d1262e3a9c1e97bdc9b9c3b180c63d89173ce69747232474c1"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:6a754c0341bc9ca151b7b335988b3263921c08859f84ca219b70cee825571b6f"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4590b9d86c0b1543ebb09094254e191cd43fe8edaf330baa035aab03da251532"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:bbde18beccd98c29a227c63c99022e3443b99258e08326df6425dfe0443705ef"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7fa4b0f931cdbcb8a52044f370a3eb429fb42eb88807b0e800fcaa98dd42b24e"},
+    {file = "ruff-0.17.3-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:39405f341deec934b4289634324ad695f72df2970f9121582872eaf5b722f0f5"},
+    {file = "ruff-0.17.3-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:68074094f55ca3d29ab19491f640282f7a84061c4c7977aa5094b968ca457e9a"},
+    {file = "ruff-0.17.3-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:27bb571ac78fef178fe5118d2827df95c2aae74a48fff2b15f6acd03af5ff5bb"},
+    {file = "ruff-0.17.3-py3-none-musllinux_1_2_i686.whl", hash = "sha256:029c37cbd3de48ca37aa12117bead2d065f15da17d66bf84e0d4274013705db2"},
+    {file = "ruff-0.17.3-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:692fdb46d0fd9c71e380947dc5fc72f2c3f881073bc1f739e4579376231affbe"},
+    {file = "ruff-0.17.3-py3-none-win32.whl", hash = "sha256:46539cb031b01fd29ae0a02142483c46640b233ee12bb1c1b690bffa1555d5ca"},
+    {file = "ruff-0.17.3-py3-none-win_amd64.whl", hash = "sha256:56b8ffb3f3b3cbccb8b76b71b38261b7ed982ef5d20f5b447b1b61a7f4949b24"},
+    {file = "ruff-0.17.3-py3-none-win_arm64.whl", hash = "sha256:81fce74bcd6be0e9da7c67c7553fd0f1f12964a2052cd728ef917b937a5ca1d9"},
+    {file = "ruff-0.17.3.tar.gz", hash = "sha256:a57049c8addb3662073859bb55a7ad35aa54f8a7c9ed268911d1333c5aadaaa9"},
 ]
 
 [[package]]
@@ -5349,6 +5377,7 @@ files = [
     {file = "scikit_image-0.26.0-cp314-cp314t-win_arm64.whl", hash = "sha256:0608aa4a9ec39e0843de10d60edb2785a30c1c47819b67866dd223ebd149acaf"},
     {file = "scikit_image-0.26.0.tar.gz", hash = "sha256:f5f970ab04efad85c24714321fcc91613fcb64ef2a892a13167df2f3e59199fa"},
 ]
+markers = {main = "extra == \"process\" or extra == \"jupyter\""}
 
 [package.dependencies]
 imageio = ">=2.33,!=2.35.0"
@@ -5440,6 +5469,7 @@ files = [
     {file = "scipy-1.18.1-cp315-cp315t-win_arm64.whl", hash = "sha256:eda632a7981f69730d6281f451db9c1c370993a2c0d7ddb43e2a809a2862b83a"},
     {file = "scipy-1.18.1.tar.gz", hash = "sha256:52c4b7422442aba924d03ad4019852b08a92e64ea187b933135687bfe2747307"},
 ]
+markers = {main = "extra == \"process\" or extra == \"jupyter\""}
 
 [package.dependencies]
 numpy = ">=2.0.0,<2.8"
@@ -5675,6 +5705,7 @@ files = [
     {file = "tifffile-2026.9.20-py3-none-any.whl", hash = "sha256:9b913167b8f66a57f2e7c0454486c4c4607196d494797461226166bd0755c0e6"},
     {file = "tifffile-2026.9.20.tar.gz", hash = "sha256:30e145a7042ce7143ae50a50fe8b7221b0070aae22adab8f9e79a264be6b5cdc"},
 ]
+markers = {main = "extra == \"process\" or extra == \"jupyter\""}
 
 [package.dependencies]
 numpy = ">=2.1"
@@ -5698,6 +5729,7 @@ files = [
     {file = "tinycss2-1.5.1-py3-none-any.whl", hash = "sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661"},
     {file = "tinycss2-1.5.1.tar.gz", hash = "sha256:d339d2b616ba90ccce58da8495a78f46e55d4d25f9fd71dfd526f07e7d53f957"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.dependencies]
 webencodings = ">=0.4"
@@ -5710,9 +5742,10 @@ test = ["pytest", "ruff"]
 name = "tinyhtml5"
 version = "2.1.0"
 description = "HTML parser based on the WHATWG HTML specification"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "tinyhtml5-2.1.0-py3-none-any.whl", hash = "sha256:6e11cfff38515834268daf89d5f85bbde0b6dd02e8d9e212d1385c2289b89f0a"},
     {file = "tinyhtml5-2.1.0.tar.gz", hash = "sha256:60a50ec3d938a37e491efa01af895853060943dcebb5627de5b10d188b338a67"},
@@ -5938,6 +5971,7 @@ files = [
     {file = "traitlets-5.16.1-py3-none-any.whl", hash = "sha256:f775618166caa0396c8e337099240f2bd3e5e917d203b2e6fbe21a58d3cb1f6b"},
     {file = "traitlets-5.16.1.tar.gz", hash = "sha256:ed900c2b631aa3a112811139fa97b8d2c3bad5e989656bba4b7e52c7852c18c1"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
@@ -6275,9 +6309,10 @@ files = [
 name = "weasyprint"
 version = "70.0"
 description = "The Awesome Document Factory"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "weasyprint-70.0-py3-none-any.whl", hash = "sha256:5043e55e38d2a2af2b2b871e869697b1f65dad5f8b4a3677961d04ceacf9c5fe"},
     {file = "weasyprint-70.0.tar.gz", hash = "sha256:c263abf0e86c747b12af678b67f85f4abbfb97d18a20503031e7ba94e4b8cf8c"},
@@ -6308,6 +6343,7 @@ files = [
     {file = "webencodings-0.6.1-py3-none-any.whl", hash = "sha256:7fab6269c8bf237c657876b52058ccb182e861518d1c695c1a9aaa8c1c105d5b"},
     {file = "webencodings-0.6.1.tar.gz", hash = "sha256:565f9ad031c702dae404e27a099e3e09186a3ab1b9520f06d215502b651fd910"},
 ]
+markers = {main = "extra == \"process\""}
 
 [package.extras]
 doc = ["furo", "sphinx"]
@@ -6470,9 +6506,10 @@ propcache = ">=0.2.1"
 name = "zopfli"
 version = "0.4.3"
 description = "Zopfli module for python"
-optional = false
+optional = true
 python-versions = ">=3.10"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "zopfli-0.4.3-cp310-abi3-macosx_10_9_universal2.whl", hash = "sha256:88f4fbe429aad72bc206275d81fab11a097e0f951a5848d1f51083c37ea73073"},
     {file = "zopfli-0.4.3-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:769875152d0625c46707bcca57d4b2233fe653482067acd55fbf6ec525cb9bdc"},
@@ -6496,9 +6533,10 @@ test = ["pytest"]
 name = "zxing-cpp"
 version = "3.1.1"
 description = "Python bindings for the zxing-cpp barcode library"
-optional = false
+optional = true
 python-versions = ">=3.9"
 groups = ["main"]
+markers = "extra == \"process\""
 files = [
     {file = "zxing_cpp-3.1.1-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:9b368e42c376dca8a077f5e58233c048d15dffe36630f8abc89dfde2ac8493ec"},
     {file = "zxing_cpp-3.1.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:753aa1fff998aac068b7b221e4546a63239ea7aaa8380ea62285a3c1f441dc0d"},
@@ -6541,4 +6579,4 @@ sane = ["python-sane"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,!=3.14.1,<3.15"
-content-hash = "6c9ee71d82b470d98f14b033844d82597818bff1a3e265658ad4c8be83da4318"
+content-hash = "95618b9c7c011dc50da405dd19235155eb4fe46633d9fec05b261c5253dc1723"

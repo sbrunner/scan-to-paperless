@@ -5,7 +5,7 @@
 
 import argparse
 import asyncio
-import datetime
+import datetime as dt
 import io
 import json
 import logging
@@ -2861,7 +2861,7 @@ async def async_main() -> None:
         sys.exit()
 
     print("Welcome to scanned images document to paperless.")
-    print(f"Started at: {datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M')}")
+    print(f"Started at: {dt.datetime.now(dt.UTC).strftime('%Y-%m-%d %H:%M')}")
 
     status = scan_to_paperless.status.Status()
     await status.init()
