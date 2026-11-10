@@ -123,8 +123,8 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libgstreamer1.0-0: 1.28.2-1
   ubuntu_26_04/libharfbuzz0b: 12.3.2-2
-  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.6
-  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.6
+  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.7
+  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.7
   ubuntu_26_04/libhogweed6t64: 3.10.2-1
   ubuntu_26_04/libhwy1t64: 1.3.0-2
   ubuntu_26_04/libice6: 2:1.1.1-1build1
@@ -177,7 +177,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libpaper2: 2.2.5-0.3maysync1
   ubuntu_26_04/libpcre2-8-0: 10.46-1ubuntu0.1
   ubuntu_26_04/libpcsclite1: 2.4.1-1
-  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.4
   ubuntu_26_04/libpixman-1-0: 0.46.4-1
   ubuntu_26_04/libpng16-16t64: 1.6.57-1ubuntu0.1
   ubuntu_26_04/libpolkit-agent-1-0: 127-2ubuntu1.1
@@ -250,16 +250,16 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/ncurses-base: 6.6+20251231-1
   ubuntu_26_04/ncurses-bin: 6.6+20251231-1
   ubuntu_26_04/netbase: 6.5build1
-  ubuntu_26_04/openjdk-25-jre-headless: 25.0.4.1+1-1~26.04.4
+  ubuntu_26_04/openjdk-25-jre-headless: 25.0.5.0.3+1-1~26.04.1
   ubuntu_26_04/openssl: 3.5.5-1ubuntu3.7
   ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.7
   ubuntu_26_04/optipng: 7.9.1+ds-2build1
   ubuntu_26_04/packagekit: 1.3.4-3ubuntu1.1
   ubuntu_26_04/passwd: 1:4.17.4-2ubuntu3
   ubuntu_26_04/pdftk-java: 3.3.3-2build1
-  ubuntu_26_04/perl: 5.40.1-7ubuntu0.3
-  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.3
-  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/perl: 5.40.1-7ubuntu0.4
+  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.4
+  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.4
   ubuntu_26_04/pinentry-curses: 1.3.2-3ubuntu1
   ubuntu_26_04/pngquant: 2.18.0-1build3
   ubuntu_26_04/polkitd: 127-2ubuntu1.1
@@ -454,8 +454,8 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.1
   ubuntu_26_04/libgstreamer1.0-0: 1.28.2-1
   ubuntu_26_04/libharfbuzz0b: 12.3.2-2
-  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.6
-  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.6
+  ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.7
+  ubuntu_26_04/libheif1: 1.21.2-3ubuntu0.7
   ubuntu_26_04/libhogweed6t64: 3.10.2-1
   ubuntu_26_04/libhwy1t64: 1.3.0-2
   ubuntu_26_04/libice6: 2:1.1.1-1build1
@@ -508,7 +508,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libpaper2: 2.2.5-0.3maysync1
   ubuntu_26_04/libpcre2-8-0: 10.46-1ubuntu0.1
   ubuntu_26_04/libpcsclite1: 2.4.1-1
-  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.4
   ubuntu_26_04/libpixman-1-0: 0.46.4-1
   ubuntu_26_04/libpng16-16t64: 1.6.57-1ubuntu0.1
   ubuntu_26_04/libpolkit-agent-1-0: 127-2ubuntu1.1
@@ -581,16 +581,16 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/ncurses-base: 6.6+20251231-1
   ubuntu_26_04/ncurses-bin: 6.6+20251231-1
   ubuntu_26_04/netbase: 6.5build1
-  ubuntu_26_04/openjdk-25-jre-headless: 25.0.4.1+1-1~26.04.4
+  ubuntu_26_04/openjdk-25-jre-headless: 25.0.5.0.3+1-1~26.04.1
   ubuntu_26_04/openssl: 3.5.5-1ubuntu3.7
   ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.7
   ubuntu_26_04/optipng: 7.9.1+ds-2build1
   ubuntu_26_04/packagekit: 1.3.4-3ubuntu1.1
   ubuntu_26_04/passwd: 1:4.17.4-2ubuntu3
   ubuntu_26_04/pdftk-java: 3.3.3-2build1
-  ubuntu_26_04/perl: 5.40.1-7ubuntu0.3
-  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.3
-  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.3
+  ubuntu_26_04/perl: 5.40.1-7ubuntu0.4
+  ubuntu_26_04/perl-base: 5.40.1-7ubuntu0.4
+  ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.4
   ubuntu_26_04/pinentry-curses: 1.3.2-3ubuntu1
   ubuntu_26_04/pngquant: 2.18.0-1build3
   ubuntu_26_04/polkitd: 127-2ubuntu1.1
