@@ -8,7 +8,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/binutils-common: 2.46-3ubuntu2
   ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2.2
   ubuntu_26_04/ca-certificates: 20260816ubuntu0.26.04.2
-  ubuntu_26_04/ca-certificates-java: 20260311ubuntu0.26.04.1
+  ubuntu_26_04/ca-certificates-java: 20260311ubuntu0.26.04.2
   ubuntu_26_04/coreutils: 9.5-1ubuntu2+0.0.0~ubuntu25
   ubuntu_26_04/coreutils-from-uutils: 0.0.0~ubuntu25
   ubuntu_26_04/cpp: 4:15.2.0-5ubuntu1
@@ -307,7 +307,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.2
   ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.2
   ubuntu_26_04/readline-common: 8.3-4
-  ubuntu_26_04/rust-coreutils: 0.8.0-0ubuntu3
+  ubuntu_26_04/rust-coreutils: 0.10.0-1ubuntu2~26.04.1
   ubuntu_26_04/sed: 4.9-2ubuntu1
   ubuntu_26_04/sensible-utils: 0.0.26build1
   ubuntu_26_04/sgml-base: 1.31+nmu1build1
@@ -339,7 +339,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/binutils-common: 2.46-3ubuntu2
   ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2.2
   ubuntu_26_04/ca-certificates: 20260816ubuntu0.26.04.2
-  ubuntu_26_04/ca-certificates-java: 20260311ubuntu0.26.04.1
+  ubuntu_26_04/ca-certificates-java: 20260311ubuntu0.26.04.2
   ubuntu_26_04/coreutils: 9.5-1ubuntu2+0.0.0~ubuntu25
   ubuntu_26_04/coreutils-from-uutils: 0.0.0~ubuntu25
   ubuntu_26_04/cpp: 4:15.2.0-5ubuntu1
@@ -638,7 +638,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.2
   ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.2
   ubuntu_26_04/readline-common: 8.3-4
-  ubuntu_26_04/rust-coreutils: 0.8.0-0ubuntu3
+  ubuntu_26_04/rust-coreutils: 0.10.0-1ubuntu2~26.04.1
   ubuntu_26_04/sed: 4.9-2ubuntu1
   ubuntu_26_04/sensible-utils: 0.0.26build1
   ubuntu_26_04/sgml-base: 1.31+nmu1build1
