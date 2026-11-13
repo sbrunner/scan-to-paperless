@@ -72,9 +72,9 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libbrotli1: 1.2.0-3ubuntu0.1
   ubuntu_26_04/libbsd0: 0.12.2-2build2
   ubuntu_26_04/libbz2-1.0: 1.0.8-6ubuntu0.1
-  ubuntu_26_04/libc-bin: 2.43-2ubuntu2.4
-  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.4
-  ubuntu_26_04/libc6: 2.43-2ubuntu2.4
+  ubuntu_26_04/libc-bin: 2.43-2ubuntu2.7
+  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.7
+  ubuntu_26_04/libc6: 2.43-2ubuntu2.7
   ubuntu_26_04/libcairo2: 1.18.4-3
   ubuntu_26_04/libcap-ng0: 0.8.5-4build5
   ubuntu_26_04/libcap2: 1:2.75-10ubuntu2
@@ -403,9 +403,9 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libbrotli1: 1.2.0-3ubuntu0.1
   ubuntu_26_04/libbsd0: 0.12.2-2build2
   ubuntu_26_04/libbz2-1.0: 1.0.8-6ubuntu0.1
-  ubuntu_26_04/libc-bin: 2.43-2ubuntu2.4
-  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.4
-  ubuntu_26_04/libc6: 2.43-2ubuntu2.4
+  ubuntu_26_04/libc-bin: 2.43-2ubuntu2.7
+  ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.7
+  ubuntu_26_04/libc6: 2.43-2ubuntu2.7
   ubuntu_26_04/libcairo2: 1.18.4-3
   ubuntu_26_04/libcap-ng0: 0.8.5-4build5
   ubuntu_26_04/libcap2: 1:2.75-10ubuntu2
