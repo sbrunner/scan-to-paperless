@@ -282,7 +282,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/python3-jaraco.context: 6.0.1-2
   ubuntu_26_04/python3-jaraco.functools: 4.1.0-1build1
   ubuntu_26_04/python3-jaraco.text: 4.0.0-1build1
-  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.3
+  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.4
   ubuntu_26_04/python3-launchpadlib: 2.1.0-1build1
   ubuntu_26_04/python3-lazr.restfulclient: 0.14.6-3build1
   ubuntu_26_04/python3-lazr.uri: 1.0.6-7build1
@@ -613,7 +613,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/python3-jaraco.context: 6.0.1-2
   ubuntu_26_04/python3-jaraco.functools: 4.1.0-1build1
   ubuntu_26_04/python3-jaraco.text: 4.0.0-1build1
-  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.3
+  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.4
   ubuntu_26_04/python3-launchpadlib: 2.1.0-1build1
   ubuntu_26_04/python3-lazr.restfulclient: 0.14.6-3build1
   ubuntu_26_04/python3-lazr.uri: 1.0.6-7build1
