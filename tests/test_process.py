@@ -310,6 +310,35 @@ def test_update_config_moves_images_status() -> None:
     assert "status" not in config["images_config"]["image.png"]
 
 
+@pytest.mark.parametrize(
+    ("auto_mask", "auto_cut"),
+    [(None, None), (False, True), (True, False)],
+)
+def test_update_config_scalar_auto_mask_cut(auto_mask: bool | None, auto_cut: bool | None) -> None:
+    config = {"args": {"auto_mask": auto_mask, "auto_cut": auto_cut}}
+
+    process._update_config(config)
+
+    assert config["args"]["mask"] == {"enabled": bool(auto_mask)}
+    assert config["args"]["cut"] == {"enabled": bool(auto_cut)}
+    assert "auto_mask" not in config["args"]
+    assert "auto_cut" not in config["args"]
+
+
+def test_update_config_dict_auto_mask_migration() -> None:
+    config = {
+        "args": {
+            "auto_mask": {"lower_hsv_color": [0, 0, 250]},
+            "auto_cut": {"upper_hsv_color": [255, 10, 255]},
+        },
+    }
+
+    process._update_config(config)
+
+    assert config["args"]["mask"]["auto_mask"]["lower_hsv_color"] == [0, 0, 250]
+    assert config["args"]["cut"]["auto_mask"]["upper_hsv_color"] == [255, 10, 255]
+
+
 # @pytest.mark.skip(reason="for test")
 def test_find_lines() -> None:
     lines = process.find_lines(load_image("limit-lines-1.png"), vertical=True, config={})
