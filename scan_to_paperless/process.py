@@ -1273,13 +1273,12 @@ def _update_config(config: schema.Configuration) -> None:
             old_config["args"]["threshold_value_c_limit"],
         )
         del old_config["args"]["threshold_value_c_limit"]
-    # auto_mask: null => auto_mask.enabled: false
-    if "auto_mask" in old_config["args"] and (
-        old_config["args"]["auto_mask"] is True or old_config["args"]["auto_mask"] is False
-    ):
-        config["args"]["mask"] = {"enabled": old_config["args"]["auto_mask"]}
-    if "auto_mask" in old_config["args"] and old_config["args"]["auto_mask"] is None:
-        config["args"]["mask"] = {"enabled": False}
+    # auto_mask: true/false/null => mask.enabled: true/false/false
+    # The scalar key is removed, otherwise the ".get("auto_mask", {})" calls below would
+    # fail with "argument of type 'NoneType' is not a container or iterable"
+    if "auto_mask" in old_config["args"] and not isinstance(old_config["args"]["auto_mask"], dict):
+        config["args"]["mask"] = {"enabled": bool(old_config["args"]["auto_mask"])}
+        del old_config["args"]["auto_mask"]
     # auto_mask.lower_hsv_color => auto_mask.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_mask", {}):
         config["args"].setdefault("mask", {}).setdefault("auto_mask", {}).setdefault(
@@ -1343,13 +1342,12 @@ def _update_config(config: schema.Configuration) -> None:
             old_config["args"]["auto_mask"]["additional_filename"],
         )
         del old_config["args"]["auto_mask"]["additional_filename"]
-    # auto_cut: null => auto_cut.enabled: false
-    if "auto_cut" in old_config["args"] and (
-        old_config["args"]["auto_cut"] is True or old_config["args"]["auto_cut"] is False
-    ):
-        config["args"]["cut"] = {"enabled": old_config["args"]["auto_cut"]}
-    if "auto_cut" in old_config["args"] and old_config["args"]["auto_cut"] is None:
-        config["args"]["cut"] = {"enabled": False}
+    # auto_cut: true/false/null => cut.enabled: true/false/false
+    # The scalar key is removed, otherwise the ".get("auto_cut", {})" calls below would
+    # fail with "argument of type 'NoneType' is not a container or iterable"
+    if "auto_cut" in old_config["args"] and not isinstance(old_config["args"]["auto_cut"], dict):
+        config["args"]["cut"] = {"enabled": bool(old_config["args"]["auto_cut"])}
+        del old_config["args"]["auto_cut"]
     # auto_cut.lower_hsv_color => auto_cut.auto_mask.lower_hsv_color
     if "lower_hsv_color" in old_config["args"].get("auto_cut", {}):
         config["args"].setdefault("cut", {}).setdefault("auto_mask", {}).setdefault(
