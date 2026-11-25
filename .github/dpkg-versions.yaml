@@ -94,7 +94,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libdeflate0: 1.23-2ubuntu1
   ubuntu_26_04/libduktape207: 2.7.0+tests-0ubuntu4
   ubuntu_26_04/libelf1t64: 0.194-4
-  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.2
+  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.3
   ubuntu_26_04/libext2fs2t64: 1.47.2-3ubuntu4
   ubuntu_26_04/libffi8: 3.5.2-4
   ubuntu_26_04/libfontconfig1: 2.17.1-3ubuntu1
@@ -235,7 +235,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libxext6: 2:1.3.4-1build3
   ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.3
   ubuntu_26_04/libxmlb2: 0.3.24-2
-  ubuntu_26_04/libxrender1: 1:0.9.12-1build1
+  ubuntu_26_04/libxrender1: 1:0.9.12-1ubuntu0.26.04.1
   ubuntu_26_04/libxt6t64: 1:1.2.1-1.3build1
   ubuntu_26_04/libxxhash0: 0.8.3-2build1
   ubuntu_26_04/libzbar0t64: 0.23.93-9ubuntu1
@@ -425,7 +425,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libdeflate0: 1.23-2ubuntu1
   ubuntu_26_04/libduktape207: 2.7.0+tests-0ubuntu4
   ubuntu_26_04/libelf1t64: 0.194-4
-  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.2
+  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.3
   ubuntu_26_04/libext2fs2t64: 1.47.2-3ubuntu4
   ubuntu_26_04/libffi8: 3.5.2-4
   ubuntu_26_04/libfontconfig1: 2.17.1-3ubuntu1
@@ -566,7 +566,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libxext6: 2:1.3.4-1build3
   ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.3
   ubuntu_26_04/libxmlb2: 0.3.24-2
-  ubuntu_26_04/libxrender1: 1:0.9.12-1build1
+  ubuntu_26_04/libxrender1: 1:0.9.12-1ubuntu0.26.04.1
   ubuntu_26_04/libxt6t64: 1:1.2.1-1.3build1
   ubuntu_26_04/libxxhash0: 0.8.3-2build1
   ubuntu_26_04/libzbar0t64: 0.23.93-9ubuntu1
