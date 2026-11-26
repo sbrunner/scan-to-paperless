@@ -120,7 +120,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libgs-common: 10.06.0~dfsg-3ubuntu1.2
   ubuntu_26_04/libgs10: 10.06.0~dfsg-3ubuntu1.2
   ubuntu_26_04/libgs10-common: 10.06.0~dfsg-3ubuntu1.2
-  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.3
   ubuntu_26_04/libgstreamer1.0-0: 1.28.2-1ubuntu0.1
   ubuntu_26_04/libharfbuzz0b: 12.3.2-2
   ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.7
@@ -142,11 +142,11 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libjs-sphinxdoc: 8.2.3-12
   ubuntu_26_04/libjson-c5: 0.18+ds-3
   ubuntu_26_04/libjxl0.11: 0.11.1-6ubuntu4.2
-  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4.3
   ubuntu_26_04/libkeyutils1: 1.6.3-6ubuntu3
   ubuntu_26_04/libkmod2: 34.2-2ubuntu2
-  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4.1
-  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4.3
+  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4.3
   ubuntu_26_04/libksba8: 1.6.7-2build1
   ubuntu_26_04/liblcms2-2: 2.17-1ubuntu0.2
   ubuntu_26_04/libldap-common: 2.6.10+dfsg-1ubuntu5
@@ -214,7 +214,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/libtesseract5: 5.5.0-1build1
   ubuntu_26_04/libthai-data: 0.1.30-1
   ubuntu_26_04/libthai0: 0.1.30-1
-  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu5
+  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu5.1
   ubuntu_26_04/libtinfo6: 6.6+20251231-1
   ubuntu_26_04/libudev1: 259.5-0ubuntu3.4
   ubuntu_26_04/libunistring5: 1.3-2build1
@@ -282,7 +282,7 @@ sbrunner/scan-to-paperless:latest:
   ubuntu_26_04/python3-jaraco.context: 6.0.1-2
   ubuntu_26_04/python3-jaraco.functools: 4.1.0-1build1
   ubuntu_26_04/python3-jaraco.text: 4.0.0-1build1
-  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.4
+  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.5
   ubuntu_26_04/python3-launchpadlib: 2.1.0-1build1
   ubuntu_26_04/python3-lazr.restfulclient: 0.14.6-3build1
   ubuntu_26_04/python3-lazr.uri: 1.0.6-7build1
@@ -451,7 +451,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libgs-common: 10.06.0~dfsg-3ubuntu1.2
   ubuntu_26_04/libgs10: 10.06.0~dfsg-3ubuntu1.2
   ubuntu_26_04/libgs10-common: 10.06.0~dfsg-3ubuntu1.2
-  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libgssapi-krb5-2: 1.22.1-2ubuntu4.3
   ubuntu_26_04/libgstreamer1.0-0: 1.28.2-1ubuntu0.1
   ubuntu_26_04/libharfbuzz0b: 12.3.2-2
   ubuntu_26_04/libheif-plugin-aomdec: 1.21.2-3ubuntu0.7
@@ -473,11 +473,11 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libjs-sphinxdoc: 8.2.3-12
   ubuntu_26_04/libjson-c5: 0.18+ds-3
   ubuntu_26_04/libjxl0.11: 0.11.1-6ubuntu4.2
-  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libk5crypto3: 1.22.1-2ubuntu4.3
   ubuntu_26_04/libkeyutils1: 1.6.3-6ubuntu3
   ubuntu_26_04/libkmod2: 34.2-2ubuntu2
-  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4.1
-  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4.1
+  ubuntu_26_04/libkrb5-3: 1.22.1-2ubuntu4.3
+  ubuntu_26_04/libkrb5support0: 1.22.1-2ubuntu4.3
   ubuntu_26_04/libksba8: 1.6.7-2build1
   ubuntu_26_04/liblcms2-2: 2.17-1ubuntu0.2
   ubuntu_26_04/libldap-common: 2.6.10+dfsg-1ubuntu5
@@ -545,7 +545,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/libtesseract5: 5.5.0-1build1
   ubuntu_26_04/libthai-data: 0.1.30-1
   ubuntu_26_04/libthai0: 0.1.30-1
-  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu5
+  ubuntu_26_04/libtiff6: 4.7.0-3ubuntu5.1
   ubuntu_26_04/libtinfo6: 6.6+20251231-1
   ubuntu_26_04/libudev1: 259.5-0ubuntu3.4
   ubuntu_26_04/libunistring5: 1.3-2build1
@@ -613,7 +613,7 @@ sbrunner/scan-to-paperless:latest-all:
   ubuntu_26_04/python3-jaraco.context: 6.0.1-2
   ubuntu_26_04/python3-jaraco.functools: 4.1.0-1build1
   ubuntu_26_04/python3-jaraco.text: 4.0.0-1build1
-  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.4
+  ubuntu_26_04/python3-jwt: 2.10.1-4ubuntu1.5
   ubuntu_26_04/python3-launchpadlib: 2.1.0-1build1
   ubuntu_26_04/python3-lazr.restfulclient: 0.14.6-3build1
   ubuntu_26_04/python3-lazr.uri: 1.0.6-7build1
