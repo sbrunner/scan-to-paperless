@@ -142,7 +142,10 @@ jobs:
           path: /tmp/
       - run: docker load --input=/tmp/images.docker
 
-      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - run: docker login --username="$DOCKER_USERNAME" --password="$DOCKER_PASSWORD"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       # tag-publish logs in to PyPI by itself with the OpenId Connect token, and only when the context publishes.
       - name: Publish
