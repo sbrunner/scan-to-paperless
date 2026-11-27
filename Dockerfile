@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/requirements \
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends build-essential python3-dev libsane-dev \
-    && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/requirements/requirements.txt \
+    && python3 -m pip install '--only-binary=:all:' --no-binary=python-sane --disable-pip-version-check --no-deps --requirement=/requirements/requirements.txt \
     && python3 -m pip freeze > /requirements.txt \
     && mkdir -p /source /destination /scan-codes \
     && apt-get remove --assume-yes build-essential python3-dev libsane-dev \
