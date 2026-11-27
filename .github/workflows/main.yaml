@@ -10,9 +10,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
-  packages: write
-  id-token: write
+  contents: read
 
 env:
   HAS_SECRETS: ${{ secrets.HAS_SECRETS }}
@@ -24,6 +22,9 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 50
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
+
+    outputs:
+      success: ${{ steps.success.outputs.success }}
 
     steps:
       - run: docker system prune --all --force
@@ -88,37 +89,72 @@ jobs:
           retention-days: 5
         if: failure()
 
-      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Init pypi
-        run: |-
-          echo "[pypi]" > ~/.pypirc
-          echo "username = ${{ secrets.PYPI_USERNAME }}" >> ~/.pypirc
-          echo "password = ${{ secrets.PYPI_PASSWORD }}" >> ~/.pypirc
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
-
-      - name: Init Git
-        run: |
-          git config user.email "<ci@ci.com>"
-          git config user.name "CI"
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
-
-      - name: Publish
-        run: tag-publish
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
-
       - run: make build-all
 
-      - name: Publish Docker all
-        run: |
-          tag-publish --group=docker-all
+      - run: git reset --hard
+      # The images are given to the publishing job, which is the only one with the write permissions.
+      - run: docker save --output=/tmp/images.docker sbrunner/scan-to-paperless:latest sbrunner/scan-to-paperless:latest-all
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: images.docker
+          path: /tmp/images.docker
+          retention-days: 1
+
+      # Mark as success
+      - id: success
+        run: echo "success=true" >> $GITHUB_OUTPUT
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    needs:
+      - build
+    if: always()
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - run: '[[ "${{ needs.build.outputs.success }}" == "true" ]]'
+
+      # The full history is required to compute the version from the tags.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Provides the pip, python3 and poetry that tag-publish calls to build the wheel.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - run: python3 -m pip install '--only-binary=:all:' --requirement=ci/requirements.txt
+
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: latest-known
+          cache-python: true
+          python-version: '3.13'
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: images.docker
+          path: /tmp/
+      - run: docker load --input=/tmp/images.docker
+
+      - run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+
+      # tag-publish logs in to PyPI by itself with the OpenId Connect token, and only when the context publishes.
+      - name: Publish
+        run: uv run --locked --isolated --no-build --project=.github/publish tag-publish
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: env.HAS_SECRETS == 'HAS_SECRETS'
+
+      - name: Publish Docker all
+        run: uv run --locked --isolated --no-build --project=.github/publish tag-publish --group=docker-all
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - run: git diff --exit-code --patch > /tmp/dpkg-versions.patch; git diff --color; git reset --hard || true
         if: failure()
       - run: git checkout pyproject.toml

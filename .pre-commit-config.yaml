@@ -66,6 +66,10 @@ repos:
     rev: 1.9.0
     hooks:
       - id: copyright
+      - id: uv-lock
+        additional_dependencies:
+          - uv==0.13.5 # pypi
+        files: ^\.github/publish/pyproject\.toml$
       - id: workflows-require-timeout
       - id: poetry2-lock
         additional_dependencies:
